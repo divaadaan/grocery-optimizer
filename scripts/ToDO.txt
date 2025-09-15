@@ -1,0 +1,6 @@
+## Security Improvements (Post-PoC)
+- [ ] Create least-privilege database role
+- [ ] Separate read-only role for analytics
+- [ ] Implement row-level security for user data
+- [ ] Add connection pooling with PgBouncer
+- [ ] Rotate credentials regularly
