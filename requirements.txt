@@ -1,0 +1,40 @@
+# Grocery Optimizer - Python Dependencies
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+python-multipart==0.0.6
+
+# Database
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+
+# Redis (optional)
+redis==5.0.1
+
+# HTTP Client
+httpx==0.26.0
+requests==2.31.0
+
+# LangGraph & AI (for recipe generation agents)
+langgraph>=0.2.0
+langchain-core>=0.3.0
+langchain-ollama>=0.1.0
+
+# MLflow (for tracking)
+mlflow>=2.9.0
+
+# Celery (for background jobs)
+celery==5.3.4
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2023.3
+
+# Development & Testing
+pytest==7.4.4
+pytest-asyncio==0.21.1
+black==23.12.1
+flake8==7.0.0
