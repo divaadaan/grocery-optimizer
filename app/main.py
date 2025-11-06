@@ -14,6 +14,7 @@ from datetime import datetime
 
 from app.config import settings
 from app.db import init_db, close_db
+from app.services.cache_service import init_cache, close_cache, cache
 from app.models.schemas import HealthCheckResponse, ErrorResponse
 from app.routes import users, stores, recipes, shopping_lists
 
@@ -44,14 +45,16 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to initialize database: {e}")
         raise
 
-    # Optional: Initialize Redis
-    if settings.redis_enabled and settings.redis_url:
-        try:
-            # Redis initialization would go here
-            logger.info("Redis connection initialized")
-        except Exception as e:
-            logger.warning(f"Redis initialization failed: {e}")
-            logger.warning("Continuing without Redis cache")
+    # Initialize Redis cache
+    try:
+        init_cache()
+        if cache.enabled:
+            logger.info(f"Redis cache initialized (TTL: deals={settings.cache_ttl_deals}s, recipes={settings.cache_ttl_recipes}s)")
+        else:
+            logger.info("Redis cache disabled")
+    except Exception as e:
+        logger.warning(f"Redis initialization failed: {e}")
+        logger.warning("Continuing without Redis cache")
 
     logger.info("Application startup complete")
 
@@ -61,6 +64,8 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down Grocery Optimizer API")
     close_db()
     logger.info("Database connections closed")
+    close_cache()
+    logger.info("Redis cache closed")
     logger.info("Shutdown complete")
 
 
@@ -197,9 +202,17 @@ async def health_check() -> HealthCheckResponse:
 
     # Check Redis (if enabled)
     redis_status = None
-    if settings.redis_enabled and settings.redis_url:
-        redis_status = "not_checked"
-        # Would check Redis connection here
+    if settings.redis_enabled and cache.enabled:
+        try:
+            if cache.redis_client:
+                cache.redis_client.ping()
+                redis_status = "healthy"
+            else:
+                redis_status = "unavailable"
+        except:
+            redis_status = "unhealthy"
+    elif settings.redis_enabled:
+        redis_status = "disabled"
 
     # Check Ollama (optional)
     ollama_status = None

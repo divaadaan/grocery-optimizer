@@ -7,6 +7,8 @@ from datetime import date
 import logging
 
 from app.db import db
+from app.services.cache_service import cache
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,7 @@ class StoreService:
     def get_current_deals_by_postal_code(postal_code: str, category: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Get all current deals for stores in a postal code.
+        Uses Redis caching for performance.
 
         Args:
             postal_code: Postal code to search
@@ -42,6 +45,13 @@ class StoreService:
         Returns:
             List of deals with store information
         """
+        # Try cache first
+        cache_key = f"deals:{postal_code}:{category or 'all'}"
+        cached_deals = cache.get(cache_key)
+        if cached_deals is not None:
+            logger.debug(f"Returning {len(cached_deals)} deals from cache")
+            return cached_deals
+
         query = """
         SELECT
             d.deal_id,
@@ -78,8 +88,13 @@ class StoreService:
         with db.get_cursor() as cursor:
             cursor.execute(query, params)
             results = cursor.fetchall()
-            logger.info(f"Found {len(results)} deals for postal code {postal_code}")
-            return [dict(row) for row in results]
+            deals = [dict(row) for row in results]
+            logger.info(f"Found {len(deals)} deals for postal code {postal_code}")
+
+            # Cache the results
+            cache.set(cache_key, deals, ttl=settings.cache_ttl_deals)
+
+            return deals
 
     @staticmethod
     def get_deals_by_category(postal_code: str, categories: List[str]) -> Dict[str, List[Dict[str, Any]]]:
