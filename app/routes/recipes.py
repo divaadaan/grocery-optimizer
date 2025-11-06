@@ -56,21 +56,68 @@ async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGeneration
 
         logger.info(f"Starting recipe generation for user {request.user_id}")
 
-        # TODO: Implement full LangGraph recipe generation
-        # For now, return a placeholder response
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Recipe generation with LangGraph agents is not yet implemented. "
-                   "This endpoint will use the Chef Orchestrator, SousChefs, and Nutritionist "
-                   "to generate optimized meal plans. Please implement the agents as per agents.md guide."
-        )
+        # Run LangGraph recipe generation workflow
+        import time
+        start_time = time.time()
 
-        # The full implementation will:
-        # 1. Initialize LangGraph workflow
-        # 2. Fetch deals for user's postal code
-        # 3. Run Chef -> SousChefs -> Nutritionist pipeline
-        # 4. Save approved recipes to database
-        # 5. Return RecipeGenerationResponse
+        from app.main_recipe_generation import run_recipe_generation
+
+        try:
+            result = run_recipe_generation(
+                user_id=user["user_id"],
+                postal_code=user["postal_code"],
+                budget=float(user["budget"]),
+                household_size=user["household_size"],
+                dietary_restrictions=user["dietary_restrictions"],
+                num_meals=request.num_meals,
+                preferences=request.preferences
+            )
+
+            generation_time = time.time() - start_time
+
+            if result["status"] != "completed":
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Recipe generation failed: {'; '.join(result.get('errors', ['Unknown error']))}"
+                )
+
+            # Convert recipes to response format
+            recipes = []
+            for recipe_id in result["approved_recipe_ids"]:
+                recipe_data = result["generated_recipes"][recipe_id]
+                recipes.append(RecipeInfo(
+                    recipe_id=0,  # Will be updated after DB save
+                    name=recipe_data["name"],
+                    ingredients=recipe_data["ingredients"],
+                    instructions=recipe_data["instructions"],
+                    total_cost=recipe_data["total_cost"],
+                    servings=recipe_data["servings"],
+                    estimated_prep_time=recipe_data.get("estimated_prep_time"),
+                    meal_type=recipe_data.get("meal_type"),
+                    cuisine_type=recipe_data.get("cuisine_type"),
+                    nutrition_facts=result["validation_results"].get(recipe_id, {}).get("nutrition_facts"),
+                    health_score=result["validation_results"].get(recipe_id, {}).get("health_score"),
+                    created_at=datetime.now()
+                ))
+
+            return RecipeGenerationResponse(
+                recipes=recipes,
+                total_cost=result["total_cost"],
+                cost_per_meal=result["cost_per_meal"],
+                estimated_savings=result["estimated_savings"],
+                generation_time=generation_time,
+                status=result["status"],
+                warnings=result.get("warnings", [])
+            )
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error in LangGraph workflow: {e}", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Recipe generation workflow failed: {str(e)}"
+            )
 
     except HTTPException:
         raise

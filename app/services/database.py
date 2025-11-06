@@ -4,17 +4,21 @@ import os
 from dotenv import load_dotenv
 import json
 
+# Import the connection pool from db module
+from app.db import db
+
 load_dotenv()
 
 class DatabaseService:
-    """Handle all database interactions for recipe generation."""
+    """Handle all database interactions for recipe generation (uses shared connection pool)."""
 
     def __init__(self):
-        self.conn_string = os.getenv("DATABASE_URL")
+        # Use the shared database connection pool
+        self.db = db
 
     def get_connection(self):
-        """Create database connection."""
-        return psycopg2.connect(self.conn_string)
+        """Create database connection context manager."""
+        return self.db.get_connection()
 
     def fetch_current_deals(self, postal_code: str) -> List[Dict]:
         """
@@ -41,13 +45,10 @@ class DatabaseService:
         LIMIT 200;  -- Cap for performance
         """
 
-        with self.get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(query, (postal_code,))
-                columns = [desc[0] for desc in cur.description]
-                results = cur.fetchall()
-
-                return [dict(zip(columns, row)) for row in results]
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, (postal_code,))
+            results = cursor.fetchall()
+            return [dict(row) for row in results]
 
     def save_recipes(self, user_id: int, recipes: List[Dict]) -> List[int]:
         """
@@ -64,20 +65,17 @@ class DatabaseService:
         """
 
         recipe_ids = []
-        with self.get_connection() as conn:
-            with conn.cursor() as cur:
-                for recipe in recipes:
-                    cur.execute(query, (
-                        user_id,
-                        recipe['name'],
-                        json.dumps(recipe['ingredients']),  # JSONB
-                        recipe['instructions'],  # TEXT[]
-                        recipe['total_cost'],
-                        recipe['servings']
-                    ))
-                    recipe_id = cur.fetchone()[0]
-                    recipe_ids.append(recipe_id)
-
-                conn.commit()
+        with self.db.get_cursor() as cursor:
+            for recipe in recipes:
+                cursor.execute(query, (
+                    user_id,
+                    recipe['name'],
+                    json.dumps(recipe['ingredients']),  # JSONB
+                    recipe['instructions'],  # TEXT[]
+                    recipe['total_cost'],
+                    recipe['servings']
+                ))
+                recipe_id = cursor.fetchone()[0]
+                recipe_ids.append(recipe_id)
 
         return recipe_ids
