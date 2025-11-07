@@ -1,34 +1,3 @@
-# Grocery Optimizer - Complete Setup Guide
-
-Get your AI-powered grocery optimization system up and running in under 30 minutes.
-
-## Table of Contents
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Detailed Setup](#detailed-setup)
-- [Testing](#testing)
-- [Production Deployment](#production-deployment)
-- [Troubleshooting](#troubleshooting)
-
----
-
-## Overview
-
-The Grocery Optimizer is a multi-agent AI system that:
-- Fetches real-time grocery deals by postal code
-- Generates optimized meal plans using LangGraph agents
-- Creates cost-efficient shopping lists
-- Tracks price history with TimescaleDB
-- Caches data with Redis for performance
-
-**Tech Stack:**
-- FastAPI + PostgreSQL (TimescaleDB) + Redis (Upstash)
-- LangGraph with Ollama (SmolLM models)
-- MLflow for experiment tracking
-
----
-
 ## Prerequisites
 
 ### Required Accounts
@@ -42,7 +11,7 @@ The Grocery Optimizer is a multi-agent AI system that:
    - Create Redis database
    - Copy connection URL
 
-3. **Hugging Face** (Optional - for future features)
+3. **Hugging Face** 
    - Sign up: https://huggingface.co
    - Get API token: https://huggingface.co/settings/tokens
 
@@ -53,11 +22,9 @@ The Grocery Optimizer is a multi-agent AI system that:
 - **Ollama** - Local LLM serving
   - Download: https://ollama.ai
   - Required models: `smollm:1.7b`, `smollm:360m`
-
 ---
 
 ## Quick Start
-
 ### 1. Clone and Install
 
 ```bash
@@ -68,11 +35,8 @@ cd grocery-optimizer
 # Create virtual environment
 python -m venv venv
 
-# Activate (Windows)
+# Activate
 venv\Scripts\activate
-
-# Activate (macOS/Linux)
-source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -111,15 +75,6 @@ python scripts/run_db_setup.py --seed
 # Verify connection
 python scripts/test-db-connection.py
 ```
-
-Expected output:
-```
-✅ PostgreSQL connected
-✅ TimescaleDB version: 2.13.0
-✅ Redis connected
-✅ All database connections successful!
-```
-
 ### 4. Install Ollama Models
 
 ```bash
@@ -249,10 +204,6 @@ deals = get_current_deals_by_postal_code("M5V3A8")
 - `deals:{postal_code}:all` - All deals for postal code
 - `deals:{postal_code}:{category}` - Category-filtered deals
 
-**Benefits:**
-- 🚀 Reduced database load
-- ⚡ Faster API responses (10-50x improvement)
-- 💰 Lower database costs on Neon.tech
 
 ### Ollama Setup
 
@@ -381,12 +332,6 @@ curl -X POST http://localhost:8000/api/v1/recipes/generate \
   }'
 ```
 
-This triggers:
-1. Chef Orchestrator analyzes deals
-2. 3 SousChefs generate recipes in parallel
-3. Nutritionist validates recipes
-4. Returns approved recipes with costs
-
 **Expected Response:**
 ```json
 {
@@ -408,9 +353,6 @@ time curl http://localhost:8000/api/v1/postal-code/deals/M5V3A8
 
 # Second call (cached - should be much faster)
 time curl http://localhost:8000/api/v1/postal-code/deals/M5V3A8
-```
-
-Second call should be 10-50x faster.
 
 ---
 
@@ -505,91 +447,6 @@ docker run -p 8000:8000 --env-file .env grocery-optimizer
 REDIS_ENABLED=False  # App will work without cache
 ```
 
-### Ollama Not Found
-
-**Error:** `ConnectionError: Ollama server not reachable`
-
-**Solutions:**
-1. Start Ollama: `ollama serve`
-2. Check `OLLAMA_BASE_URL` in `.env` (default: `http://localhost:11434`)
-3. Verify models are pulled: `ollama list`
-4. Try pulling models again: `ollama pull smollm:1.7b`
-
-### TimescaleDB Extension Not Found
-
-**Error:** `WARNING: TimescaleDB extension not found`
-
-**Solutions:**
-1. Enable in Neon.tech console: Settings → Extensions → TimescaleDB
-2. Wait 2-3 minutes for activation
-3. Re-run setup: `python scripts/run_db_setup.py`
-
-**Note:** Some Neon.tech regions may not support TimescaleDB. The app will work without it, but without time-series optimizations.
-
-### Import Errors
-
-**Error:** `ModuleNotFoundError: No module named 'app'`
-
-**Solutions:**
-1. Ensure virtual environment is activated
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run from project root: `cd grocery-optimizer`
-
-### Port Already in Use
-
-**Error:** `OSError: [Errno 48] Address already in use`
-
-**Solutions:**
-```bash
-# Use different port
-uvicorn app.main:app --port 8001
-
-# Or kill process on port 8000
-# macOS/Linux:
-lsof -ti:8000 | xargs kill -9
-
-# Windows:
-netstat -ano | findstr :8000
-taskkill /PID <PID> /F
-```
-
----
-
-## Performance Tuning
-
-### Database Connection Pool
-
-For high load, adjust in `.env`:
-```env
-DATABASE_POOL_SIZE=20        # Max active connections
-DATABASE_MAX_OVERFLOW=40     # Extra connections when pool full
-```
-
-### Redis Cache TTLs
-
-Adjust cache expiration times:
-```env
-CACHE_TTL_DEALS=21600        # 6 hours (deals change frequently)
-CACHE_TTL_RECIPES=86400      # 24 hours
-CACHE_TTL_STORES=604800      # 7 days (stores rarely change)
-```
-
-### Ollama Performance
-
-For faster inference:
-```bash
-# Use GPU if available (NVIDIA)
-OLLAMA_GPU=1 ollama serve
-
-# Adjust context window
-OLLAMA_NUM_CTX=4096
-
-# Parallel model loading
-OLLAMA_MAX_LOADED_MODELS=2
-```
-
----
-
 ## API Endpoints Summary
 
 ### Users
@@ -620,13 +477,3 @@ OLLAMA_MAX_LOADED_MODELS=2
 4. **Add more postal codes** - Test with your local area
 5. **Customize agents** - Modify prompts in `app/agents/prompts.py`
 
-## Support
-
-- **Documentation**: Check README.md and code comments
-- **Issues**: https://github.com/divaadaan/grocery-optimizer/issues
-- **Logs**: Check console output for errors
-
----
-
-**Last Updated:** January 2025
-**Version:** 1.0 - Production Ready

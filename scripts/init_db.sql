@@ -1,372 +1,344 @@
--- Grocery Optimizer Database Initialization Script
--- PostgreSQL + TimescaleDB
--- Run this script after enabling TimescaleDB extension on your Neon.tech database
-
 -- ============================================================================
--- EXTENSIONS
+-- Grocery Optimizer Database Schema
+-- Native PostgreSQL (Neon-compatible) - No TimescaleDB required
 -- ============================================================================
 
--- Enable TimescaleDB extension (if not already enabled)
-CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
-
--- Enable UUID generation
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
 -- ============================================================================
--- USERS TABLE
+-- Core Tables
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     postal_code VARCHAR(10) NOT NULL,
-    budget DECIMAL(10,2) DEFAULT 100.00,
-    household_size INTEGER DEFAULT 1 CHECK (household_size > 0),
+    budget DECIMAL(10,2),
+    household_size INTEGER DEFAULT 1,
     dietary_restrictions JSONB DEFAULT '[]'::jsonb,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    last_login TIMESTAMP,
-    is_active BOOLEAN DEFAULT true
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for users
-CREATE INDEX IF NOT EXISTS idx_users_postal_code ON users(postal_code);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_active ON users(is_active) WHERE is_active = true;
+CREATE INDEX idx_users_postal_code ON users(postal_code);
+CREATE INDEX idx_users_email ON users(email);
 
--- ============================================================================
--- STORES TABLE
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS stores (
+CREATE TABLE stores (
     store_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     chain VARCHAR(100),
     postal_code VARCHAR(10) NOT NULL,
     address TEXT,
-    city VARCHAR(100),
-    province VARCHAR(50),
     latitude DECIMAL(10,8),
     longitude DECIMAL(11,8),
-    last_updated TIMESTAMP DEFAULT NOW(),
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT true
 );
 
--- Indexes for stores
-CREATE INDEX IF NOT EXISTS idx_stores_postal_code ON stores(postal_code);
-CREATE INDEX IF NOT EXISTS idx_stores_chain ON stores(chain);
-CREATE INDEX IF NOT EXISTS idx_stores_active ON stores(is_active) WHERE is_active = true;
-CREATE INDEX IF NOT EXISTS idx_stores_location ON stores(latitude, longitude);
+CREATE INDEX idx_stores_postal_code ON stores(postal_code);
+CREATE INDEX idx_stores_chain ON stores(chain);
+CREATE INDEX idx_stores_is_active ON stores(is_active) WHERE is_active = true;
 
 -- ============================================================================
--- PRICE SNAPSHOTS (TimescaleDB Hypertable)
+-- Price Snapshots (Partitioned by Month)
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS price_snapshots (
+CREATE TABLE price_snapshots (
+    snapshot_id BIGSERIAL,
     time TIMESTAMPTZ NOT NULL,
     store_id INTEGER NOT NULL REFERENCES stores(store_id) ON DELETE CASCADE,
     product_name VARCHAR(255) NOT NULL,
     brand VARCHAR(100),
-    price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
-    sale_price DECIMAL(10,2) CHECK (sale_price >= 0),
+    price DECIMAL(10,2) NOT NULL,
+    sale_price DECIMAL(10,2),
     unit VARCHAR(50),
     category VARCHAR(100),
-    product_code VARCHAR(100),
-    is_on_sale BOOLEAN GENERATED ALWAYS AS (sale_price IS NOT NULL AND sale_price < price) STORED
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (snapshot_id, time)
+) PARTITION BY RANGE (time);
 
--- Convert to hypertable (only if not already converted)
--- This enables time-series optimization
-SELECT create_hypertable('price_snapshots', 'time',
-    if_not_exists => TRUE,
-    chunk_time_interval => INTERVAL '7 days'
-);
+-- Create 4 months of partitions
+CREATE TABLE price_snapshots_2025_09 PARTITION OF price_snapshots
+    FOR VALUES FROM ('2025-09-01') TO ('2025-10-01');
 
--- Indexes for price_snapshots
-CREATE INDEX IF NOT EXISTS idx_price_snapshots_store_time ON price_snapshots(store_id, time DESC);
-CREATE INDEX IF NOT EXISTS idx_price_snapshots_product ON price_snapshots(product_name, time DESC);
-CREATE INDEX IF NOT EXISTS idx_price_snapshots_category ON price_snapshots(category, time DESC);
-CREATE INDEX IF NOT EXISTS idx_price_snapshots_on_sale ON price_snapshots(is_on_sale, time DESC) WHERE is_on_sale = true;
+CREATE TABLE price_snapshots_2025_10 PARTITION OF price_snapshots
+    FOR VALUES FROM ('2025-10-01') TO ('2025-11-01');
 
--- Create continuous aggregate for average prices (optional optimization)
-CREATE MATERIALIZED VIEW IF NOT EXISTS price_snapshots_daily
-WITH (timescaledb.continuous) AS
-SELECT
-    time_bucket('1 day', time) AS day,
-    store_id,
-    product_name,
-    AVG(price) as avg_price,
-    MIN(COALESCE(sale_price, price)) as min_price,
-    MAX(price) as max_price,
-    COUNT(*) as sample_count
-FROM price_snapshots
-GROUP BY day, store_id, product_name
-WITH NO DATA;
+CREATE TABLE price_snapshots_2025_11 PARTITION OF price_snapshots
+    FOR VALUES FROM ('2025-11-01') TO ('2025-12-01');
 
--- Refresh policy for the continuous aggregate
-SELECT add_continuous_aggregate_policy('price_snapshots_daily',
-    start_offset => INTERVAL '3 days',
-    end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '1 hour',
-    if_not_exists => TRUE
-);
+CREATE TABLE price_snapshots_2025_12 PARTITION OF price_snapshots
+    FOR VALUES FROM ('2025-12-01') TO ('2026-01-01');
+
+CREATE INDEX idx_price_snapshots_time ON price_snapshots(time DESC);
+CREATE INDEX idx_price_snapshots_store_time ON price_snapshots(store_id, time DESC);
+CREATE INDEX idx_price_snapshots_product ON price_snapshots(product_name);
+CREATE INDEX idx_price_snapshots_category ON price_snapshots(category);
+CREATE INDEX idx_price_snapshots_product_trgm ON price_snapshots USING gin(product_name gin_trgm_ops);
 
 -- ============================================================================
--- DEALS TABLE (Current Active Deals - Denormalized)
+-- Current Deals
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS deals (
+CREATE TABLE deals (
     deal_id SERIAL PRIMARY KEY,
     store_id INTEGER NOT NULL REFERENCES stores(store_id) ON DELETE CASCADE,
     product_name VARCHAR(255) NOT NULL,
     brand VARCHAR(100),
-    sale_price DECIMAL(10,2) NOT NULL CHECK (sale_price >= 0),
-    regular_price DECIMAL(10,2) NOT NULL CHECK (regular_price >= 0),
-    discount_percentage INTEGER GENERATED ALWAYS AS (
-        CASE
-            WHEN regular_price > 0 THEN ROUND(((regular_price - sale_price) / regular_price * 100)::numeric, 0)::integer
-            ELSE 0
-        END
-    ) STORED,
+    sale_price DECIMAL(10,2) NOT NULL,
+    regular_price DECIMAL(10,2),
+    discount_percentage INTEGER,
     unit VARCHAR(50),
     category VARCHAR(100),
-    product_code VARCHAR(100),
-    deal_description TEXT,
-    valid_from DATE NOT NULL DEFAULT CURRENT_DATE,
+    valid_from DATE NOT NULL,
     valid_until DATE NOT NULL,
-    flipp_merchant_id VARCHAR(100),
-    flipp_item_id VARCHAR(100),
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    CONSTRAINT deals_valid_dates CHECK (valid_until >= valid_from),
-    CONSTRAINT deals_valid_price CHECK (sale_price < regular_price)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for deals
-CREATE INDEX IF NOT EXISTS idx_deals_store_valid ON deals(store_id, valid_until) WHERE valid_until >= CURRENT_DATE;
-CREATE INDEX IF NOT EXISTS idx_deals_discount ON deals(discount_percentage DESC) WHERE valid_until >= CURRENT_DATE;
-CREATE INDEX IF NOT EXISTS idx_deals_category ON deals(category, valid_until) WHERE valid_until >= CURRENT_DATE;
-CREATE INDEX IF NOT EXISTS idx_deals_product ON deals(product_name, valid_until);
-CREATE INDEX IF NOT EXISTS idx_deals_valid_period ON deals(valid_from, valid_until);
+CREATE INDEX idx_deals_store ON deals(store_id);
+CREATE INDEX idx_deals_valid_dates ON deals(valid_from, valid_until);
+CREATE INDEX idx_deals_category ON deals(category);
+CREATE INDEX idx_deals_product_name ON deals(product_name);
+CREATE INDEX idx_deals_discount ON deals(discount_percentage DESC);
+CREATE INDEX idx_deals_active ON deals(valid_from, valid_until) WHERE valid_until >= CURRENT_DATE;
 
 -- ============================================================================
--- RECIPES TABLE
+-- Recipes
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS recipes (
+CREATE TABLE recipes (
     recipe_id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
     ingredients JSONB NOT NULL,
     instructions TEXT[] NOT NULL,
-    total_cost DECIMAL(10,2) NOT NULL CHECK (total_cost >= 0),
-    servings INTEGER NOT NULL CHECK (servings > 0),
-    estimated_prep_time INTEGER,
+    total_cost DECIMAL(10,2),
+    servings INTEGER DEFAULT 4,
+    prep_time INTEGER,
+    cook_time INTEGER,
+    cuisine_type VARCHAR(100),
     meal_type VARCHAR(50),
-    cuisine_type VARCHAR(50),
-    nutrition_facts JSONB,
-    health_score DECIMAL(5,2),
-    created_at TIMESTAMP DEFAULT NOW(),
-    is_approved BOOLEAN DEFAULT false,
-    approval_notes TEXT
+    nutritional_info JSONB,
+    allergen_info JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for recipes
-CREATE INDEX IF NOT EXISTS idx_recipes_user ON recipes(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_recipes_meal_type ON recipes(meal_type);
-CREATE INDEX IF NOT EXISTS idx_recipes_cost ON recipes(total_cost);
-CREATE INDEX IF NOT EXISTS idx_recipes_approved ON recipes(is_approved) WHERE is_approved = true;
-
--- GIN index for JSONB searches
-CREATE INDEX IF NOT EXISTS idx_recipes_ingredients_gin ON recipes USING GIN (ingredients);
-CREATE INDEX IF NOT EXISTS idx_recipes_nutrition_gin ON recipes USING GIN (nutrition_facts);
+CREATE INDEX idx_recipes_user ON recipes(user_id);
+CREATE INDEX idx_recipes_meal_type ON recipes(meal_type);
+CREATE INDEX idx_recipes_cuisine ON recipes(cuisine_type);
+CREATE INDEX idx_recipes_cost ON recipes(total_cost);
+CREATE INDEX idx_recipes_ingredients_gin ON recipes USING gin(ingredients);
 
 -- ============================================================================
--- SHOPPING LISTS TABLE
+-- Shopping Lists
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS shopping_lists (
+CREATE TABLE shopping_lists (
     list_id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     recipe_ids INTEGER[] NOT NULL,
     items JSONB NOT NULL,
-    total_cost DECIMAL(10,2) NOT NULL CHECK (total_cost >= 0),
-    estimated_savings DECIMAL(10,2) DEFAULT 0.00,
-    created_at TIMESTAMP DEFAULT NOW(),
-    is_completed BOOLEAN DEFAULT false,
-    completed_at TIMESTAMP,
-    notes TEXT
+    total_cost DECIMAL(10,2) NOT NULL,
+    estimated_savings DECIMAL(10,2),
+    regular_total DECIMAL(10,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_completed BOOLEAN DEFAULT false
 );
 
--- Indexes for shopping_lists
-CREATE INDEX IF NOT EXISTS idx_shopping_lists_user ON shopping_lists(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_shopping_lists_completed ON shopping_lists(is_completed, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_shopping_lists_items_gin ON shopping_lists USING GIN (items);
+CREATE INDEX idx_shopping_lists_user ON shopping_lists(user_id);
+CREATE INDEX idx_shopping_lists_created ON shopping_lists(created_at DESC);
+CREATE INDEX idx_shopping_lists_items_gin ON shopping_lists USING gin(items);
 
 -- ============================================================================
--- API USAGE TRACKING TABLE
+-- API Usage Tracking
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS api_usage (
+CREATE TABLE api_usage (
     usage_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
     model_name VARCHAR(100) NOT NULL,
-    tokens_used INTEGER NOT NULL CHECK (tokens_used >= 0),
-    estimated_cost DECIMAL(10,4) NOT NULL CHECK (estimated_cost >= 0),
-    endpoint VARCHAR(255) NOT NULL,
-    request_type VARCHAR(50),
-    response_time_ms INTEGER,
-    success BOOLEAN DEFAULT true,
-    error_message TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
+    tokens_used INTEGER NOT NULL,
+    estimated_cost DECIMAL(10,4) NOT NULL,
+    endpoint VARCHAR(255),
+    execution_time_ms INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for api_usage
-CREATE INDEX IF NOT EXISTS idx_api_usage_user ON api_usage(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_api_usage_model ON api_usage(model_name, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_api_usage_endpoint ON api_usage(endpoint, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_api_usage_date ON api_usage(created_at DESC);
+CREATE INDEX idx_api_usage_user ON api_usage(user_id);
+CREATE INDEX idx_api_usage_created ON api_usage(created_at DESC);
+CREATE INDEX idx_api_usage_model ON api_usage(model_name);
 
 -- ============================================================================
--- AGENT EXECUTION LOGS TABLE (for MLflow-style tracking)
+-- Agent Logs
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS agent_logs (
+CREATE TABLE agent_logs (
     log_id SERIAL PRIMARY KEY,
-    run_id UUID DEFAULT uuid_generate_v4(),
-    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
     agent_name VARCHAR(100) NOT NULL,
-    action VARCHAR(100) NOT NULL,
+    task_type VARCHAR(100),
     input_data JSONB,
     output_data JSONB,
+    execution_time_ms INTEGER,
     tokens_used INTEGER,
-    duration_ms INTEGER,
-    success BOOLEAN DEFAULT true,
+    status VARCHAR(50),
     error_message TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for agent_logs
-CREATE INDEX IF NOT EXISTS idx_agent_logs_run ON agent_logs(run_id, created_at);
-CREATE INDEX IF NOT EXISTS idx_agent_logs_user ON agent_logs(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_agent_logs_agent ON agent_logs(agent_name, created_at DESC);
+CREATE INDEX idx_agent_logs_user ON agent_logs(user_id);
+CREATE INDEX idx_agent_logs_agent ON agent_logs(agent_name);
+CREATE INDEX idx_agent_logs_status ON agent_logs(status);
+CREATE INDEX idx_agent_logs_created ON agent_logs(created_at DESC);
 
 -- ============================================================================
--- DATA RETENTION POLICIES (TimescaleDB)
+-- Materialized Views
 -- ============================================================================
 
--- Drop price snapshots older than 90 days
-SELECT add_retention_policy('price_snapshots',
-    INTERVAL '90 days',
-    if_not_exists => TRUE
-);
+CREATE MATERIALIZED VIEW best_deals_by_category AS
+SELECT 
+    category,
+    product_name,
+    brand,
+    store_id,
+    sale_price,
+    regular_price,
+    discount_percentage,
+    valid_until
+FROM deals
+WHERE valid_until >= CURRENT_DATE AND discount_percentage >= 20
+ORDER BY category, discount_percentage DESC;
+
+CREATE INDEX idx_best_deals_category ON best_deals_by_category(category);
+
+CREATE MATERIALIZED VIEW price_trends AS
+SELECT 
+    product_name,
+    category,
+    AVG(sale_price) as avg_sale_price,
+    MIN(sale_price) as min_sale_price,
+    MAX(sale_price) as max_sale_price,
+    COUNT(*) as price_count,
+    MAX(time) as last_updated
+FROM price_snapshots
+WHERE time >= NOW() - INTERVAL '30 days'
+GROUP BY product_name, category;
+
+CREATE INDEX idx_price_trends_product ON price_trends(product_name);
+CREATE INDEX idx_price_trends_category ON price_trends(category);
 
 -- ============================================================================
--- HELPER FUNCTIONS
+-- Triggers
 -- ============================================================================
 
--- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+    NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_stores_updated_at BEFORE UPDATE ON stores
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_deals_updated_at BEFORE UPDATE ON deals
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================================
+-- Partition Management Functions
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION create_price_snapshot_partition()
+RETURNS void AS $$
+DECLARE
+    partition_date DATE;
+    partition_name TEXT;
+    start_date TEXT;
+    end_date TEXT;
+BEGIN
+    partition_date := DATE_TRUNC('month', CURRENT_DATE + INTERVAL '1 month');
+    partition_name := 'price_snapshots_' || TO_CHAR(partition_date, 'YYYY_MM');
+    start_date := TO_CHAR(partition_date, 'YYYY-MM-DD');
+    end_date := TO_CHAR(partition_date + INTERVAL '1 month', 'YYYY-MM-DD');
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = partition_name) THEN
+        EXECUTE format(
+            'CREATE TABLE %I PARTITION OF price_snapshots FOR VALUES FROM (%L) TO (%L)',
+            partition_name, start_date, end_date
+        );
+        RAISE NOTICE 'Created partition: %', partition_name;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger for users table
-DROP TRIGGER IF EXISTS update_users_updated_at ON users;
-CREATE TRIGGER update_users_updated_at
-    BEFORE UPDATE ON users
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
--- Trigger for stores table
-DROP TRIGGER IF EXISTS update_stores_updated_at ON stores;
-CREATE TRIGGER update_stores_updated_at
-    BEFORE UPDATE ON stores
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
--- Trigger for deals table
-DROP TRIGGER IF EXISTS update_deals_updated_at ON deals;
-CREATE TRIGGER update_deals_updated_at
-    BEFORE UPDATE ON deals
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
--- ============================================================================
--- VIEWS FOR COMMON QUERIES
--- ============================================================================
-
--- View: Current active deals with store info
-CREATE OR REPLACE VIEW active_deals_with_stores AS
-SELECT
-    d.deal_id,
-    d.product_name,
-    d.brand,
-    d.sale_price,
-    d.regular_price,
-    d.discount_percentage,
-    d.unit,
-    d.category,
-    d.valid_from,
-    d.valid_until,
-    s.store_id,
-    s.name AS store_name,
-    s.chain,
-    s.postal_code,
-    s.address
-FROM deals d
-JOIN stores s ON d.store_id = s.store_id
-WHERE d.valid_until >= CURRENT_DATE
-  AND d.valid_from <= CURRENT_DATE
-  AND s.is_active = true;
-
--- View: User recipe statistics
-CREATE OR REPLACE VIEW user_recipe_stats AS
-SELECT
-    u.user_id,
-    u.email,
-    COUNT(r.recipe_id) AS total_recipes,
-    ROUND(AVG(r.total_cost), 2) AS avg_recipe_cost,
-    ROUND(SUM(r.total_cost), 2) AS total_spent,
-    COUNT(DISTINCT r.meal_type) AS meal_variety
-FROM users u
-LEFT JOIN recipes r ON u.user_id = r.user_id
-GROUP BY u.user_id, u.email;
-
--- View: API cost summary by user
-CREATE OR REPLACE VIEW api_cost_by_user AS
-SELECT
-    u.user_id,
-    u.email,
-    COUNT(a.usage_id) AS total_calls,
-    SUM(a.tokens_used) AS total_tokens,
-    ROUND(SUM(a.estimated_cost), 4) AS total_cost,
-    ROUND(AVG(a.estimated_cost), 4) AS avg_cost_per_call,
-    MAX(a.created_at) AS last_api_call
-FROM users u
-LEFT JOIN api_usage a ON u.user_id = a.user_id
-GROUP BY u.user_id, u.email;
-
--- ============================================================================
--- GRANT PERMISSIONS (Adjust based on your setup)
--- ============================================================================
-
--- Example: Grant appropriate permissions to application user
--- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO grocery_app_user;
--- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO grocery_app_user;
-
--- ============================================================================
--- DATABASE INITIALIZATION COMPLETE
--- ============================================================================
-
--- Insert a success marker
-DO $$
+CREATE OR REPLACE FUNCTION cleanup_old_price_partitions()
+RETURNS void AS $$
+DECLARE
+    partition_record RECORD;
+    cutoff_date DATE;
 BEGIN
-    RAISE NOTICE 'Database schema initialized successfully!';
-    RAISE NOTICE 'Tables created: users, stores, price_snapshots, deals, recipes, shopping_lists, api_usage, agent_logs';
-    RAISE NOTICE 'TimescaleDB hypertable enabled for price_snapshots';
-    RAISE NOTICE 'Retention policy: 90 days for price_snapshots';
-END $$;
+    cutoff_date := CURRENT_DATE - INTERVAL '90 days';
+    
+    FOR partition_record IN
+        SELECT tablename 
+        FROM pg_tables 
+        WHERE schemaname = 'public' AND tablename LIKE 'price_snapshots_%'
+    LOOP
+        DECLARE
+            partition_month DATE;
+        BEGIN
+            partition_month := TO_DATE(
+                SUBSTRING(partition_record.tablename FROM 'price_snapshots_(.*)'),
+                'YYYY_MM'
+            );
+            
+            IF partition_month < DATE_TRUNC('month', cutoff_date) THEN
+                EXECUTE format('DROP TABLE IF EXISTS %I', partition_record.tablename);
+                RAISE NOTICE 'Dropped old partition: %', partition_record.tablename;
+            END IF;
+        EXCEPTION WHEN OTHERS THEN
+            RAISE NOTICE 'Could not process partition: %', partition_record.tablename;
+        END;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- Helper Query Functions
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION get_active_deals(p_postal_code VARCHAR)
+RETURNS TABLE (
+    deal_id INTEGER,
+    store_name VARCHAR,
+    product_name VARCHAR,
+    sale_price DECIMAL,
+    regular_price DECIMAL,
+    discount_percentage INTEGER,
+    category VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        d.deal_id,
+        s.name,
+        d.product_name,
+        d.sale_price,
+        d.regular_price,
+        d.discount_percentage,
+        d.category
+    FROM deals d
+    JOIN stores s ON d.store_id = s.store_id
+    WHERE s.postal_code = p_postal_code
+        AND d.valid_until >= CURRENT_DATE
+        AND d.valid_from <= CURRENT_DATE
+        AND s.is_active = true
+    ORDER BY d.discount_percentage DESC;
+END;
+$$ LANGUAGE plpgsql;
