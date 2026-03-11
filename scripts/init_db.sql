@@ -10,41 +10,45 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 -- Core Tables
 -- ============================================================================
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     user_id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     postal_code VARCHAR(10) NOT NULL,
     budget DECIMAL(10,2),
     household_size INTEGER DEFAULT 1,
     dietary_restrictions JSONB DEFAULT '[]'::jsonb,
+    is_active BOOLEAN DEFAULT true,
+    last_login TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_users_postal_code ON users(postal_code);
-CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_postal_code ON users(postal_code);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
-CREATE TABLE stores (
+CREATE TABLE IF NOT EXISTS stores (
     store_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     chain VARCHAR(100),
     postal_code VARCHAR(10) NOT NULL,
     address TEXT,
+    city VARCHAR(100),
+    province VARCHAR(10),
     latitude DECIMAL(10,8),
     longitude DECIMAL(11,8),
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT true
 );
 
-CREATE INDEX idx_stores_postal_code ON stores(postal_code);
-CREATE INDEX idx_stores_chain ON stores(chain);
-CREATE INDEX idx_stores_is_active ON stores(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_stores_postal_code ON stores(postal_code);
+CREATE INDEX IF NOT EXISTS idx_stores_chain ON stores(chain);
+CREATE INDEX IF NOT EXISTS idx_stores_is_active ON stores(is_active);
 
 -- ============================================================================
 -- Price Snapshots (Partitioned by Month)
 -- ============================================================================
 
-CREATE TABLE price_snapshots (
+CREATE TABLE IF NOT EXISTS price_snapshots (
     snapshot_id BIGSERIAL,
     time TIMESTAMPTZ NOT NULL,
     store_id INTEGER NOT NULL REFERENCES stores(store_id) ON DELETE CASCADE,
@@ -58,30 +62,37 @@ CREATE TABLE price_snapshots (
     PRIMARY KEY (snapshot_id, time)
 ) PARTITION BY RANGE (time);
 
--- Create 4 months of partitions
-CREATE TABLE price_snapshots_2025_09 PARTITION OF price_snapshots
-    FOR VALUES FROM ('2025-09-01') TO ('2025-10-01');
+-- Partitions: 2025-09 through 2026-12
+DO $$
+DECLARE
+    partition_start DATE;
+    partition_end DATE;
+    partition_name TEXT;
+BEGIN
+    FOR i IN 0..15 LOOP
+        partition_start := DATE_TRUNC('month', DATE '2025-09-01' + (i || ' months')::INTERVAL)::DATE;
+        partition_end := (partition_start + INTERVAL '1 month')::DATE;
+        partition_name := 'price_snapshots_' || TO_CHAR(partition_start, 'YYYY_MM');
 
-CREATE TABLE price_snapshots_2025_10 PARTITION OF price_snapshots
-    FOR VALUES FROM ('2025-10-01') TO ('2025-11-01');
+        IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = partition_name) THEN
+            EXECUTE format(
+                'CREATE TABLE %I PARTITION OF price_snapshots FOR VALUES FROM (%L) TO (%L)',
+                partition_name, partition_start, partition_end
+            );
+        END IF;
+    END LOOP;
+END $$;
 
-CREATE TABLE price_snapshots_2025_11 PARTITION OF price_snapshots
-    FOR VALUES FROM ('2025-11-01') TO ('2025-12-01');
-
-CREATE TABLE price_snapshots_2025_12 PARTITION OF price_snapshots
-    FOR VALUES FROM ('2025-12-01') TO ('2026-01-01');
-
-CREATE INDEX idx_price_snapshots_time ON price_snapshots(time DESC);
-CREATE INDEX idx_price_snapshots_store_time ON price_snapshots(store_id, time DESC);
-CREATE INDEX idx_price_snapshots_product ON price_snapshots(product_name);
-CREATE INDEX idx_price_snapshots_category ON price_snapshots(category);
-CREATE INDEX idx_price_snapshots_product_trgm ON price_snapshots USING gin(product_name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_price_snapshots_time ON price_snapshots(time DESC);
+CREATE INDEX IF NOT EXISTS idx_price_snapshots_store_time ON price_snapshots(store_id, time DESC);
+CREATE INDEX IF NOT EXISTS idx_price_snapshots_product ON price_snapshots(product_name);
+CREATE INDEX IF NOT EXISTS idx_price_snapshots_category ON price_snapshots(category);
 
 -- ============================================================================
 -- Current Deals
 -- ============================================================================
 
-CREATE TABLE deals (
+CREATE TABLE IF NOT EXISTS deals (
     deal_id SERIAL PRIMARY KEY,
     store_id INTEGER NOT NULL REFERENCES stores(store_id) ON DELETE CASCADE,
     product_name VARCHAR(255) NOT NULL,
@@ -97,18 +108,18 @@ CREATE TABLE deals (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_deals_store ON deals(store_id);
-CREATE INDEX idx_deals_valid_dates ON deals(valid_from, valid_until);
-CREATE INDEX idx_deals_category ON deals(category);
-CREATE INDEX idx_deals_product_name ON deals(product_name);
-CREATE INDEX idx_deals_discount ON deals(discount_percentage DESC);
-CREATE INDEX idx_deals_active ON deals(valid_from, valid_until) WHERE valid_until >= CURRENT_DATE;
+CREATE INDEX IF NOT EXISTS idx_deals_store ON deals(store_id);
+CREATE INDEX IF NOT EXISTS idx_deals_valid_dates ON deals(valid_from, valid_until);
+CREATE INDEX IF NOT EXISTS idx_deals_category ON deals(category);
+CREATE INDEX IF NOT EXISTS idx_deals_product_name ON deals(product_name);
+CREATE INDEX IF NOT EXISTS idx_deals_discount ON deals(discount_percentage DESC);
+CREATE INDEX IF NOT EXISTS idx_deals_active ON deals(valid_until, valid_from);
 
 -- ============================================================================
 -- Recipes
 -- ============================================================================
 
-CREATE TABLE recipes (
+CREATE TABLE IF NOT EXISTS recipes (
     recipe_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
@@ -116,26 +127,28 @@ CREATE TABLE recipes (
     instructions TEXT[] NOT NULL,
     total_cost DECIMAL(10,2),
     servings INTEGER DEFAULT 4,
-    prep_time INTEGER,
+    estimated_prep_time INTEGER,
     cook_time INTEGER,
     cuisine_type VARCHAR(100),
     meal_type VARCHAR(50),
-    nutritional_info JSONB,
+    nutrition_facts JSONB,
     allergen_info JSONB,
+    health_score DECIMAL(5,2),
+    is_approved BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_recipes_user ON recipes(user_id);
-CREATE INDEX idx_recipes_meal_type ON recipes(meal_type);
-CREATE INDEX idx_recipes_cuisine ON recipes(cuisine_type);
-CREATE INDEX idx_recipes_cost ON recipes(total_cost);
-CREATE INDEX idx_recipes_ingredients_gin ON recipes USING gin(ingredients);
+CREATE INDEX IF NOT EXISTS idx_recipes_user ON recipes(user_id);
+CREATE INDEX IF NOT EXISTS idx_recipes_meal_type ON recipes(meal_type);
+CREATE INDEX IF NOT EXISTS idx_recipes_cuisine ON recipes(cuisine_type);
+CREATE INDEX IF NOT EXISTS idx_recipes_cost ON recipes(total_cost);
+CREATE INDEX IF NOT EXISTS idx_recipes_ingredients_gin ON recipes USING gin(ingredients);
 
 -- ============================================================================
 -- Shopping Lists
 -- ============================================================================
 
-CREATE TABLE shopping_lists (
+CREATE TABLE IF NOT EXISTS shopping_lists (
     list_id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     recipe_ids INTEGER[] NOT NULL,
@@ -147,34 +160,37 @@ CREATE TABLE shopping_lists (
     is_completed BOOLEAN DEFAULT false
 );
 
-CREATE INDEX idx_shopping_lists_user ON shopping_lists(user_id);
-CREATE INDEX idx_shopping_lists_created ON shopping_lists(created_at DESC);
-CREATE INDEX idx_shopping_lists_items_gin ON shopping_lists USING gin(items);
+CREATE INDEX IF NOT EXISTS idx_shopping_lists_user ON shopping_lists(user_id);
+CREATE INDEX IF NOT EXISTS idx_shopping_lists_created ON shopping_lists(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_shopping_lists_items_gin ON shopping_lists USING gin(items);
 
 -- ============================================================================
 -- API Usage Tracking
 -- ============================================================================
 
-CREATE TABLE api_usage (
+CREATE TABLE IF NOT EXISTS api_usage (
     usage_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
     model_name VARCHAR(100) NOT NULL,
     tokens_used INTEGER NOT NULL,
     estimated_cost DECIMAL(10,4) NOT NULL,
     endpoint VARCHAR(255),
+    request_type VARCHAR(10),
     execution_time_ms INTEGER,
+    response_time_ms INTEGER,
+    success BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_api_usage_user ON api_usage(user_id);
-CREATE INDEX idx_api_usage_created ON api_usage(created_at DESC);
-CREATE INDEX idx_api_usage_model ON api_usage(model_name);
+CREATE INDEX IF NOT EXISTS idx_api_usage_user ON api_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_api_usage_created ON api_usage(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_api_usage_model ON api_usage(model_name);
 
 -- ============================================================================
 -- Agent Logs
 -- ============================================================================
 
-CREATE TABLE agent_logs (
+CREATE TABLE IF NOT EXISTS agent_logs (
     log_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
     agent_name VARCHAR(100) NOT NULL,
@@ -188,46 +204,83 @@ CREATE TABLE agent_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_agent_logs_user ON agent_logs(user_id);
-CREATE INDEX idx_agent_logs_agent ON agent_logs(agent_name);
-CREATE INDEX idx_agent_logs_status ON agent_logs(status);
-CREATE INDEX idx_agent_logs_created ON agent_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_agent_logs_user ON agent_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_agent_logs_agent ON agent_logs(agent_name);
+CREATE INDEX IF NOT EXISTS idx_agent_logs_status ON agent_logs(status);
+CREATE INDEX IF NOT EXISTS idx_agent_logs_created ON agent_logs(created_at DESC);
+
+-- ============================================================================
+-- Views
+-- ============================================================================
+
+CREATE OR REPLACE VIEW active_deals_with_stores AS
+SELECT
+    d.deal_id,
+    d.product_name,
+    d.brand,
+    d.sale_price,
+    d.regular_price,
+    d.discount_percentage,
+    d.unit,
+    d.category,
+    d.valid_from,
+    d.valid_until,
+    s.store_id,
+    s.name AS store_name,
+    s.chain,
+    s.postal_code,
+    s.city,
+    s.province
+FROM deals d
+JOIN stores s ON d.store_id = s.store_id
+WHERE d.valid_until >= CURRENT_DATE
+  AND d.valid_from <= CURRENT_DATE
+  AND s.is_active = true;
 
 -- ============================================================================
 -- Materialized Views
 -- ============================================================================
 
-CREATE MATERIALIZED VIEW best_deals_by_category AS
-SELECT 
-    category,
-    product_name,
-    brand,
-    store_id,
-    sale_price,
-    regular_price,
-    discount_percentage,
-    valid_until
-FROM deals
-WHERE valid_until >= CURRENT_DATE AND discount_percentage >= 20
-ORDER BY category, discount_percentage DESC;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_matviews WHERE matviewname = 'best_deals_by_category') THEN
+        EXECUTE '
+        CREATE MATERIALIZED VIEW best_deals_by_category AS
+        SELECT
+            category,
+            product_name,
+            brand,
+            store_id,
+            sale_price,
+            regular_price,
+            discount_percentage,
+            valid_until
+        FROM deals
+        WHERE valid_until >= CURRENT_DATE AND discount_percentage >= 20
+        ORDER BY category, discount_percentage DESC';
 
-CREATE INDEX idx_best_deals_category ON best_deals_by_category(category);
+        CREATE INDEX idx_best_deals_category ON best_deals_by_category(category);
+    END IF;
 
-CREATE MATERIALIZED VIEW price_trends AS
-SELECT 
-    product_name,
-    category,
-    AVG(sale_price) as avg_sale_price,
-    MIN(sale_price) as min_sale_price,
-    MAX(sale_price) as max_sale_price,
-    COUNT(*) as price_count,
-    MAX(time) as last_updated
-FROM price_snapshots
-WHERE time >= NOW() - INTERVAL '30 days'
-GROUP BY product_name, category;
+    IF NOT EXISTS (SELECT 1 FROM pg_matviews WHERE matviewname = 'price_trends') THEN
+        EXECUTE '
+        CREATE MATERIALIZED VIEW price_trends AS
+        SELECT
+            product_name,
+            category,
+            AVG(sale_price) as avg_sale_price,
+            MIN(sale_price) as min_sale_price,
+            MAX(sale_price) as max_sale_price,
+            COUNT(*) as price_count,
+            MAX(time) as last_updated
+        FROM price_snapshots
+        WHERE time >= NOW() - INTERVAL ''30 days''
+        GROUP BY product_name, category';
 
-CREATE INDEX idx_price_trends_product ON price_trends(product_name);
-CREATE INDEX idx_price_trends_category ON price_trends(category);
+        CREATE INDEX idx_price_trends_product ON price_trends(product_name);
+        CREATE INDEX idx_price_trends_category ON price_trends(category);
+    END IF;
+END $$;
 
 -- ============================================================================
 -- Triggers
@@ -241,14 +294,21 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_stores_updated_at BEFORE UPDATE ON stores
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_deals_updated_at BEFORE UPDATE ON deals
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_users_updated_at') THEN
+        CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+            FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_stores_updated_at') THEN
+        CREATE TRIGGER update_stores_updated_at BEFORE UPDATE ON stores
+            FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_deals_updated_at') THEN
+        CREATE TRIGGER update_deals_updated_at BEFORE UPDATE ON deals
+            FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- ============================================================================
 -- Partition Management Functions
@@ -266,7 +326,7 @@ BEGIN
     partition_name := 'price_snapshots_' || TO_CHAR(partition_date, 'YYYY_MM');
     start_date := TO_CHAR(partition_date, 'YYYY-MM-DD');
     end_date := TO_CHAR(partition_date + INTERVAL '1 month', 'YYYY-MM-DD');
-    
+
     IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = partition_name) THEN
         EXECUTE format(
             'CREATE TABLE %I PARTITION OF price_snapshots FOR VALUES FROM (%L) TO (%L)',
@@ -284,10 +344,10 @@ DECLARE
     cutoff_date DATE;
 BEGIN
     cutoff_date := CURRENT_DATE - INTERVAL '90 days';
-    
+
     FOR partition_record IN
-        SELECT tablename 
-        FROM pg_tables 
+        SELECT tablename
+        FROM pg_tables
         WHERE schemaname = 'public' AND tablename LIKE 'price_snapshots_%'
     LOOP
         DECLARE
@@ -297,7 +357,7 @@ BEGIN
                 SUBSTRING(partition_record.tablename FROM 'price_snapshots_(.*)'),
                 'YYYY_MM'
             );
-            
+
             IF partition_month < DATE_TRUNC('month', cutoff_date) THEN
                 EXECUTE format('DROP TABLE IF EXISTS %I', partition_record.tablename);
                 RAISE NOTICE 'Dropped old partition: %', partition_record.tablename;
@@ -308,10 +368,6 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
-
--- ============================================================================
--- Helper Query Functions
--- ============================================================================
 
 CREATE OR REPLACE FUNCTION get_active_deals(p_postal_code VARCHAR)
 RETURNS TABLE (
@@ -325,7 +381,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         d.deal_id,
         s.name,
         d.product_name,
