@@ -1,0 +1,343 @@
+{
+  "info": {
+    "name": "Grocery Optimizer API",
+    "_postman_id": "grocery-optimizer-v1",
+    "description": "AI-powered meal planning and grocery deal optimization API. Import into Postman or Insomnia.\n\nRequired environment variables:\n- `baseUrl`: API base URL (e.g. http://localhost:8000)\n\nSee api_dependencies.md for call ordering requirements.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string",
+      "description": "Base URL for the Grocery Optimizer API"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Info",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check the health of the API and its dependencies (database, Redis, Ollama)."
+          },
+          "response": []
+        },
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/info",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "info"]
+            },
+            "description": "Get API version, environment, feature flags, and configured model names."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"postal_code\": \"M5V2T6\",\n  \"budget\": 150.00,\n  \"household_size\": 2,\n  \"dietary_restrictions\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "register"]
+            },
+            "description": "Register a new user. Returns a user_id needed for recipe generation.\n\nField constraints:\n- email: valid email format (required)\n- postal_code: 6–10 chars, spaces stripped, uppercased (required)\n- budget: 0–10000, default 100.00 (optional)\n- household_size: 1–20, default 1 (optional)\n- dietary_restrictions: array of strings, default [] (optional)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{userId}}"]
+            },
+            "description": "Retrieve a user by their ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"postal_code\": \"K1A0A9\",\n  \"budget\": 200.00,\n  \"household_size\": 3,\n  \"dietary_restrictions\": [\"vegetarian\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{userId}}"]
+            },
+            "description": "Partially update user preferences. All fields are optional — only provided fields are updated.\n\nField constraints:\n- postal_code: 6–10 chars (optional)\n- budget: 0–10000 (optional)\n- household_size: 1–20 (optional)\n- dietary_restrictions: array of strings (optional)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{userId}}"]
+            },
+            "description": "Soft-delete a user (sets is_active=false). Returns 204 No Content on success."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Stores & Deals",
+      "item": [
+        {
+          "name": "Discover Stores by Postal Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"postal_code\": \"M5V2T6\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/postal-code/discover",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "postal-code", "discover"]
+            },
+            "description": "Discover stores and deals for a given postal code. Results are cached for 6 hours in Redis.\n\nThis should be called before fetching deals or generating recipes to ensure store data is populated."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Deals by Postal Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/postal-code/deals/{{postalCode}}?category=Produce&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "postal-code", "deals", "{{postalCode}}"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "Produce",
+                  "description": "Filter by category (e.g. Produce, Meat & Poultry, Dairy, Bakery). Optional.",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Max results returned. Range: 1–200. Default: 50."
+                }
+              ]
+            },
+            "description": "Fetch current grocery deals for a postal code. Optionally filter by product category and cap results with limit.\n\nCommon categories: Produce, Meat & Poultry, Dairy, Bakery, Frozen, Beverages, Snacks"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Top Deals by Postal Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/postal-code/top-deals/{{postalCode}}?limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "postal-code", "top-deals", "{{postalCode}}"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Max results. Range: 1–50. Default: 20."
+                }
+              ]
+            },
+            "description": "Get the highest-discount deals for a postal code, sorted by discount percentage descending."
+          },
+          "response": []
+        },
+        {
+          "name": "Search Deals",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/postal-code/search/{{postalCode}}?q=chicken",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "postal-code", "search", "{{postalCode}}"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "chicken",
+                  "description": "Search term (product name or brand). Required. Min length: 2."
+                }
+              ]
+            },
+            "description": "Search deals by product name or brand for a given postal code.\n\nThe `q` query parameter is required and must be at least 2 characters."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Recipes",
+      "item": [
+        {
+          "name": "Generate Meal Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 1,\n  \"num_meals\": 7,\n  \"preferences\": {\n    \"cuisine_preferences\": [\"Italian\", \"Mexican\"],\n    \"avoid_ingredients\": [\"nuts\", \"shellfish\"],\n    \"meal_types\": [\"dinner\", \"lunch\"]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recipes/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "recipes", "generate"]
+            },
+            "description": "Generate an AI-powered meal plan optimized for current grocery deals.\n\nRuns a multi-agent LangGraph workflow (Chef Orchestrator → 3 Sous Chefs → Nutritionist). This call may take 30–120 seconds depending on model performance.\n\nField constraints:\n- user_id: integer (required) — must be a registered user\n- num_meals: 1–21, default 7 (optional)\n- preferences: object (optional)\n  - cuisine_preferences: array of cuisine strings\n  - avoid_ingredients: array of ingredient strings to exclude\n  - meal_types: array (e.g. \"breakfast\", \"lunch\", \"dinner\")\n\nDEPENDENCY: User must exist (POST /api/v1/users/register first). User's postal_code must have deals (POST /api/v1/postal-code/discover first)."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Recipe by ID [NOT IMPLEMENTED]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recipes/{{recipeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "recipes", "{{recipeId}}"]
+            },
+            "description": "Retrieve a single recipe by ID.\n\n⚠️ NOT IMPLEMENTED — returns 501. Planned for future release."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Recipes for User [NOT IMPLEMENTED]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recipes/user/{{userId}}?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "recipes", "user", "{{userId}}"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Max recipes to return. Default: 10."
+                }
+              ]
+            },
+            "description": "Get all recipes generated for a user, most recent first.\n\n⚠️ NOT IMPLEMENTED — returns 501. Planned for future release."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Shopping Lists",
+      "item": [
+        {
+          "name": "Get Shopping List [NOT IMPLEMENTED]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shopping-list/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "shopping-list", "{{userId}}"]
+            },
+            "description": "Get the most recent shopping list for a user, consolidated across recipes with store assignments.\n\n⚠️ NOT IMPLEMENTED — returns 501. Planned for future release."
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Shopping List Complete [NOT IMPLEMENTED]",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shopping-list/{{userId}}/mark-complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "shopping-list", "{{userId}}", "mark-complete"]
+            },
+            "description": "Mark a user's shopping list as completed.\n\n⚠️ NOT IMPLEMENTED — returns 501. Planned for future release."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

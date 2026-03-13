@@ -4,6 +4,7 @@ Store and postal code discovery endpoints
 
 from fastapi import APIRouter, HTTPException, status, Query
 from typing import List, Optional
+from app.providers.flipp.api import Api as FlippApi
 import logging
 
 from app.models.schemas import (
@@ -21,12 +22,12 @@ router = APIRouter(prefix="/postal-code", tags=["stores"])
 
 
 @router.post("/discover",
-             response_model=PostalCodeDiscoveryResponse,
+            #response_model=PostalCodeDiscoveryResponse,
              responses={
                  404: {"model": ErrorResponse, "description": "No stores found"},
                  500: {"model": ErrorResponse, "description": "Internal server error"}
              })
-async def discover_postal_code(request: PostalCodeDiscoveryRequest) -> PostalCodeDiscoveryResponse:
+async def discover_postal_code(request: PostalCodeDiscoveryRequest):
     """
     Discover stores and deals for a postal code.
 
@@ -37,6 +38,34 @@ async def discover_postal_code(request: PostalCodeDiscoveryRequest) -> PostalCod
 
     Returns store count, deal count, and list of stores found.
     """
+    my_flip = FlippApi(postal_code=request.postal_code, local e="en")
+    all_flyers = my_flip.get_flyers()
+    grocery_flyers = [f for f in all_flyers["flyers"] if "Groceries" in f["categories"]]
+
+    grocery_stores: List[StoreInfo] = []
+    
+    for flyer in grocery_flyers:
+        grocery_stores.append(StoreInfo(
+            store_id=flyer["merchant_id"],
+            name=flyer["merchant"],
+            chain=flyer["merchant"],
+            postal_code=flyer["postal_code"],
+            address="Unknown",
+            city="Unknown",
+            province="Unknown",
+        ))
+
+    rc = PostalCodeDiscoveryResponse(
+        postal_code=request.postal_code,
+        stores_found=len(grocery_stores),
+        deals_count=23,
+        stores=grocery_stores,
+        job_id="19",
+        message="test message",
+    )
+
+
+    return rc
     try:
         postal_code = request.postal_code
 
