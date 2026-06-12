@@ -6,18 +6,21 @@ services:
     env_file:
       - .env
     environment:
-      # Override host-oriented URLs with in-network service names
-      OLLAMA_BASE_URL: http://ollama:11434
+      # DOCKER_OLLAMA_URL (set in .env) points at an Ollama outside the compose
+      # network, e.g. one on the Windows host. Unset, it falls back to the
+      # containerized ollama service — start it with: docker compose --profile ollama up
+      OLLAMA_BASE_URL: ${DOCKER_OLLAMA_URL:-http://ollama:11434}
       MLFLOW_TRACKING_URI: http://mlflow:5000
     depends_on:
-      ollama:
-        condition: service_healthy
       mlflow:
         condition: service_started
     restart: unless-stopped
 
+  # Containerized Ollama — opt-in via: docker compose --profile ollama up
+  # Not needed when DOCKER_OLLAMA_URL points at a host-side Ollama.
   ollama:
     image: ollama/ollama:latest
+    profiles: ["ollama"]
     ports:
       - "11434:11434"
     volumes:
@@ -40,6 +43,7 @@ services:
   # One-shot: pulls the models configured in .env (defaults match config.py)
   ollama-init:
     image: ollama/ollama:latest
+    profiles: ["ollama"]
     depends_on:
       ollama:
         condition: service_healthy

@@ -59,7 +59,13 @@ cd ~/projects/grocery-optimizer
 cp /mnt/c/Users/thesa/projects/python/grocery-optimizer/.env .
 ```
 
-## Step 1: verify the migration (do this first)
+## Step 1: verify the migration — ✅ DONE 2026-06-12
+
+Verified in WSL: pip install resolves (after requirements fixes), `app.main` and
+`app.agents.graph` import, Neon DB connects (original schema + data intact),
+`docker compose up --build` + `/health` all green. Docker now uses the Windows
+host's Ollama via `DOCKER_OLLAMA_URL` in `.env` (containerized Ollama is opt-in:
+`docker compose --profile ollama up`).
 
 ```bash
 # Fresh venv install — proves requirements resolve
@@ -82,7 +88,7 @@ curl http://localhost:8000/health
 
 ## Task roadmap (from the 2026-06-12 code review)
 
-1. ~~Finish psycopg3 migration + dockerize~~ → **verify in WSL (above)**
+1. ~~Finish psycopg3 migration + dockerize + verify in WSL~~ ✅
 2. **Fix the LangGraph workflow** — known-broken:
    - `generate_recipes_parallel` returns `Send` objects but is wired as a regular
      node (`app/agents/graph.py`). `Send` only works from a **conditional edge**.
