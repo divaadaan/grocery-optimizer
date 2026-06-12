@@ -21,7 +21,7 @@ class ChefOrchestrator:
         )
         self.db = DatabaseService()
 
-    def initialize(self, state: RecipeGenerationState) -> RecipeGenerationState:
+    def initialize(self, state: RecipeGenerationState) -> dict:
         """
         Node 1: Initialize Chef by fetching deals and setting up workflow.
         """
@@ -41,26 +41,20 @@ class ChefOrchestrator:
         # Create deal index for O(1) lookups
         deal_index = {deal["product_name"]: deal for deal in deals}
 
-        # Update state
-        state["mlflow_run_id"] = mlflow_run_id
-        state["available_deals"] = deals
-        state["deal_index"] = deal_index
-        state["status"] = "planning"
-        state["iteration_count"] = 0
-        state["max_iterations"] = 2
-        state["agent_call_log"] = []
-        state["errors"] = []
-        state["warnings"] = []
-        state["generated_recipes"] = {}
-        state["validation_results"] = {}
-        state["approved_recipe_ids"] = []
-        state["rejected_recipe_ids"] = []
-
         print(f"[Chef] Found {len(deals)} deals for postal code {state['postal_code']}")
 
-        return state
+        return {
+            "mlflow_run_id": mlflow_run_id,
+            "available_deals": deals,
+            "deal_index": deal_index,
+            "status": "planning",
+            "iteration_count": 0,
+            "max_iterations": 2,
+            "approved_recipe_ids": [],
+            "rejected_recipe_ids": [],
+        }
 
-    def plan_ingredient_groups(self, state: RecipeGenerationState) -> RecipeGenerationState:
+    def plan_ingredient_groups(self, state: RecipeGenerationState) -> dict:
         """
         Node 2: Use LLM to create 3 optimized ingredient groups.
         """
@@ -91,11 +85,6 @@ class ChefOrchestrator:
             if len(ingredient_groups) != 3:
                 raise ValueError(f"Expected 3 groups, got {len(ingredient_groups)}")
 
-            # Update state
-            state["ingredient_groups"] = ingredient_groups
-            state["ingredient_reuse_map"] = ingredient_reuse_map
-            state["status"] = "generating"
-
             # Log to MLflow
             duration = time.time() - start_time
             MLflowLogger.log_agent_call(
@@ -107,53 +96,59 @@ class ChefOrchestrator:
             )
             MLflowLogger.log_ingredient_groups(ingredient_groups, ingredient_reuse_map)
 
-            state["agent_call_log"].append({
-                "agent": "Chef_Orchestrator",
-                "action": "plan_ingredient_groups",
-                "timestamp": time.time(),
-                "duration": duration,
-                "success": True
-            })
-
             print(f"[Chef] Created 3 ingredient groups with {len(ingredient_reuse_map)} unique ingredients")
             print(f"[Chef] Ingredient reuse: {ingredient_reuse_map}")
 
+            return {
+                "ingredient_groups": ingredient_groups,
+                "ingredient_reuse_map": ingredient_reuse_map,
+                "status": "generating",
+                "agent_call_log": [{
+                    "agent": "Chef_Orchestrator",
+                    "action": "plan_ingredient_groups",
+                    "timestamp": time.time(),
+                    "duration": duration,
+                    "success": True
+                }],
+            }
+
         except Exception as e:
-            state["errors"].append(f"Chef planning failed: {str(e)}")
-            state["status"] = "failed"
             print(f"[Chef] ERROR: {e}")
+            return {
+                "errors": [f"Chef planning failed: {str(e)}"],
+                "status": "failed",
+            }
 
-        return state
-
-    def handle_rejections(self, state: RecipeGenerationState) -> RecipeGenerationState:
+    def handle_rejections(self, state: RecipeGenerationState) -> dict:
         """
         Node 7: Process rejected recipes and determine retry strategy.
         """
         print(f"[Chef] Handling {len(state['rejected_recipe_ids'])} rejected recipes...")
 
-        state["iteration_count"] += 1
+        iteration_count = state["iteration_count"] + 1
+        update = {"iteration_count": iteration_count}
 
         # Determine strategy
-        if state["iteration_count"] == 1:
+        if iteration_count == 1:
             # Strategy A: Reassign to different SousChef
-            state["retry_strategy"] = "reassign_chef"
             print("[Chef] Strategy: Reassign to different SousChef")
 
             # Keep same ingredient groups, just mark for retry
-            state["recipes_pending_retry"] = {
+            update["retry_strategy"] = "reassign_chef"
+            update["recipes_pending_retry"] = {
                 recipe_id: state["validation_results"][recipe_id]["feedback"]
                 for recipe_id in state["rejected_recipe_ids"]
             }
 
         else:
             # Strategy B: Select new ingredients
-            state["retry_strategy"] = "new_ingredients"
             print("[Chef] Strategy: Select new ingredients from remaining deals")
 
             # Use LLM to pick new ingredients
             # (Implementation similar to plan_ingredient_groups)
             # For now, simplified version
-            state["recipes_pending_retry"] = {}
-            state["warnings"].append("Max iterations reached, selecting new ingredients")
+            update["retry_strategy"] = "new_ingredients"
+            update["recipes_pending_retry"] = {}
+            update["warnings"] = ["Max iterations reached, selecting new ingredients"]
 
-        return state
+        return update

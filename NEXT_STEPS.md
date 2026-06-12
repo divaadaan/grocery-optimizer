@@ -89,16 +89,26 @@ curl http://localhost:8000/health
 ## Task roadmap (from the 2026-06-12 code review)
 
 1. ~~Finish psycopg3 migration + dockerize + verify in WSL~~ ✅
-2. **Fix the LangGraph workflow** — known-broken:
-   - `generate_recipes_parallel` returns `Send` objects but is wired as a regular
-     node (`app/agents/graph.py`). `Send` only works from a **conditional edge**.
-   - `RecipeGenerationState` has no reducers (`Annotated[..., merge]`), so 3
-     parallel SousChefs writing `generated_recipes` will raise `InvalidUpdateError`.
-   - Nodes mutate state in place instead of returning partial updates.
-   - Make MLflow optional/lazy: `app/main_recipe_generation.py` calls
-     `mlflow.set_experiment()` at module import (inside the first request) — first
-     recipe request fails if MLflow is down.
-3. **Harden LLM output + model experimentation**
+2. ~~**Fix the LangGraph workflow**~~ ✅ DONE 2026-06-12 — fan-out now a
+   conditional edge returning `Send`s, reducers on parallel/accumulating state
+   channels, all nodes return partial updates, MLflow lazy + best-effort.
+   Verified end-to-end (3 parallel SousChefs, fan-in, validation, both retry
+   strategies, both terminal paths) with qwen2.5:7b chef + phi4-mini sous chefs
+   against the host Ollama. Also fixed en route: router treated "0 generated"
+   as success; Decimal from psycopg broke json.dumps; init_db.sql had an
+   invalid CURRENT_DATE index predicate and 2025-only price partitions;
+   seed_sample_data.sql targeted a different schema generation (now aligned);
+   the Neon DB was an empty stale-schema shell — rebuilt + reseeded.
+3. **Harden LLM output + model experimentation** — now the main blocker.
+   Findings from the 2026-06-12 verification runs (see `scripts/debug_agent_io.py`
+   for a quick probe harness):
+   - smollm (1.7b chef / 360m sous) can't produce the required structured JSON
+     at all, even with tolerant parsing — confirms the paper caveat below.
+   - qwen2.5:7b chef + phi4-mini sous chefs produce valid shapes most of the
+     time, but the chef ignores dietary restrictions when grouping (put
+     chicken/beef/salmon in every group for a vegetarian user → Nutritionist
+     correctly rejected all 5 recipes → workflow failed honestly).
+   - Retry regeneration output is still brittle (shape variance at temp 0.8).
    - Pydantic-validate agent JSON output; retry on parse failure; compute recipe
      cost in Python from `deal_index` instead of trusting model arithmetic.
    - Context from the motivating paper (https://arxiv.org/html/2502.02028v1,

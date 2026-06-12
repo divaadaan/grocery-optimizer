@@ -9,6 +9,45 @@ from .prompts import PromptTemplates
 from ..config import settings
 from ..services.mlflow_logger import MLflowLogger
 
+def _coerce_recipe_list(data) -> List[Dict]:
+    """
+    Models don't reliably return a bare JSON array: tolerate a single recipe
+    object or a wrapper like {"recipes": [...]}. (Full schema validation with
+    retries is the roadmap's "harden LLM output" task.)
+    """
+    if isinstance(data, list):
+        return [r for r in data if isinstance(r, dict)]
+    if isinstance(data, dict):
+        for value in data.values():
+            if isinstance(value, list):
+                return [r for r in value if isinstance(r, dict)]
+        if "name" in data:
+            return [data]
+        # {"recipe_1": {...}, "recipe_2": {...}}
+        recipe_like = [v for v in data.values() if isinstance(v, dict) and "name" in v]
+        if recipe_like:
+            return recipe_like
+    return []
+
+
+def _to_recipe(recipe_data: Dict) -> Recipe:
+    """
+    Build a Recipe from model output, defaulting optional fields.
+    Raises KeyError if a required field is missing — callers skip that recipe.
+    """
+    return Recipe(
+        recipe_id=str(uuid.uuid4()),
+        name=recipe_data["name"],
+        ingredients=recipe_data["ingredients"],
+        instructions=recipe_data["instructions"],
+        servings=recipe_data.get("servings", 2),
+        total_cost=recipe_data.get("total_cost", 0.0),
+        estimated_prep_time=recipe_data.get("estimated_prep_time", 30),
+        meal_type=recipe_data.get("meal_type", "dinner"),
+        cuisine_type=recipe_data.get("cuisine_type")
+    )
+
+
 class SousChef:
     """SousChef agent for recipe generation."""
 
@@ -47,23 +86,16 @@ class SousChef:
 
         try:
             response = self.llm.invoke([HumanMessage(content=prompt)])
-            recipes_data = json.loads(response.content)
+            recipes_data = _coerce_recipe_list(json.loads(response.content))
 
-            # Convert to Recipe objects with IDs
+            # Convert to Recipe objects with IDs; skip malformed entries
+            # rather than discarding the whole batch
             recipes = []
             for recipe_data in recipes_data:
-                recipe = Recipe(
-                    recipe_id=str(uuid.uuid4()),
-                    name=recipe_data["name"],
-                    ingredients=recipe_data["ingredients"],
-                    instructions=recipe_data["instructions"],
-                    servings=recipe_data["servings"],
-                    total_cost=recipe_data["total_cost"],
-                    estimated_prep_time=recipe_data.get("estimated_prep_time", 30),
-                    meal_type=recipe_data["meal_type"],
-                    cuisine_type=recipe_data.get("cuisine_type")
-                )
-                recipes.append(recipe)
+                try:
+                    recipes.append(_to_recipe(recipe_data))
+                except KeyError as e:
+                    print(f"[{chef_id}] Skipping malformed recipe (missing {e})")
 
             duration = time.time() - start_time
 
@@ -107,20 +139,12 @@ class SousChef:
 
         try:
             response = self.llm.invoke([HumanMessage(content=prompt)])
-            recipe_data = json.loads(response.content)
+            candidates = _coerce_recipe_list(json.loads(response.content))
+            if not candidates:
+                raise ValueError("no recipe object in model output")
 
             # Create new recipe with new ID
-            recipe = Recipe(
-                recipe_id=str(uuid.uuid4()),
-                name=recipe_data["name"],
-                ingredients=recipe_data["ingredients"],
-                instructions=recipe_data["instructions"],
-                servings=recipe_data["servings"],
-                total_cost=recipe_data["total_cost"],
-                estimated_prep_time=recipe_data.get("estimated_prep_time", 30),
-                meal_type=recipe_data["meal_type"],
-                cuisine_type=recipe_data.get("cuisine_type")
-            )
+            recipe = _to_recipe(candidates[0])
 
             print(f"[{chef_id}] Regenerated: {recipe['name']}")
             return recipe
@@ -130,15 +154,19 @@ class SousChef:
             return None
 
 
-def sous_chef_generate_node(state: RecipeGenerationState) -> RecipeGenerationState:
+def sous_chef_generate_node(task: dict) -> dict:
     """
     Node 4: Individual SousChef worker node for parallel execution.
 
-    This node is called via Send() with subset of state.
+    Invoked via Send() from the fan-out edge; `task` carries the worker's
+    assignment (chef_id, ingredient_group, target_recipe_count) on top of the
+    shared input fields. Returns only this worker's recipes — the merge_dicts
+    reducers on generated_recipes/sous_chef_assignments combine the three
+    parallel workers' outputs.
     """
-    chef_id = state.get("chef_id", "sous_chef_unknown")
-    ingredient_group = state.get("ingredient_group", [])
-    target_recipe_count = state.get("target_recipe_count", 2)
+    chef_id = task.get("chef_id", "sous_chef_unknown")
+    ingredient_group = task.get("ingredient_group", [])
+    target_recipe_count = task.get("target_recipe_count", 2)
 
     sous_chef = SousChef()
 
@@ -146,13 +174,11 @@ def sous_chef_generate_node(state: RecipeGenerationState) -> RecipeGenerationSta
         chef_id=chef_id,
         ingredient_group=ingredient_group,
         target_recipe_count=target_recipe_count,
-        household_size=state["household_size"],
-        dietary_restrictions=state["dietary_restrictions"]
+        household_size=task["household_size"],
+        dietary_restrictions=task["dietary_restrictions"]
     )
 
-    # Update state with generated recipes
-    for recipe in recipes:
-        state["generated_recipes"][recipe["recipe_id"]] = recipe
-        state["sous_chef_assignments"][recipe["recipe_id"]] = chef_id
-
-    return state
+    return {
+        "generated_recipes": {r["recipe_id"]: r for r in recipes},
+        "sous_chef_assignments": {r["recipe_id"]: chef_id for r in recipes},
+    }

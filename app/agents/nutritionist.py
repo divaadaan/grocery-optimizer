@@ -19,16 +19,17 @@ class Nutritionist:
             format="json"
         )
 
-    def validate_recipes(self, state: RecipeGenerationState) -> RecipeGenerationState:
+    def validate_recipes(self, state: RecipeGenerationState) -> dict:
         """
         Node 6: Validate all generated recipes.
         """
         print(f"[Nutritionist] Validating {len(state['generated_recipes'])} recipes...")
 
-        state["status"] = "validating"
         validation_results = {}
         approved_ids = []
         rejected_ids = []
+        errors = []
+        call_log = []
 
         for recipe_id, recipe in state["generated_recipes"].items():
             # Skip already validated recipes in retry scenarios
@@ -47,14 +48,15 @@ class Nutritionist:
                 response = self.llm.invoke([HumanMessage(content=prompt)])
                 validation_data = json.loads(response.content)
 
-                # Create ValidationResult
+                # Create ValidationResult — default missing fields rather than
+                # crashing on model output variance (approved defaults to False)
                 result = ValidationResult(
                     recipe_id=recipe_id,
-                    approved=validation_data["approved"],
-                    feedback=validation_data["feedback"],
-                    nutrition_facts=validation_data["nutrition_facts"],
-                    dietary_compliance=validation_data["dietary_compliance"],
-                    health_score=validation_data["health_score"]
+                    approved=bool(validation_data.get("approved", False)),
+                    feedback=validation_data.get("feedback", ""),
+                    nutrition_facts=validation_data.get("nutrition_facts", {}),
+                    dietary_compliance=validation_data.get("dietary_compliance", {}),
+                    health_score=validation_data.get("health_score", 0.0)
                 )
 
                 validation_results[recipe_id] = result
@@ -70,7 +72,7 @@ class Nutritionist:
                 duration = time.time() - start_time
 
                 # Log to MLflow
-                state["agent_call_log"].append({
+                call_log.append({
                     "agent": "Nutritionist",
                     "action": "validate_recipe",
                     "recipe_id": recipe_id,
@@ -81,18 +83,22 @@ class Nutritionist:
 
             except Exception as e:
                 print(f"[Nutritionist] ERROR validating {recipe['name']}: {e}")
-                state["errors"].append(f"Validation error for {recipe_id}: {str(e)}")
+                errors.append(f"Validation error for {recipe_id}: {str(e)}")
                 # Graceful degradation: mark as pending
                 rejected_ids.append(recipe_id)
-
-        # Update state
-        state["validation_results"].update(validation_results)
-        state["approved_recipe_ids"].extend(approved_ids)
-        state["rejected_recipe_ids"].extend(rejected_ids)
 
         # Log aggregate metrics
         MLflowLogger.log_validation_results(validation_results)
 
         print(f"[Nutritionist] Summary: {len(approved_ids)} approved, {len(rejected_ids)} rejected")
 
-        return state
+        # validation_results / agent_call_log / errors have reducers — return
+        # only new entries. The id lists are plain channels — return full values.
+        return {
+            "status": "validating",
+            "validation_results": validation_results,
+            "approved_recipe_ids": state["approved_recipe_ids"] + approved_ids,
+            "rejected_recipe_ids": state["rejected_recipe_ids"] + rejected_ids,
+            "agent_call_log": call_log,
+            "errors": errors,
+        }

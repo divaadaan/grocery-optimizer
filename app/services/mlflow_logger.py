@@ -1,11 +1,52 @@
-import mlflow
-from typing import Dict, Any, List
+import functools
 import time
+from typing import Dict, Any, List
+
+import mlflow
+
+from app.config import settings
+
+# MLflow is best-effort observability: configure it lazily on first use and
+# never let a tracking failure take down the recipe workflow.
+_configured = False
+_available = False
+
+
+def _ensure_configured() -> bool:
+    global _configured, _available
+    if not _configured:
+        _configured = True
+        try:
+            mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
+            mlflow.set_experiment(settings.mlflow_experiment_name)
+            _available = True
+        except Exception as e:
+            print(f"[MLflow] Tracking unavailable, continuing without it: {e}")
+            _available = False
+    return _available
+
+
+def _best_effort(default=None):
+    """Skip the call if MLflow is unreachable; swallow tracking errors."""
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            if not _ensure_configured():
+                return default
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                print(f"[MLflow] {func.__name__} failed (ignored): {e}")
+                return default
+        return wrapper
+    return decorator
+
 
 class MLflowLogger:
     """Track all agent interactions and metrics."""
 
     @staticmethod
+    @_best_effort(default="")
     def start_run(user_id: int, num_meals: int, budget: float,
                   dietary_restrictions: list) -> str:
         """Initialize MLflow run."""
@@ -23,6 +64,7 @@ class MLflowLogger:
         return mlflow.active_run().info.run_id
 
     @staticmethod
+    @_best_effort()
     def log_agent_call(agent_name: str, tokens: int, duration: float,
                        model: str, success: bool, error: str = None):
         """Log individual agent invocation."""
@@ -37,6 +79,7 @@ class MLflowLogger:
             mlflow.log_param(f"{prefix}_error", error[:200])  # Truncate
 
     @staticmethod
+    @_best_effort()
     def log_ingredient_groups(groups: List[List[Dict]], reuse_map: Dict[str, int]):
         """Log Chef's ingredient grouping strategy."""
         mlflow.log_metrics({
@@ -51,6 +94,7 @@ class MLflowLogger:
         mlflow.log_dict(reuse_map, "ingredient_reuse_map.json")
 
     @staticmethod
+    @_best_effort()
     def log_validation_results(validation_results: Dict[str, Any]):
         """Log Nutritionist validation metrics."""
         approved = sum(1 for r in validation_results.values() if r["approved"])
@@ -77,6 +121,7 @@ class MLflowLogger:
             mlflow.log_text("\n---\n".join(rejection_reasons), "rejection_reasons.txt")
 
     @staticmethod
+    @_best_effort()
     def log_final_metrics(total_cost: float, cost_per_meal: float,
                           estimated_savings: float, iterations: int,
                           recipe_count: int, success: bool):
@@ -92,6 +137,7 @@ class MLflowLogger:
         mlflow.log_param("workflow_success", success)
 
     @staticmethod
+    @_best_effort()
     def finalize_run(state: Dict[str, Any]):
         """Log artifacts and close run."""
         # Log approved recipes

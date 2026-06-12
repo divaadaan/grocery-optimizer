@@ -1,5 +1,15 @@
-from typing import TypedDict, List, Dict, Literal, Optional
+import operator
+from typing import List, Dict, Literal, Optional, Annotated
 from datetime import datetime
+
+# pydantic (used by langgraph for schema introspection) requires the
+# typing_extensions TypedDict on Python < 3.12
+from typing_extensions import TypedDict
+
+
+def merge_dicts(left: Dict, right: Dict) -> Dict:
+    """Reducer for dict channels written by parallel nodes (e.g. 3 SousChefs)."""
+    return {**left, **right}
 
 class Recipe(TypedDict):
     """Individual recipe structure."""
@@ -43,12 +53,14 @@ class RecipeGenerationState(TypedDict):
     ingredient_reuse_map: Dict[str, int]
     target_ingredients_per_group: int
 
-    # SousChef outputs
-    generated_recipes: Dict[str, Recipe]
-    sous_chef_assignments: Dict[str, str]
+    # SousChef outputs — merged across parallel SousChef nodes; nodes return
+    # only the *new* entries they produced
+    generated_recipes: Annotated[Dict[str, Recipe], merge_dicts]
+    sous_chef_assignments: Annotated[Dict[str, str], merge_dicts]
 
-    # Nutritionist validation
-    validation_results: Dict[str, ValidationResult]
+    # Nutritionist validation — validation_results accumulates across retry
+    # iterations; the id lists are overwritten by their single sequential writer
+    validation_results: Annotated[Dict[str, ValidationResult], merge_dicts]
     approved_recipe_ids: List[str]
     rejected_recipe_ids: List[str]
 
@@ -64,12 +76,12 @@ class RecipeGenerationState(TypedDict):
     estimated_savings: float
     budget_remaining: float
 
-    # MLflow tracking
+    # MLflow tracking — appended to by many nodes; nodes return only new entries
     mlflow_run_id: str
-    agent_call_log: List[Dict]
+    agent_call_log: Annotated[List[Dict], operator.add]
 
-    # Workflow control
+    # Workflow control — append-only channels, nodes return only new entries
     status: Literal["initializing", "planning", "generating",
                    "validating", "retrying", "completed", "failed"]
-    errors: List[str]
-    warnings: List[str]
+    errors: Annotated[List[str], operator.add]
+    warnings: Annotated[List[str], operator.add]
