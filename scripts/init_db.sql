@@ -30,6 +30,8 @@ CREATE TABLE stores (
     chain VARCHAR(100),
     postal_code VARCHAR(10) NOT NULL,
     address TEXT,
+    city VARCHAR(100),
+    province VARCHAR(50),
     latitude DECIMAL(10,8),
     longitude DECIMAL(11,8),
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -71,6 +73,10 @@ CREATE TABLE price_snapshots_2025_11 PARTITION OF price_snapshots
 CREATE TABLE price_snapshots_2025_12 PARTITION OF price_snapshots
     FOR VALUES FROM ('2025-12-01') TO ('2026-01-01');
 
+-- Catch-all so inserts outside the explicit monthly ranges (e.g. current data
+-- when the partitions above have aged out) never fail
+CREATE TABLE price_snapshots_default PARTITION OF price_snapshots DEFAULT;
+
 CREATE INDEX idx_price_snapshots_time ON price_snapshots(time DESC);
 CREATE INDEX idx_price_snapshots_store_time ON price_snapshots(store_id, time DESC);
 CREATE INDEX idx_price_snapshots_product ON price_snapshots(product_name);
@@ -102,7 +108,8 @@ CREATE INDEX idx_deals_valid_dates ON deals(valid_from, valid_until);
 CREATE INDEX idx_deals_category ON deals(category);
 CREATE INDEX idx_deals_product_name ON deals(product_name);
 CREATE INDEX idx_deals_discount ON deals(discount_percentage DESC);
-CREATE INDEX idx_deals_active ON deals(valid_from, valid_until) WHERE valid_until >= CURRENT_DATE;
+-- (removed idx_deals_active: CURRENT_DATE is not IMMUTABLE so it can't be an
+-- index predicate; idx_deals_valid_dates above covers the same queries)
 
 -- ============================================================================
 -- Recipes

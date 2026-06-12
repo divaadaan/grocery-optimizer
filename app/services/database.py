@@ -1,8 +1,14 @@
+from decimal import Decimal
 from typing import List, Dict
 import json
 
 # Import the connection pool from db module
 from app.db import db
+
+
+def _jsonable(row: Dict) -> Dict:
+    """Convert DB row values json.dumps chokes on (Decimal) to plain floats."""
+    return {k: float(v) if isinstance(v, Decimal) else v for k, v in row.items()}
 
 class DatabaseService:
     """Handle all database interactions for recipe generation (uses shared connection pool)."""
@@ -43,7 +49,7 @@ class DatabaseService:
         with self.db.get_cursor() as cursor:
             cursor.execute(query, (postal_code,))
             results = cursor.fetchall()
-            return [dict(row) for row in results]
+            return [_jsonable(dict(row)) for row in results]
 
     def save_recipes(self, user_id: int, recipes: List[Dict]) -> List[int]:
         """

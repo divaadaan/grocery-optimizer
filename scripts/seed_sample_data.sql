@@ -157,7 +157,7 @@ CROSS JOIN (SELECT store_id FROM stores WHERE name = 'No Frills Bathurst' LIMIT 
 -- SAMPLE RECIPES
 -- ============================================================================
 
-INSERT INTO recipes (user_id, name, ingredients, instructions, total_cost, servings, estimated_prep_time, meal_type, cuisine_type, nutrition_facts, health_score, is_approved)
+INSERT INTO recipes (user_id, name, ingredients, instructions, total_cost, servings, prep_time, meal_type, cuisine_type, nutritional_info)
 SELECT
     u.user_id,
     'Grilled Chicken with Broccoli',
@@ -173,12 +173,10 @@ SELECT
     25,
     'dinner',
     'American',
-    '{"calories_per_serving": 420, "protein_g": 52, "carbs_g": 12, "fat_g": 18, "fiber_g": 4, "vitamins": ["Vitamin C", "Vitamin K", "B6"]}'::jsonb,
-    87.5,
-    true
+    '{"calories_per_serving": 420, "protein_g": 52, "carbs_g": 12, "fat_g": 18, "fiber_g": 4, "vitamins": ["Vitamin C", "Vitamin K", "B6"]}'::jsonb
 FROM users u WHERE u.email = 'alice@example.com' LIMIT 1;
 
-INSERT INTO recipes (user_id, name, ingredients, instructions, total_cost, servings, estimated_prep_time, meal_type, cuisine_type, nutrition_facts, health_score, is_approved)
+INSERT INTO recipes (user_id, name, ingredients, instructions, total_cost, servings, prep_time, meal_type, cuisine_type, nutritional_info)
 SELECT
     u.user_id,
     'Vegetarian Pasta Primavera',
@@ -195,12 +193,10 @@ SELECT
     30,
     'dinner',
     'Italian',
-    '{"calories_per_serving": 380, "protein_g": 12, "carbs_g": 68, "fat_g": 7, "fiber_g": 8, "vitamins": ["Vitamin C", "Vitamin A", "Iron"]}'::jsonb,
-    82.0,
-    true
+    '{"calories_per_serving": 380, "protein_g": 12, "carbs_g": 68, "fat_g": 7, "fiber_g": 8, "vitamins": ["Vitamin C", "Vitamin A", "Iron"]}'::jsonb
 FROM users u WHERE u.email = 'alice@example.com' LIMIT 1;
 
-INSERT INTO recipes (user_id, name, ingredients, instructions, total_cost, servings, estimated_prep_time, meal_type, cuisine_type, nutrition_facts, health_score, is_approved)
+INSERT INTO recipes (user_id, name, ingredients, instructions, total_cost, servings, prep_time, meal_type, cuisine_type, nutritional_info)
 SELECT
     u.user_id,
     'Budget-Friendly Pork Chops with Potatoes',
@@ -216,9 +212,7 @@ SELECT
     45,
     'dinner',
     'American',
-    '{"calories_per_serving": 485, "protein_g": 38, "carbs_g": 42, "fat_g": 16, "fiber_g": 5, "vitamins": ["Vitamin A", "B12", "Iron"]}'::jsonb,
-    78.5,
-    true
+    '{"calories_per_serving": 485, "protein_g": 38, "carbs_g": 42, "fat_g": 16, "fiber_g": 5, "vitamins": ["Vitamin A", "B12", "Iron"]}'::jsonb
 FROM users u WHERE u.email = 'charlie@example.com' LIMIT 1;
 
 -- ============================================================================
@@ -253,7 +247,7 @@ WHERE u.email = 'alice@example.com';
 -- SAMPLE API USAGE TRACKING
 -- ============================================================================
 
-INSERT INTO api_usage (user_id, model_name, tokens_used, estimated_cost, endpoint, request_type, response_time_ms, success)
+INSERT INTO api_usage (user_id, model_name, tokens_used, estimated_cost, endpoint, execution_time_ms)
 SELECT
     u.user_id,
     CASE (random() * 3)::int
@@ -264,9 +258,7 @@ SELECT
     (random() * 500 + 100)::int,
     (random() * 0.01 + 0.001)::decimal(10,4),
     '/api/v1/recipes/generate',
-    'POST',
-    (random() * 2000 + 500)::int,
-    random() > 0.1  -- 90% success rate
+    (random() * 2000 + 500)::int
 FROM generate_series(1, 50)
 CROSS JOIN users u
 WHERE random() > 0.5
@@ -303,11 +295,13 @@ END $$;
 
 -- Display sample active deals
 SELECT
-    product_name,
-    sale_price,
-    regular_price,
-    discount_percentage,
-    chain
-FROM active_deals_with_stores
-ORDER BY discount_percentage DESC
+    d.product_name,
+    d.sale_price,
+    d.regular_price,
+    d.discount_percentage,
+    s.chain
+FROM deals d
+JOIN stores s ON d.store_id = s.store_id
+WHERE d.valid_until >= CURRENT_DATE
+ORDER BY d.discount_percentage DESC
 LIMIT 10;
