@@ -1,0 +1,20 @@
+# Training stack for SFT (separate venv from the app — do NOT merge into the
+# root requirements.txt; this stack is heavy and conflicts with the serving image).
+# Use Python 3.10-3.12 (3.14 lacks wheels for torch/bitsandbytes as of mid-2026).
+torch>=2.4
+transformers>=4.56,<5
+trl>=0.21,<0.26
+peft>=0.14
+datasets>=3.0
+accelerate>=1.0
+bitsandbytes>=0.45; platform_system == "Linux"
+
+# Data prep
+pandas>=2.0
+pyyaml>=6.0.2
+
+# Evaluation
+sacrebleu>=2.4
+rouge-score>=0.1.2
+requests>=2.31
+tqdm>=4.66

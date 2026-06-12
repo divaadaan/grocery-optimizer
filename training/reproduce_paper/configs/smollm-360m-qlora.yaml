@@ -1,0 +1,22 @@
+# Paper's large-scale setup: QLoRA rank 8 on SmolLM-360M, full 231k-recipe corpus.
+model_name: HuggingFaceTB/SmolLM-360M
+output_dir: training/runs/smollm-360m-qlora
+data_dir: training/data/foodcom
+
+learning_rate: 2e-4
+num_train_epochs: 1
+per_device_train_batch_size: 8   # 8 x 4 accum = effective batch 32
+gradient_accumulation_steps: 4
+warmup_steps: 100
+weight_decay: 0.01
+optim: paged_adamw_8bit
+precision: fp16
+max_length: 512
+eval_steps: 500
+report_to: none
+
+qlora:
+  enabled: true
+  r: 8                     # paper: rank 8
+  alpha: 16                # paper doesn't state alpha; 2*r is the common default
+  dropout: 0.05

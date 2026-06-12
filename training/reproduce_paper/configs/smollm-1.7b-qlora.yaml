@@ -1,0 +1,23 @@
+# Paper's large-scale setup: QLoRA rank 8 on SmolLM-1.7B, full 231k-recipe corpus.
+model_name: HuggingFaceTB/SmolLM-1.7B
+output_dir: training/runs/smollm-1.7b-qlora
+data_dir: training/data/foodcom
+
+learning_rate: 2e-4
+num_train_epochs: 1
+per_device_train_batch_size: 4   # smaller per-device batch to fit 8GB VRAM; 4 x 8 = effective 32
+gradient_accumulation_steps: 8
+warmup_steps: 100
+weight_decay: 0.01
+optim: paged_adamw_8bit
+precision: fp16
+max_length: 512
+eval_steps: 500
+report_to: none
+gradient_checkpointing: true     # needed on 8GB VRAM for the 1.7B model
+
+qlora:
+  enabled: true
+  r: 8
+  alpha: 16
+  dropout: 0.05

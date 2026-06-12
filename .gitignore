@@ -134,6 +134,10 @@ mlflow.db
 mlruns/
 mlartifacts/
 
+# Training artifacts (datasets and model checkpoints)
+training/data/
+training/runs/
+
 # Project Specific
 *.db
 *.sqlite
