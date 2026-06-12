@@ -1,0 +1,104 @@
+NUTRITIONIST REGRESSION CASES — known inputs that MUST be rejected
+====================================================================
+Purpose: seed corpus for a future regression suite. Each case is a recipe (or
+chef ingredient group) that violates the user's dietary restrictions. The
+Nutritionist agent SHOULD reject every REJECT case below; if a model/prompt
+change makes it approve one, that is a regression. APPROVE cases are controls.
+
+Captured: 2026-06-12, from live end-to-end runs against host Ollama.
+Models: chef=qwen2.5:7b, sous_chef=phi4-mini, nutritionist=phi4-mini
+User profile (seed user_id=1 / alice): postal M5V3A8, budget $75.00,
+household_size 2, num_meals 7,
+dietary_restrictions = ["vegetarian", "no_nuts"]
+
+TODO when building the real suite:
+- Convert to JSON/YAML fixtures; feed each recipe to Nutritionist.validate_recipes
+  and assert approved == expected.
+- Cases 2-6 were observed in the workflow run (run_id 49106afed82243d695ae0a5c947c7865,
+  MLflow experiment grocery-meal-planner) — only names + verdicts were logged,
+  full ingredient JSON not captured. Regenerate equivalents or treat as
+  name-only documentation. Case 1 and Control 1 have full recipe JSON.
+- Also add upstream CHEF cases (section at bottom): the planner produced these
+  violations in the first place; a chef-level regression should assert no
+  meat/fish in any group for a vegetarian user.
+
+--------------------------------------------------------------------
+CASE 1 — full recipe JSON — expected: REJECT (chicken for vegetarian)
+Source: scripts/debug_agent_io.py probe, sous_chef=phi4-mini
+{
+  "name": "Penne with Broccoli and Chicken Bake",
+  "meal_type": "lunch",
+  "cuisine_type": "Italian-American",
+  "ingredients": [
+    {"name": "Chicken Breast Boneless", "quantity": "1 lb", "unit": "", "price": 5.99},
+    {"name": "Broccoli Crowns", "quantity": "2 cups (chopped)", "unit": "cups", "price": 3.49},
+    {"name": "Pasta Penne", "quantity": "16 oz", "unit": "oz", "price": 1.99},
+    {"name": "Tomato Sauce", "quantity": "14 oz", "unit": "oz", "price": 2.29}
+  ],
+  "instructions": [
+    "Preheat oven to 375°F (190°C).",
+    "Cook pasta penne according to package instructions until al dente, drain and set aside.",
+    "Season chicken breast with salt, pepper, and olive oil; place in a baking dish along with the broccoli crowns. Bake for about 25 minutes or until cooked through.",
+    "In a large skillet over medium heat, sauté diced tomatoes from tomato sauce for approximately five to six minutes. Remove from heat after cooking for several more minutes."
+  ],
+  "estimated_prep_time": 45,
+  "total_cost": 12.75,
+  "servings": 2
+}
+
+CONTROL 1 — full recipe JSON — expected: APPROVE (compliant: vegetarian, no nuts)
+Source: same probe run
+{
+  "name": "Tomato Basil Pasta",
+  "meal_type": "lunch",
+  "cuisine_type": "Italian-American",
+  "ingredients": [
+    {"name": "Pasta Penne", "quantity": "16 oz", "unit": "oz", "price": 1.99},
+    {"name": "Tomato Sauce", "quantity": "14 oz", "unit": "oz", "price": 2.29}
+  ],
+  "instructions": [
+    "Cook pasta penne according to package instructions until al dente, drain and set aside.",
+    "In a large skillet over medium heat, sauté diced tomatoes from tomato sauce for approximately five to six minutes. Remove from heat after cooking for several more minutes."
+  ],
+  "estimated_prep_time": 20,
+  "total_cost": 4.28,
+  "servings": 2
+}
+
+--------------------------------------------------------------------
+CASES 2-6 — observed in workflow run (names + verdicts only) — all REJECT
+Nutritionist correctly rejected all five on 2026-06-12; keep it that way.
+
+CASE 2: "Penne alla Pugliese Chicken" (sous_chef_1)
+  Violation: contains chicken breast; user is vegetarian.
+  Observed feedback: "The provided ingredients and instructions do not meet
+  vegetarian dietary restrictions as chicken breast is included."
+
+CASE 3: "Broccoli Chicken Penne" (sous_chef_1)
+  Violation: contains chicken; user is vegetarian.
+  Note: feedback cited "vegan" restrictions — model conflated vegetarian/vegan.
+  Right verdict, sloppy reasoning; a future assertion should check the verdict,
+  not the wording.
+
+CASE 4: "Chicken & Broccoli Penne" (sous_chef_1)
+  Violation: named for chicken; rejected for name/ingredient incoherence.
+  Note: feedback was confused (ingredients list reportedly had no chicken).
+  Tracks a second failure mode: recipe name vs ingredients mismatch.
+
+CASE 5: "Stuffed Red Bell Peppers" (sous_chef_2)
+  Violation: contains ground beef; user is vegetarian.
+  Note: feedback again said "vegan" instead of vegetarian.
+
+CASE 6: "Basmati Rice Beef Fried Chicken" (sous_chef_2)
+  Violation: contains ground beef (and chicken per name); user is vegetarian.
+
+--------------------------------------------------------------------
+UPSTREAM CHEF CASES — planner-level violations (for a future chef regression)
+The Nutritionist only saw meat recipes because the Chef (qwen2.5:7b) put meat
+in every ingredient group for a vegetarian user. Observed grouping (probe run):
+  Group 1: Chicken Breast Boneless, Broccoli Crowns, Pasta Penne, Tomato Sauce
+  Group 2: Ground Beef Lean, Milk 2%, Sweet Potatoes
+  Group 3: Salmon Fillet Atlantic, Rice Basmati, Bell Peppers Red
+Expected: zero meat/poultry/fish products in any group when
+dietary_restrictions includes "vegetarian". Available compliant deals existed
+(27 active deals for M5V3A8 include produce, dairy, pantry, tofu).

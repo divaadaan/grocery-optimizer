@@ -109,6 +109,10 @@ curl http://localhost:8000/health
      chicken/beef/salmon in every group for a vegetarian user → Nutritionist
      correctly rejected all 5 recipes → workflow failed honestly).
    - Retry regeneration output is still brittle (shape variance at temp 0.8).
+   - Regression seed corpus: `app/tests/nutritionist_regression_cases.txt`
+     holds the observed violations (vegetarian user given chicken/beef recipes)
+     with expected verdicts — turn these into a proper Nutritionist regression
+     suite (and a chef-grouping check) when building the test harness.
    - Pydantic-validate agent JSON output; retry on parse failure; compute recipe
      cost in Python from `deal_index` instead of trusting model arithmetic.
    - Context from the motivating paper (https://arxiv.org/html/2502.02028v1,
