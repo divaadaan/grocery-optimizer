@@ -1,10 +1,10 @@
 from langchain_ollama import ChatOllama
-from langchain_core.messages import HumanMessage
 import json
 import time
 from typing import Dict, Any
 from .state import RecipeGenerationState
 from .prompts import PromptTemplates
+from .llm_output import ChefPlan, invoke_validated
 from ..config import settings
 from ..services.database import DatabaseService
 from ..services.mlflow_logger import MLflowLogger
@@ -72,24 +72,22 @@ class ChefOrchestrator:
             preferences=json.dumps(state.get("preferences", {}))
         )
 
-        # Call LLM
+        # Call LLM — schema enforces exactly 3 non-empty groups, with retries
+        # on invalid output (see llm_output.invoke_validated)
         try:
-            response = self.llm.invoke([HumanMessage(content=prompt)])
-            result = json.loads(response.content)
+            plan, raw = invoke_validated(self.llm, prompt, ChefPlan)
 
-            # Extract groups
-            ingredient_groups = result["ingredient_groups"]
-            ingredient_reuse_map = result["ingredient_reuse_map"]
-
-            # Validate we have 3 groups
-            if len(ingredient_groups) != 3:
-                raise ValueError(f"Expected 3 groups, got {len(ingredient_groups)}")
+            ingredient_groups = [
+                [selection.model_dump() for selection in group]
+                for group in plan.ingredient_groups
+            ]
+            ingredient_reuse_map = plan.ingredient_reuse_map
 
             # Log to MLflow
             duration = time.time() - start_time
             MLflowLogger.log_agent_call(
                 agent_name="Chef_Orchestrator",
-                tokens=len(response.content),  # Approximate
+                tokens=len(raw),  # Approximate
                 duration=duration,
                 model=settings.ollama_chef_model,
                 success=True

@@ -3,6 +3,7 @@ from langgraph.types import Send
 from typing import Literal, List, Union
 from .state import RecipeGenerationState
 from .chef_orchestrator import ChefOrchestrator
+from .costing import price_recipe
 from .sous_chef import SousChef, sous_chef_generate_node
 from .nutritionist import Nutritionist
 from ..services.database import DatabaseService
@@ -39,6 +40,7 @@ def fan_out_to_sous_chefs(
         Send("sous_chef_generate", {
             "household_size": state["household_size"],
             "dietary_restrictions": state["dietary_restrictions"],
+            "deal_index": state["deal_index"],
             "chef_id": f"sous_chef_{i+1}",
             "ingredient_group": state["ingredient_groups"][i],
             "target_recipe_count": recipes_per_chef[i],
@@ -53,9 +55,14 @@ def aggregate_recipes(state: RecipeGenerationState) -> dict:
     """
     print(f"[Orchestrator] Aggregating {len(state['generated_recipes'])} recipes...")
 
-    # Calculate total cost
+    # Per-recipe total_cost was computed from the deal index at creation
+    # (costing.price_recipe) — model arithmetic is not trusted anywhere
     total_cost = sum(
         recipe["total_cost"]
+        for recipe in state["generated_recipes"].values()
+    )
+    estimated_savings = sum(
+        price_recipe(recipe["ingredients"], state["deal_index"]).estimated_savings
         for recipe in state["generated_recipes"].values()
     )
     num_recipes = len(state["generated_recipes"])
@@ -67,8 +74,7 @@ def aggregate_recipes(state: RecipeGenerationState) -> dict:
         "total_cost": total_cost,
         "cost_per_meal": total_cost / num_recipes if num_recipes else 0,
         "budget_remaining": budget_remaining,
-        # Estimated savings would use deal_index to compare sale vs regular prices
-        "estimated_savings": 0.0,  # Placeholder
+        "estimated_savings": estimated_savings,
     }
 
 
@@ -135,7 +141,8 @@ def retry_generation(state: RecipeGenerationState) -> dict:
             feedback=feedback,
             ingredient_group=ingredient_group,
             household_size=state["household_size"],
-            dietary_restrictions=state["dietary_restrictions"]
+            dietary_restrictions=state["dietary_restrictions"],
+            deal_index=state["deal_index"],
         )
 
         if new_recipe:
@@ -171,19 +178,33 @@ def finalize_meal_plan(state: RecipeGenerationState) -> dict:
 
     print(f"[Orchestrator] Saved {len(recipe_ids)} recipes to database")
 
+    # Final metrics cover the *approved* meal plan only — aggregate's interim
+    # numbers include recipes that were later rejected or regenerated
+    total_cost = sum(r["total_cost"] for r in approved_recipes)
+    estimated_savings = sum(
+        price_recipe(r["ingredients"], state["deal_index"]).estimated_savings
+        for r in approved_recipes
+    )
+    num_approved = len(approved_recipes)
+
     # Log final metrics to MLflow
     MLflowLogger.log_final_metrics(
-        total_cost=state["total_cost"],
-        cost_per_meal=state["cost_per_meal"],
-        estimated_savings=state["estimated_savings"],
+        total_cost=total_cost,
+        cost_per_meal=total_cost / num_approved if num_approved else 0,
+        estimated_savings=estimated_savings,
         iterations=state["iteration_count"],
-        recipe_count=len(state["approved_recipe_ids"]),
+        recipe_count=num_approved,
         success=True
     )
 
-    update = {"status": "completed"}
+    update = {
+        "status": "completed",
+        "total_cost": total_cost,
+        "cost_per_meal": total_cost / num_approved if num_approved else 0,
+        "estimated_savings": estimated_savings,
+        "budget_remaining": state["budget"] - total_cost,
+    }
 
-    num_approved = len(state["approved_recipe_ids"])
     if num_approved < state["num_meals"]:
         update["warnings"] = [f"Only {num_approved}/{state['num_meals']} recipes approved"]
 

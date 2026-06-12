@@ -1,10 +1,10 @@
 from langchain_ollama import ChatOllama
-from langchain_core.messages import HumanMessage
 import json
 import time
 from typing import Dict
 from .state import RecipeGenerationState, ValidationResult
 from .prompts import PromptTemplates
+from .llm_output import NutritionistVerdict, invoke_validated
 from ..config import settings
 from ..services.mlflow_logger import MLflowLogger
 
@@ -45,18 +45,17 @@ class Nutritionist:
             )
 
             try:
-                response = self.llm.invoke([HumanMessage(content=prompt)])
-                validation_data = json.loads(response.content)
+                # Schema requires `approved`; other fields default. Invalid
+                # output is retried with the error fed back to the model.
+                verdict, _raw = invoke_validated(self.llm, prompt, NutritionistVerdict)
 
-                # Create ValidationResult — default missing fields rather than
-                # crashing on model output variance (approved defaults to False)
                 result = ValidationResult(
                     recipe_id=recipe_id,
-                    approved=bool(validation_data.get("approved", False)),
-                    feedback=validation_data.get("feedback", ""),
-                    nutrition_facts=validation_data.get("nutrition_facts", {}),
-                    dietary_compliance=validation_data.get("dietary_compliance", {}),
-                    health_score=validation_data.get("health_score", 0.0)
+                    approved=verdict.approved,
+                    feedback=verdict.feedback,
+                    nutrition_facts=verdict.nutrition_facts,
+                    dietary_compliance=verdict.dietary_compliance,
+                    health_score=verdict.health_score
                 )
 
                 validation_results[recipe_id] = result

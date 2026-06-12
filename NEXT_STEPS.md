@@ -100,6 +100,28 @@ curl http://localhost:8000/health
    seed_sample_data.sql targeted a different schema generation (now aligned);
    the Neon DB was an empty stale-schema shell — rebuilt + reseeded.
 3. **Harden LLM output + model experimentation** — now the main blocker.
+
+   **Hardening DONE 2026-06-12** (second session):
+   - `app/agents/llm_output.py`: Pydantic schemas for all three agents' JSON
+     output (ChefPlan enforces exactly 3 non-empty groups; RecipeBatch coerces
+     the observed shape variants; NutritionistVerdict requires `approved`) +
+     `invoke_validated()` which feeds parse/validation errors back to the model
+     and retries (3 attempts).
+   - `app/agents/costing.py`: recipe `total_cost` and `estimated_savings` now
+     computed in Python by token-matching ingredients to `deal_index`
+     (sale/regular prices); model arithmetic no longer trusted. Final metrics
+     recomputed over approved recipes in `finalize_meal_plan`.
+   - Test harness: `pytest.ini` markers (`llm`, `db`); 26 deterministic unit
+     tests (`test_llm_output.py`, `test_costing.py`) all passing; regression
+     corpus converted to `app/tests/fixtures/nutritionist_cases.json` +
+     `test_nutritionist_regression.py` (run with `pytest -m llm`; needs
+     `OLLAMA_BASE_URL` pointing at the host Ollama and the qwen/phi models —
+     .env still defaults to smollm/localhost). The chef-grouping test is
+     `xfail`: it's the SFT acceptance bar.
+
+   **Remaining in item 3:** model experimentation (.env swaps:
+   `qwen2.5:3b`/`llama3.2:3b` chef, `qwen2.5:1.5b` sous) and the SFT plan below.
+
    Findings from the 2026-06-12 verification runs (see `scripts/debug_agent_io.py`
    for a quick probe harness):
    - smollm (1.7b chef / 360m sous) can't produce the required structured JSON

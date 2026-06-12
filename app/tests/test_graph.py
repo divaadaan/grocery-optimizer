@@ -2,6 +2,9 @@ import pytest
 from app.agents.graph import create_recipe_generation_graph
 from app.agents.state import RecipeGenerationState
 
+# Full end-to-end run: needs live Ollama models and the real database
+pytestmark = [pytest.mark.llm, pytest.mark.db]
+
 def test_basic_workflow():
     """Test basic recipe generation workflow."""
 

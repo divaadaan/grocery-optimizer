@@ -1,5 +1,9 @@
 NUTRITIONIST REGRESSION CASES — known inputs that MUST be rejected
 ====================================================================
+[CONVERTED 2026-06-12: fixtures/nutritionist_cases.json +
+test_nutritionist_regression.py (run with `pytest -m llm`). This file is
+kept as provenance; edit the JSON fixtures, not this.]
+
 Purpose: seed corpus for a future regression suite. Each case is a recipe (or
 chef ingredient group) that violates the user's dietary restrictions. The
 Nutritionist agent SHOULD reject every REJECT case below; if a model/prompt

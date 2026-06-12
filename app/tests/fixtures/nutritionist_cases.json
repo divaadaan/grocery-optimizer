@@ -1,0 +1,131 @@
+{
+  "_source": "Converted from app/tests/nutritionist_regression_cases.txt (captured 2026-06-12 from live runs; chef=qwen2.5:7b, sous_chef=phi4-mini, nutritionist=phi4-mini)",
+  "user_profile": {
+    "user_id": 1,
+    "postal_code": "M5V3A8",
+    "budget": 75.0,
+    "household_size": 2,
+    "num_meals": 7,
+    "dietary_restrictions": ["vegetarian", "no_nuts"]
+  },
+  "nutritionist_cases": [
+    {
+      "id": "case1_chicken_for_vegetarian",
+      "expected_approved": false,
+      "violation": "contains chicken; user is vegetarian",
+      "recipe": {
+        "name": "Penne with Broccoli and Chicken Bake",
+        "meal_type": "lunch",
+        "cuisine_type": "Italian-American",
+        "ingredients": [
+          {"name": "Chicken Breast Boneless", "quantity": "1 lb", "unit": "", "price": 5.99},
+          {"name": "Broccoli Crowns", "quantity": "2 cups (chopped)", "unit": "cups", "price": 3.49},
+          {"name": "Pasta Penne", "quantity": "16 oz", "unit": "oz", "price": 1.99},
+          {"name": "Tomato Sauce", "quantity": "14 oz", "unit": "oz", "price": 2.29}
+        ],
+        "instructions": [
+          "Preheat oven to 375°F (190°C).",
+          "Cook pasta penne according to package instructions until al dente, drain and set aside.",
+          "Season chicken breast with salt, pepper, and olive oil; place in a baking dish along with the broccoli crowns. Bake for about 25 minutes or until cooked through.",
+          "In a large skillet over medium heat, sauté diced tomatoes from tomato sauce for approximately five to six minutes. Remove from heat after cooking for several more minutes."
+        ],
+        "estimated_prep_time": 45,
+        "total_cost": 12.75,
+        "servings": 2
+      }
+    },
+    {
+      "id": "control1_compliant_pasta",
+      "expected_approved": true,
+      "violation": null,
+      "note": "phi4-mini intermittently FALSE-REJECTS this (observed 2026-06-12: 'ingredients incomplete', 'instructions unclear') — over-strictness failure mode; approved in the original probe run. SFT eval should track false-rejection rate, not just violation catches.",
+      "recipe": {
+        "name": "Tomato Basil Pasta",
+        "meal_type": "lunch",
+        "cuisine_type": "Italian-American",
+        "ingredients": [
+          {"name": "Pasta Penne", "quantity": "16 oz", "unit": "oz", "price": 1.99},
+          {"name": "Tomato Sauce", "quantity": "14 oz", "unit": "oz", "price": 2.29}
+        ],
+        "instructions": [
+          "Cook pasta penne according to package instructions until al dente, drain and set aside.",
+          "In a large skillet over medium heat, sauté diced tomatoes from tomato sauce for approximately five to six minutes. Remove from heat after cooking for several more minutes."
+        ],
+        "estimated_prep_time": 20,
+        "total_cost": 4.28,
+        "servings": 2
+      }
+    },
+    {
+      "id": "case2_penne_alla_pugliese_chicken",
+      "expected_approved": false,
+      "violation": "contains chicken breast; user is vegetarian",
+      "recipe": null,
+      "note": "name-only from workflow run 49106afed82243d695ae0a5c947c7865; full JSON not captured — regenerate an equivalent to activate"
+    },
+    {
+      "id": "case3_broccoli_chicken_penne",
+      "expected_approved": false,
+      "violation": "contains chicken; user is vegetarian (model feedback conflated vegetarian/vegan — assert verdict, not wording)",
+      "recipe": null,
+      "note": "name-only; see case2 note"
+    },
+    {
+      "id": "case4_chicken_broccoli_penne_name_mismatch",
+      "expected_approved": false,
+      "violation": "recipe named for chicken; name/ingredient incoherence failure mode",
+      "recipe": null,
+      "note": "name-only; see case2 note"
+    },
+    {
+      "id": "case5_stuffed_peppers_ground_beef",
+      "expected_approved": false,
+      "violation": "contains ground beef; user is vegetarian",
+      "recipe": null,
+      "note": "name-only; see case2 note"
+    },
+    {
+      "id": "case6_rice_beef_fried_chicken",
+      "expected_approved": false,
+      "violation": "contains ground beef (and chicken per name); user is vegetarian",
+      "recipe": null,
+      "note": "name-only; see case2 note"
+    }
+  ],
+  "chef_grouping": {
+    "_comment": "Static copy of the M5V3A8 seed deals (scripts/seed_sample_data.sql, Toronto stores) in fetch_current_deals row shape. The chef must put zero meat/poultry/fish in any group for a vegetarian user; compliant options (tofu, dairy, produce, pantry) exist.",
+    "forbidden_terms_vegetarian": [
+      "chicken", "beef", "pork", "turkey", "lamb", "veal", "steak", "bacon",
+      "ham", "sausage", "salmon", "tuna", "fish", "shrimp", "anchovy"
+    ],
+    "deals": [
+      {"deal_id": 1, "product_name": "Chicken Breast Boneless", "sale_price": 8.99, "regular_price": 12.99, "discount_percentage": 30.8, "store_name": "Loblaws King West", "store_id": 1, "chain": "Loblaws"},
+      {"deal_id": 2, "product_name": "Broccoli Crowns", "sale_price": 2.49, "regular_price": 3.99, "discount_percentage": 37.6, "store_name": "Loblaws King West", "store_id": 1, "chain": "Loblaws"},
+      {"deal_id": 3, "product_name": "Pasta Penne", "sale_price": 1.49, "regular_price": 2.99, "discount_percentage": 50.2, "store_name": "Loblaws King West", "store_id": 1, "chain": "Loblaws"},
+      {"deal_id": 4, "product_name": "Tomato Sauce", "sale_price": 1.99, "regular_price": 3.49, "discount_percentage": 43.0, "store_name": "Loblaws King West", "store_id": 1, "chain": "Loblaws"},
+      {"deal_id": 5, "product_name": "Ground Beef Lean", "sale_price": 5.99, "regular_price": 8.99, "discount_percentage": 33.4, "store_name": "Loblaws King West", "store_id": 1, "chain": "Loblaws"},
+      {"deal_id": 6, "product_name": "Eggs Large", "sale_price": 4.99, "regular_price": 6.99, "discount_percentage": 28.6, "store_name": "Loblaws King West", "store_id": 1, "chain": "Loblaws"},
+      {"deal_id": 7, "product_name": "Milk 2%", "sale_price": 4.49, "regular_price": 5.99, "discount_percentage": 25.0, "store_name": "Loblaws King West", "store_id": 1, "chain": "Loblaws"},
+      {"deal_id": 8, "product_name": "Baby Spinach", "sale_price": 3.49, "regular_price": 4.99, "discount_percentage": 30.1, "store_name": "Loblaws King West", "store_id": 1, "chain": "Loblaws"},
+      {"deal_id": 9, "product_name": "Salmon Fillet Atlantic", "sale_price": 9.99, "regular_price": 14.99, "discount_percentage": 33.4, "store_name": "Metro Front Street", "store_id": 2, "chain": "Metro"},
+      {"deal_id": 10, "product_name": "Sweet Potatoes", "sale_price": 1.99, "regular_price": 2.99, "discount_percentage": 33.4, "store_name": "Metro Front Street", "store_id": 2, "chain": "Metro"},
+      {"deal_id": 11, "product_name": "Rice Basmati", "sale_price": 4.99, "regular_price": 7.99, "discount_percentage": 37.5, "store_name": "Metro Front Street", "store_id": 2, "chain": "Metro"},
+      {"deal_id": 12, "product_name": "Bell Peppers Red", "sale_price": 1.49, "regular_price": 2.49, "discount_percentage": 40.2, "store_name": "Metro Front Street", "store_id": 2, "chain": "Metro"},
+      {"deal_id": 13, "product_name": "Greek Yogurt", "sale_price": 3.99, "regular_price": 5.99, "discount_percentage": 33.4, "store_name": "Metro Front Street", "store_id": 2, "chain": "Metro"},
+      {"deal_id": 14, "product_name": "Cheese Cheddar", "sale_price": 5.49, "regular_price": 7.99, "discount_percentage": 31.3, "store_name": "Metro Front Street", "store_id": 2, "chain": "Metro"},
+      {"deal_id": 15, "product_name": "Bananas", "sale_price": 0.69, "regular_price": 0.99, "discount_percentage": 30.3, "store_name": "No Frills Bathurst", "store_id": 3, "chain": "No Frills"},
+      {"deal_id": 16, "product_name": "Carrots", "sale_price": 1.49, "regular_price": 2.49, "discount_percentage": 40.2, "store_name": "No Frills Bathurst", "store_id": 3, "chain": "No Frills"},
+      {"deal_id": 17, "product_name": "Potatoes Russet", "sale_price": 2.99, "regular_price": 4.99, "discount_percentage": 40.1, "store_name": "No Frills Bathurst", "store_id": 3, "chain": "No Frills"},
+      {"deal_id": 18, "product_name": "Onions Yellow", "sale_price": 1.99, "regular_price": 2.99, "discount_percentage": 33.4, "store_name": "No Frills Bathurst", "store_id": 3, "chain": "No Frills"},
+      {"deal_id": 19, "product_name": "Bread Whole Wheat", "sale_price": 1.99, "regular_price": 3.49, "discount_percentage": 43.0, "store_name": "No Frills Bathurst", "store_id": 3, "chain": "No Frills"},
+      {"deal_id": 20, "product_name": "Pork Chops", "sale_price": 3.99, "regular_price": 6.99, "discount_percentage": 42.9, "store_name": "No Frills Bathurst", "store_id": 3, "chain": "No Frills"},
+      {"deal_id": 21, "product_name": "Canned Tomatoes", "sale_price": 0.99, "regular_price": 1.99, "discount_percentage": 50.3, "store_name": "No Frills Bathurst", "store_id": 3, "chain": "No Frills"},
+      {"deal_id": 22, "product_name": "Spaghetti", "sale_price": 0.99, "regular_price": 1.99, "discount_percentage": 50.3, "store_name": "No Frills Bathurst", "store_id": 3, "chain": "No Frills"},
+      {"deal_id": 23, "product_name": "Chicken Thighs Boneless", "sale_price": 6.99, "regular_price": 9.99, "discount_percentage": 30.0, "store_name": "Sobeys Wellesley", "store_id": 4, "chain": "Sobeys"},
+      {"deal_id": 24, "product_name": "Avocados", "sale_price": 1.49, "regular_price": 2.49, "discount_percentage": 40.2, "store_name": "Sobeys Wellesley", "store_id": 4, "chain": "Sobeys"},
+      {"deal_id": 25, "product_name": "Quinoa", "sale_price": 4.49, "regular_price": 6.99, "discount_percentage": 35.8, "store_name": "Sobeys Wellesley", "store_id": 4, "chain": "Sobeys"},
+      {"deal_id": 26, "product_name": "Olive Oil Extra Virgin", "sale_price": 7.99, "regular_price": 11.99, "discount_percentage": 33.4, "store_name": "Sobeys Wellesley", "store_id": 4, "chain": "Sobeys"},
+      {"deal_id": 27, "product_name": "Tofu Firm", "sale_price": 2.49, "regular_price": 3.99, "discount_percentage": 37.6, "store_name": "Sobeys Wellesley", "store_id": 4, "chain": "Sobeys"}
+    ]
+  }
+}

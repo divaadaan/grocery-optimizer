@@ -1,50 +1,34 @@
 from langchain_ollama import ChatOllama
-from langchain_core.messages import HumanMessage
 import json
 import time
 import uuid
 from typing import Dict, List
-from .state import Recipe, RecipeGenerationState
+from .state import Recipe
 from .prompts import PromptTemplates
+from .llm_output import GeneratedRecipe, LLMOutputError, RecipeBatch, invoke_validated
+from .costing import price_recipe
 from ..config import settings
 from ..services.mlflow_logger import MLflowLogger
 
-def _coerce_recipe_list(data) -> List[Dict]:
-    """
-    Models don't reliably return a bare JSON array: tolerate a single recipe
-    object or a wrapper like {"recipes": [...]}. (Full schema validation with
-    retries is the roadmap's "harden LLM output" task.)
-    """
-    if isinstance(data, list):
-        return [r for r in data if isinstance(r, dict)]
-    if isinstance(data, dict):
-        for value in data.values():
-            if isinstance(value, list):
-                return [r for r in value if isinstance(r, dict)]
-        if "name" in data:
-            return [data]
-        # {"recipe_1": {...}, "recipe_2": {...}}
-        recipe_like = [v for v in data.values() if isinstance(v, dict) and "name" in v]
-        if recipe_like:
-            return recipe_like
-    return []
 
+def _to_recipe(chef_id: str, model: GeneratedRecipe, deal_index: Dict[str, Dict]) -> Recipe:
+    """Build a Recipe from validated model output. total_cost is computed in
+    Python from the deal index — model arithmetic is not trusted."""
+    ingredients = [i.model_dump() for i in model.ingredients]
+    pricing = price_recipe(ingredients, deal_index)
+    if pricing.unmatched:
+        print(f"[{chef_id}] No deal match for {pricing.unmatched} — using model prices for those")
 
-def _to_recipe(recipe_data: Dict) -> Recipe:
-    """
-    Build a Recipe from model output, defaulting optional fields.
-    Raises KeyError if a required field is missing — callers skip that recipe.
-    """
     return Recipe(
         recipe_id=str(uuid.uuid4()),
-        name=recipe_data["name"],
-        ingredients=recipe_data["ingredients"],
-        instructions=recipe_data["instructions"],
-        servings=recipe_data.get("servings", 2),
-        total_cost=recipe_data.get("total_cost", 0.0),
-        estimated_prep_time=recipe_data.get("estimated_prep_time", 30),
-        meal_type=recipe_data.get("meal_type", "dinner"),
-        cuisine_type=recipe_data.get("cuisine_type")
+        name=model.name,
+        ingredients=ingredients,
+        instructions=model.instructions,
+        servings=model.servings,
+        total_cost=pricing.total_cost,
+        estimated_prep_time=model.estimated_prep_time,
+        meal_type=model.meal_type,
+        cuisine_type=model.cuisine_type,
     )
 
 
@@ -65,7 +49,8 @@ class SousChef:
         ingredient_group: List[Dict],
         target_recipe_count: int,
         household_size: int,
-        dietary_restrictions: List[str]
+        dietary_restrictions: List[str],
+        deal_index: Dict[str, Dict],
     ) -> List[Recipe]:
         """
         Generate recipes from assigned ingredients.
@@ -85,24 +70,15 @@ class SousChef:
         )
 
         try:
-            response = self.llm.invoke([HumanMessage(content=prompt)])
-            recipes_data = _coerce_recipe_list(json.loads(response.content))
-
-            # Convert to Recipe objects with IDs; skip malformed entries
-            # rather than discarding the whole batch
-            recipes = []
-            for recipe_data in recipes_data:
-                try:
-                    recipes.append(_to_recipe(recipe_data))
-                except KeyError as e:
-                    print(f"[{chef_id}] Skipping malformed recipe (missing {e})")
+            batch, raw = invoke_validated(self.llm, prompt, RecipeBatch)
+            recipes = [_to_recipe(chef_id, r, deal_index) for r in batch.recipes]
 
             duration = time.time() - start_time
 
             # Log to MLflow
             MLflowLogger.log_agent_call(
                 agent_name=chef_id,
-                tokens=len(response.content),
+                tokens=len(raw),
                 duration=duration,
                 model=settings.ollama_sous_chef_model,
                 success=True
@@ -123,7 +99,8 @@ class SousChef:
         feedback: str,
         ingredient_group: List[Dict],
         household_size: int,
-        dietary_restrictions: List[str]
+        dietary_restrictions: List[str],
+        deal_index: Dict[str, Dict],
     ) -> Recipe:
         """
         Regenerate a rejected recipe with Nutritionist feedback.
@@ -138,13 +115,10 @@ class SousChef:
         )
 
         try:
-            response = self.llm.invoke([HumanMessage(content=prompt)])
-            candidates = _coerce_recipe_list(json.loads(response.content))
-            if not candidates:
-                raise ValueError("no recipe object in model output")
+            batch, _raw = invoke_validated(self.llm, prompt, RecipeBatch)
 
             # Create new recipe with new ID
-            recipe = _to_recipe(candidates[0])
+            recipe = _to_recipe(chef_id, batch.recipes[0], deal_index)
 
             print(f"[{chef_id}] Regenerated: {recipe['name']}")
             return recipe
@@ -175,7 +149,8 @@ def sous_chef_generate_node(task: dict) -> dict:
         ingredient_group=ingredient_group,
         target_recipe_count=target_recipe_count,
         household_size=task["household_size"],
-        dietary_restrictions=task["dietary_restrictions"]
+        dietary_restrictions=task["dietary_restrictions"],
+        deal_index=task.get("deal_index", {}),
     )
 
     return {
