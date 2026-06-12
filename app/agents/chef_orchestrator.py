@@ -5,15 +5,17 @@ import time
 from typing import Dict, Any
 from .state import RecipeGenerationState
 from .prompts import PromptTemplates
+from ..config import settings
 from ..services.database import DatabaseService
 from ..services.mlflow_logger import MLflowLogger
 
 class ChefOrchestrator:
-    """Chef agent using SmolLM-1.7B for high-level planning."""
+    """Chef agent for high-level planning (largest configured model)."""
 
     def __init__(self):
         self.llm = ChatOllama(
-            model="smollm:1.7b",
+            model=settings.ollama_chef_model,
+            base_url=settings.ollama_base_url,
             temperature=0.7,
             format="json"
         )
@@ -100,7 +102,7 @@ class ChefOrchestrator:
                 agent_name="Chef_Orchestrator",
                 tokens=len(response.content),  # Approximate
                 duration=duration,
-                model="smollm:1.7b",
+                model=settings.ollama_chef_model,
                 success=True
             )
             MLflowLogger.log_ingredient_groups(ingredient_groups, ingredient_reuse_map)

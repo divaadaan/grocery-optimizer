@@ -1,15 +1,15 @@
 # scripts/test_db_connection.py
 import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 import redis
 
 def test_postgres():
     """Test PostgreSQL + TimescaleDB connection"""
     try:
         # Secrets are automatically available as env vars
-        conn = psycopg2.connect(os.environ["DATABASE_URL"])
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        conn = psycopg.connect(os.environ["DATABASE_URL"])
+        cur = conn.cursor(row_factory=dict_row)
         
         # Check TimescaleDB
         cur.execute("SELECT extversion FROM pg_extension WHERE extname = 'timescaledb';")

@@ -1,10 +1,11 @@
 import mlflow
+from app.config import settings
 from app.agents.graph import create_recipe_generation_graph
 from app.agents.state import RecipeGenerationState
 
 # Configure MLflow
-mlflow.set_tracking_uri("http://localhost:5000")  # Or your MLflow server
-mlflow.set_experiment("grocery-meal-planner")
+mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
+mlflow.set_experiment(settings.mlflow_experiment_name)
 
 def run_recipe_generation(
     user_id: int,

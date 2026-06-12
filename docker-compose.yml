@@ -1,0 +1,75 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Override host-oriented URLs with in-network service names
+      OLLAMA_BASE_URL: http://ollama:11434
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    depends_on:
+      ollama:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    # For NVIDIA GPU acceleration, uncomment:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # One-shot: pulls the models configured in .env (defaults match config.py)
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_CHEF_MODEL: ${OLLAMA_CHEF_MODEL:-smollm:1.7b}
+      OLLAMA_SOUS_CHEF_MODEL: ${OLLAMA_SOUS_CHEF_MODEL:-smollm:360m}
+      OLLAMA_NUTRITIONIST_MODEL: ${OLLAMA_NUTRITIONIST_MODEL:-smollm:360m}
+    entrypoint: >
+      /bin/sh -c "
+      ollama pull $$OLLAMA_CHEF_MODEL &&
+      ollama pull $$OLLAMA_SOUS_CHEF_MODEL &&
+      ollama pull $$OLLAMA_NUTRITIONIST_MODEL
+      "
+    restart: "no"
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.19.0
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --artifacts-destination /mlflow/artifacts
+    restart: unless-stopped
+
+volumes:
+  ollama_models:
+  mlflow_data:

@@ -2,9 +2,8 @@
 Database connection management
 """
 
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from psycopg2.pool import SimpleConnectionPool
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
 from contextlib import contextmanager
 from typing import Generator, Optional
 import logging
@@ -18,16 +17,19 @@ class Database:
     """Database connection manager with connection pooling."""
 
     def __init__(self):
-        self.pool: Optional[SimpleConnectionPool] = None
+        self.pool: Optional[ConnectionPool] = None
 
     def initialize(self):
         """Initialize database connection pool."""
         try:
-            self.pool = SimpleConnectionPool(
-                minconn=1,
-                maxconn=settings.database_pool_size,
-                dsn=settings.database_url
+            self.pool = ConnectionPool(
+                conninfo=settings.database_url,
+                min_size=1,
+                max_size=settings.database_pool_size,
+                kwargs={"row_factory": dict_row},
+                open=False,
             )
+            self.pool.open(wait=True, timeout=30)
             logger.info("Database connection pool initialized")
         except Exception as e:
             logger.error(f"Failed to initialize database pool: {e}")
@@ -36,7 +38,7 @@ class Database:
     def close(self):
         """Close all database connections."""
         if self.pool:
-            self.pool.closeall()
+            self.pool.close()
             logger.info("Database connection pool closed")
 
     @contextmanager
@@ -44,29 +46,27 @@ class Database:
         """
         Context manager for database connections.
 
+        Commits on success, rolls back on exception (handled by the pool).
+
         Usage:
             with db.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT ...")
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT ...")
         """
         if not self.pool:
             self.initialize()
 
-        conn = self.pool.getconn()
         try:
-            yield conn
-            conn.commit()
+            with self.pool.connection() as conn:
+                yield conn
         except Exception as e:
-            conn.rollback()
             logger.error(f"Database error: {e}")
             raise
-        finally:
-            self.pool.putconn(conn)
 
     @contextmanager
-    def get_cursor(self, cursor_factory=RealDictCursor) -> Generator:
+    def get_cursor(self, row_factory=None) -> Generator:
         """
-        Context manager for database cursor.
+        Context manager for database cursor. Rows are dicts by default.
 
         Usage:
             with db.get_cursor() as cursor:
@@ -74,11 +74,8 @@ class Database:
                 results = cursor.fetchall()
         """
         with self.get_connection() as conn:
-            cursor = conn.cursor(cursor_factory=cursor_factory)
-            try:
+            with conn.cursor(row_factory=row_factory) as cursor:
                 yield cursor
-            finally:
-                cursor.close()
 
 
 # Global database instance

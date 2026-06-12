@@ -1,13 +1,8 @@
-import psycopg2
 from typing import List, Dict
-import os
-from dotenv import load_dotenv
 import json
 
 # Import the connection pool from db module
 from app.db import db
-
-load_dotenv()
 
 class DatabaseService:
     """Handle all database interactions for recipe generation (uses shared connection pool)."""
@@ -75,7 +70,7 @@ class DatabaseService:
                     recipe['total_cost'],
                     recipe['servings']
                 ))
-                recipe_id = cursor.fetchone()[0]
+                recipe_id = cursor.fetchone()["recipe_id"]
                 recipe_ids.append(recipe_id)
 
         return recipe_ids

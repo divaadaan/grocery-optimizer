@@ -5,14 +5,16 @@ import time
 from typing import Dict
 from .state import RecipeGenerationState, ValidationResult
 from .prompts import PromptTemplates
+from ..config import settings
 from ..services.mlflow_logger import MLflowLogger
 
 class Nutritionist:
-    """Nutritionist agent using SmolLM-360M for validation."""
+    """Nutritionist agent for recipe validation."""
 
     def __init__(self):
         self.llm = ChatOllama(
-            model="smollm:360m",
+            model=settings.ollama_nutritionist_model,
+            base_url=settings.ollama_base_url,
             temperature=0.3,  # Lower temperature for consistent validation
             format="json"
         )

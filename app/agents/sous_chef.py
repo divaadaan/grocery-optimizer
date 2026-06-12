@@ -6,14 +6,16 @@ import uuid
 from typing import Dict, List
 from .state import Recipe, RecipeGenerationState
 from .prompts import PromptTemplates
+from ..config import settings
 from ..services.mlflow_logger import MLflowLogger
 
 class SousChef:
-    """SousChef agent using SmolLM-360M for recipe generation."""
+    """SousChef agent for recipe generation."""
 
     def __init__(self):
         self.llm = ChatOllama(
-            model="smollm:360m",
+            model=settings.ollama_sous_chef_model,
+            base_url=settings.ollama_base_url,
             temperature=0.8,  # Higher creativity for recipes
             format="json"
         )
@@ -70,7 +72,7 @@ class SousChef:
                 agent_name=chef_id,
                 tokens=len(response.content),
                 duration=duration,
-                model="smollm:360m",
+                model=settings.ollama_sous_chef_model,
                 success=True
             )
 

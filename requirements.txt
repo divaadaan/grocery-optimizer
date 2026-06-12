@@ -12,7 +12,7 @@ uvloop>=0.17.0; sys_platform != 'win32'
 watchfiles>=0.21.0
 
 # Database
-psycopg[binary]>=3.2.0
+psycopg[binary,pool]>=3.2.0
 python-dotenv==1.0.0
 
 # Redis 
@@ -31,9 +31,6 @@ langchain-ollama>=0.1.0
 
 # MLflow
 mlflow>=2.9.0
-
-# Celery
-celery==5.3.4
 
 # Utilities
 python-dateutil==2.8.2

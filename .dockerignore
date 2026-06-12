@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.idea/
+.vscode/
+mlflow.db
+mlruns/
+Dockerfile
+docker-compose.yml
+.dockerignore
