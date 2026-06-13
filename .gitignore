@@ -138,6 +138,9 @@ mlartifacts/
 training/data/
 training/runs/
 
+# Node / Frontend
+node_modules/
+
 # Project Specific
 *.db
 *.sqlite
