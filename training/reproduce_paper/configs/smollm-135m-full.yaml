@@ -14,7 +14,7 @@ optim: adamw_torch
 precision: fp16
 max_length: 512            # paper: 99.4% of recipes fit in 512 tokens
 eval_steps: 500
-report_to: none            # set to mlflow to log alongside the app's runs
+report_to: tensorboard            # set to mlflow to log alongside the app's runs
 
 qlora:
   enabled: false

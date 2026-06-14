@@ -24,17 +24,6 @@ import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-KAGGLE_HINT = """\
-RAW_recipes.csv not found at {path}
-
-Download it from Kaggle (dataset: shuyangli94/food-com-recipes-and-user-interactions):
-    kaggle datasets download -d shuyangli94/food-com-recipes-and-user-interactions \\
-        -f RAW_recipes.csv -p training/data/raw --unzip
-or download manually from
-    https://www.kaggle.com/datasets/shuyangli94/food-com-recipes-and-user-interactions
-and place RAW_recipes.csv under training/data/raw/.
-"""
-
 
 def resolve(path: str | Path) -> Path:
     path = Path(path)
@@ -53,7 +42,7 @@ def parse_listish(value) -> list[str]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser()
     parser.add_argument("--csv", default="training/data/raw/RAW_recipes.csv")
     parser.add_argument("--output-dir", default="training/data/foodcom")
     parser.add_argument("--sample", type=int, default=None,
@@ -62,8 +51,6 @@ def main() -> None:
     args = parser.parse_args()
 
     csv_path = resolve(args.csv)
-    if not csv_path.exists():
-        raise SystemExit(KAGGLE_HINT.format(path=csv_path))
 
     df = pd.read_csv(csv_path, usecols=["name", "ingredients", "steps"])
     total_raw = len(df)

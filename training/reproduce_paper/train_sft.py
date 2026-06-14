@@ -34,6 +34,11 @@ def resolve(path: str | Path) -> Path:
     return path if path.is_absolute() else REPO_ROOT / path
 
 
+def stage(msg: str) -> None:
+    """Print a clearly delimited pipeline-stage banner."""
+    print(f"\n{'=' * 64}\n  {msg}\n{'=' * 64}", flush=True)
+
+
 def load_splits(data_dir: Path, tokenizer, smoke: bool):
     files = {split: str(data_dir / f"{split}.jsonl") for split in ("train", "validation")}
     ds = load_dataset("json", data_files=files)
@@ -99,12 +104,19 @@ def main() -> None:
     if args.smoke:
         output_dir = output_dir.with_name(output_dir.name + "-smoke")
 
+    stage(f"Stage 1/5 · Loading tokenizer ({cfg['model_name']})")
     tokenizer = AutoTokenizer.from_pretrained(cfg["model_name"])
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    ds = load_splits(resolve(cfg.get("data_dir", "training/data/foodcom")), tokenizer, args.smoke)
+    stage("Stage 2/5 · Preparing dataset")
+    data_dir = resolve(cfg.get("data_dir", "training/data/foodcom"))
+    ds = load_splits(data_dir, tokenizer, args.smoke)
+    print(f"  source: {data_dir}", flush=True)
+    print(f"  train={len(ds['train'])}  validation={len(ds['validation'])}"
+          f"{'  (smoke subset)' if args.smoke else ''}", flush=True)
 
+    stage("Stage 3/5 · Building model")
     qlora = cfg.get("qlora", {})
     peft_config = None
     model_kwargs = {}
@@ -131,6 +143,8 @@ def main() -> None:
 
     model = AutoModelForCausalLM.from_pretrained(cfg["model_name"], **model_kwargs)
     model.config.use_cache = False  # incompatible with gradient checkpointing / training
+    mode = f"QLoRA 4-bit (r={qlora.get('r', 8)})" if qlora.get("enabled", False) else "full fine-tune"
+    print(f"  mode: {mode}", flush=True)
 
     sft_config = build_sft_config(cfg, output_dir, args.smoke)
     trainer_kwargs = {
@@ -147,8 +161,15 @@ def main() -> None:
         trainer_kwargs["tokenizer"] = tokenizer
 
     trainer = SFTTrainer(**trainer_kwargs)
+
+    stage("Stage 4/5 · Running SFT")
+    eff_batch = cfg["per_device_train_batch_size"] * cfg["gradient_accumulation_steps"]
+    print(f"  epochs={cfg['num_train_epochs']}  effective_batch={eff_batch}  "
+          f"lr={cfg['learning_rate']}", flush=True)
+    print(f"  output: {output_dir}", flush=True)
     result = trainer.train()
 
+    stage("Stage 5/5 · Saving model & artifacts")
     trainer.save_model(str(output_dir))
     tokenizer.save_pretrained(str(output_dir))
     with open(output_dir / "train_result.json", "w", encoding="utf-8") as f:
