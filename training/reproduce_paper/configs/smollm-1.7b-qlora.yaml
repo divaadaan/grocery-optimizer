@@ -13,7 +13,7 @@ optim: paged_adamw_8bit
 precision: fp16
 max_length: 512
 eval_steps: 500
-report_to: none
+report_to: tensorboard
 gradient_checkpointing: true     # needed on 8GB VRAM for the 1.7B model
 
 qlora:
