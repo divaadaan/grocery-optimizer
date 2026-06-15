@@ -86,6 +86,35 @@ python -m training.reproduce_paper.llm_judge \
     --generations training/runs/smollm-135m-full/eval/generations.jsonl
 ```
 
+From WSL, `OLLAMA_BASE_URL` must point at the *network-exposed* Windows Ollama
+via the gateway IP (the loopback instance isn't reachable from WSL and lacks the
+model) — same value as `.env`'s `OLLAMA_BASE_URL`/`DOCKER_OLLAMA_URL`. `llm_judge`
+does not read `.env`, so export it or pass `--base-url`:
+
+```bash
+export OLLAMA_BASE_URL=http://172.18.128.1:11434   # gateway IP; re-derive after reboot
+```
+
+Then render any evaluated runs (and their judge scores, if present) side by side:
+
+```bash
+python -m training.reproduce_paper.compare_eval                    # the two default 135M dirs
+python -m training.reproduce_paper.compare_eval DIR_A DIR_B ...    # explicit eval dirs
+```
+
+## Status
+
+- **SmolLM-135M full-FT** (100k-sample corpus, 3 epochs): trained on a rented
+  vast.ai 4090 (~67 min, see `CLOUD.md`), evaluated vs the untuned baseline.
+  Strong fluency/format gains (perplexity 12.3→4.7, BLEU 2.4→12.1, judge overall
+  2.64→3.52); allergen-safety judge dim flat (2.86→2.86) — Food.com SFT improves
+  recipe form, not the dietary/allergen failure mode (see `ROADMAP.md` item 5).
+- **Next:** full 231k-corpus splits regenerated; 360M + 1.7B QLoRA configs set to
+  log TensorBoard and ready for a fresh rental. QLoRA runs produce adapters, so
+  `merge_lora` before evaluating/exporting. Re-evaluate the 135M against the new
+  full-corpus `test.jsonl` (`--output-dir ...eval-fullcorpus`) for an
+  apples-to-apples `compare_eval` across all three sizes.
+
 ## Export to Ollama
 
 Merge LoRA adapters first, then convert to GGUF with llama.cpp and push via

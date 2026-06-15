@@ -49,6 +49,17 @@ for the WSL-migration log and verification notes it contained).
    grouping (the `xfail` chef-grouping test is the acceptance bar). Training
    scaffolding lives in `training/`.
 
+   *Progress (2026-06-14):* paper-repro scaffold validated end-to-end. SmolLM-135M
+   full-FT (100k-sample corpus, 3 epochs) trained on a rented vast.ai 4090 and
+   evaluated vs the untuned baseline — large fluency/format gains (perplexity
+   12.3→4.7, BLEU 2.4→12.1, judge overall 2.64→3.52) but **allergen-safety judge
+   score stayed flat** (2.86→2.86). That's empirical confirmation that Food.com
+   SFT teaches recipe *form*, not the dietary/allergen failure mode — i.e. the
+   real lever is the step-2 dataset (app `PromptTemplates` + JSON schema), not
+   bigger paper-repro runs. *Next:* full 231k-corpus 360M + 1.7B QLoRA runs (size
+   sweep, configs ready, log TensorBoard; QLoRA → needs `merge_lora` before
+   eval/export), then pivot to the step-2 app-targeted dataset.
+
 ## Engineering debt / smaller items
 
 - `estimated_savings` for shopping lists hardcoded to 0.0 pending item 3.
