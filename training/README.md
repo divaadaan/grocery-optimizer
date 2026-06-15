@@ -1,11 +1,15 @@
 # Training
 
-SFT pipeline for the recipe agents. Step 1 (this package, `reproduce_paper/`)
-reproduces arXiv 2502.02028 — fine-tuning SmolLM models on Food.com recipe
-generation. Step 2 (later) will reuse this scaffold with a dataset rendered
-through the app's actual `PromptTemplates` and JSON output schema, targeting
-the failure modes found in verification (structured-JSON output, dietary
-restriction compliance, nutritionist false rejections).
+SFT pipeline for the recipe agents.
+
+- **Step 1 — `reproduce_paper/`**: reproduces arXiv 2502.02028 — fine-tuning
+  SmolLM models on Food.com recipe generation. Teaches recipe *form*; shown not
+  to move the dietary/allergen failure mode (see `ROADMAP.md` item 5).
+- **Step 2 — `data_app/`**: builds an app-targeted SFT dataset rendered through
+  the app's *actual* `PromptTemplates` and validated through its *actual*
+  Pydantic schemas, targeting the failure modes found in verification
+  (structured-JSON output, dietary-restriction compliance, nutritionist false
+  rejections). See "Step 2" below.
 
 Rules of the split with `app/`:
 
@@ -117,13 +121,95 @@ python -m training.reproduce_paper.compare_eval DIR_A DIR_B ...    # explicit ev
 
 ## Export to Ollama
 
-Merge LoRA adapters first, then convert to GGUF with llama.cpp and push via
-HF Hub (`ollama run hf.co/<user>/<repo>:<quant>`):
+QLoRA → merge → GGUF → HF Hub → Ollama. Validated end-to-end 2026-06-15 on
+`smollm-360m-qlora`.
+
+**1. Merge the LoRA adapter into full weights** (skip for full-FT runs):
 
 ```bash
 python -m training.reproduce_paper.merge_lora \
     --adapter training/runs/smollm-360m-qlora --output training/runs/smollm-360m-merged
 ```
+
+**2. Convert to GGUF** with llama.cpp's converter (clone only — no C++ build
+needed; quantization isn't worth it at 360M, f16 is ~724 MB):
+
+```bash
+git clone https://github.com/ggerganov/llama.cpp ~/llama.cpp
+pip install gguf sentencepiece        # sentencepiece: the converter's SP-first
+                                      # vocab probe imports it before falling
+                                      # back to SmolLM's BPE path
+python ~/llama.cpp/convert_hf_to_gguf.py training/runs/smollm-360m-merged \
+    --outfile training/runs/smollm-360m-merged/smollm-360m-recipe-f16.gguf --outtype f16
+```
+
+**3. Push to HF Hub** (the bridge — Ollama pulls the GGUF over the internet, so
+the file's WSL location doesn't matter):
+
+```bash
+huggingface-cli login   # write token
+huggingface-cli upload danieldsachs/smollm-360m-recipe \
+    training/runs/smollm-360m-merged/smollm-360m-recipe-f16.gguf smollm-360m-recipe-f16.gguf
+```
+
+**4. Pull + run.** Run `ollama` from *Windows* PowerShell so the model lands in
+the single all-interfaces Ollama server the app reaches at the WSL gateway IP
+(there's one server; the "ollama app" process is just the tray GUI):
+
+```powershell
+ollama run hf.co/danieldsachs/smollm-360m-recipe:f16 "Generate a recipe. ingredients: chicken, rice, soy sauce"
+```
+
+Greedy `evaluate.py` can show a repetition loop; Ollama's default sampling
+(`repeat_penalty 1.1` + temperature) tames it. For tighter control, bake a
+Modelfile (`PARAMETER repeat_penalty 1.3`, `repeat_last_n 64`, `num_predict 256`).
+
+## Step 2 — app-targeted dataset (`data_app/`)
+
+Renders training examples through the app's real prompts
+(`app.agents.prompts.PromptTemplates`) and validates every completion through
+the app's real Pydantic schemas (`app.agents.llm_output`: `ChefPlan`,
+`RecipeBatch`, `NutritionistVerdict`) at build time — so train-time inputs match
+inference byte-for-byte and no malformed completion can enter the corpus. The
+import direction is training → app (the one the split rule allows); the schemas
+import with just `pydantic` (the `langchain_core` import in `llm_output.py` is
+lazy), which is why `pydantic` is in `requirements.txt`.
+
+Hybrid labelling, one strategy per failure mode:
+
+- **`chef_plan`** (programmatic): prompt shows *all* deals incl. chicken/beef/
+  salmon; completion groups only the dietary-compliant ones into 3 complementary
+  sets, with a rationale that states the exclusion. Zero label noise — the direct
+  fix for `test_chef_groups_respect_vegetarian_restriction`.
+- **`nutritionist_verdict`** (programmatic): REJECT recipes containing a
+  forbidden ingredient (hard guards) + APPROVE compliant recipes incl. the
+  minimal 2-ingredient control phi4-mini false-rejects (the over-strictness fix).
+- **`sous_chef_recipe`** (distilled): recipe prose distilled from `qwen2.5:7b`
+  via Ollama, kept only if it validates through `RecipeBatch` *and* passes a
+  forbidden-term rule check.
+
+Seed deals + the vegetarian forbidden list come from
+`app/tests/fixtures/nutritionist_cases.json` — the same fixture the acceptance
+tests read, so data and tests can't drift (enforced by an assertion in
+`seed_catalog.load_fixture`).
+
+```bash
+# Offline (programmatic tasks only — no Ollama needed):
+python -m training.data_app.build_app_dataset --no-distill
+
+# Full build incl. distillation. From WSL, point --base-url at the
+# network-exposed Windows Ollama (gateway IP, same as .env's OLLAMA_BASE_URL):
+python -m training.data_app.build_app_dataset --base-url http://172.18.128.1:11434
+```
+
+Writes 80/10/10 `train`/`validation`/`test.jsonl` (stratified by task) of
+`{task, prompt, completion, meta}` records, a combined `app_sft.jsonl`, and
+`dataset_stats.json` to `training/data/app/`. A completion that fails its schema
+is dropped and counted, never written.
+
+*Not yet wired:* `train_sft.py` consuming the `prompt`/`completion` columns with
+completion-only loss masking (Phase 2) — these records are emitted in that shape
+ready for it.
 
 ## Known divergences from the paper
 

@@ -56,9 +56,25 @@ for the WSL-migration log and verification notes it contained).
    score stayed flat** (2.86→2.86). That's empirical confirmation that Food.com
    SFT teaches recipe *form*, not the dietary/allergen failure mode — i.e. the
    real lever is the step-2 dataset (app `PromptTemplates` + JSON schema), not
-   bigger paper-repro runs. *Next:* full 231k-corpus 360M + 1.7B QLoRA runs (size
-   sweep, configs ready, log TensorBoard; QLoRA → needs `merge_lora` before
-   eval/export), then pivot to the step-2 app-targeted dataset.
+   bigger paper-repro runs.
+
+   *Progress (2026-06-15):* (a) **Step-2 dataset builder shipped** —
+   `training/data_app/` renders examples through the app's real `PromptTemplates`
+   and gates every completion through the real Pydantic schemas. Hybrid labelling:
+   chef-grouping + nutritionist verdicts programmatic (zero label noise on the two
+   failure modes), SousChef prose distilled from `qwen2.5:7b`. Verified build: 115
+   examples, 0 dropped by the schema gate, 0 chef forbidden-product selections.
+   Plan/caveats in `training/data_app/NEXT_STEPS.md`. (b) **Phase-0 export check
+   started** — SmolLM-360M QLoRA (full 231k corpus, 1 epoch, train_loss 1.54)
+   trained on vast.ai and pulled local to `training/runs/smollm-360m-qlora`;
+   adapter verified loadable. **Phase-0 export path now validated end-to-end:**
+   `merge_lora` → GGUF (llama.cpp `convert_hf_to_gguf`, f16, 724 MB) → HF Hub
+   (`danieldsachs/smollm-360m-recipe`) → `ollama run hf.co/...` into the app's
+   Ollama instance, producing coherent on-format recipes (the greedy-decoding
+   repetition loop seen in `evaluate.py` does not appear under Ollama's default
+   sampling). *Next:* Phase 2 (train_sft `prompt_completion` + completion-only
+   loss masking) and Phase 3 (`evaluate_app.py`; flip the two `xfail` acceptance
+   tests).
 
 ## Engineering debt / smaller items
 

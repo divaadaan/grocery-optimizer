@@ -12,6 +12,10 @@ bitsandbytes>=0.45; platform_system == "Linux"
 # Data prep
 pandas>=2.0
 pyyaml>=6.0.2
+# Schema gate for the app-targeted dataset builder (training/data_app): completions
+# are validated through app/agents/llm_output.py's Pydantic schemas at build time.
+# Must satisfy the app's pydantic-v2 API (ConfigDict/field_validator/model_validator).
+pydantic>=2.0
 
 # Experiment tracking (Trainer report_to: tensorboard writes loss/LR scalars)
 tensorboard>=2.18
