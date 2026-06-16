@@ -1,0 +1,34 @@
+# Step 2 (app-targeted): full fine-tune of SmolLM2-135M-Instruct on the data_app
+# dataset rendered through the app's real PromptTemplates + Pydantic schemas.
+# Conversational prompt-completion: the chat template wraps the prompt exactly as
+# the app's ChatOllama does, and loss is computed only on the assistant
+# completion (prompt/deals_json blob is masked). Instruct variant is required —
+# the base SmolLM tokenizer has no chat template.
+#
+# SmolLM2 (not v1): v1's context is only 2048 tokens, but chef prompt+completion
+# is ~4.1k — it overflows v1's window, which RoPE silently extrapolates into
+# garbage. SmolLM2 has an 8192 context. (135M is a long shot for these rigid
+# JSON tasks even so; the 360M QLoRA config is the primary candidate.)
+model_name: HuggingFaceTB/SmolLM2-135M-Instruct
+output_dir: training/runs/smollm-135m-app-full
+data_dir: training/data/app
+dataset_format: conversational      # chat-template prompt/completion, mask the prompt
+
+learning_rate: 2e-5
+num_train_epochs: 12                # tiny corpus (~95 train, ~6 steps/epoch); 4 epochs
+                                    # left 360M undertrained — give the smaller model more
+per_device_train_batch_size: 1      # chef prompts are ~2.8k tokens; keep memory low
+gradient_accumulation_steps: 16     # effective batch 16
+warmup_steps: 10
+weight_decay: 0.01
+optim: adamw_torch
+precision: fp16
+max_length: 4224                    # chef prompt+completion tops out ~4.1k tokens
+                                    # (fits SmolLM2's 8192 window); smaller would
+                                    # right-truncate the completion away
+gradient_checkpointing: true
+eval_steps: 10                      # ~6 eval points over the run to watch the curve
+report_to: tensorboard
+
+qlora:
+  enabled: false

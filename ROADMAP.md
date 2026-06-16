@@ -76,6 +76,46 @@ for the WSL-migration log and verification notes it contained).
    loss masking) and Phase 3 (`evaluate_app.py`; flip the two `xfail` acceptance
    tests).
 
+   *Progress (2026-06-16):* **Phase 2 + Phase 3 shipped; the small-model SFT track
+   is concluded.** `train_sft.py` gained a `dataset_format: conversational` path
+   with completion-only loss masking — the app serves these agents via
+   `ChatOllama`, so the dataset emits user/assistant turns rather than raw
+   concatenation (which also fixed a BPE `:`+`{` merge masking the opening brace).
+   A first SmolLM-360M run produced garbage and exposed a base bug:
+   `SmolLM-360M-Instruct` (v1) has a 2048-token context but chef prompts are
+   ~2.8k, so they overflowed and RoPE extrapolated into noise (a healthy eval_loss
+   1.57 hid it). Fixed by moving to **SmolLM2** (8192 ctx) + 12 epochs. Built
+   `evaluate_app.py` (Phase 3): deterministic per-task scoring (JSON-validity,
+   chef dietary-violation, nutritionist confusion matrix + false-rejection rate)
+   with HF and app-faithful Ollama paths, porting the two `xfail` assertions.
+   **Result: both xfail proxies still fail.** SmolLM2-360M chef emits the wrong
+   top-level JSON shape; the nutritionist produces 6/6 valid JSON yet
+   **false-rejects 100% of compliant recipes by hallucinating violations**
+   ("avocado violates vegan", "milk violates vegetarian") — it learned the
+   rejection *template*, not the dietary *semantics*, despite zero-noise
+   programmatic labels. Decisive lesson: valid JSON ≠ correct, and ~360M params
+   can't internalize the compliance mapping from this corpus.
+   **Decision: stop SFT'ing the small SmolLM models. The next attempt is a more
+   capable base — `qwen2.5:1.5b-instruct` (already pulled) — evaluated *untuned*
+   through `evaluate_app.py --ollama-model` first**, since world knowledge alone
+   may clear the bar (it already "knows" avocado is vegan). If that still falls
+   short, the next lever is retrieval (item 6 / Phase 4), not more SFT.
+   *Next:* eval `qwen2.5:1.5b-instruct` via the app-faithful Ollama path.
+
+6. **RAG-augmented recipe generation (Phase 4).** Inference-time retrieval, after
+   the qwen2.5:1.5b trial. Index a recipe corpus (Food.com to start), retrieve
+   recipes that use the on-hand/deal ingredients, apply an offline-generated,
+   compliance-gated **substitution table** to make them diet-safe, and let the
+   generator (the base from item 5) adapt them — making dietary compliance a
+   deterministic **code path** rather than a learned behavior (the thing
+   small-model SFT couldn't do). The substitution model stays offline (no extra
+   per-request inference). Adds a proactive substitution node before generation
+   (Nutritionist remains the final safety gate), property-based regression tests
+   on the deterministic compliance oracle, and a postal-code/deal-set-keyed
+   **response cache** that doubles as a self-growing, pre-validated dataset
+   (deal sets are shared per postal-code-week, so cross-user reuse is the common
+   case). Full task breakdown: `training/data_app/NEXT_STEPS.md` Phase 4.
+
 ## Engineering debt / smaller items
 
 - `estimated_savings` for shopping lists hardcoded to 0.0 pending item 3.

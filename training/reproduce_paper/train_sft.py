@@ -39,12 +39,24 @@ def stage(msg: str) -> None:
     print(f"\n{'=' * 64}\n  {msg}\n{'=' * 64}", flush=True)
 
 
-def load_splits(data_dir: Path, tokenizer, smoke: bool):
+def load_splits(data_dir: Path, tokenizer, smoke: bool, dataset_format: str = "text"):
     files = {split: str(data_dir / f"{split}.jsonl") for split in ("train", "validation")}
     ds = load_dataset("json", data_files=files)
     if smoke:
         ds["train"] = ds["train"].select(range(min(512, len(ds["train"]))))
         ds["validation"] = ds["validation"].select(range(min(64, len(ds["validation"]))))
+
+    if dataset_format == "conversational":
+        # App-targeted dataset (data_app): conversational prompt-completion, where
+        # `prompt` is a user turn and `completion` an assistant turn. TRL applies
+        # the model's chat template and masks the prompt (incl. the assistant
+        # header), so loss falls only on the completion — we never train the model
+        # to echo the big deals_json blob, and the boundary matches how the app's
+        # ChatOllama feeds the model at inference. Drop task/meta so the trainer
+        # sees only the two columns it consumes.
+        keep = {"prompt", "completion"}
+        drop = [c for c in ds["train"].column_names if c not in keep]
+        return ds.remove_columns(drop)
 
     def to_text(example):
         return {"text": build_full_text(example["name"], example["ingredients"],
@@ -55,6 +67,7 @@ def load_splits(data_dir: Path, tokenizer, smoke: bool):
 
 def build_sft_config(cfg: dict, output_dir: Path, smoke: bool) -> SFTConfig:
     precision = cfg.get("precision", "fp16")
+    dataset_format = cfg.get("dataset_format", "text")
     kwargs = {
         "output_dir": str(output_dir),
         "per_device_train_batch_size": cfg["per_device_train_batch_size"],
@@ -65,7 +78,6 @@ def build_sft_config(cfg: dict, output_dir: Path, smoke: bool) -> SFTConfig:
         "warmup_steps": cfg.get("warmup_steps", 100),
         "optim": cfg.get("optim", "adamw_torch"),
         "max_length": cfg.get("max_length", 512),
-        "dataset_text_field": "text",
         "fp16": precision == "fp16",
         "bf16": precision == "bf16",
         "gradient_checkpointing": cfg.get("gradient_checkpointing", False),
@@ -77,6 +89,14 @@ def build_sft_config(cfg: dict, output_dir: Path, smoke: bool) -> SFTConfig:
         "report_to": cfg.get("report_to", "none"),
         "seed": cfg.get("seed", 42),
     }
+    if dataset_format == "conversational":
+        # Conversational prompt/completion: no single text field; mask the prompt
+        # and train only on the assistant completion (TRL resolves None->True
+        # here, but be explicit). Filtered out below if the installed TRL lacks
+        # the field.
+        kwargs["completion_only_loss"] = True
+    else:
+        kwargs["dataset_text_field"] = "text"
     if smoke:
         kwargs.update(max_steps=20, eval_strategy="no", save_strategy="no", logging_steps=5)
 
@@ -110,9 +130,10 @@ def main() -> None:
         tokenizer.pad_token = tokenizer.eos_token
 
     stage("Stage 2/5 · Preparing dataset")
+    dataset_format = cfg.get("dataset_format", "text")
     data_dir = resolve(cfg.get("data_dir", "training/data/foodcom"))
-    ds = load_splits(data_dir, tokenizer, args.smoke)
-    print(f"  source: {data_dir}", flush=True)
+    ds = load_splits(data_dir, tokenizer, args.smoke, dataset_format)
+    print(f"  source: {data_dir}  format: {dataset_format}", flush=True)
     print(f"  train={len(ds['train'])}  validation={len(ds['validation'])}"
           f"{'  (smoke subset)' if args.smoke else ''}", flush=True)
 
@@ -161,6 +182,23 @@ def main() -> None:
         trainer_kwargs["tokenizer"] = tokenizer
 
     trainer = SFTTrainer(**trainer_kwargs)
+
+    if dataset_format == "conversational":
+        # Eyeball completion-only masking on a tokenized training sample. TRL's
+        # prompt-completion path stores a `completion_mask` (1 on completion
+        # tokens, 0 on the masked prompt); the collator turns the 0s into -100
+        # labels. A `trained` count near len(completion) confirms the deals_json
+        # prompt region is masked and max_length didn't truncate the completion.
+        sample = trainer.train_dataset[0]
+        mask = sample.get("completion_mask")
+        if mask is not None:
+            trained = sum(mask)
+            masked = len(mask) - trained
+            print(f"  completion-only loss: {masked}/{len(mask)} tokens masked "
+                  f"(prompt), {trained} trained (completion)", flush=True)
+            if trained == 0:
+                raise SystemExit("No completion tokens left to train on — max_length "
+                                 "is shorter than the prompt; raise it in the config.")
 
     stage("Stage 4/5 · Running SFT")
     eff_batch = cfg["per_device_train_batch_size"] * cfg["gradient_accumulation_steps"]

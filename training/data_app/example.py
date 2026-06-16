@@ -14,4 +14,20 @@ class Example:
     meta: dict[str, Any] = dataclasses.field(default_factory=dict)
 
     def to_record(self) -> dict[str, Any]:
-        return {"task": self.task, "prompt": self.prompt, "completion": self.completion, "meta": self.meta}
+        """Conversational prompt-completion record (TRL format).
+
+        The app serves these agents through ``ChatOllama`` with a single
+        ``HumanMessage(content=prompt)`` (see ``app.agents.llm_output``), so the
+        model sees the prompt wrapped in a chat template with an assistant turn
+        appended. We mirror that exactly: a user turn (the rendered prompt) and
+        an assistant turn (the schema-valid completion). The trainer applies the
+        model's chat template, masks everything up to the assistant header, and
+        trains only on the completion — train-time inputs then match inference
+        byte-for-byte, and the prompt/completion boundary is a clean token break
+        (no ``:``+``{`` BPE merge swallowing the opening brace)."""
+        return {
+            "task": self.task,
+            "prompt": [{"role": "user", "content": self.prompt}],
+            "completion": [{"role": "assistant", "content": self.completion}],
+            "meta": self.meta,
+        }

@@ -113,11 +113,15 @@ python -m training.reproduce_paper.compare_eval DIR_A DIR_B ...    # explicit ev
   Strong fluency/format gains (perplexity 12.3→4.7, BLEU 2.4→12.1, judge overall
   2.64→3.52); allergen-safety judge dim flat (2.86→2.86) — Food.com SFT improves
   recipe form, not the dietary/allergen failure mode (see `ROADMAP.md` item 5).
-- **Next:** full 231k-corpus splits regenerated; 360M + 1.7B QLoRA configs set to
-  log TensorBoard and ready for a fresh rental. QLoRA runs produce adapters, so
-  `merge_lora` before evaluating/exporting. Re-evaluate the 135M against the new
-  full-corpus `test.jsonl` (`--output-dir ...eval-fullcorpus`) for an
-  apples-to-apples `compare_eval` across all three sizes.
+- **Conclusion (2026-06-16):** the small-model SFT track is **wound down.** Step-2
+  (app-targeted, see below) trained SmolLM2-360M through the app's real prompts +
+  schemas and scored it with `evaluate_app.py`: it emits on-format JSON but can't
+  internalize the dietary *semantics* (the nutritionist false-rejects 100% of
+  compliant recipes by hallucinating violations). ~360M params are simply
+  undersized for this judgment. **No further SmolLM SFT is planned** — the next
+  attempt is a more capable base, `qwen2.5:1.5b-instruct`, evaluated *untuned*
+  through `evaluate_app.py --ollama-model` (see `data_app/NEXT_STEPS.md`). The
+  paper-repro scaffold (`reproduce_paper/`) remains as reference.
 
 ## Export to Ollama
 
@@ -203,13 +207,78 @@ python -m training.data_app.build_app_dataset --base-url http://172.18.128.1:114
 ```
 
 Writes 80/10/10 `train`/`validation`/`test.jsonl` (stratified by task) of
-`{task, prompt, completion, meta}` records, a combined `app_sft.jsonl`, and
-`dataset_stats.json` to `training/data/app/`. A completion that fails its schema
-is dropped and counted, never written.
+conversational records — `{task, prompt: [user turn], completion: [assistant
+turn], meta}` — a combined `app_sft.jsonl`, and `dataset_stats.json` to
+`training/data/app/`. A completion that fails its schema is dropped and counted,
+never written. The prompt/completion are message lists (not raw strings) because
+the app serves these agents via `ChatOllama` with a single `HumanMessage`, so the
+training format mirrors inference once the chat template is applied (see Step 2
+training below).
 
-*Not yet wired:* `train_sft.py` consuming the `prompt`/`completion` columns with
-completion-only loss masking (Phase 2) — these records are emitted in that shape
-ready for it.
+### Training on the app dataset
+
+`train_sft.py` consumes these records via `dataset_format: conversational`: it
+keeps TRL's `prompt`/`completion` columns, applies the model's chat template, and
+masks everything up to the assistant header so loss falls only on the completion
+(it never learns to echo the big `deals_json` blob in the prompt). It prints the
+masked/trained token split of a sample and aborts if `max_length` truncates the
+whole completion away. Requires an **Instruct** base — base SmolLM has no chat
+template.
+
+```bash
+python -m training.reproduce_paper.train_sft \
+    --config training/reproduce_paper/configs/smollm-360m-app-qlora.yaml --smoke
+python -m training.reproduce_paper.train_sft \
+    --config training/reproduce_paper/configs/smollm-360m-app-qlora.yaml   # ~10 min locally
+python -m training.reproduce_paper.train_sft \
+    --config training/reproduce_paper/configs/smollm-135m-app-full.yaml
+```
+
+These configs set `max_length: 4224` (chef prompt+completion tops ~4.1k tokens —
+a smaller cap right-truncates the completion away) with gradient checkpointing
+and batch 1, so they fit the 8 GB 4060 without a rental. Use a **SmolLM2** base,
+not v1 — v1's 2048-token context can't hold the ~2.8k-token chef prompts and RoPE
+extrapolates them into garbage (falling loss won't reveal it).
+
+### Inspecting what the model actually generates
+
+A loss that falls does **not** prove the model learned the format — check the
+generations. `generate_app.py` runs a tuned model over the held-out split and
+writes the prompt / generation / reference plus per-task JSON-validity (and chef
+dietary-violation) to disk, and streams the same to stdout:
+
+```bash
+python -m training.data_app.generate_app --model training/runs/smollm-360m-app-qlora
+python -m training.data_app.generate_app --model training/runs/smollm-360m-app-qlora \
+    --task chef_plan --temperature 0.7        # one task, with sampling
+```
+
+The base is auto-detected from `adapter_config.json` (or pass `--base`). Output
+lands in `<model>/eval_app/{generations.jsonl,generations.txt}`.
+
+### Deterministic task eval (Phase 3)
+
+`evaluate_app.py` scores the held-out split and reports the acceptance-bar
+metrics ported from `app/tests/test_nutritionist_regression.py`: per-task
+JSON-validity, chef dietary-violation rate (the `forbidden_terms` assertion over
+parsed `ingredient_groups`), and the nutritionist confusion matrix +
+false-rejection rate — plus a would_pass proxy for each of the two `xfail` tests.
+
+```bash
+# intrinsic (local adapter, greedy):
+python -m training.data_app.evaluate_app --model training/runs/smollm-360m-app-qlora
+
+# app-faithful (served via Ollama, format=json + app temps) — predicts the xfail
+# flip, and the way to eval an untuned base-swap candidate:
+python -m training.data_app.evaluate_app --ollama-model qwen2.5:1.5b-instruct \
+    --base-url http://172.18.128.1:11434
+```
+
+Writes `metrics.json` + `report.txt`. `generate_app.py` is the qualitative
+companion (full prompt/generation/reference dumps); `evaluate_app.py` is the
+aggregate scorer. **A loss that falls, or even valid JSON, does not mean the task
+is solved** — the first 360M eval was 6/6 valid JSON on the nutritionist yet
+false-rejected 100% of compliant recipes. See `data_app/NEXT_STEPS.md`.
 
 ## Known divergences from the paper
 
