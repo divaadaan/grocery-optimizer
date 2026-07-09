@@ -146,3 +146,6 @@ node_modules/
 *.sqlite
 .DS_Store
 .claude/settings.local.json
+
+# Redis persistence snapshot (written by a locally run redis-server)
+dump.rdb
