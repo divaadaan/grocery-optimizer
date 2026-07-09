@@ -1,6 +1,6 @@
 # Development Roadmap
 
-Canonical plan as of 2026-06-12. Supersedes `NEXT_STEPS.md` (see git history
+Canonical plan as of 2026-07-09. Supersedes `NEXT_STEPS.md` (see git history
 for the WSL-migration log and verification notes it contained).
 
 ## Done
@@ -18,6 +18,17 @@ for the WSL-migration log and verification notes it contained).
   search, meal-plan generation (with long-running-job UX), and a shopping-list
   page wired against the 501 stub so it lights up when the backend lands.
   See `frontend/README.md` for architecture and run instructions.
+- **Pre-launch review fixes (2026-07-09).** A fresh-install walkthrough
+  (clean Postgres, seeded from `scripts/init_db.sql`, real browser session)
+  found and fixed four blockers: `users.is_active`/`last_login` missing from
+  the schema (registration and every user endpoint 500'd), `search_deals`/
+  `get_top_deals` omitting columns the `DealInfo` response model requires
+  (both endpoints 500'd), cache SETs failing on Decimal/date serialization
+  (deals cache silently did nothing), and `POST /recipes/generate` stalling
+  ~4 minutes when dependencies were down — MLflow's default retry backoff,
+  not Ollama, was the culprit. Generation now preflights Ollama (503 in
+  ~60ms with an actionable message), caps MLflow retries, and puts a
+  configurable timeout (`OLLAMA_REQUEST_TIMEOUT`) on all agent LLM calls.
 
 ## Next
 
@@ -60,11 +71,46 @@ for the WSL-migration log and verification notes it contained).
    sweep, configs ready, log TensorBoard; QLoRA → needs `merge_lora` before
    eval/export), then pivot to the step-2 app-targeted dataset.
 
+## Launch readiness (from the 2026-07-09 review)
+
+Items 1–4 above are the launch gate: recipe persistence, the async
+generation API, the Shopping Optimizer, and real deal data. Two scoping
+calls to make explicitly:
+
+- **Shopping Optimizer is the namesake feature.** The UI stub degrades
+  gracefully, but shipping "grocery optimizer" without item 3 needs a
+  deliberate decision (soft-launch as a meal planner vs. hold for the
+  optimizer).
+- **Seed data only covers 3 postal codes.** Any other postal code renders
+  an empty app. Until Flipp ingestion (item 4) lands, launch messaging has
+  to match the covered areas.
+
+Deployment/operational gaps to close before anything public:
+
+- **Mobile layout breaks.** At phone widths the header nav stacks
+  vertically and pushes content down; the profile chip is clipped. Content
+  cards adapt fine — it's the `Layout` header that needs a responsive pass.
+- **No CI.** Add a workflow that runs `pytest -m "not llm"` and
+  `npm run build` (typecheck) per PR — the fresh-install bugs fixed above
+  are exactly the class of drift CI against a clean schema would catch.
+- **No production serving story for the frontend.** It isn't in
+  docker-compose and only has the Vite dev server documented; decide
+  static hosting vs. serving `dist/` from FastAPI and wire it up.
+- **No LICENSE file.**
+- **SETUP.md has drifted** (psycopg2 troubleshooting, Windows-only venv
+  activation, response examples that predate the current API). Re-verify
+  it against a clean machine once the above land.
+- **DB hardening** (tracked in `scripts/ToDO.txt`): least-privilege app
+  role, read-only analytics role, row-level security, PgBouncer,
+  credential rotation.
+
 ## Engineering debt / smaller items
 
 - `estimated_savings` for shopping lists hardcoded to 0.0 pending item 3.
-- No auth — the frontend "session" is a localStorage user profile; revisit
-  when the API grows write endpoints worth protecting.
+- No auth — the frontend "session" is a localStorage user profile, and
+  "load profile by user ID" means any profile is loadable by anyone;
+  acceptable for a closed beta, revisit before opening writes to the
+  public.
 - Frontend deal categories are derived from the loaded page of deals; add a
   `GET /postal-code/categories/{postal}` endpoint if filtering needs to be
   exhaustive.
