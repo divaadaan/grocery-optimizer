@@ -143,6 +143,7 @@ class StoreService:
         """Get top deals by discount percentage."""
         query = """
         SELECT
+            d.deal_id,
             d.product_name,
             d.brand,
             d.sale_price,
@@ -150,6 +151,8 @@ class StoreService:
             d.discount_percentage,
             d.unit,
             d.category,
+            d.valid_from,
+            d.valid_until,
             s.name as store_name,
             s.chain
         FROM deals d
@@ -182,6 +185,8 @@ class StoreService:
             d.discount_percentage,
             d.unit,
             d.category,
+            d.valid_from,
+            d.valid_until,
             s.name as store_name,
             s.chain
         FROM deals d

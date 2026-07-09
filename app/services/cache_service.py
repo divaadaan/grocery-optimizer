@@ -79,7 +79,9 @@ class CacheService:
             return False
 
         try:
-            serialized = json.dumps(value)
+            # DB rows carry Decimal/date/datetime values; default=str matches how
+            # the API serializes them, so cached and fresh responses look the same.
+            serialized = json.dumps(value, default=str)
             if ttl:
                 self.redis_client.setex(key, ttl, serialized)
             else:

@@ -17,7 +17,8 @@ class ChefOrchestrator:
             model=settings.ollama_chef_model,
             base_url=settings.ollama_base_url,
             temperature=0.7,
-            format="json"
+            format="json",
+            client_kwargs={"timeout": settings.ollama_request_timeout}
         )
         self.db = DatabaseService()
 

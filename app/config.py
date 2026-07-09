@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     ollama_chef_model: str = Field(default="smollm:1.7b", env="OLLAMA_CHEF_MODEL")
     ollama_sous_chef_model: str = Field(default="smollm:360m", env="OLLAMA_SOUS_CHEF_MODEL")
     ollama_nutritionist_model: str = Field(default="smollm:360m", env="OLLAMA_NUTRITIONIST_MODEL")
+    # Per-request ceiling for agent LLM calls; local models are slow, so keep
+    # this generous — it exists to stop a wedged Ollama from hanging a workflow.
+    ollama_request_timeout: float = Field(default=600.0, env="OLLAMA_REQUEST_TIMEOUT")
 
     # MLflow
     mlflow_tracking_uri: str = Field(default="http://localhost:5000", env="MLFLOW_TRACKING_URI")

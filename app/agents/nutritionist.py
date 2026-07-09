@@ -16,7 +16,8 @@ class Nutritionist:
             model=settings.ollama_nutritionist_model,
             base_url=settings.ollama_base_url,
             temperature=0.3,  # Lower temperature for consistent validation
-            format="json"
+            format="json",
+            client_kwargs={"timeout": settings.ollama_request_timeout}
         )
 
     def validate_recipes(self, state: RecipeGenerationState) -> dict:

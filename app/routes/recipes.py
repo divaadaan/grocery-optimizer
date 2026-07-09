@@ -3,9 +3,11 @@ Recipe generation endpoints
 """
 
 from fastapi import APIRouter, HTTPException, status
+import httpx
 import logging
 from datetime import datetime
 
+from app.config import settings
 from app.models.schemas import (
     RecipeGenerationRequest,
     RecipeGenerationResponse,
@@ -46,6 +48,20 @@ async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGeneration
     **Note:** This is currently a stub. Full LangGraph implementation will be added.
     """
     try:
+        # Fail fast if Ollama is unreachable — otherwise the workflow spins for
+        # minutes before surfacing an error the user can't act on.
+        try:
+            response = httpx.get(f"{settings.ollama_base_url}/api/tags", timeout=2.0)
+            response.raise_for_status()
+        except httpx.HTTPError:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=(
+                    f"Ollama is not reachable at {settings.ollama_base_url}. "
+                    "Start it (`ollama serve`) and try again."
+                )
+            )
+
         # Validate user exists
         user = UserService.get_user_by_id(request.user_id)
         if not user:

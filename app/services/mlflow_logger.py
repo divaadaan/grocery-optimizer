@@ -1,6 +1,13 @@
 import functools
+import os
 import time
 from typing import Dict, Any, List
+
+# MLflow's default HTTP retry policy (7 retries, exponential backoff) stalls
+# callers for ~4 minutes when the tracking server is down. Tracking is
+# best-effort here, so fail fast instead; the env vars still win if set.
+os.environ.setdefault("MLFLOW_HTTP_REQUEST_MAX_RETRIES", "1")
+os.environ.setdefault("MLFLOW_HTTP_REQUEST_TIMEOUT", "5")
 
 import mlflow
 

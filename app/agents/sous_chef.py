@@ -40,7 +40,8 @@ class SousChef:
             model=settings.ollama_sous_chef_model,
             base_url=settings.ollama_base_url,
             temperature=0.8,  # Higher creativity for recipes
-            format="json"
+            format="json",
+            client_kwargs={"timeout": settings.ollama_request_timeout}
         )
 
     def generate_recipes(
