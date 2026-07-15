@@ -18,7 +18,9 @@ CREATE TABLE users (
     household_size INTEGER DEFAULT 1,
     dietary_restrictions JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP,
+    is_active BOOLEAN DEFAULT true
 );
 
 CREATE INDEX idx_users_postal_code ON users(postal_code);
