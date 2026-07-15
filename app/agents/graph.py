@@ -203,6 +203,7 @@ def finalize_meal_plan(state: RecipeGenerationState) -> dict:
         "cost_per_meal": total_cost / num_approved if num_approved else 0,
         "estimated_savings": estimated_savings,
         "budget_remaining": state["budget"] - total_cost,
+        "saved_recipe_ids": recipe_ids,
     }
 
     if num_approved < state["num_meals"]:

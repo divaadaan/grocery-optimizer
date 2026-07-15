@@ -63,6 +63,10 @@ class RecipeGenerationState(TypedDict):
     approved_recipe_ids: List[str]
     rejected_recipe_ids: List[str]
 
+    # DB-assigned recipe ids for the saved approved recipes, aligned in order
+    # with approved_recipe_ids — written once by finalize_meal_plan
+    saved_recipe_ids: List[int]
+
     # Retry mechanism
     iteration_count: int
     max_iterations: int
