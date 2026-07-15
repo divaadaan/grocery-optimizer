@@ -107,25 +107,12 @@ Generate the revised recipe now:"""
 **User's Dietary Restrictions:**
 {dietary_restrictions}
 
-**Dietary Restriction Reference (authoritative — use these definitions, NOT your own assumptions):**
-- **vegetarian** — EXCLUDES only meat, poultry, and fish/seafood (chicken, beef, pork, turkey, lamb, veal, steak, bacon, ham, sausage, salmon, tuna, fish, shrimp, anchovy). ALLOWS dairy (milk, cheese, yogurt, butter, cream), eggs, and all plant foods.
-- **vegan** — EXCLUDES all animal products: meat, poultry, fish/seafood, dairy, AND eggs. ALLOWS all plant foods (vegetables, fruits, grains, pasta, legumes, tomato/tomato sauce, avocado, oils).
-- **pescatarian** — EXCLUDES meat and poultry only. ALLOWS fish/seafood, dairy, eggs, and all plant foods.
-- **no_nuts / nut_free** — EXCLUDES tree nuts and peanuts (almond, cashew, walnut, pecan, pistachio, hazelnut, peanut). ALLOWS everything else.
-
-**How to judge dietary compliance:**
-- Flag a violation ONLY when a specific ingredient is explicitly excluded by one of the user's restrictions above. Name that ingredient.
-- Plant foods (vegetables, fruits, grains, pasta, tomato/tomato sauce, avocado, oils, herbs, spices) NEVER violate vegetarian, vegan, or pescatarian.
-- Dairy and eggs are allowed for vegetarian and pescatarian; only vegan excludes them.
-- Do NOT invent violations, and do NOT reject a recipe merely because it is simple, minimal, or unusual.
-
 **Validation Checklist:**
-1. **Allergen Safety:** Does this recipe contain any allergen the user's restrictions exclude?
-2. **Dietary Compliance:** Using the reference above, is every ingredient allowed by the user's restrictions?
-3. **Nutritional Balance:** Estimate macros (informational — must NOT drive rejection).
-4. **Practical Cooking:** Note any clarity issues (informational — must NOT drive rejection).
-
-**Approval rule:** Set `"approved": true` if and only if the recipe is allergen-safe AND every ingredient is allowed by the user's dietary restrictions. Nutritional balance, style, and ingredient coherence are advisory and must NOT cause a rejection.
+1. **Allergen Safety:** Does this recipe contain any restricted allergens?
+2. **Dietary Compliance:** Does it meet all dietary restrictions (vegan, kosher, etc)?
+3. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)
+4. **Practical Cooking:** Are instructions clear and achievable?
+5. **Ingredient Coherence:** Do ingredients work well together?
 
 **Calculate Nutrition Facts:**
 - Estimate calories per serving

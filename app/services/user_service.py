@@ -3,7 +3,6 @@ User service for database operations
 """
 
 from typing import Optional, Dict, Any
-from datetime import datetime
 import json
 import logging
 

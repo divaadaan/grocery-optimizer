@@ -3,7 +3,6 @@ User endpoints
 """
 
 from fastapi import APIRouter, HTTPException, status
-from typing import Dict, Any
 import logging
 
 from app.models.schemas import (

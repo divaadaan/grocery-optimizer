@@ -5,7 +5,7 @@ import uuid
 from typing import Dict, List
 from .state import Recipe
 from .prompts import PromptTemplates
-from .llm_output import GeneratedRecipe, LLMOutputError, RecipeBatch, invoke_validated
+from .llm_output import GeneratedRecipe, RecipeBatch, invoke_validated
 from .costing import price_recipe
 from ..config import settings
 from ..services.mlflow_logger import MLflowLogger

@@ -15,7 +15,7 @@ from datetime import datetime
 from app.config import settings
 from app.db import init_db, close_db
 from app.services.cache_service import init_cache, close_cache, cache
-from app.models.schemas import HealthCheckResponse, ErrorResponse
+from app.models.schemas import HealthCheckResponse
 from app.routes import users, stores, recipes, shopping_lists
 
 # Configure logging
