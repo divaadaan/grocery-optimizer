@@ -1,6 +1,5 @@
 import operator
 from typing import List, Dict, Literal, Optional, Annotated
-from datetime import datetime
 
 # pydantic (used by langgraph for schema introspection) requires the
 # typing_extensions TypedDict on Python < 3.12
@@ -63,6 +62,10 @@ class RecipeGenerationState(TypedDict):
     validation_results: Annotated[Dict[str, ValidationResult], merge_dicts]
     approved_recipe_ids: List[str]
     rejected_recipe_ids: List[str]
+
+    # DB-assigned recipe ids for the saved approved recipes, aligned in order
+    # with approved_recipe_ids — written once by finalize_meal_plan
+    saved_recipe_ids: List[int]
 
     # Retry mechanism
     iteration_count: int

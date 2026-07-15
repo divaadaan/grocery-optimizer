@@ -3,7 +3,6 @@ Store and deals service for database operations
 """
 
 from typing import List, Dict, Any, Optional
-from datetime import date
 import logging
 
 from app.db import db

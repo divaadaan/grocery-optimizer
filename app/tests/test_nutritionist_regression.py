@@ -23,23 +23,13 @@ PROFILE = FIXTURES["user_profile"]
 FULL_CASES = [c for c in FIXTURES["nutritionist_cases"] if c["recipe"] is not None]
 NAME_ONLY_CASES = [c for c in FIXTURES["nutritionist_cases"] if c["recipe"] is None]
 
-# REJECT cases are hard regression guards. APPROVE controls are xfail: observed
-# 2026-06-12 that phi4-mini intermittently false-rejects compliant minimal
-# recipes with quality critiques ("ingredients incomplete", "instructions
-# unclear") — an over-strictness failure mode the SFT must also fix.
-VERDICT_PARAMS = [
-    pytest.param(
-        c,
-        id=c["id"],
-        marks=pytest.mark.xfail(
-            reason="phi4-mini false-rejects minimal compliant recipes — SFT target",
-            strict=False,
-        ),
-    )
-    if c["expected_approved"]
-    else pytest.param(c, id=c["id"])
-    for c in FULL_CASES
-]
+# Both REJECT and APPROVE cases are now hard regression guards. The APPROVE
+# controls were xfail while the verdict came from the LLM (phi4-mini and every
+# other model false-reject minimal compliant recipes and confabulate violations;
+# ROADMAP 2026-07-15). Dietary compliance is now decided deterministically in
+# app/agents/dietary.py, so the verdict no longer depends on the model — these
+# assertions must hold every run.
+VERDICT_PARAMS = [pytest.param(c, id=c["id"]) for c in FULL_CASES]
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -82,11 +72,6 @@ def test_name_only_cases_documented(case):
     pytest.skip(f"name-only case, full recipe JSON not captured: {case['note']}")
 
 
-@pytest.mark.xfail(
-    reason="known failure: qwen2.5:7b chef ignores vegetarian restriction when "
-    "grouping (NEXT_STEPS item 3) — this is the SFT acceptance bar",
-    strict=False,
-)
 def test_chef_groups_respect_vegetarian_restriction():
     from app.agents.chef_orchestrator import ChefOrchestrator
 

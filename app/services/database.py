@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List, Dict
+from typing import List, Dict, Optional
 import json
 
 # Import the connection pool from db module
@@ -80,3 +80,113 @@ class DatabaseService:
                 recipe_ids.append(recipe_id)
 
         return recipe_ids
+
+    def get_recipe(self, recipe_id: int) -> Optional[Dict]:
+        """
+        Fetch a single recipe by id.
+        """
+        query = """
+        SELECT recipe_id, user_id, name, ingredients, instructions,
+               total_cost, servings, prep_time, cook_time, cuisine_type,
+               meal_type, nutritional_info, allergen_info, created_at
+        FROM recipes
+        WHERE recipe_id = %s;
+        """
+
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, (recipe_id,))
+            result = cursor.fetchone()
+            return _jsonable(dict(result)) if result else None
+
+    def get_user_recipes(self, user_id: int, limit: int = 10) -> List[Dict]:
+        """
+        Fetch a user's recipes, most-recent first.
+        """
+        query = """
+        SELECT recipe_id, user_id, name, ingredients, instructions,
+               total_cost, servings, prep_time, cook_time, cuisine_type,
+               meal_type, nutritional_info, allergen_info, created_at
+        FROM recipes
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+        LIMIT %s;
+        """
+
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, (user_id, limit))
+            results = cursor.fetchall()
+            return [_jsonable(dict(row)) for row in results]
+
+    def save_shopping_list(
+        self,
+        user_id: int,
+        recipe_ids: List[int],
+        items: List[Dict],
+        total_cost: float,
+        estimated_savings: float,
+        regular_total: float
+    ) -> int:
+        """
+        Save a consolidated shopping list to the database.
+
+        Returns the new list_id.
+        """
+        query = """
+        INSERT INTO shopping_lists (
+            user_id, recipe_ids, items, total_cost,
+            estimated_savings, regular_total, created_at
+        ) VALUES (%s, %s, %s, %s, %s, %s, NOW())
+        RETURNING list_id;
+        """
+
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, (
+                user_id,
+                recipe_ids,  # binds as Postgres INTEGER[]
+                json.dumps(items),  # JSONB
+                total_cost,
+                estimated_savings,
+                regular_total
+            ))
+            return cursor.fetchone()["list_id"]
+
+    def get_latest_shopping_list(self, user_id: int) -> Optional[Dict]:
+        """
+        Fetch the most recent shopping list for a user.
+        """
+        query = """
+        SELECT list_id, user_id, recipe_ids, items, total_cost,
+               estimated_savings, regular_total, created_at, is_completed
+        FROM shopping_lists
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+        LIMIT 1;
+        """
+
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, (user_id,))
+            result = cursor.fetchone()
+            return _jsonable(dict(result)) if result else None
+
+    def mark_shopping_list_complete(self, user_id: int) -> bool:
+        """
+        Mark the user's most recent shopping list as completed.
+
+        Returns whether a row was updated.
+        """
+        query = """
+        UPDATE shopping_lists
+        SET is_completed = true
+        WHERE list_id = (
+            SELECT list_id FROM shopping_lists
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+        )
+        RETURNING list_id;
+        """
+
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, (user_id,))
+            result = cursor.fetchone()
+            return result is not None

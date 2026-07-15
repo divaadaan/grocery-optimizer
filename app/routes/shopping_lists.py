@@ -4,15 +4,22 @@ Shopping list endpoints
 
 from fastapi import APIRouter, HTTPException, status
 import logging
+from datetime import datetime
 
 from app.models.schemas import (
     ShoppingListResponse,
     ErrorResponse
 )
+from app.services.user_service import UserService
+from app.services.database import DatabaseService
+from app.services.store_service import StoreService
+from app.services.shopping_optimizer import optimize_shopping_list
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/shopping-list", tags=["shopping-lists"])
+
+db_service = DatabaseService()
 
 
 @router.get("/{user_id}",
@@ -35,20 +42,49 @@ async def get_shopping_list(user_id: int) -> ShoppingListResponse:
     - Store assignments for each item (best price)
     - Total cost and estimated savings
     - Shopping route optimization (future)
-
-    **Note:** This is currently a stub. Full implementation pending.
     """
     try:
         logger.info(f"Fetching shopping list for user {user_id}")
 
-        # TODO: Implement shopping list retrieval
-        # Will pull from shopping_lists table and format response
+        user = UserService.get_user_by_id(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with ID {user_id} not found"
+            )
 
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Shopping list generation not yet implemented. "
-                   "This endpoint will consolidate ingredients from recipes, "
-                   "assign items to stores with best prices, and calculate total costs."
+        recipes = db_service.get_user_recipes(user_id)
+        if not recipes:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No recipes found for this user. Generate a meal plan first."
+            )
+
+        deals = StoreService.get_current_deals_by_postal_code(user["postal_code"])
+        result = optimize_shopping_list(recipes, deals)
+
+        regular_total = result.total_cost + result.estimated_savings
+        recipe_ids = [recipe["recipe_id"] for recipe in recipes]
+
+        list_id = db_service.save_shopping_list(
+            user_id=user_id,
+            recipe_ids=recipe_ids,
+            items=result.items,
+            total_cost=result.total_cost,
+            estimated_savings=result.estimated_savings,
+            regular_total=regular_total
+        )
+
+        return ShoppingListResponse(
+            list_id=list_id,
+            user_id=user_id,
+            recipe_ids=recipe_ids,
+            items=result.items,
+            total_cost=result.total_cost,
+            estimated_savings=result.estimated_savings,
+            stores=result.stores,
+            created_at=datetime.now(),
+            is_completed=False
         )
 
     except HTTPException:
@@ -72,8 +108,12 @@ async def mark_shopping_list_complete(user_id: int):
 
     Updates the shopping list status when user finishes shopping.
     """
-    # TODO: Implement mark complete functionality
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Mark shopping list complete not yet implemented"
-    )
+    success = db_service.mark_shopping_list_complete(user_id)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No shopping list found for user {user_id}"
+        )
+
+    return None

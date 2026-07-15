@@ -11,8 +11,12 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
-from langchain_core.messages import AIMessage, HumanMessage
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+
+# NB: langchain_core is imported lazily inside invoke_validated (the only place
+# it's used) so the schemas below can be imported with just pydantic installed —
+# the training/ dataset builder reuses them as the build-time validation gate
+# and its venv deliberately doesn't carry the langchain stack.
 
 
 def _lenient_int(value: Any, default: int) -> int:
@@ -206,6 +210,8 @@ def invoke_validated(
     (validated model, raw content of the accepted response); raises
     LLMOutputError once attempts are exhausted.
     """
+    from langchain_core.messages import AIMessage, HumanMessage
+
     messages = [HumanMessage(content=prompt)]
     last_error = "no attempts made"
 

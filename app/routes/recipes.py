@@ -13,10 +13,31 @@ from app.models.schemas import (
     ErrorResponse
 )
 from app.services.user_service import UserService
+from app.services.database import DatabaseService
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
+
+db_service = DatabaseService()
+
+
+def _recipe_row_to_info(recipe: dict) -> RecipeInfo:
+    """Map a `recipes` table row to the RecipeInfo response model."""
+    return RecipeInfo(
+        recipe_id=recipe["recipe_id"],
+        name=recipe["name"],
+        ingredients=recipe["ingredients"],
+        instructions=recipe["instructions"],
+        total_cost=recipe["total_cost"],
+        servings=recipe["servings"],
+        estimated_prep_time=recipe.get("prep_time"),
+        meal_type=recipe.get("meal_type"),
+        cuisine_type=recipe.get("cuisine_type"),
+        nutrition_facts=recipe.get("nutritional_info"),
+        health_score=None,  # Not stored on the recipes table
+        created_at=recipe["created_at"]
+    )
 
 
 @router.post("/generate",
@@ -81,12 +102,18 @@ async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGeneration
                     detail=f"Recipe generation failed: {'; '.join(result.get('errors', ['Unknown error']))}"
                 )
 
-            # Convert recipes to response format
+            # Convert recipes to response format. saved_recipe_ids (set by
+            # finalize_meal_plan) aligns in order with approved_recipe_ids;
+            # fall back to 0 defensively if it's missing (e.g. partial/failure
+            # paths that never reached finalize).
+            saved_recipe_ids = result.get("saved_recipe_ids", [])
+            recipe_id_map = dict(zip(result["approved_recipe_ids"], saved_recipe_ids))
+
             recipes = []
             for recipe_id in result["approved_recipe_ids"]:
                 recipe_data = result["generated_recipes"][recipe_id]
                 recipes.append(RecipeInfo(
-                    recipe_id=0,  # Will be updated after DB save
+                    recipe_id=recipe_id_map.get(recipe_id, 0),
                     name=recipe_data["name"],
                     ingredients=recipe_data["ingredients"],
                     instructions=recipe_data["instructions"],
@@ -132,7 +159,8 @@ async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGeneration
 @router.get("/{recipe_id}",
             response_model=RecipeInfo,
             responses={
-                404: {"model": ErrorResponse, "description": "Recipe not found"}
+                404: {"model": ErrorResponse, "description": "Recipe not found"},
+                500: {"model": ErrorResponse, "description": "Internal server error"}
             })
 async def get_recipe(recipe_id: int) -> RecipeInfo:
     """
@@ -141,17 +169,32 @@ async def get_recipe(recipe_id: int) -> RecipeInfo:
     Retrieve full recipe details including ingredients, instructions,
     cost breakdown, and nutritional information.
     """
-    # TODO: Implement recipe retrieval from database
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Recipe retrieval not yet implemented"
-    )
+    try:
+        recipe = db_service.get_recipe(recipe_id)
+
+        if not recipe:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Recipe with ID {recipe_id} not found"
+            )
+
+        return _recipe_row_to_info(recipe)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching recipe {recipe_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch recipe"
+        )
 
 
 @router.get("/user/{user_id}",
             response_model=list[RecipeInfo],
             responses={
-                404: {"model": ErrorResponse, "description": "User not found"}
+                404: {"model": ErrorResponse, "description": "User not found"},
+                500: {"model": ErrorResponse, "description": "Internal server error"}
             })
 async def get_user_recipes(
     user_id: int,
@@ -165,8 +208,22 @@ async def get_user_recipes(
     - **user_id**: User ID
     - **limit**: Maximum number of recipes to return (default: 10)
     """
-    # TODO: Implement user recipes retrieval
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="User recipes retrieval not yet implemented"
-    )
+    try:
+        user = UserService.get_user_by_id(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with ID {user_id} not found"
+            )
+
+        recipes = db_service.get_user_recipes(user_id, limit)
+        return [_recipe_row_to_info(recipe) for recipe in recipes]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching recipes for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch user recipes"
+        )
