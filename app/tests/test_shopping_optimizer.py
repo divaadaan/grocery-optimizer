@@ -1,5 +1,5 @@
 """Unit tests for the deterministic shopping-list optimizer."""
-from app.services.shopping_optimizer import ANY_STORE, optimize_shopping_list
+from app.services.shopping_optimizer import ANY_STORE, optimize_shopping_list, stores_from_items
 
 
 def _item(items, product):
@@ -167,3 +167,35 @@ def test_ingredient_with_no_name_is_skipped():
     result = optimize_shopping_list(recipes, [])
     assert len(result.items) == 1
     assert result.items[0]["product"] == "Pasta Penne"
+
+
+# --- stores_from_items --------------------------------------------------------
+
+def test_stores_from_items_excludes_any_store():
+    items = [
+        {"product": "Pasta Penne", "store": "Store A"},
+        {"product": "salt", "store": ANY_STORE},
+    ]
+    assert stores_from_items(items) == ["Store A"]
+
+
+def test_stores_from_items_deduplicates_and_sorts():
+    items = [
+        {"product": "Pasta Penne", "store": "Zeta Mart"},
+        {"product": "Tomato Sauce", "store": "Ace Grocer"},
+        {"product": "Onion", "store": "Zeta Mart"},
+    ]
+    assert stores_from_items(items) == ["Ace Grocer", "Zeta Mart"]
+
+
+def test_stores_from_items_handles_empty_list():
+    assert stores_from_items([]) == []
+
+
+def test_stores_from_items_handles_missing_or_none_store_keys():
+    items = [
+        {"product": "Pasta Penne", "store": "Store A"},
+        {"product": "salt"},
+        {"product": "Onion", "store": None},
+    ]
+    assert stores_from_items(items) == ["Store A"]

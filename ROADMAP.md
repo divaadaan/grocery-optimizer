@@ -26,6 +26,14 @@ for the WSL-migration log and verification notes it contained).
    `GET /recipes/{id}` and `GET /recipes/user/{id}` (501 stubs). Unblocks a
    recipe-history view in the UI.
 
+   *Shipped (2026-07-15):* **Done.** `finalize_meal_plan` already persisted
+   recipes; the returned DB ids are now threaded back through
+   `state.saved_recipe_ids` so `POST /recipes/generate` returns real ids
+   instead of `recipe_id=0`. Both GET stubs implemented over new
+   `DatabaseService.get_recipe`/`get_user_recipes`. (Also fixed a pre-existing
+   schema drift found while verifying: `users.last_login`/`is_active` were
+   referenced by `UserService` but missing from `init_db.sql` and the DB.)
+
 2. **Async generation API.** `POST /recipes/generate` is synchronous and takes
    minutes with local models — it will hit browser/proxy timeouts. Move to a
    job model: POST returns `job_id`; progress via polling or SSE streamed from
@@ -37,6 +45,22 @@ for the WSL-migration log and verification notes it contained).
    ingredients, assign items to stores by best price, persist to
    `shopping_lists`. The frontend success path is already built
    (`features/shopping/ShoppingListPage.tsx`).
+
+   *Shipped (2026-07-15):* **Done.** `app/services/shopping_optimizer.py` is a
+   deterministic (DB-/LLM-free) v1: consolidate ingredients across a user's
+   recipes (merge duplicates by normalized token-set → `xN` quantity) and
+   assign each to the cheapest store carrying a matching deal, reusing
+   `costing.py`'s token matcher for parity; unmatched items / pantry staples
+   fall to an `ANY_STORE` sentinel. `estimated_savings` (regular − sale) is
+   computed here, retiring the hardcoded-0.0 debt. Endpoints: `GET
+   /shopping-list/{id}` returns the user's latest persisted list, lazily
+   building one only on first call (idempotent — no row-per-GET); `POST
+   /shopping-list/{id}/generate` is the explicit regenerate action; `POST
+   .../mark-complete` closes a list. The persisted row has no `stores` column,
+   so the read path re-derives it from items via `stores_from_items`. Verified
+   end-to-end against the live DB (cross-store cheapest assignment, JSON/array
+   round-trips, GET idempotency). Follow-up left as debt below (v2 =
+   minimize-trips; `mark-complete` targets latest-by-user, not a `list_id`).
 
 4. **Real deal ingestion (Flipp).** Replace seed data; `flipp_api_key`/
    `flipp_api_url` already exist in settings. Add a scheduled refresh and wire
@@ -189,7 +213,11 @@ for the WSL-migration log and verification notes it contained).
 
 ## Engineering debt / smaller items
 
-- `estimated_savings` for shopping lists hardcoded to 0.0 pending item 3.
+- ~~`estimated_savings` for shopping lists hardcoded to 0.0 pending item 3.~~
+  Resolved — computed in `shopping_optimizer` from `regular − sale`.
+- Shopping-list v2 levers (deferred): store-assignment that minimizes trips
+  (v1 is cheapest-per-item); `mark-complete` targets the user's latest list
+  rather than a specific `list_id`.
 - No auth — the frontend "session" is a localStorage user profile; revisit
   when the API grows write endpoints worth protecting.
 - Frontend deal categories are derived from the loaded page of deals; add a

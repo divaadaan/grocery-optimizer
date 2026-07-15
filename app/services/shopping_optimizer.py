@@ -26,6 +26,11 @@ class OptimizedList(NamedTuple):
     stores: List[str]          # distinct real store names (sorted), excluding ANY_STORE
 
 
+def stores_from_items(items: List[dict]) -> List[str]:
+    """Distinct real store names from a shopping list's items (excludes ANY_STORE), sorted."""
+    return sorted({i["store"] for i in items if i.get("store") and i["store"] != ANY_STORE})
+
+
 def _find_cheapest_deal(tokens: Set[str], deals: List[Dict]) -> Optional[Dict]:
     """Cheapest deal (across all stores) whose product matches ``tokens``.
 
