@@ -150,10 +150,23 @@ for the WSL-migration log and verification notes it contained).
    not a fix). Note: `NUTRITIONIST_VALIDATION`'s hardened dietary reference is now
    non-load-bearing (we ignore the LLM's verdict/feedback) — harmless, kept as
    nutrition-context; trim if desired.
-   *Next:* apply the same deterministic pattern to the **chef** node
-   (`test_chef_groups_respect_vegetarian_restriction`, still `xfail`) — filter deals
-   by `is_compliant` before/after grouping so meat never enters a vegetarian group —
-   then the broader Phase 4 (substitution table + RAG) in `training/data_app/NEXT_STEPS.md`. — start with the deterministic
+   *Shipped (2026-07-15, cont.):* **Deterministic chef compliance — the chef
+   `xfail` is flipped too; both acceptance-bar tests now pass deterministically.**
+   `ChefOrchestrator.plan_ingredient_groups` pre-filters the deal set through
+   `is_compliant` (the LLM only ever sees compliant deals) and post-filters the
+   returned groups via `_enforce_group_compliance` (strips any forbidden item the
+   model emits anyway, backfills emptied groups from unused compliant deals to keep
+   the 3-non-empty-groups contract). `test_chef_groups_respect_vegetarian_restriction`
+   demoted from `xfail` to a hard assert. Full suite: **32 passed, 5 skipped, no
+   xfail/xpass** — the two failure modes that motivated the whole SFT track
+   (structured-JSON dietary grouping + nutritionist false-rejection) are resolved in
+   code. Both `dietary.py` and the chef/nutritionist nodes share one oracle whose
+   vocab equals the test fixture and the SFT label generator.
+   *Next:* broader Phase 4 (offline substitution table + RAG-augmented generation)
+   in `training/data_app/NEXT_STEPS.md` — now a *quality/variety* lever (adapt real
+   recipes to on-hand deals) rather than a *compliance* one, since compliance is
+   handled. Also revisit `estimated_savings` (item 3 / debt) and consider trimming
+   the now-unused compliance sections of the chef/nutritionist prompts. — start with the deterministic
    compliance oracle + offline substitution table. (Cheap side-lever noted, not
    blocking: since qwen "knows" tomatoes are vegan in plain form but confabulates
    under the app prompt, a nutritionist-prompt-hardening pass could recover the

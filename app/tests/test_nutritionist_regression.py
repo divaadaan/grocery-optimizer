@@ -72,11 +72,6 @@ def test_name_only_cases_documented(case):
     pytest.skip(f"name-only case, full recipe JSON not captured: {case['note']}")
 
 
-@pytest.mark.xfail(
-    reason="known failure: qwen2.5:7b chef ignores vegetarian restriction when "
-    "grouping (NEXT_STEPS item 3) — this is the SFT acceptance bar",
-    strict=False,
-)
 def test_chef_groups_respect_vegetarian_restriction():
     from app.agents.chef_orchestrator import ChefOrchestrator
 

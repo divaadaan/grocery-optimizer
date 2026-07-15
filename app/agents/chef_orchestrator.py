@@ -5,9 +5,43 @@ from typing import Dict, Any
 from .state import RecipeGenerationState
 from .prompts import PromptTemplates
 from .llm_output import ChefPlan, invoke_validated
+from .dietary import is_compliant
 from ..config import settings
 from ..services.database import DatabaseService
 from ..services.mlflow_logger import MLflowLogger
+
+
+def _enforce_group_compliance(groups, compliant_deals, restrictions):
+    """Strip any selection that violates the restrictions (defence against the
+    LLM emitting a forbidden/hallucinated product despite a pre-filtered menu),
+    then backfill emptied groups from unused compliant deals so the downstream
+    contract of 3 non-empty groups holds. Returns (cleaned_groups, num_removed).
+    """
+    used: set = set()
+    cleaned: list = []
+    removed = 0
+    for group in groups:
+        kept = []
+        for sel in group:
+            if is_compliant(sel.get("product_name", ""), restrictions):
+                kept.append(sel)
+                used.add(sel.get("product_name", ""))
+            else:
+                removed += 1
+        cleaned.append(kept)
+
+    spare = [d for d in compliant_deals if d.get("product_name") not in used]
+    for group in cleaned:
+        if not group and spare:
+            deal = spare.pop(0)
+            used.add(deal.get("product_name"))
+            group.append({
+                "product_name": deal.get("product_name", ""),
+                "quantity_estimate": "",
+                "deal_id": deal.get("deal_id", deal.get("id")),
+            })
+    return cleaned, removed
+
 
 class ChefOrchestrator:
     """Chef agent for high-level planning (largest configured model)."""
@@ -62,9 +96,22 @@ class ChefOrchestrator:
 
         start_time = time.time()
 
+        # Dietary compliance is enforced in code, not left to the LLM (which
+        # groups meat into vegetarian plans regardless of the prompt — ROADMAP
+        # 2026-07-15). Show the model only compliant deals so a forbidden item
+        # can't be selected in the first place.
+        restrictions = state["dietary_restrictions"]
+        compliant_deals = [
+            d for d in state["available_deals"]
+            if is_compliant(d.get("product_name", ""), restrictions)
+        ]
+        dropped = len(state["available_deals"]) - len(compliant_deals)
+        if dropped:
+            print(f"[Chef] Filtered out {dropped} deal(s) violating {restrictions}")
+
         # Prepare prompt
         prompt = PromptTemplates.CHEF_INGREDIENT_PLANNING.format(
-            deals_json=json.dumps(state["available_deals"][:100], indent=2),  # Limit for context
+            deals_json=json.dumps(compliant_deals[:100], indent=2),  # Limit for context
             budget=state["budget"],
             household_size=state["household_size"],
             num_meals=state["num_meals"],
@@ -81,6 +128,15 @@ class ChefOrchestrator:
                 [selection.model_dump() for selection in group]
                 for group in plan.ingredient_groups
             ]
+
+            # Safety net: strip any non-compliant item the model emitted anyway
+            # (hallucinated or otherwise), backfilling emptied groups.
+            ingredient_groups, removed = _enforce_group_compliance(
+                ingredient_groups, compliant_deals, restrictions
+            )
+            if removed:
+                print(f"[Chef] Removed {removed} non-compliant item(s) from LLM groups")
+
             ingredient_reuse_map = plan.ingredient_reuse_map
 
             # Log to MLflow

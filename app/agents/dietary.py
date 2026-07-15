@@ -45,6 +45,14 @@ def _name_violates(name: str, forbidden: list[str]) -> bool:
     return any(term in n for term in forbidden)
 
 
+def is_compliant(product_name: str, restrictions: list[str]) -> bool:
+    """True if a single product name is allowed under the restrictions.
+
+    Used by the Chef to filter the deal set before grouping (and as an output
+    safety net) so forbidden products never enter a group."""
+    return not _name_violates(product_name, forbidden_terms_for(restrictions))
+
+
 def recipe_violations(recipe: dict, restrictions: list[str]) -> list[str]:
     """Ingredient names in ``recipe`` that violate the restrictions (empty == compliant).
 
