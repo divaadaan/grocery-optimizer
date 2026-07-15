@@ -5,6 +5,7 @@ from typing import Dict
 from .state import RecipeGenerationState, ValidationResult
 from .prompts import PromptTemplates
 from .llm_output import NutritionistVerdict, invoke_validated
+from .dietary import compliance_report
 from ..config import settings
 from ..services.mlflow_logger import MLflowLogger
 
@@ -38,53 +39,73 @@ class Nutritionist:
 
             start_time = time.time()
 
-            # Prepare prompt
+            # Dietary compliance is decided deterministically in code — the LLM
+            # verdict is ignored. Every model tried (SFT'd SmolLM2, qwen2.5:1.5b,
+            # llama3.1:8b, mistral:7b) false-rejects compliant recipes and
+            # confabulates violations regardless of prompt/base/SFT
+            # (ROADMAP 2026-07-15); see app/agents/dietary.py.
+            report = compliance_report(recipe, state["dietary_restrictions"])
+            approved = report["approved"]
+            violations = report["violations"]
+
+            restrictions_desc = ", ".join(state["dietary_restrictions"]) or "no dietary"
+            if approved:
+                feedback = f"Approved: all ingredients comply with the {restrictions_desc} restriction."
+            else:
+                feedback = (
+                    f"Rejected: {', '.join(violations)} violate the "
+                    f"{restrictions_desc} restriction."
+                )
+
+            # The LLM is advisory only: it supplies nutrition facts + a rough
+            # health estimate. Best-effort — a schema/parse failure must not
+            # affect the (already-decided) compliance verdict.
             prompt = PromptTemplates.NUTRITIONIST_VALIDATION.format(
                 recipe_json=json.dumps(recipe, indent=2),
                 dietary_restrictions=", ".join(state["dietary_restrictions"])
             )
-
+            nutrition_facts: Dict = {}
+            health_score = 0.0
             try:
-                # Schema requires `approved`; other fields default. Invalid
-                # output is retried with the error fed back to the model.
                 verdict, _raw = invoke_validated(self.llm, prompt, NutritionistVerdict)
-
-                result = ValidationResult(
-                    recipe_id=recipe_id,
-                    approved=verdict.approved,
-                    feedback=verdict.feedback,
-                    nutrition_facts=verdict.nutrition_facts,
-                    dietary_compliance=verdict.dietary_compliance,
-                    health_score=verdict.health_score
-                )
-
-                validation_results[recipe_id] = result
-
-                if result["approved"]:
-                    approved_ids.append(recipe_id)
-                    print(f"[Nutritionist] ✓ APPROVED: {recipe['name']} (score: {result['health_score']})")
-                else:
-                    rejected_ids.append(recipe_id)
-                    print(f"[Nutritionist] ✗ REJECTED: {recipe['name']}")
-                    print(f"  Reason: {result['feedback']}")
-
-                duration = time.time() - start_time
-
-                # Log to MLflow
-                call_log.append({
-                    "agent": "Nutritionist",
-                    "action": "validate_recipe",
-                    "recipe_id": recipe_id,
-                    "approved": result["approved"],
-                    "timestamp": time.time(),
-                    "duration": duration
-                })
-
+                nutrition_facts = verdict.nutrition_facts
+                health_score = verdict.health_score
             except Exception as e:
-                print(f"[Nutritionist] ERROR validating {recipe['name']}: {e}")
-                errors.append(f"Validation error for {recipe_id}: {str(e)}")
-                # Graceful degradation: mark as pending
+                print(f"[Nutritionist] advisory nutrition facts unavailable for {recipe['name']}: {e}")
+                errors.append(f"Nutrition-facts error for {recipe_id}: {str(e)}")
+
+            result = ValidationResult(
+                recipe_id=recipe_id,
+                approved=approved,
+                feedback=feedback,
+                nutrition_facts=nutrition_facts,
+                dietary_compliance={
+                    "allergen_free": report["allergen_free"],
+                    "meets_restrictions": report["meets_restrictions"],
+                    "violations": violations,
+                },
+                health_score=health_score,
+            )
+            validation_results[recipe_id] = result
+
+            if approved:
+                approved_ids.append(recipe_id)
+                print(f"[Nutritionist] ✓ APPROVED: {recipe['name']}")
+            else:
                 rejected_ids.append(recipe_id)
+                print(f"[Nutritionist] ✗ REJECTED: {recipe['name']}  (violations: {', '.join(violations)})")
+
+            duration = time.time() - start_time
+
+            # Log to MLflow
+            call_log.append({
+                "agent": "Nutritionist",
+                "action": "validate_recipe",
+                "recipe_id": recipe_id,
+                "approved": approved,
+                "timestamp": time.time(),
+                "duration": duration
+            })
 
         # Log aggregate metrics
         MLflowLogger.log_validation_results(validation_results)

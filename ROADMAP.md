@@ -100,7 +100,65 @@ for the WSL-migration log and verification notes it contained).
    through `evaluate_app.py --ollama-model` first**, since world knowledge alone
    may clear the bar (it already "knows" avocado is vegan). If that still falls
    short, the next lever is retrieval (item 6 / Phase 4), not more SFT.
-   *Next:* eval `qwen2.5:1.5b-instruct` via the app-faithful Ollama path.
+
+   *Progress (2026-07-15):* **Untuned `qwen2.5:1.5b-instruct` evaluated through the
+   app-faithful Ollama path — falls short; the base-swap escape hatch is closed.**
+   `evaluate_app.py --ollama-model qwen2.5:1.5b-instruct` (10-example test split,
+   seed 0): sous_chef 2/2 valid JSON, but **both xfail proxies still fail** — chef
+   0/2 valid & dietary-clean (the one valid plan grouped Eggs/Ground Beef/Milk into
+   a vegetarian plan), and the nutritionist **false-rejects 5/5 APPROVE controls**
+   (false_rejection_rate 1.0) — the *same* failure mode as the SFT'd SmolLM2, now on
+   a capable untuned model. Root-caused via two cheap probes: (a) the model's own
+   verdict reasoning is factually wrong ("Milk 2% is not vegetarian-friendly",
+   "Tomato Sauce contains tomatoes, which are not vegan"), so it is hallucinating
+   violations, not legitimately rejecting incoherent fixtures; (b) plain-form Q&A
+   isolates *two compounding causes* — a genuine knowledge gap (qwen answers "No" to
+   "is milk/cheddar vegetarian?" even in plain form — it conflates vegetarian with
+   vegan) AND prompt-induced degradation (it answers "tomatoes are vegan" correctly
+   in plain form but confabulates the opposite under the app's 5-point checklist +
+   `format=json`). Decisive: small models get dietary compliance wrong whether tuned
+   or untuned-but-capable, confirming the item-6 thesis that compliance must be a
+   deterministic **code path**, not learned/LLM-judged behavior. **Base-swap sweep
+   confirms the ceiling isn't about capacity:** the same eval on `llama3.1:8b` and
+   `mistral:7b-instruct` also false-rejects 5/5 APPROVE controls (rate 1.0) —
+   scaling 1.5B→8B moved the nutritionist metric by zero. `deepseek-r1:8b` is a
+   non-starter for the app path (0/6 valid JSON; its `<think>` reasoning can't
+   coexist with `ChatOllama(format="json")` without a think-stripping layer). The
+   base-swap lever is exhausted. **Prompt-hardening diagnostic also negative:**
+   `NUTRITIONIST_VALIDATION` was hardened with an authoritative dietary reference
+   mirroring the `forbidden_terms_for` oracle (vegetarian ALLOWS dairy/eggs, plant
+   foods never violate, etc.) plus an approval rule that bars style/coherence
+   rejections. Re-running the test's nutritionist rows through the live template:
+   **llama3.1:8b and qwen2.5:1.5b both still false-reject 5/5 (rate unchanged at
+   1.0).** Inspection shows the models don't *use* the reference — they carry a hard
+   rejection bias and confabulate a justification, often self-contradicting ("cheese
+   is not explicitly excluded… however it contains dairy" → reject; "Tomato Sauce
+   contains dairy"; "Canned Tomatoes contains fish/seafood"). So the false-rejection
+   is neither a knowledge gap nor a wording problem — it's a robust behavioral
+   failure of the LLM-as-compliance-judge that grounding does not fix. All three
+   model-side levers (SFT, base-swap, prompt) are now exhausted.
+   *Shipped (2026-07-15):* **Deterministic nutritionist compliance (Phase 4, step 1)
+   — the nutritionist `xfail` is flipped.** New `app/agents/dietary.py` holds the
+   compliance oracle (`forbidden_terms_for`/`recipe_violations`/`compliance_report`),
+   vocab identical to the fixture's `forbidden_terms_vegetarian` and to
+   `training/data_app/seed_catalog.py`. The Nutritionist node
+   (`app/agents/validate_recipes`) now computes `approved`/`violations` in code and
+   uses the LLM for advisory nutrition facts only (best-effort; a parse failure no
+   longer affects the verdict). `test_nutritionist_regression.py` APPROVE controls
+   converted from `xfail` to hard asserts; full suite **31 passed, 5 skipped,
+   1 xpassed** (the xpass is the still-`xfail` chef test passing stochastically —
+   not a fix). Note: `NUTRITIONIST_VALIDATION`'s hardened dietary reference is now
+   non-load-bearing (we ignore the LLM's verdict/feedback) — harmless, kept as
+   nutrition-context; trim if desired.
+   *Next:* apply the same deterministic pattern to the **chef** node
+   (`test_chef_groups_respect_vegetarian_restriction`, still `xfail`) — filter deals
+   by `is_compliant` before/after grouping so meat never enters a vegetarian group —
+   then the broader Phase 4 (substitution table + RAG) in `training/data_app/NEXT_STEPS.md`. — start with the deterministic
+   compliance oracle + offline substitution table. (Cheap side-lever noted, not
+   blocking: since qwen "knows" tomatoes are vegan in plain form but confabulates
+   under the app prompt, a nutritionist-prompt-hardening pass could recover the
+   prompt-induced share of false-rejections — but the milk/cheese knowledge gap
+   won't yield to prompting, so RAG remains the real lever.)
 
 6. **RAG-augmented recipe generation (Phase 4).** Inference-time retrieval, after
    the qwen2.5:1.5b trial. Index a recipe corpus (Food.com to start), retrieve
