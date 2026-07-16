@@ -151,6 +151,11 @@ def score(rows: list[dict], generations: list[str]) -> dict:
         task = r["task"]
         ok, obj, error = parse_validated(task, gen)
         rec = {"task": task, "json_valid": ok, "error": error}
+        if not ok:
+            # Keep the raw model text for outputs that never validated so the
+            # report/metrics show exactly what the model emitted, not just the
+            # parse error. Validated outputs are omitted to keep metrics.json lean.
+            rec["raw_output"] = gen
         t = by_task.setdefault(task, {"n": 0, "json_valid": 0})
         t["n"] += 1
         t["json_valid"] += int(ok)
@@ -253,6 +258,21 @@ def render_report(meta: dict, scored: dict) -> str:
     L.append(f"  nutritionist APPROVE controls: false_rejection_rate={n['false_rejection_rate']}  ->  "
              f"{'WOULD PASS' if n['would_pass'] else 'still failing'}")
     L.append("-" * 72)
+
+    # What the model actually emitted for every output that failed validation —
+    # the raw text, not just the parse error, so failures can be diagnosed.
+    failures = [r for r in scored["per_example"] if not r["json_valid"]]
+    if failures:
+        L.append("")
+        L.append(f"UNVALIDATED MODEL OUTPUTS  ({len(failures)} failed schema validation)")
+        L.append("-" * 72)
+        for i, r in enumerate(failures, 1):
+            L.append(f"[{i}] {r['task']}  —  {r['error']}")
+            raw = r.get("raw_output", "")
+            snippet = raw if len(raw) <= 1500 else raw[:1500] + f"\n… [+{len(raw) - 1500} chars]"
+            L.append(snippet.rstrip())
+            L.append("")
+        L.append("-" * 72)
     return "\n".join(L) + "\n"
 
 
