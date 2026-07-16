@@ -13,13 +13,54 @@ from app.models.schemas import (
 from app.services.user_service import UserService
 from app.services.database import DatabaseService
 from app.services.store_service import StoreService
-from app.services.shopping_optimizer import optimize_shopping_list
+from app.services.shopping_optimizer import optimize_shopping_list, stores_from_items
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/shopping-list", tags=["shopping-lists"])
 
 db_service = DatabaseService()
+
+
+def _build_and_persist(user_id: int, user: dict) -> ShoppingListResponse:
+    """Build a fresh shopping list from the user's current recipes and persist it.
+
+    Raises 404 if the user has no recipes yet. Shared by GET's lazy
+    first-time path and the explicit POST /generate action.
+    """
+    recipes = db_service.get_user_recipes(user_id)
+    if not recipes:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No recipes found for this user. Generate a meal plan first."
+        )
+
+    deals = StoreService.get_current_deals_by_postal_code(user["postal_code"])
+    result = optimize_shopping_list(recipes, deals)
+
+    regular_total = result.total_cost + result.estimated_savings
+    recipe_ids = [recipe["recipe_id"] for recipe in recipes]
+
+    list_id = db_service.save_shopping_list(
+        user_id=user_id,
+        recipe_ids=recipe_ids,
+        items=result.items,
+        total_cost=result.total_cost,
+        estimated_savings=result.estimated_savings,
+        regular_total=regular_total
+    )
+
+    return ShoppingListResponse(
+        list_id=list_id,
+        user_id=user_id,
+        recipe_ids=recipe_ids,
+        items=result.items,
+        total_cost=result.total_cost,
+        estimated_savings=result.estimated_savings,
+        stores=result.stores,
+        created_at=datetime.now(),
+        is_completed=False
+    )
 
 
 @router.get("/{user_id}",
@@ -32,8 +73,10 @@ async def get_shopping_list(user_id: int) -> ShoppingListResponse:
     """
     Get the most recent shopping list for a user.
 
-    Returns a consolidated shopping list from approved recipes,
-    organized by store for optimal shopping efficiency.
+    Returns the user's latest persisted shopping list, building one only
+    if they don't have one yet (lazy first-time generation). Does NOT
+    write a new row on repeat calls — use POST /{user_id}/generate to
+    explicitly regenerate.
 
     - **user_id**: User ID
 
@@ -53,39 +96,21 @@ async def get_shopping_list(user_id: int) -> ShoppingListResponse:
                 detail=f"User with ID {user_id} not found"
             )
 
-        recipes = db_service.get_user_recipes(user_id)
-        if not recipes:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No recipes found for this user. Generate a meal plan first."
+        latest = db_service.get_latest_shopping_list(user_id)
+        if latest is not None:
+            return ShoppingListResponse(
+                list_id=latest["list_id"],
+                user_id=latest["user_id"],
+                recipe_ids=latest["recipe_ids"],
+                items=latest["items"],
+                total_cost=latest["total_cost"],
+                estimated_savings=latest["estimated_savings"],
+                stores=stores_from_items(latest["items"]),
+                created_at=latest["created_at"],
+                is_completed=latest["is_completed"]
             )
 
-        deals = StoreService.get_current_deals_by_postal_code(user["postal_code"])
-        result = optimize_shopping_list(recipes, deals)
-
-        regular_total = result.total_cost + result.estimated_savings
-        recipe_ids = [recipe["recipe_id"] for recipe in recipes]
-
-        list_id = db_service.save_shopping_list(
-            user_id=user_id,
-            recipe_ids=recipe_ids,
-            items=result.items,
-            total_cost=result.total_cost,
-            estimated_savings=result.estimated_savings,
-            regular_total=regular_total
-        )
-
-        return ShoppingListResponse(
-            list_id=list_id,
-            user_id=user_id,
-            recipe_ids=recipe_ids,
-            items=result.items,
-            total_cost=result.total_cost,
-            estimated_savings=result.estimated_savings,
-            stores=result.stores,
-            created_at=datetime.now(),
-            is_completed=False
-        )
+        return _build_and_persist(user_id, user)
 
     except HTTPException:
         raise
@@ -94,6 +119,45 @@ async def get_shopping_list(user_id: int) -> ShoppingListResponse:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch shopping list"
+        )
+
+
+@router.post("/{user_id}/generate",
+              response_model=ShoppingListResponse,
+              status_code=status.HTTP_201_CREATED,
+              responses={
+                  404: {"model": ErrorResponse, "description": "Shopping list not found"},
+                  500: {"model": ErrorResponse, "description": "Internal server error"}
+              })
+async def generate_shopping_list(user_id: int) -> ShoppingListResponse:
+    """
+    Regenerate the shopping list for a user from their current recipes.
+
+    Always builds a brand-new consolidated list and persists it as a new
+    row, regardless of whether a list already exists. This is the explicit
+    "regenerate my list" action.
+
+    - **user_id**: User ID
+    """
+    try:
+        logger.info(f"Generating a new shopping list for user {user_id}")
+
+        user = UserService.get_user_by_id(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with ID {user_id} not found"
+            )
+
+        return _build_and_persist(user_id, user)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating shopping list for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate shopping list"
         )
 
 
