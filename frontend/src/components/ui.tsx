@@ -5,6 +5,8 @@
 
 import type { ReactNode } from "react";
 import { ApiError } from "../api/client";
+import type { Money } from "../api/types";
+import { formatMoney, moneyToNumber } from "../utils/format";
 
 export function Card({
   title,
@@ -38,6 +40,33 @@ export function Badge({
   tone?: "neutral" | "success" | "warning" | "danger" | "accent";
 }) {
   return <span className={`badge badge-${tone}`}>{children}</span>;
+}
+
+/**
+ * Foregrounds the app's core value prop — money saved vs. regular prices.
+ * Renders nothing when there's nothing to celebrate (savings ≤ 0). When a
+ * `total` (the cost actually paid) is given, also shows the % off regular.
+ */
+export function SavingsCallout({ savings, total }: { savings: Money; total?: Money }) {
+  const amount = moneyToNumber(savings);
+  if (amount <= 0) return null;
+
+  const regular = amount + moneyToNumber(total);
+  const pct = total !== undefined && regular > 0 ? Math.round((amount / regular) * 100) : null;
+
+  return (
+    <div className="savings-callout" role="status">
+      <span className="savings-callout-icon" aria-hidden="true">
+        💸
+      </span>
+      <div>
+        <span className="savings-callout-value">You save {formatMoney(savings)}</span>
+        <span className="savings-callout-label">
+          {pct !== null ? `${pct}% off regular shelf prices` : "vs. regular shelf prices"}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export function Spinner({ label }: { label?: string }) {

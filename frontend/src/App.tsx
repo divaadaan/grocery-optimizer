@@ -6,6 +6,7 @@ import { HomePage } from "./features/home/HomePage";
 import { UserSetupPage } from "./features/user/UserSetupPage";
 import { DealsPage } from "./features/deals/DealsPage";
 import { PlannerPage } from "./features/planner/PlannerPage";
+import { RecipesPage } from "./features/recipes/RecipesPage";
 import { ShoppingListPage } from "./features/shopping/ShoppingListPage";
 
 const queryClient = new QueryClient({
@@ -25,6 +26,7 @@ export default function App() {
               <Route path="/setup" element={<UserSetupPage />} />
               <Route path="/deals" element={<DealsPage />} />
               <Route path="/planner" element={<PlannerPage />} />
+              <Route path="/recipes" element={<RecipesPage />} />
               <Route path="/shopping-list" element={<ShoppingListPage />} />
             </Route>
           </Routes>

@@ -1,8 +1,12 @@
 import { Badge } from "../../components/ui";
-import { formatDate, formatMoney } from "../../utils/format";
+import { daysUntil, formatDate, formatMoney } from "../../utils/format";
 import type { DealInfo } from "../../api/types";
 
 export function DealCard({ deal }: { deal: DealInfo }) {
+  const days = daysUntil(deal.valid_until);
+  const endsSoon = days !== null && days >= 0 && days <= 3;
+  const endsLabel = days === 0 ? "Ends today" : days === 1 ? "Ends tomorrow" : `${days} days left`;
+
   return (
     <article className="deal-card">
       <div className="deal-card-top">
@@ -22,7 +26,10 @@ export function DealCard({ deal }: { deal: DealInfo }) {
         </span>
         {deal.category && <Badge>{deal.category}</Badge>}
       </footer>
-      <p className="muted small">Until {formatDate(deal.valid_until)}</p>
+      <p className="deal-expiry small">
+        <span className="muted">Until {formatDate(deal.valid_until)}</span>
+        {endsSoon && <Badge tone="warning">{endsLabel}</Badge>}
+      </p>
     </article>
   );
 }

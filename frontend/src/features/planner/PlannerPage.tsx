@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Card, EmptyState, ErrorBanner, Field } from "../../components/ui";
+import { Card, EmptyState, ErrorBanner, Field, SavingsCallout } from "../../components/ui";
 import { ChipsInput } from "../../components/ChipsInput";
 import { GenerationProgress } from "./GenerationProgress";
 import { RecipeCard } from "./RecipeCard";
@@ -115,11 +115,11 @@ export function PlannerPage() {
 
       {result && (
         <>
+          <SavingsCallout savings={result.estimated_savings} total={result.total_cost} />
           <Card title="Plan summary">
             <div className="stats-row">
               <Stat label="Total cost" value={formatMoney(result.total_cost)} />
               <Stat label="Per meal" value={formatMoney(result.cost_per_meal)} />
-              <Stat label="Estimated savings" value={formatMoney(result.estimated_savings)} />
               <Stat label="Generated in" value={formatDuration(result.generation_time)} />
             </div>
             {result.warnings.length > 0 && (
