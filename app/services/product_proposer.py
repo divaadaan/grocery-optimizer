@@ -5,8 +5,8 @@ The contract, which is the whole design
 This module **never** decides anything a user experiences. It writes rows with
 ``status='proposed'``, and ``app/services/products.py`` only ever links through
 ``status='confirmed'``. A human promotes proposals via
-``scripts/review_products.py``. Request-time compliance stays a deterministic
-read of curated columns.
+``scripts/review_products.py`` or ``/admin/review``. Request-time compliance
+stays a deterministic read of curated columns.
 
 That separation is not ceremony. This project already spent an entire
 supervised-fine-tuning track establishing that LLMs get dietary compliance
@@ -32,10 +32,17 @@ So the seam is a file, in three steps::
     scripts/propose_products.py --import labelled.json   # 2. persist as proposed
     scripts/review_products.py --review                  # 3. a human confirms
 
-Step 2 validates every entry against :data:`PROPOSAL_SCHEMA` before it touches
-the database, because a labelling step that is a conversation rather than a
-constrained API response has no schema enforcement of its own. A malformed or
-incomplete entry is rejected, never defaulted into something permissive.
+Step 2 validates every entry before it touches the database, because a
+labelling step that is a conversation rather than a constrained API response
+has no schema enforcement of its own. A malformed or incomplete entry is
+rejected, never defaulted into something permissive.
+
+Multi-product tiles
+-------------------
+A flyer tile can advertise several unrelated products at one price. Such an
+entry carries a ``products`` list instead of flat fields, and yields one
+Proposal per product -- see :func:`proposals_from_payload`. The single-product
+flat form is still valid and is the common case.
 """
 from __future__ import annotations
 
@@ -49,44 +56,39 @@ from app.services.products import ATTRIBUTES, normalize_name
 
 logger = logging.getLogger(__name__)
 
-#: Shape every labelled entry must satisfy. Enforced by :func:`validate_payload`
-#: on import -- this is a real gate, not documentation.
-PROPOSAL_SCHEMA: dict[str, Any] = {
-    "required": [
-        "raw_name",
-        "match_existing_product",
-        "canonical_name",
-        "category",
-        "contains_meat",
-        "contains_fish",
-        "contains_dairy",
-        "contains_egg",
-        "contains_nuts",
-        "is_pantry_staple",
-        "confidence",
-        "reason",
-        "unmappable",
-    ],
-    "types": {
-        "raw_name": str,
-        "match_existing_product": (str, type(None)),
-        "canonical_name": str,
-        "category": str,
-        "contains_meat": bool,
-        "contains_fish": bool,
-        "contains_dairy": bool,
-        "contains_egg": bool,
-        "contains_nuts": bool,
-        "is_pantry_staple": bool,
-        "confidence": (int, float),
-        "reason": str,
-        "unmappable": bool,
-    },
+#: Fields every labelled entry must carry, whatever its shape.
+ENTRY_REQUIRED = ("raw_name", "confidence", "reason", "unmappable")
+
+#: Fields describing ONE product. Required on a flat entry, and on each member
+#: of a ``products`` list.
+PRODUCT_REQUIRED = (
+    "match_existing_product",
+    "canonical_name",
+    "category",
+    *ATTRIBUTES,
+    "is_pantry_staple",
+)
+
+TYPES: dict[str, Any] = {
+    "raw_name": str,
+    "confidence": (int, float),
+    "reason": str,
+    "unmappable": bool,
+    "match_existing_product": (str, type(None)),
+    "canonical_name": str,
+    "category": str,
+    "is_pantry_staple": bool,
+    "tile_position": int,
+    "price_is_per_item": (bool, type(None)),
+    **{attr: bool for attr in ATTRIBUTES},
 }
 
-#: Handed to the labeller in the export bundle. These are not decoration: every
-#: case listed is one where the substring oracle or a naive reading gets the
-#: answer wrong, and they are the reason a human reviews the output at all.
+#: Kept for callers and tests that want the full single-product field list.
+PROPOSAL_SCHEMA: dict[str, Any] = {
+    "required": [*ENTRY_REQUIRED, *PRODUCT_REQUIRED],
+    "types": TYPES,
+}
+
 LABELLING_INSTRUCTIONS = """\
 You are labelling raw grocery-flyer product strings for a meal-planning app. \
 Your labels are reviewed by a human before anything uses them, so be explicit \
@@ -105,6 +107,29 @@ Attribute rules:
 - is_pantry_staple: shelf-stable basics bought by the bag/box (flour, rice, \
 sugar, oil, pasta, canned goods).
 
+MULTI-PRODUCT TILES. A flyer tile often advertises several unrelated products \
+at one price, e.g. "ANNIE'S SHELLS & CHEDDAR 170 G BEATRICE CHOCOLATE MILK 1 L \
+GOLDFISH CRACKERS 168 - 227 G" is three products. For those, return a \
+`products` list with one entry per product instead of the flat fields, and set \
+`price_is_per_item` on each:
+  - true  when the tile prices each item separately. The `unit` field on the \
+deal is the signal: "each", "ea.", "lb" mean per-item.
+  - false for a bundle or multi-buy ("2 for $5"), where the price is NOT any \
+one product's price.
+  - null when you cannot tell. Null is a real answer and better than a guess; \
+the link step refuses to use it rather than defaulting.
+
+Do NOT split a tile that lists VARIANTS of one product. These are ONE product:
+  - "NEILSON TRUTASTE 1%, 2% OR SKIM MILK, 4 L"  -> one product, three fat levels
+  - "Natrel Fine-Filtered Milk 3.25%, 2%, 1% or Skim" -> one product
+  - "MAPLE LEAF ... CHICKEN BREAST FILLETS OR CUTLETS" -> one product, two cuts
+These are TWO OR MORE products:
+  - "MARC ANGELO CHICKEN BREAST BITES OR PORK MEATBALLS"
+  - "NEILSON CREAM or MILK2GO"
+  - "ORGANIC COCONUT MILK OR CREAM"
+The test is whether a shopper would call them the same thing with a different \
+label on it, or different things.
+
 Cases that are commonly got wrong -- these are why a human reviews you:
 - "Beefsteak Tomatoes" is a TOMATO. A vegetable. No animal products. "beef" is \
 a varietal name.
@@ -116,6 +141,9 @@ meat word appears.
 - "gelatin" and "lard" are animal-derived: contains_meat is true.
 - "marzipan", "praline", "frangipane", "nutella" contain nuts.
 - "pesto" usually contains pine nuts AND cheese.
+- Worcestershire and many fish sauces contain anchovy: contains_fish.
+- Vegan analogues ("Vegan Chicken Strips", "Fishless Fingers") contain NO animal \
+product. Attributes describe the food, not the name.
 - COCONUT IS NOT A NUT for this app. contains_nuts is false for coconut milk, \
 coconut cream, coconut oil and shredded coconut. The FDA classifies coconut as \
 a tree nut for labelling purposes, but coconut allergy is rare and largely \
@@ -124,11 +152,9 @@ staple from every nut-free user for no benefit. Decided 2026-10-14; do not \
 re-litigate it per item.
 - Lactose-free milk is STILL DAIRY. Lactose is removed, not the milk: \
 contains_dairy is true, so it fails vegan.
-- Worcestershire and many fish sauces contain anchovy: contains_fish.
-- Vegan analogues ("Vegan Chicken Strips", "Fishless Fingers") contain NO animal \
-product. Attributes describe the food, not the name.
-- A string naming two unrelated products, or pure marketing copy, is unmappable: \
-set unmappable true and leave the attributes conservative (true).
+- A string that is pure marketing copy, or so garbled that the products cannot \
+be identified, is unmappable: set unmappable true and leave attributes \
+conservative (true).
 
 canonical_name must be a short generic name: lowercase, no brand, no size. \
 "chicken breast", not "Maple Leaf Prime Boneless Chicken Breasts 500g". Set \
@@ -142,7 +168,11 @@ person; a false "unsafe" label only costs them a deal."""
 
 @dataclass
 class Proposal:
-    """One proposal for one normalised name."""
+    """One proposal: this normalised string refers to this product.
+
+    A multi-product tile yields several of these, distinguished by
+    ``tile_position``.
+    """
 
     normalized_name: str
     raw_example: str
@@ -154,6 +184,10 @@ class Proposal:
     confidence: float
     reason: str
     unmappable: bool
+    tile_position: int = 0
+    #: Whether the deal's sale_price is this product's own price. None means
+    #: undecided; the link step refuses to use it rather than guessing.
+    price_is_per_item: bool | None = None
 
 
 @dataclass
@@ -174,26 +208,51 @@ class LabelLoad:
     def ok(self) -> bool:
         return not self.errors
 
+    @property
+    def tiles(self) -> int:
+        """How many source strings produced more than one product."""
+        counts: dict[str, int] = {}
+        for p in self.proposals:
+            counts[p.raw_example] = counts.get(p.raw_example, 0) + 1
+        return sum(1 for n in counts.values() if n > 1)
+
 
 def export_bundle(
     names: Sequence[str], existing: Sequence[dict[str, Any]]
 ) -> dict[str, Any]:
     """The hand-off file: what needs labelling, plus everything needed to do it."""
+    one_product = {
+        "match_existing_product": "<existing canonical_name, or null>",
+        "canonical_name": "<short generic name, lowercase>",
+        "category": "<e.g. produce, dairy, meat, bakery, pantry>",
+        **{attr: "<true|false>" for attr in ATTRIBUTES},
+        "is_pantry_staple": "<true|false>",
+    }
     return {
         "instructions": LABELLING_INSTRUCTIONS,
         "output_format": {
             "labels": [
                 {
+                    "_comment": "single product: flat fields",
                     "raw_name": "<copy the string from unmapped, verbatim>",
-                    "match_existing_product": "<existing canonical_name, or null>",
-                    "canonical_name": "<short generic name, lowercase>",
-                    "category": "<e.g. produce, dairy, meat, bakery, pantry>",
-                    **{attr: "<true|false>" for attr in ATTRIBUTES},
-                    "is_pantry_staple": "<true|false>",
+                    **one_product,
                     "confidence": "<0.0-1.0>",
                     "reason": "<one or two sentences a reviewer can check>",
                     "unmappable": "<true|false>",
-                }
+                },
+                {
+                    "_comment": (
+                        "multi-product tile: a products list instead of flat "
+                        "fields, one entry per product"
+                    ),
+                    "raw_name": "<copy the string from unmapped, verbatim>",
+                    "products": [
+                        {**one_product, "price_is_per_item": "<true|false|null>"},
+                    ],
+                    "confidence": "<0.0-1.0>",
+                    "reason": "<why you split it this way>",
+                    "unmappable": False,
+                },
             ]
         },
         "existing_products": [
@@ -208,6 +267,43 @@ def export_bundle(
     }
 
 
+def _check_types(payload: dict[str, Any], keys: Iterable[str]) -> list[str]:
+    problems: list[str] = []
+    for key in keys:
+        if key not in payload:
+            continue
+        expected = TYPES.get(key)
+        if expected is None:
+            continue
+        value = payload[key]
+        # bool subclasses int; keep them from satisfying each other.
+        if expected == (int, float) and isinstance(value, bool):
+            problems.append(f"{key!r} must be a number, got bool")
+            continue
+        if expected is bool and not isinstance(value, bool):
+            problems.append(f"{key!r} must be true/false, got {type(value).__name__}")
+            continue
+        if not isinstance(value, expected):
+            name = getattr(expected, "__name__", str(expected))
+            problems.append(f"{key!r} must be {name}, got {type(value).__name__}")
+    return problems
+
+
+def _validate_product(spec: Any, where: str) -> list[str]:
+    if not isinstance(spec, dict):
+        return [f"{where}: not an object"]
+    problems = [f"{where}: missing {k!r}"
+                for k in PRODUCT_REQUIRED if k not in spec]
+    problems += [f"{where}: {p}" for p in _check_types(spec, PRODUCT_REQUIRED)]
+    problems += [f"{where}: {p}" for p in _check_types(spec, ("price_is_per_item",))]
+    if not problems and not str(spec["canonical_name"]).strip():
+        if not spec["match_existing_product"]:
+            problems.append(
+                f"{where}: needs a canonical_name or match_existing_product"
+            )
+    return problems
+
+
 def validate_payload(payload: Any) -> list[str]:
     """Problems with one labelled entry. Empty list means it is usable.
 
@@ -219,55 +315,73 @@ def validate_payload(payload: Any) -> list[str]:
     if not isinstance(payload, dict):
         return ["not an object"]
 
-    problems: list[str] = []
-    for key in PROPOSAL_SCHEMA["required"]:
-        if key not in payload:
-            problems.append(f"missing {key!r}")
-    for key, expected in PROPOSAL_SCHEMA["types"].items():
-        if key not in payload:
-            continue
-        value = payload[key]
-        # bool is a subclass of int; keep them from satisfying each other.
-        if expected in ((int, float),) and isinstance(value, bool):
-            problems.append(f"{key!r} must be a number, got bool")
-            continue
-        if expected is bool and not isinstance(value, bool):
-            problems.append(f"{key!r} must be true/false, got {type(value).__name__}")
-            continue
-        if not isinstance(value, expected):
-            name = getattr(expected, "__name__", str(expected))
-            problems.append(f"{key!r} must be {name}, got {type(value).__name__}")
+    problems = [f"missing {k!r}" for k in ENTRY_REQUIRED if k not in payload]
+    problems += _check_types(payload, ENTRY_REQUIRED)
+    if problems:
+        return problems
 
-    if not problems:
-        if not str(payload["raw_name"]).strip():
-            problems.append("'raw_name' is blank")
-        if not 0.0 <= float(payload["confidence"]) <= 1.0:
-            problems.append("'confidence' must be between 0 and 1")
-        if not payload["unmappable"] and not str(payload["canonical_name"]).strip():
-            if not payload["match_existing_product"]:
-                problems.append(
-                    "needs a canonical_name or match_existing_product unless unmappable"
-                )
+    if not str(payload["raw_name"]).strip():
+        problems.append("'raw_name' is blank")
+    if not 0.0 <= float(payload["confidence"]) <= 1.0:
+        problems.append("'confidence' must be between 0 and 1")
+
+    products = payload.get("products")
+    if products is not None:
+        if not isinstance(products, list) or not products:
+            problems.append("'products' must be a non-empty list")
+        else:
+            if payload["unmappable"]:
+                problems.append("'unmappable' cannot be true alongside 'products'")
+            for index, spec in enumerate(products):
+                problems += _validate_product(spec, f"products[{index}]")
+            names = [
+                str(s.get("match_existing_product") or s.get("canonical_name") or "")
+                .strip().lower()
+                for s in products if isinstance(s, dict)
+            ]
+            if len(set(names)) != len(names):
+                problems.append("'products' names the same product twice")
+    elif not payload["unmappable"]:
+        problems += _validate_product(payload, "entry")
+
     return problems
 
 
-def proposal_from_payload(payload: dict[str, Any]) -> Proposal:
-    """Build a Proposal from a *validated* payload."""
+def proposals_from_payload(payload: dict[str, Any]) -> list[Proposal]:
+    """One Proposal per product. A *validated* payload yields at least one."""
     raw = str(payload["raw_name"])
-    return Proposal(
-        normalized_name=normalize_name(raw),
-        raw_example=raw,
-        match_existing_product=payload.get("match_existing_product") or None,
-        canonical_name=str(payload.get("canonical_name") or "").strip().lower(),
-        category=str(payload.get("category") or "unknown").strip().lower(),
-        # Conservative default. An attribute that somehow got past validation
-        # must read as "contains it", never as safe.
-        attributes={attr: bool(payload.get(attr, True)) for attr in ATTRIBUTES},
-        is_pantry_staple=bool(payload.get("is_pantry_staple", False)),
-        confidence=float(payload.get("confidence", 0.0) or 0.0),
-        reason=str(payload.get("reason") or "").strip(),
-        unmappable=bool(payload.get("unmappable", False)),
-    )
+    normalized = normalize_name(raw)
+    common = {
+        "normalized_name": normalized,
+        "raw_example": raw,
+        "confidence": float(payload.get("confidence", 0.0) or 0.0),
+        "reason": str(payload.get("reason") or "").strip(),
+    }
+
+    def build(spec: dict[str, Any], position: int, unmappable: bool) -> Proposal:
+        return Proposal(
+            match_existing_product=spec.get("match_existing_product") or None,
+            canonical_name=str(spec.get("canonical_name") or "").strip().lower(),
+            category=str(spec.get("category") or "unknown").strip().lower(),
+            # Conservative default. An attribute that somehow got past
+            # validation must read as "contains it", never as safe.
+            attributes={attr: bool(spec.get(attr, True)) for attr in ATTRIBUTES},
+            is_pantry_staple=bool(spec.get("is_pantry_staple", False)),
+            unmappable=unmappable,
+            tile_position=position,
+            price_is_per_item=spec.get("price_is_per_item"),
+            **common,
+        )
+
+    products = payload.get("products")
+    if products:
+        return [build(spec, i, False) for i, spec in enumerate(products)]
+    # A single-product entry prices per item by definition: there is nothing
+    # else on the tile for the price to be shared with.
+    single = build(payload, 0, bool(payload.get("unmappable", False)))
+    if not single.unmappable and single.price_is_per_item is None:
+        single.price_is_per_item = True
+    return [single]
 
 
 def load_labels(path: str | Path, *, expected: Iterable[str] | None = None) -> LabelLoad:
@@ -311,7 +425,7 @@ def load_labels(path: str | Path, *, expected: Iterable[str] | None = None) -> L
             load.errors[raw] = "duplicate label for the same name"
             continue
         seen.add(raw)
-        load.proposals.append(proposal_from_payload(payload))
+        load.proposals.extend(proposals_from_payload(payload))
 
     if expected_set is not None:
         load.unlabelled = sorted(expected_set - seen)
@@ -323,6 +437,53 @@ def load_labels(path: str | Path, *, expected: Iterable[str] | None = None) -> L
 # Persistence: everything lands as 'proposed'
 # --------------------------------------------------------------------------
 
+#: One name may map to many products (migration 010), so the conflict target is
+#: the pairing. Both targets name a PARTIAL index, so the predicate has to be
+#: repeated for Postgres to infer it.
+_ALIAS_UPSERT_PLACED = """
+INSERT INTO product_aliases (
+    normalized_name, raw_example, product_id, status, source,
+    confidence, proposal_reason, tile_position, price_is_per_item
+) VALUES (
+    %(norm)s, %(raw)s, %(pid)s, 'proposed', %(by)s,
+    %(conf)s, %(reason)s, %(pos)s, %(per_item)s
+)
+ON CONFLICT (normalized_name, product_id) WHERE product_id IS NOT NULL
+DO UPDATE SET times_seen = product_aliases.times_seen + 1
+RETURNING times_seen
+"""
+
+_ALIAS_UPSERT_UNPLACED = """
+INSERT INTO product_aliases (
+    normalized_name, raw_example, product_id, status, source,
+    confidence, proposal_reason, tile_position, price_is_per_item
+) VALUES (
+    %(norm)s, %(raw)s, NULL, 'proposed', %(by)s,
+    %(conf)s, %(reason)s, %(pos)s, %(per_item)s
+)
+ON CONFLICT (normalized_name) WHERE product_id IS NULL
+DO UPDATE SET times_seen = product_aliases.times_seen + 1
+RETURNING times_seen
+"""
+
+_PRODUCT_INSERT = """
+INSERT INTO products (
+    canonical_name, category,
+    contains_meat, contains_fish, contains_dairy,
+    contains_egg, contains_nuts, is_pantry_staple,
+    status, proposed_by, proposal_reason
+) VALUES (
+    %(name)s, %(category)s,
+    %(contains_meat)s, %(contains_fish)s, %(contains_dairy)s,
+    %(contains_egg)s, %(contains_nuts)s, %(staple)s,
+    'proposed', %(by)s, %(reason)s
+)
+RETURNING product_id
+"""
+
+SOURCE = "claude-session"
+
+
 def persist_proposals(proposals: Iterable[Proposal], *, database) -> dict[str, int]:
     """Write proposals as ``status='proposed'`` rows. Affects no user yet.
 
@@ -332,9 +493,13 @@ def persist_proposals(proposals: Iterable[Proposal], *, database) -> dict[str, i
     decision, not two.
 
     Re-seeing a name bumps ``times_seen`` instead of inserting a duplicate, so
-    a weekly re-ingest does not re-fill the queue.
+    a weekly re-ingest does not re-fill the queue. For a multi-product tile
+    that is per (name, product), so each product of the tile is tracked
+    separately.
     """
-    stats = {"aliases_new": 0, "aliases_seen_again": 0, "products_proposed": 0, "skipped": 0}
+    stats = {"aliases_new": 0, "aliases_seen_again": 0, "products_proposed": 0,
+             "skipped": 0, "tile_rows": 0,
+             "unplaced_superseded": 0}
 
     with database.get_cursor() as cursor:
         cursor.execute(
@@ -357,26 +522,13 @@ def persist_proposals(proposals: Iterable[Proposal], *, database) -> dict[str, i
                     target_id = existing["product_id"]
                 else:
                     cursor.execute(
-                        """
-                        INSERT INTO products (
-                            canonical_name, category,
-                            contains_meat, contains_fish, contains_dairy,
-                            contains_egg, contains_nuts, is_pantry_staple,
-                            status, proposed_by, proposal_reason
-                        ) VALUES (
-                            %(name)s, %(category)s,
-                            %(contains_meat)s, %(contains_fish)s, %(contains_dairy)s,
-                            %(contains_egg)s, %(contains_nuts)s, %(staple)s,
-                            'proposed', %(by)s, %(reason)s
-                        )
-                        RETURNING product_id
-                        """,
+                        _PRODUCT_INSERT,
                         {
                             "name": proposal.canonical_name,
                             "category": proposal.category,
                             **proposal.attributes,
                             "staple": proposal.is_pantry_staple,
-                            "by": "claude-session",
+                            "by": SOURCE,
                             "reason": proposal.reason,
                         },
                     )
@@ -387,31 +539,48 @@ def persist_proposals(proposals: Iterable[Proposal], *, database) -> dict[str, i
                     }
                     stats["products_proposed"] += 1
 
-            cursor.execute(
-                """
-                INSERT INTO product_aliases (
-                    normalized_name, raw_example, product_id,
-                    status, source, confidence, proposal_reason
-                ) VALUES (
-                    %(norm)s, %(raw)s, %(pid)s, 'proposed', %(by)s, %(conf)s, %(reason)s
-                )
-                ON CONFLICT (normalized_name) DO UPDATE
-                SET times_seen = product_aliases.times_seen + 1
-                RETURNING times_seen
-                """,
-                {
-                    "norm": proposal.normalized_name,
-                    "raw": proposal.raw_example[:255],
-                    "pid": target_id,
-                    "by": "claude-session",
-                    "conf": round(max(0.0, min(1.0, proposal.confidence)), 2),
-                    "reason": proposal.reason,
-                },
-            )
+            params = {
+                "norm": proposal.normalized_name,
+                "raw": proposal.raw_example[:255],
+                "pid": target_id,
+                "by": SOURCE,
+                "conf": round(max(0.0, min(1.0, proposal.confidence)), 2),
+                "reason": proposal.reason,
+                "pos": proposal.tile_position,
+                "per_item": proposal.price_is_per_item,
+            }
+            if target_id is None:
+                params.pop("pid")
+                cursor.execute(_ALIAS_UPSERT_UNPLACED, params)
+            else:
+                cursor.execute(_ALIAS_UPSERT_PLACED, params)
+
             row = cursor.fetchone()
             if row and row["times_seen"] > 1:
                 stats["aliases_seen_again"] += 1
             else:
                 stats["aliases_new"] += 1
+            if proposal.tile_position > 0:
+                stats["tile_rows"] += 1
+
+            if target_id is not None:
+                # A name that was previously unplaceable now has products. The
+                # old unplaced row is superseded: left 'proposed' it would show
+                # the same string in the review queue twice, once as a product
+                # and once as "could not place this".
+                cursor.execute(
+                    """
+                    UPDATE product_aliases
+                    SET status = 'rejected',
+                        reviewed_by = %(by)s,
+                        proposal_reason = 'superseded by a decomposition into '
+                                          'specific products'
+                    WHERE normalized_name = %(norm)s
+                      AND product_id IS NULL
+                      AND status = 'proposed'
+                    """,
+                    {"norm": proposal.normalized_name, "by": SOURCE},
+                )
+                stats["unplaced_superseded"] += cursor.rowcount or 0
 
     return stats

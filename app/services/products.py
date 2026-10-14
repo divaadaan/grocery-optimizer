@@ -224,18 +224,41 @@ def compliant_product_filter(restrictions: Iterable[str] | None) -> tuple[str, d
 # --------------------------------------------------------------------------
 
 def link_deals(database=db) -> dict[str, int]:
-    """Point every deal at its confirmed product, where one exists.
+    """Attach every deal to the confirmed products its name refers to.
+
+    Writes ``deal_products`` (migration 009), which is authoritative for
+    compliance, because one name can refer to several products -- a flyer tile
+    advertising three things is one deal row with three products.
+    ``deals.product_id`` is still set when a name resolves to exactly one
+    product, for the older read paths; a tile leaves it NULL because a single
+    column cannot hold three answers.
 
     Normalisation happens in Python, not SQL, so there is exactly one
-    implementation of :func:`normalize_name` and the two can never drift.
-    Reads the distinct unlinked names, normalises them here, and updates by
-    name. Idempotent: re-running links nothing new and changes no row.
+    implementation of :func:`normalize_name` and the two cannot drift.
+    Idempotent: ``ON CONFLICT DO NOTHING`` plus the ``product_id IS NULL``
+    guard means re-running links nothing new and changes no row.
     """
-    stats = {"examined": 0, "linked_deals": 0, "linked_snapshots": 0, "unmapped": 0}
+    stats = {
+        "examined": 0,
+        "linked_deals": 0,
+        "linked_snapshots": 0,
+        "unmapped": 0,
+        "tile_links": 0,
+        "blocked_undecided_price": 0,
+    }
 
     with database.get_cursor() as cursor:
+        # "Unlinked" means no junction row, not product_id IS NULL: a tile is
+        # legitimately left with a NULL product_id, and keying off that would
+        # re-link it on every run.
         cursor.execute(
-            "SELECT DISTINCT product_name FROM deals WHERE product_id IS NULL"
+            """
+            SELECT DISTINCT d.product_name
+            FROM deals d
+            WHERE NOT EXISTS (
+                SELECT 1 FROM deal_products dp WHERE dp.deal_id = d.deal_id
+            )
+            """
         )
         names = [r["product_name"] for r in cursor.fetchall()]
         stats["examined"] = len(names)
@@ -244,52 +267,86 @@ def link_deals(database=db) -> dict[str, int]:
 
         cursor.execute(
             """
-            SELECT normalized_name, product_id
+            SELECT normalized_name, product_id, tile_position, price_is_per_item
             FROM product_aliases
             WHERE status = 'confirmed' AND product_id IS NOT NULL
+            ORDER BY normalized_name, tile_position
             """
         )
-        alias_map = {r["normalized_name"]: r["product_id"] for r in cursor.fetchall()}
+        alias_map: dict[str, list[dict]] = {}
+        for row in cursor.fetchall():
+            alias_map.setdefault(row["normalized_name"], []).append(dict(row))
 
-        # Group raw names by the product they resolve to, so each product is
-        # one UPDATE with an ANY(array) rather than one statement per string.
-        by_product: dict[int, list[str]] = {}
         for raw in names:
-            product_id = alias_map.get(normalize_name(raw))
-            if product_id is None:
+            targets = alias_map.get(normalize_name(raw))
+            if not targets:
                 stats["unmapped"] += 1
                 continue
-            by_product.setdefault(product_id, []).append(raw)
 
-        for product_id, raws in by_product.items():
-            cursor.execute(
-                """
-                UPDATE deals SET product_id = %(pid)s
-                WHERE product_id IS NULL AND product_name = ANY(%(raws)s)
-                """,
-                {"pid": product_id, "raws": raws},
-            )
-            stats["linked_deals"] += cursor.rowcount or 0
+            # price_is_per_item is NOT NULL in deal_products, and NULL on the
+            # alias means the labeller could not tell whether the tile price
+            # applies per item. Refuse rather than default: a wrong "yes" puts
+            # a bundle price on a single product's line in a shopping list.
+            usable = [t for t in targets if t["price_is_per_item"] is not None]
+            if len(usable) < len(targets):
+                stats["blocked_undecided_price"] += len(targets) - len(usable)
+                logger.warning(
+                    "Skipped %d product(s) for %r: price_is_per_item is "
+                    "undecided, so no junction row can be written.",
+                    len(targets) - len(usable), raw,
+                )
+            if not usable:
+                stats["unmapped"] += 1
+                continue
 
-            # Snapshots share the raw ingest string with deals, so the same
-            # mapping applies. Linking them is what lets price_baseline
-            # aggregate a product instead of one exact string.
-            cursor.execute(
-                """
-                UPDATE price_snapshots SET product_id = %(pid)s
-                WHERE product_id IS NULL AND product_name = ANY(%(raws)s)
-                """,
-                {"pid": product_id, "raws": raws},
-            )
-            stats["linked_snapshots"] += cursor.rowcount or 0
+            for target in usable:
+                cursor.execute(
+                    """
+                    INSERT INTO deal_products
+                        (deal_id, product_id, tile_position, price_is_per_item)
+                    SELECT d.deal_id, %(pid)s, %(pos)s, %(per_item)s
+                    FROM deals d
+                    WHERE d.product_name = %(raw)s
+                    ON CONFLICT (deal_id, product_id) DO NOTHING
+                    """,
+                    {
+                        "pid": target["product_id"],
+                        "pos": target["tile_position"],
+                        "per_item": target["price_is_per_item"],
+                        "raw": raw,
+                    },
+                )
+                stats["linked_deals"] += cursor.rowcount or 0
+
+            if len(usable) == 1:
+                # Single-product name: keep the legacy column in step.
+                cursor.execute(
+                    """
+                    UPDATE deals SET product_id = %(pid)s
+                    WHERE product_id IS NULL AND product_name = %(raw)s
+                    """,
+                    {"pid": usable[0]["product_id"], "raw": raw},
+                )
+                cursor.execute(
+                    """
+                    UPDATE price_snapshots SET product_id = %(pid)s
+                    WHERE product_id IS NULL AND product_name = %(raw)s
+                    """,
+                    {"pid": usable[0]["product_id"], "raw": raw},
+                )
+                stats["linked_snapshots"] += cursor.rowcount or 0
+            else:
+                stats["tile_links"] += 1
+                # Snapshots carry one price under one name, so a decomposed
+                # tile has no single product to attribute the observation to.
+                # Left unlinked deliberately; see the ROADMAP debt entry.
 
     if stats["linked_deals"]:
         logger.info(
-            "Linked %d deal(s) and %d snapshot(s) to products; %d name(s) remain "
-            "unmapped.",
-            stats["linked_deals"],
-            stats["linked_snapshots"],
-            stats["unmapped"],
+            "Linked %d deal-product row(s) (%d from tiles) and %d snapshot(s); "
+            "%d name(s) remain unmapped.",
+            stats["linked_deals"], stats["tile_links"],
+            stats["linked_snapshots"], stats["unmapped"],
         )
     return stats
 
