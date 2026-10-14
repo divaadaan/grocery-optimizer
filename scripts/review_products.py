@@ -156,12 +156,26 @@ def _toggle_attributes(product_id: int, reviewer: str) -> None:
         )
         row = dict(cursor.fetchone())
 
-    print("  Toggle attributes. Enter the letters to flip, blank to keep:")
-    keys = {a[0]: attr for a, attr in zip("mfdens", products.ATTRIBUTES)}
+    # Explicit mapping rather than zipping letters against the attribute
+    # tuple: the pairing has to stay obvious to whoever reads this next.
+    keys = {
+        "m": "contains_meat",
+        "f": "contains_fish",
+        "d": "contains_dairy",
+        "e": "contains_egg",
+        "n": "contains_nuts",
+    }
+    print("  Current labels:")
     for letter, attr in keys.items():
-        print(f"    {letter} = {ATTR_LABEL[attr]:<16} currently {bool(row[attr])}")
+        state = "YES" if row[attr] else "no "
+        print(f"    {letter} = contains {ATTR_LABEL[attr]:<16} {state}")
+    print("  Type the letters you want to FLIP, e.g. 'dn' flips dairy and nuts.")
+    print("  Press Enter alone to leave them as they are.")
     raw = input("  flip> ").strip().lower()
     flips = {keys[c] for c in raw if c in keys}
+    unknown = {c for c in raw if c not in keys and not c.isspace()}
+    if unknown:
+        print(f"  ignored unrecognised letter(s): {''.join(sorted(unknown))}")
     if not flips:
         print("  unchanged")
         return
@@ -184,8 +198,18 @@ def cmd_review() -> int:
         return 0
 
     reviewer = _reviewer()
-    print(f"Reviewing {len(rows)} proposal(s) as {reviewer!r}.")
-    print("  [y] confirm   [n] reject   [e] edit attributes   [s] skip   [q] quit\n")
+    print(f"Reviewing {len(rows)} proposal(s) as {reviewer!r}.\n")
+    print("For each item, say whether the dietary labels shown are correct:")
+    print("  y = YES, labels are right  -> confirmed; --link then serves it to")
+    print("                                users with matching restrictions")
+    print("  n = NO, wrong or unusable  -> rejected; stays withheld, and will not")
+    print("                                come back in next week's queue")
+    print("  e = EDIT the attributes    -> flip meat/fish/dairy/egg/nuts, then it")
+    print("                                asks whether to confirm")
+    print("  s = SKIP, decide later     -> no decision; stays in the queue")
+    print("  q = QUIT                   -> stops here, keeps what you decided\n")
+    print("Nothing reaches a user until you confirm it. When unsure, skip or")
+    print("reject -- a withheld deal costs one offer, a wrong label costs more.\n")
 
     decided = 0
     for row in rows:
@@ -213,9 +237,15 @@ def cmd_review() -> int:
                       f"check the attributes against the name before confirming")
 
         while True:
-            choice = input("  [y/n/e/s/q]> ").strip().lower()
+            choice = input("  labels correct? yes / no / edit / skip / quit "
+                           "[y/n/e/s/q]> ").strip().lower()
+            # Accept the whole word too - nobody should have to remember that
+            # 'e' is edit rather than 'exit'.
+            choice = {"yes": "y", "no": "n", "edit": "e",
+                      "skip": "s", "quit": "q", "exit": "q"}.get(choice, choice)
             if choice in {"y", "n", "e", "s", "q"}:
                 break
+            print("  please answer y, n, e, s or q (or type the word)")
 
         if choice == "q":
             break
