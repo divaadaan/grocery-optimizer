@@ -44,8 +44,13 @@ class StoreService:
         Returns:
             List of deals with store information
         """
-        # Try cache first
-        cache_key = f"deals:{postal_code}:{category or 'all'}"
+        # Try cache first. The "v2" is a cache-shape version: rows now carry
+        # `source`, which app/services/deal_gate.py reads to decide whether a
+        # restricted user may see them. A pre-v2 cached row has no `source` and
+        # the gate treats a missing source as curated (fail-open, so the seed
+        # catalog keeps working pre-migration) — so stale entries must not be
+        # served. Bump this suffix again if the row shape changes.
+        cache_key = f"deals:v2:{postal_code}:{category or 'all'}"
         cached_deals = cache.get(cache_key)
         if cached_deals is not None:
             logger.debug(f"Returning {len(cached_deals)} deals from cache")
@@ -63,6 +68,7 @@ class StoreService:
             d.category,
             d.valid_from,
             d.valid_until,
+            d.source,
             s.store_id,
             s.name as store_name,
             s.chain,
@@ -94,6 +100,17 @@ class StoreService:
             cache.set(cache_key, deals, ttl=settings.cache_ttl_deals)
 
             return deals
+
+    @staticmethod
+    def invalidate_deal_cache(postal_code: str) -> int:
+        """Drop cached deal lists for a postal code.
+
+        Called after ingestion writes new deals, so the next read does not
+        serve the pre-refresh snapshot for up to `cache_ttl_deals` (6h).
+        Returns the number of keys dropped (0 when Redis is disabled, which is
+        the default — the cache is a no-op then and this is harmless).
+        """
+        return cache.delete_pattern(f"deals:v2:{postal_code}:*")
 
     @staticmethod
     def get_deals_by_category(postal_code: str, categories: List[str]) -> Dict[str, List[Dict[str, Any]]]:

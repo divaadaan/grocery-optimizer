@@ -68,8 +68,20 @@ class ChefOrchestrator:
             dietary_restrictions=state["dietary_restrictions"]
         )
 
-        # Fetch deals from database
-        deals = self.db.fetch_current_deals(state["postal_code"])
+        # Fetch deals from database.
+        #
+        # ALLERGEN-SAFETY GATE: the restrictions are passed so that a user with
+        # dietary restrictions is served only curated deals while
+        # INGESTED_DEALS_FOR_RESTRICTED_DIETS is off. Machine-ingested flyer
+        # product names defeat dietary.py's substring oracle in the dangerous
+        # direction (prosciutto, chorizo, gelatin and marzipan contain no
+        # forbidden term), so real deals must not silently reach this path.
+        # The deferral is deliberate and documented in app/services/deal_gate.py.
+        # Do not drop this argument to "fetch more deals".
+        deals = self.db.fetch_current_deals(
+            state["postal_code"],
+            dietary_restrictions=state["dietary_restrictions"],
+        )
 
         # Create deal index for O(1) lookups
         deal_index = {deal["product_name"]: deal for deal in deals}

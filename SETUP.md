@@ -2,9 +2,11 @@
 
 ### Required Accounts
 
-1. **Neon.tech** - PostgreSQL + TimescaleDB (Free tier: 0.5GB)
+1. **Neon.tech** - PostgreSQL (Free tier: 0.5GB). Plain Postgres; no
+   TimescaleDB, despite what older revisions of this file said.
    - Sign up: https://neon.tech
-   - Enable TimescaleDB extension in project settings
+   - No extension setup needed: `init_db.sql` creates `uuid-ossp` and
+     `pg_trgm` itself, and uses nothing else
 
 2. **Upstash** - Redis caching (Free tier: 10K commands/day)
    - Sign up: https://upstash.com
@@ -115,11 +117,13 @@ The API will be available at:
 4. Region: Choose closest to you
 5. PostgreSQL version: 15+ (latest)
 
-#### 2. Enable TimescaleDB
+#### 2. Extensions (nothing to do)
 
-1. In project dashboard: **Settings** → **Extensions**
-2. Find **TimescaleDB** and click **Enable**
-3. Wait 2-3 minutes for activation
+No extension needs enabling in the Neon console. Earlier revisions of this
+file told you to enable TimescaleDB; that was wrong — `init_db.sql` is
+plain PostgreSQL and creates the only two extensions it uses
+(`uuid-ossp`, `pg_trgm`) itself. `price_snapshots` uses native range
+partitioning, not a hypertable.
 
 #### 3. Get Connection String
 
@@ -136,7 +140,7 @@ python scripts/run_db_setup.py --seed
 
 # This creates:
 # - 8 core tables (users, stores, deals, recipes, etc.)
-# - TimescaleDB hypertable for price_snapshots
+# - price_snapshots as a natively range-partitioned table (NOT a hypertable)
 # - Sample data for 3 postal codes
 # - Indexes and views
 ```
@@ -144,7 +148,10 @@ python scripts/run_db_setup.py --seed
 **Tables Created:**
 - `users` - User accounts with dietary preferences
 - `stores` - Grocery store locations
-- `price_snapshots` - TimescaleDB hypertable (price history)
+- `price_snapshots` - price history, native PG range partitioning by month
+  (current data lands in `price_snapshots_default`; see
+  `scripts/README.md` for why that matters and why
+  `cleanup_old_price_partitions()` must not be scheduled)
 - `deals` - Current active deals
 - `recipes` - AI-generated recipes
 - `shopping_lists` - Optimized shopping lists
