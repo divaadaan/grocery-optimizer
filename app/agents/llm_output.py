@@ -186,7 +186,37 @@ class NutritionistVerdict(BaseModel):
 # --- Invoke with validation + retry --------------------------------------
 
 class LLMOutputError(RuntimeError):
-    """Model failed to produce schema-valid JSON within max_attempts."""
+    """Model failed to produce schema-valid JSON within max_attempts.
+
+    Carries the raw model responses (`raw_attempts`) and the final parse/
+    validation error so callers can report exactly what the model emitted for an
+    output that never validated. Without this the bad output was discarded and
+    only a truncated error string survived, making failures hard to diagnose.
+    """
+
+    def __init__(self, message: str, raw_attempts: Optional[List[str]] = None,
+                 last_error: str = ""):
+        super().__init__(message)
+        self.raw_attempts: List[str] = raw_attempts or []
+        self.last_error = last_error
+
+    @property
+    def last_raw(self) -> Optional[str]:
+        """The most recent raw model response, or None if none was captured."""
+        return self.raw_attempts[-1] if self.raw_attempts else None
+
+
+def raw_output_report(err: "LLMOutputError", max_chars: int = 2000) -> str:
+    """Readable dump of what the model actually emitted across attempts, for
+    logging when an output never validated. Long responses are truncated."""
+    if not err.raw_attempts:
+        return "(no raw model output captured)"
+    n = len(err.raw_attempts)
+    lines = []
+    for i, raw in enumerate(err.raw_attempts, 1):
+        text = raw if len(raw) <= max_chars else raw[:max_chars] + f"… [+{len(raw) - max_chars} chars]"
+        lines.append(f"  attempt {i}/{n}: {text}")
+    return "\n".join(lines)
 
 
 _RETRY_PROMPT = """Your previous response was invalid: {error}
@@ -214,10 +244,12 @@ def invoke_validated(
 
     messages = [HumanMessage(content=prompt)]
     last_error = "no attempts made"
+    raw_attempts: List[str] = []
 
     for attempt in range(1, max_attempts + 1):
         response = llm.invoke(messages)
         raw = response.content
+        raw_attempts.append(raw)
         try:
             data = json.loads(raw)
         except json.JSONDecodeError as e:
@@ -236,5 +268,7 @@ def invoke_validated(
             ]
 
     raise LLMOutputError(
-        f"{schema.__name__}: no valid output after {max_attempts} attempts — {last_error}"
+        f"{schema.__name__}: no valid output after {max_attempts} attempts — {last_error}",
+        raw_attempts=raw_attempts,
+        last_error=last_error,
     )

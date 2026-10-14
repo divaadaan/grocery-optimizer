@@ -5,7 +5,7 @@ import uuid
 from typing import Dict, List
 from .state import Recipe
 from .prompts import PromptTemplates
-from .llm_output import GeneratedRecipe, RecipeBatch, invoke_validated
+from .llm_output import GeneratedRecipe, LLMOutputError, RecipeBatch, invoke_validated, raw_output_report
 from .costing import price_recipe
 from ..config import settings
 from ..services.mlflow_logger import MLflowLogger
@@ -90,6 +90,8 @@ class SousChef:
 
         except Exception as e:
             print(f"[{chef_id}] ERROR: {e}")
+            if isinstance(e, LLMOutputError):
+                print(f"[{chef_id}] raw model output (never validated):\n{raw_output_report(e)}")
             return []
 
     def regenerate_with_feedback(
@@ -125,6 +127,8 @@ class SousChef:
 
         except Exception as e:
             print(f"[{chef_id}] Regeneration ERROR: {e}")
+            if isinstance(e, LLMOutputError):
+                print(f"[{chef_id}] raw model output (never validated):\n{raw_output_report(e)}")
             return None
 
 

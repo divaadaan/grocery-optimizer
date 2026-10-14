@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Card, EmptyState, QueryError, Spinner } from "../../components/ui";
+import { Card, EmptyState, QueryError, SavingsCallout, Spinner } from "../../components/ui";
 import { useCurrentUser } from "../user/UserContext";
 import { useShoppingList } from "../../hooks/queries";
 import { formatMoney } from "../../utils/format";
@@ -39,6 +39,7 @@ export function ShoppingListPage() {
         <QueryError error={list.error} stubTitle="Shopping lists" />
       ) : (
         <>
+          <SavingsCallout savings={list.data.estimated_savings} total={list.data.total_cost} />
           <Card title="Summary">
             <div className="stats-row">
               <div className="stat">
@@ -46,8 +47,8 @@ export function ShoppingListPage() {
                 <span className="stat-label">Total cost</span>
               </div>
               <div className="stat">
-                <span className="stat-value">{formatMoney(list.data.estimated_savings)}</span>
-                <span className="stat-label">Estimated savings</span>
+                <span className="stat-value">{list.data.items.length}</span>
+                <span className="stat-label">Items</span>
               </div>
               <div className="stat">
                 <span className="stat-value">{list.data.stores.length}</span>

@@ -76,6 +76,11 @@ export function HomePage() {
           description="Generate a week of recipes optimized for the current deals."
         />
         <FeatureLink
+          to="/recipes"
+          title="Saved recipes"
+          description="Revisit and reuse the recipes you've generated."
+        />
+        <FeatureLink
           to="/shopping-list"
           title="Shopping list"
           description="A consolidated list across stores, priced from the deals."

@@ -3,7 +3,7 @@ import json
 import time
 from .state import RecipeGenerationState
 from .prompts import PromptTemplates
-from .llm_output import ChefPlan, invoke_validated
+from .llm_output import ChefPlan, LLMOutputError, invoke_validated, raw_output_report
 from .dietary import is_compliant
 from ..config import settings
 from ..services.database import DatabaseService
@@ -167,6 +167,8 @@ class ChefOrchestrator:
 
         except Exception as e:
             print(f"[Chef] ERROR: {e}")
+            if isinstance(e, LLMOutputError):
+                print(f"[Chef] raw model output (never validated):\n{raw_output_report(e)}")
             return {
                 "errors": [f"Chef planning failed: {str(e)}"],
                 "status": "failed",

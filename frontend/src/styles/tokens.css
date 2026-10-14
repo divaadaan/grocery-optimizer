@@ -1,5 +1,7 @@
 /* Design tokens — the only place raw colors/sizes are defined. */
 :root {
+  color-scheme: light;
+
   --color-bg: #f7f8f6;
   --color-surface: #ffffff;
   --color-border: #e3e6e0;
@@ -9,6 +11,8 @@
   --color-primary: #2f7d4f;
   --color-primary-hover: #28693f;
   --color-primary-soft: #e7f3ec;
+  /* Text/icons drawn on top of a filled --color-primary surface. */
+  --color-on-primary: #ffffff;
 
   --color-success: #1d7a3e;
   --color-success-soft: #e4f4e9;
@@ -32,4 +36,38 @@
   --space-6: 2rem;
 
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/*
+ * Dark theme. Only token values change — every component reads these vars, so
+ * the light layout is untouched. Tints are re-derived as dark washes; the
+ * accent hues are lightened to keep text legible on dark surfaces.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --color-bg: #12140f;
+    --color-surface: #1b1e18;
+    --color-border: #2e332b;
+    --color-text: #e7ebe3;
+    --color-text-muted: #9aa397;
+
+    --color-primary: #57b97f;
+    --color-primary-hover: #6cc78e;
+    --color-primary-soft: #1c2b22;
+    --color-on-primary: #0f140f;
+
+    --color-success: #5ac585;
+    --color-success-soft: #16271c;
+    --color-warning: #e2b45a;
+    --color-warning-soft: #2b2411;
+    --color-danger: #ef8a82;
+    --color-danger-soft: #2d1613;
+    --color-accent: #a29bf0;
+    --color-accent-soft: #201d33;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.55);
+  }
 }

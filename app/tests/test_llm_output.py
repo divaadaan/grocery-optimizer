@@ -12,6 +12,7 @@ from app.agents.llm_output import (
     NutritionistVerdict,
     RecipeBatch,
     invoke_validated,
+    raw_output_report,
 )
 
 VALID_RECIPE = {
@@ -154,3 +155,22 @@ def test_invoke_validated_exhausts_attempts():
     with pytest.raises(LLMOutputError):
         invoke_validated(llm, "prompt", NutritionistVerdict, max_attempts=3)
     assert len(llm.calls) == 3
+
+def test_llm_output_error_carries_raw_attempts():
+    """On exhaustion the raw model responses that never validated are attached
+    to the exception (and the report helper renders them) so callers can report
+    exactly what the model emitted."""
+    llm = FakeLLM(['{"a": 1}', '{"b": 2}', '{"c": 3}'])
+    with pytest.raises(LLMOutputError) as excinfo:
+        invoke_validated(llm, "prompt", NutritionistVerdict, max_attempts=3)
+    err = excinfo.value
+    assert err.raw_attempts == ['{"a": 1}', '{"b": 2}', '{"c": 3}']
+    assert err.last_raw == '{"c": 3}'
+    report = raw_output_report(err)
+    assert '{"a": 1}' in report and '{"c": 3}' in report
+    assert "attempt 3/3" in report
+
+def test_raw_output_report_truncates_long_output():
+    err = LLMOutputError("boom", raw_attempts=["x" * 5000])
+    report = raw_output_report(err, max_chars=100)
+    assert "+4900 chars" in report
