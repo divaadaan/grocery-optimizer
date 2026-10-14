@@ -653,6 +653,17 @@ input[type="checkbox"] {
   margin-bottom: var(--space-1);
 }
 
+/* Stage states come from the generation job's server-reported stage_index. */
+.pipeline li.stage-done {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.pipeline li.stage-current {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
 /* Responsive ---------------------------------------------------------------- */
 
 /*

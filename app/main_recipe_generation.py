@@ -1,8 +1,14 @@
+import logging
+from typing import Callable, Optional
+
 from app.agents.graph import create_recipe_generation_graph
 from app.agents.state import RecipeGenerationState
 
+logger = logging.getLogger(__name__)
+
 # MLflow is configured lazily by MLflowLogger on first use, so an unreachable
 # tracking server can't break recipe generation.
+
 
 def run_recipe_generation(
     user_id: int,
@@ -11,10 +17,17 @@ def run_recipe_generation(
     household_size: int,
     dietary_restrictions: list,
     num_meals: int,
-    preferences: dict = None
+    preferences: dict = None,
+    progress_callback: Optional[Callable[[str], None]] = None,
 ):
     """
     Main entry point for recipe generation workflow.
+
+    `progress_callback`, if given, is called with the name of each graph node
+    as it finishes — including once per parallel SousChef task — so a caller
+    (the job registry) can report real progress stages. It must not raise;
+    exceptions from it are logged and swallowed rather than failing a
+    generation that is otherwise fine.
     """
     # Initialize state
     initial_state = RecipeGenerationState(
@@ -58,7 +71,23 @@ def run_recipe_generation(
     print("STARTING RECIPE GENERATION WORKFLOW")
     print("=" * 60)
 
-    final_state = graph.invoke(initial_state)
+    # Streamed rather than invoked so node-completion events are observable.
+    # "values" yields the full state after each superstep (the last one is
+    # what invoke() would have returned); "updates" yields {node: writes}
+    # per finished task, which is where progress comes from.
+    final_state = None
+    for mode, chunk in graph.stream(initial_state, stream_mode=["updates", "values"]):
+        if mode == "values":
+            final_state = chunk
+        elif progress_callback is not None:
+            for node_name in chunk:
+                try:
+                    progress_callback(node_name)
+                except Exception as exc:
+                    logger.warning("progress_callback failed for %s: %s", node_name, exc)
+
+    if final_state is None:
+        raise RuntimeError("Recipe generation graph produced no state")
 
     print("=" * 60)
     print("WORKFLOW COMPLETED")

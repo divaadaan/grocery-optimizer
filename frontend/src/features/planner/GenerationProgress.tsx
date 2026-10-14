@@ -1,23 +1,26 @@
 import { useEffect, useState } from "react";
 import { Card, Spinner } from "../../components/ui";
 import { formatDuration } from "../../utils/format";
+import type { RecipeGenerationJobStatus } from "../../api/types";
 
 /**
- * The generate endpoint is synchronous and can take minutes with local
- * models, with no progress signal yet (async job API is on the roadmap —
- * see ROADMAP.md). Until then: show the real pipeline stages as static
- * context plus an honest elapsed timer, not a fake progress bar.
+ * Generation runs as a background job; `job` carries the real LangGraph
+ * stage ("SousChef 2/3 cooking…") and its position in the pipeline, both
+ * server-supplied so this list cannot drift from the graph. Until the first
+ * poll lands there is no job yet — fall back to the static checklist below.
+ * The elapsed timer stays local so it ticks between polls.
  */
 
-const PIPELINE = [
+const FALLBACK_PIPELINE = [
   "Fetching local deals for your postal code",
-  "Chef Orchestrator groups ingredients for reuse across meals",
+  "Chef Orchestrator groups ingredients for reuse",
   "Three SousChefs draft recipes in parallel",
-  "Nutritionist validates each recipe (failed ones are retried)",
-  "Costs computed against the live deal index",
+  "Aggregating recipes and costing them against the deal index",
+  "Nutritionist validates each recipe",
+  "Saving your meal plan",
 ];
 
-export function GenerationProgress() {
+export function GenerationProgress({ job }: { job?: RecipeGenerationJobStatus }) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -26,13 +29,37 @@ export function GenerationProgress() {
     return () => clearInterval(timer);
   }, []);
 
+  const stages = job?.pipeline.length ? job.pipeline : FALLBACK_PIPELINE;
+  const currentStep = job?.stage_index ?? 0;
+  const queued = job?.state === "pending";
+
+  const label = queued
+    ? `${job!.stage} — waiting for a generation slot`
+    : job
+      ? `${job.stage} (step ${Math.max(currentStep, 1)} of ${job.stage_total})`
+      : "Starting generation…";
+
   return (
     <Card title="Cooking up your plan…">
-      <Spinner label={`Elapsed: ${formatDuration(elapsed)} — local models can take a few minutes`} />
+      <Spinner label={label} />
+      <p className="muted">
+        Elapsed: {formatDuration(elapsed)} — local models can take a few minutes
+      </p>
       <ol className="pipeline">
-        {PIPELINE.map((stage) => (
-          <li key={stage}>{stage}</li>
-        ))}
+        {stages.map((stage, i) => {
+          const step = i + 1;
+          const done = step < currentStep;
+          const current = step === currentStep;
+          return (
+            <li
+              key={stage}
+              className={done ? "stage-done" : current ? "stage-current" : undefined}
+              aria-current={current ? "step" : undefined}
+            >
+              {stage}
+            </li>
+          );
+        })}
       </ol>
     </Card>
   );
