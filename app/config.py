@@ -75,6 +75,22 @@ class Settings(BaseSettings):
         default=False, env="INGESTED_DEALS_FOR_RESTRICTED_DIETS"
     )
 
+    # The products catalog: compliance read from curated per-product attributes
+    # instead of substring-matching the raw flyer name. This is the real fix
+    # for the gap the flag above defers, and it supersedes it — when this is
+    # on, a user with restrictions is served ingested deals that are linked to
+    # a CONFIRMED product whose attributes clear their restrictions, and
+    # nothing else. Unlinked and proposed-but-unconfirmed deals are withheld.
+    #
+    # Safe to turn on as soon as migrations 006-008 are applied: with an empty
+    # catalog it withholds everything from restricted users, which is where
+    # they already are (all seed deals expired 2026-07-21). It only ever adds
+    # deals back as products get confirmed.
+    # See app/services/products.py and scripts/review_products.py.
+    products_catalog_enabled: bool = Field(
+        default=False, env="PRODUCTS_CATALOG_ENABLED"
+    )
+
     flipp_search_url: str = Field(
         default="https://backflipp.wishabi.com/flipp/items/search",
         env="FLIPP_SEARCH_URL",

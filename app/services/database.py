@@ -4,7 +4,13 @@ import json
 
 # Import the connection pool from db module
 from app.db import db
-from app.services.deal_gate import allowed_sources
+from app.services.deal_gate import (
+    GATE_CURATED_SOURCES,
+    GATE_PRODUCTS,
+    allowed_sources,
+    gate_mode,
+)
+from app.services.products import compliant_product_filter
 
 
 def _jsonable(row: Dict) -> Dict:
@@ -43,7 +49,7 @@ class DatabaseService:
         callers on the recipe-generation path MUST pass the user's
         restrictions.
         """
-        permitted_sources = allowed_sources(dietary_restrictions)
+        mode = gate_mode(dietary_restrictions)
 
         query = """
         SELECT
@@ -53,6 +59,7 @@ class DatabaseService:
             d.regular_price,
             d.discount_percentage,
             d.source,
+            d.product_id,
             s.name as store_name,
             s.store_id,
             s.chain
@@ -64,13 +71,20 @@ class DatabaseService:
         """
         params: Dict = {"postal_code": postal_code}
 
-        if permitted_sources is not None:
-            # Filtered in SQL rather than in Python so the LIMIT below is
-            # applied to the *allowed* set. Filtering after the LIMIT could
-            # hand a restricted user an empty deal list while curated deals
-            # sat just past row 200.
+        # Both gates filter in SQL rather than in Python so the LIMIT below is
+        # applied to the *allowed* set. Filtering after the LIMIT could hand a
+        # restricted user an empty deal list while permitted deals sat just
+        # past row 200.
+        if mode == GATE_PRODUCTS:
+            # Requires a linked, confirmed product whose curated attributes
+            # clear the restrictions. Unlinked deals (product_id IS NULL) fail
+            # the EXISTS and are withheld — NULL is never read as safe.
+            fragment, extra = compliant_product_filter(dietary_restrictions)
+            query += fragment
+            params.update(extra)
+        elif mode == GATE_CURATED_SOURCES:
             query += " AND d.source = ANY(%(sources)s)"
-            params["sources"] = permitted_sources
+            params["sources"] = allowed_sources(dietary_restrictions)
 
         # NULLS LAST matters now that real data exists: ingested deals usually
         # have no regular_price and therefore no discount_percentage, and
