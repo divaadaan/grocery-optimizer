@@ -14,6 +14,7 @@ from app.services.user_service import UserService
 from app.services.database import DatabaseService
 from app.services.store_service import StoreService
 from app.services.shopping_optimizer import optimize_shopping_list, stores_from_items
+from app.services.deal_gate import filter_deals
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,14 @@ def _build_and_persist(user_id: int, user: dict) -> ShoppingListResponse:
             detail="No recipes found for this user. Generate a meal plan first."
         )
 
+    # ALLERGEN-SAFETY GATE (deferred compliance fix — app/services/deal_gate.py).
+    # The optimizer only prices ingredients the user's recipes already name, so
+    # the risk here is lower than on the generation path, but it can still
+    # assign an ingredient to an ingested deal whose raw flyer name defeats
+    # dietary.py's substring oracle. Same rule applies: no machine-ingested
+    # deals for a restricted user while the flag is off.
     deals = StoreService.get_current_deals_by_postal_code(user["postal_code"])
+    deals = filter_deals(deals, user.get("dietary_restrictions"))
     result = optimize_shopping_list(recipes, deals)
 
     regular_total = result.total_cost + result.estimated_savings

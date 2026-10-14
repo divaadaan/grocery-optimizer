@@ -48,9 +48,47 @@ class Settings(BaseSettings):
     # Hugging Face
     huggingface_api_key: Optional[str] = Field(default=None, env="HUGGINGFACE_API_KEY")
 
-    # Flipp API
-    flipp_api_key: Optional[str] = Field(default=None, env="FLIPP_API_KEY")
-    flipp_api_url: str = Field(default="https://api.flipp.com/v2", env="FLIPP_API_URL")
+    # ------------------------------------------------------------------
+    # Deal ingestion (Flipp flyer search)
+    # ------------------------------------------------------------------
+    # RETIRED: flipp_api_key / flipp_api_url. There is no Flipp API behind
+    # them. FLIPP_API_KEY was never anything but the .env.example placeholder
+    # ("your_flipp_api_key_here"), and https://api.flipp.com/v2 does not
+    # correspond to any documented Flipp product. Nothing in the codebase ever
+    # read either value. They are gone rather than left as decoration, so the
+    # next reader does not spend an afternoon hunting for credentials that
+    # cannot exist. Leaving the old keys in .env is harmless — Settings is
+    # configured with extra="ignore".
+    #
+    # What replaces them is the keyless backend behind flipp.com's own search
+    # box. It is UNSANCTIONED: undocumented, unlicensed, no SLA, and subject to
+    # being blocked at any time. Hence off by default.
+    # See app/services/flipp_client.py.
+    deal_ingestion_enabled: bool = Field(default=False, env="DEAL_INGESTION_ENABLED")
+
+    # SAFETY GATE — read app/services/deal_gate.py before changing this.
+    # Off: users with dietary restrictions are served only curated deals,
+    # because app/agents/dietary.py's substring compliance oracle is unsafe
+    # against raw flyer product names (it misses prosciutto, chorizo, gelatin,
+    # marzipan...). Turning this on accepts allergen risk on users' behalf.
+    ingested_deals_for_restricted_diets: bool = Field(
+        default=False, env="INGESTED_DEALS_FOR_RESTRICTED_DIETS"
+    )
+
+    flipp_search_url: str = Field(
+        default="https://backflipp.wishabi.com/flipp/items/search",
+        env="FLIPP_SEARCH_URL",
+    )
+    # Politeness settings for an endpoint that owes us nothing.
+    flipp_timeout_seconds: float = Field(default=10.0, env="FLIPP_TIMEOUT_SECONDS")
+    flipp_max_retries: int = Field(default=2, env="FLIPP_MAX_RETRIES")
+    flipp_min_request_interval: float = Field(
+        default=1.5, env="FLIPP_MIN_REQUEST_INTERVAL"
+    )
+    flipp_user_agent: str = Field(
+        default="grocery-optimizer/0.1 (personal meal-planning project)",
+        env="FLIPP_USER_AGENT",
+    )
 
     # Cost Tracking
     enable_cost_tracking: bool = Field(default=True, env="ENABLE_COST_TRACKING")

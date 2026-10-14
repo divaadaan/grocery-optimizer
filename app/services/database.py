@@ -4,6 +4,7 @@ import json
 
 # Import the connection pool from db module
 from app.db import db
+from app.services.deal_gate import allowed_sources
 
 
 def _jsonable(row: Dict) -> Dict:
@@ -21,12 +22,29 @@ class DatabaseService:
         """Create database connection context manager."""
         return self.db.get_connection()
 
-    def fetch_current_deals(self, postal_code: str) -> List[Dict]:
+    def fetch_current_deals(
+        self,
+        postal_code: str,
+        dietary_restrictions: Optional[List[str]] = None,
+    ) -> List[Dict]:
         """
         Fetch all current deals for a postal code.
 
         Query deals table for valid offers, joining with stores.
+
+        ``dietary_restrictions`` is the ALLERGEN-SAFETY GATE, not a filter on
+        the deals themselves. When the user has any restriction and
+        ``INGESTED_DEALS_FOR_RESTRICTED_DIETS`` is off (the default), only
+        curated sources are returned, because ``app/agents/dietary.py``'s
+        substring compliance oracle is not sound against raw flyer product
+        names. Read ``app/services/deal_gate.py`` before touching this.
+
+        Passing ``None`` means "no user context" and returns every source -
+        callers on the recipe-generation path MUST pass the user's
+        restrictions.
         """
+        permitted_sources = allowed_sources(dietary_restrictions)
+
         query = """
         SELECT
             d.deal_id,
@@ -34,20 +52,37 @@ class DatabaseService:
             d.sale_price,
             d.regular_price,
             d.discount_percentage,
+            d.source,
             s.name as store_name,
             s.store_id,
             s.chain
         FROM deals d
         JOIN stores s ON d.store_id = s.store_id
-        WHERE s.postal_code = %s
+        WHERE s.postal_code = %(postal_code)s
           AND d.valid_until >= CURRENT_DATE
           AND d.valid_from <= CURRENT_DATE
-        ORDER BY d.discount_percentage DESC
+        """
+        params: Dict = {"postal_code": postal_code}
+
+        if permitted_sources is not None:
+            # Filtered in SQL rather than in Python so the LIMIT below is
+            # applied to the *allowed* set. Filtering after the LIMIT could
+            # hand a restricted user an empty deal list while curated deals
+            # sat just past row 200.
+            query += " AND d.source = ANY(%(sources)s)"
+            params["sources"] = permitted_sources
+
+        # NULLS LAST matters now that real data exists: ingested deals usually
+        # have no regular_price and therefore no discount_percentage, and
+        # Postgres sorts NULLs FIRST on DESC - which would fill the whole
+        # LIMIT with unmeasurable deals. Cheapest-first is the tie-break.
+        query += """
+        ORDER BY d.discount_percentage DESC NULLS LAST, d.sale_price ASC, d.deal_id
         LIMIT 200;  -- Cap for performance
         """
 
         with self.db.get_cursor() as cursor:
-            cursor.execute(query, (postal_code,))
+            cursor.execute(query, params)
             results = cursor.fetchall()
             return [_jsonable(dict(row)) for row in results]
 

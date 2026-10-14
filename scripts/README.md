@@ -14,7 +14,8 @@ This directory contains scripts for initializing and managing the Grocery Optimi
 
 1. **Neon.tech Account**
    - Create a project at [neon.tech](https://neon.tech)
-   - Enable TimescaleDB extension in project settings
+   - No extensions to enable beyond `uuid-ossp` and `pg_trgm`, which
+     `init_db.sql` creates itself (TimescaleDB is NOT used — see below)
    - Copy your connection string
 
 2. **Environment Variables**
@@ -37,7 +38,7 @@ python scripts/run_db_setup.py --seed
 
 This will:
 1. Create all tables and indexes
-2. Enable TimescaleDB hypertable for price_snapshots
+2. Create `price_snapshots` as a natively range-partitioned table
 3. Create views and helper functions
 4. Insert sample data (users, stores, deals, recipes)
 
@@ -82,7 +83,7 @@ python scripts/test-db-connection.py
 |-------|---------|--------------|
 | `users` | User accounts and preferences | Dietary restrictions stored as JSONB |
 | `stores` | Grocery store locations | Indexed by postal code |
-| `price_snapshots` | **TimescaleDB hypertable** for price history | 90-day retention policy |
+| `price_snapshots` | Price history, **native PG range partitioning** by month | Trigram GIN on `product_name`; see the partitioning note below |
 | `deals` | Current active deals | Automatically calculated discount % |
 | `recipes` | AI-generated recipes | JSONB ingredients with GIN index |
 | `shopping_lists` | Consolidated shopping lists | Links to multiple recipes |
@@ -95,7 +96,7 @@ Performance-optimized indexes on:
 - Postal codes (for location-based queries)
 - Date ranges (for active deals)
 - JSONB fields (using GIN indexes)
-- TimescaleDB time-bucket indexes
+- `price_snapshots(time DESC)` and `(store_id, time DESC)` for time-range scans
 
 ### Views
 
@@ -103,21 +104,48 @@ Performance-optimized indexes on:
 - **`user_recipe_stats`** - Recipe statistics per user
 - **`api_cost_by_user`** - API usage and costs aggregated by user
 
-## TimescaleDB Features
+## Price history partitioning (corrected 2026-10-14)
 
-### Hypertable
+**This section previously described TimescaleDB hypertables, 7-day chunks, a
+90-day retention policy and a `price_snapshots_daily` continuous aggregate.
+None of that exists.** `init_db.sql` says so in its own header ("Native
+PostgreSQL (Neon-compatible) - No TimescaleDB required"), never calls
+`create_hypertable`, and there is no `price_snapshots_daily` object anywhere in
+the repo. The claims were documentation drift; they are corrected here because
+ingestion now depends on how this table actually behaves.
 
-`price_snapshots` is configured as a TimescaleDB hypertable:
-- 7-day chunks for optimal performance
-- Automatic data retention (90 days)
-- Continuous aggregate for daily price averages
+### What is actually there
 
-### Continuous Aggregates
+`price_snapshots` is a plain PostgreSQL table declared
+`PARTITION BY RANGE (time)`, with:
 
-`price_snapshots_daily` provides pre-computed daily statistics:
-- Average prices per product per store
-- Min/max prices
-- Updated hourly
+- four named monthly partitions, `2025_09` through `2025_12`;
+- `price_snapshots_default`, a catch-all DEFAULT partition.
+
+### Consequences you need to know about
+
+1. **Current data lands in the DEFAULT partition.** The named partitions stop
+   at 2026-01, and `create_price_snapshot_partition()` only ever creates
+   *next* month — nothing creates the current one. Inserts still succeed (the
+   DEFAULT partition catches them), but partition pruning and cheap
+   retention-by-DROP deliver nothing.
+
+2. **The missing partitions cannot simply be backfilled.** Once rows for a
+   month sit in the DEFAULT partition, creating that month's partition fails
+   with `ERROR 23514: updated partition constraint for default partition
+   would be violated by some row`. The fix is a DETACH / relocate / CREATE /
+   re-insert / ATTACH sequence, which wants its own migration and test.
+
+3. **`cleanup_old_price_partitions()` must not be scheduled.** It drops
+   partitions older than 90 days. Today it is harmless by accident — it
+   chokes on the name `price_snapshots_default` and a bare
+   `EXCEPTION WHEN OTHERS` swallows the error, and all real rows live in that
+   partition anyway. Fix (2) without fixing this function and it becomes a job
+   that silently deletes the price history that
+   `app/services/price_baseline.py` needs 4-8 weeks to accumulate. See
+   `migrations/005_warn_cleanup_old_price_partitions.sql`.
+
+Background and measurements: `../sql4e/DESIGN-LOG.md` entries 0.5 and 0.6.
 
 ## Sample Data Details
 
@@ -152,12 +180,10 @@ Active deals valid for 7 days from current date, including:
 
 ### Issue: "TimescaleDB extension not found"
 
-**Solution:**
-1. Log into Neon.tech console
-2. Navigate to your project → Settings → Extensions
-3. Enable TimescaleDB extension
-4. Wait a few minutes for activation
-5. Re-run the setup script
+**Not applicable.** TimescaleDB is not used and does not need to be enabled;
+earlier versions of this file wrongly said it did. `init_db.sql` needs only
+`uuid-ossp` and `pg_trgm`, and creates both itself. If you hit an extension
+error, it is one of those two.
 
 ### Issue: "Permission denied"
 
@@ -218,7 +244,10 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 -- Delete deals older than 30 days
 DELETE FROM deals WHERE valid_until < CURRENT_DATE - INTERVAL '30 days';
 
--- TimescaleDB automatically drops old price_snapshots based on retention policy
+-- NOTE: nothing drops old price_snapshots automatically. There is no
+-- TimescaleDB retention policy (see the partitioning section above), and
+-- cleanup_old_price_partitions() must NOT be scheduled -- it would destroy
+-- the price baseline. Deleting price history is a deliberate manual act.
 ```
 
 ## Next Steps
@@ -254,5 +283,5 @@ After successful database setup:
 ## References
 
 - [Neon.tech Documentation](https://neon.tech/docs)
-- [TimescaleDB Documentation](https://docs.timescale.com)
+- [PostgreSQL Table Partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html)
 - [PostgreSQL JSONB Documentation](https://www.postgresql.org/docs/current/datatype-json.html)
