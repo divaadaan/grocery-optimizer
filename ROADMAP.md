@@ -367,14 +367,31 @@ aspirational.
   dozen fake products. The shape of the fix is cheap heuristic *detection*
   (≥2 size tokens had zero false positives; `" or "` has many) plus labelled
   *decomposition*, since the propose/review step already decides semantics.
-  Three consequences to plan for: **price attribution** (one price usually means
-  "each of these is $X", but `2 for $5` and a `from` prefix do not — `sale_story`
-  and `pre_price_text` are the only signals); **the natural key changes**, since
-  deals are keyed `(store_id, source, source_item_id, valid_from)` by migration
-  002 and one tile has one `source_item_id`, so splitting needs a discriminator
-  (likely `product_id`) and therefore a migration; and **snapshots gain** from
-  it, because a mashed name is currently a one-observation series that never
-  recurs.
+  *Groundwork landed 2026-10-14 (migration 009).* `deal_products` resolves
+  one-deal-to-many-products into its own relation, and
+  `app/services/deal_gate.py` now reads it instead of `deals.product_id`, with
+  the rule that **every** product on a deal must clear the restriction — a tile
+  offering chicken and milk is not vegetarian-safe because the milk is. Verified
+  against Neon in a rolled-back transaction (`scripts/verify_tile_gate.py`):
+  adding a meat product to an already-linked dairy deal drops it from the
+  vegetarian count and leaves unrestricted users untouched. Backfilled 80 rows
+  from the existing links, so the junction started complete.
+  **This corrects an earlier claim in this entry:** the natural key does *not*
+  have to change. That was only true of the alternative design — splitting a
+  tile into N deal rows, where one `source_item_id` cannot key them. A junction
+  needs no key change, no row duplication, and leaves ingestion idempotency
+  untouched.
+  Still to do: the labelling format has to let one tile return several products
+  (`product_aliases.normalized_name` is unique, so a tile string currently
+  cannot map to more than one), and the decomposition itself.
+  **Price attribution** is in better shape than feared — `deals.unit` is
+  persisted and 11 of the 17 known tiles carry `each` / `ea.` / `lb`, which
+  means the price applies per item; `deal_products.price_is_per_item` records
+  that per row, NOT NULL with no default so nobody can leave it undecided. The
+  ambiguous minority (`2 for $5`) needs `sale_story` / `pre_price_text`, and
+  **those are not columns on `deals`** — ingestion read them and dropped them,
+  so persisting them is a prerequisite. **Snapshots gain** from decomposition
+  too: a mashed name is currently a one-observation series that never recurs.
 - **Restricted users currently get zero deals.** Measured against Neon on
   2026-10-14: an unrestricted user gets 49 valid deals (all `flipp`), a
   vegetarian user gets **0**. The diet gate is working correctly — no `flipp`

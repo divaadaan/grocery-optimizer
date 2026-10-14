@@ -193,13 +193,28 @@ def compliant_product_filter(restrictions: Iterable[str] | None) -> tuple[str, d
     # Attribute names come from our own constant, never from user input.
     for attr in required:
         assert attr in ATTRIBUTES, f"unknown attribute {attr!r}"
-    conditions = " AND ".join(f"p.{attr} IS NOT TRUE" for attr in required)
+
+    # Reads the deal_products junction, not deals.product_id, because a flyer
+    # tile can advertise several products at one price. The rule is EVERY
+    # product on the deal must clear the restriction: a tile offering chicken
+    # and milk is not vegetarian-safe just because the milk is.
+    #
+    # Two clauses, and both are load-bearing:
+    #   EXISTS     -> the deal has at least one linked product. A deal with no
+    #                 junction rows fails, so unlinked is withheld rather than
+    #                 vacuously "nothing violates it, let it through".
+    #   NOT EXISTS -> no linked product is unconfirmed or violating.
+    violates = " OR ".join(f"p.{attr}" for attr in required)
     fragment = f"""
           AND EXISTS (
-              SELECT 1 FROM products p
-              WHERE p.product_id = d.product_id
-                AND p.status = 'confirmed'
-                AND {conditions}
+              SELECT 1 FROM deal_products dp
+              WHERE dp.deal_id = d.deal_id
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM deal_products dp
+              JOIN products p ON p.product_id = dp.product_id
+              WHERE dp.deal_id = d.deal_id
+                AND (p.status <> 'confirmed' OR {violates})
           )"""
     return fragment, {}
 
