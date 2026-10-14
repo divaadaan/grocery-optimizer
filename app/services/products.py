@@ -42,6 +42,7 @@ unlinked, proposed-but-unconfirmed, and rejected all withhold the deal.
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
 import re
 from typing import Any, Iterable
 
@@ -330,3 +331,209 @@ def log_oracle_disagreements(database=db) -> list[dict]:
                 labels,
             )
     return flagged
+
+
+# --------------------------------------------------------------------------
+# Review service: shared by the CLI and the admin web page
+# --------------------------------------------------------------------------
+#
+# These live here rather than in scripts/review_products.py so the terminal
+# and the browser cannot drift. A second implementation of "what does
+# confirming mean" is exactly the kind of divergence that ends with one
+# surface promoting a product the other would have withheld.
+
+#: Restriction labels the app understands, in the order a reviewer thinks
+#: about them.
+REVIEW_LABELS: tuple[str, ...] = ("vegan", "vegetarian", "pescatarian", "no_nuts")
+
+
+def clears_labels(product: dict[str, Any]) -> list[str]:
+    """Restriction labels this product's attributes clear.
+
+    Shown to the reviewer because it is the actual consequence of the
+    checkboxes: "contains dairy" is abstract, "clears vegetarian but not
+    vegan" is the decision being made.
+    """
+    if product.get("product_id") is None:
+        return []
+    return [label for label in REVIEW_LABELS if product_allows(product, [label])]
+
+
+def pending_proposals(limit: int = 5000, database=db) -> list[dict]:
+    """Proposed aliases with their product, most-seen first."""
+    with database.get_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT a.alias_id, a.normalized_name, a.raw_example, a.confidence,
+                   a.proposal_reason, a.times_seen, a.source,
+                   p.product_id, p.canonical_name, p.category,
+                   p.status AS product_status, p.is_pantry_staple,
+                   p.contains_meat, p.contains_fish, p.contains_dairy,
+                   p.contains_egg, p.contains_nuts
+            FROM product_aliases a
+            LEFT JOIN products p ON p.product_id = a.product_id
+            WHERE a.status = 'proposed'
+            ORDER BY a.times_seen DESC, a.normalized_name
+            LIMIT %(limit)s
+            """,
+            {"limit": limit},
+        )
+        return [dict(r) for r in cursor.fetchall()]
+
+
+def group_proposals(rows: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Split pending aliases into product groups and the unplaceable ones.
+
+    Groups are ordered by total ``times_seen``: a group seen often is being
+    withheld from users week after week, so it is worth deciding first.
+    """
+    groups: dict[int, dict] = {}
+    orphans: list[dict] = []
+
+    for row in rows:
+        if row["product_id"] is None:
+            orphans.append(row)
+            continue
+        group = groups.setdefault(
+            row["product_id"],
+            {
+                "product_id": row["product_id"],
+                "canonical_name": row["canonical_name"],
+                "category": row["category"],
+                "product_status": row["product_status"],
+                "is_pantry_staple": row["is_pantry_staple"],
+                **{attr: row[attr] for attr in ATTRIBUTES},
+                "aliases": [],
+            },
+        )
+        group["aliases"].append(row)
+
+    for group in groups.values():
+        group["times_seen"] = sum(a["times_seen"] for a in group["aliases"])
+        group["clears"] = clears_labels(group)
+        group["oracle_disagreement"] = oracle_disagreement(group)
+
+    ordered = sorted(
+        groups.values(),
+        key=lambda g: (-g["times_seen"], g["canonical_name"] or ""),
+    )
+    orphans.sort(key=lambda r: (-r["times_seen"], r["raw_example"]))
+    return ordered, orphans
+
+
+def set_attributes(
+    product_id: int, updates: dict[str, bool], database=db
+) -> dict[str, bool]:
+    """Overwrite attributes on a not-yet-confirmed product.
+
+    Rejects anything outside ``ATTRIBUTES``: these names are interpolated into
+    SQL, so the whitelist is load-bearing, not tidiness.
+    """
+    unknown = set(updates) - set(ATTRIBUTES)
+    if unknown:
+        raise ValueError(f"unknown attribute(s): {sorted(unknown)}")
+    clean = {k: bool(v) for k, v in updates.items()}
+    if not clean:
+        return {}
+    sets = ", ".join(f"{attr} = %({attr})s" for attr in clean)
+    with database.get_cursor() as cursor:
+        cursor.execute(
+            f"UPDATE products SET {sets} WHERE product_id = %(pid)s",
+            {**clean, "pid": product_id},
+        )
+    return clean
+
+
+def confirm_group(
+    product_id: int, alias_ids: list[int], reviewer: str, database=db
+) -> int:
+    """Confirm a product and the given aliases together.
+
+    The product is promoted alongside its aliases because the reviewer just
+    verified these attributes; requiring a separate product confirmation would
+    be busywork that invites rubber-stamping.
+    """
+    if not alias_ids:
+        return 0
+    now = datetime.now(timezone.utc)
+    with database.get_cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE products
+            SET status = 'confirmed', reviewed_by = %(who)s, reviewed_at = %(now)s
+            WHERE product_id = %(pid)s AND status <> 'confirmed'
+            """,
+            {"pid": product_id, "who": reviewer, "now": now},
+        )
+        cursor.execute(
+            """
+            UPDATE product_aliases
+            SET status = 'confirmed', reviewed_by = %(who)s, reviewed_at = %(now)s
+            WHERE alias_id = ANY(%(ids)s) AND status = 'proposed'
+            """,
+            {"ids": list(alias_ids), "who": reviewer, "now": now},
+        )
+        return cursor.rowcount or 0
+
+
+def reject_aliases(alias_ids: list[int], reviewer: str, database=db) -> int:
+    """Reject aliases so they stay withheld and stop re-queueing."""
+    if not alias_ids:
+        return 0
+    now = datetime.now(timezone.utc)
+    with database.get_cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE product_aliases
+            SET status = 'rejected', reviewed_by = %(who)s, reviewed_at = %(now)s
+            WHERE alias_id = ANY(%(ids)s) AND status = 'proposed'
+            """,
+            {"ids": list(alias_ids), "who": reviewer, "now": now},
+        )
+        return cursor.rowcount or 0
+
+
+def reject_product_if_orphaned(product_id: int, reviewer: str, database=db) -> bool:
+    """Reject a product once nothing non-rejected points at it.
+
+    Keeps the live-name unique index free, so a better proposal for the same
+    canonical name can be created later.
+    """
+    now = datetime.now(timezone.utc)
+    with database.get_cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE products
+            SET status = 'rejected', reviewed_by = %(who)s, reviewed_at = %(now)s
+            WHERE product_id = %(pid)s
+              AND status = 'proposed'
+              AND NOT EXISTS (
+                  SELECT 1 FROM product_aliases
+                  WHERE product_id = %(pid)s AND status <> 'rejected'
+              )
+            """,
+            {"pid": product_id, "who": reviewer, "now": now},
+        )
+        return bool(cursor.rowcount)
+
+
+def review_stats(database=db) -> dict[str, int]:
+    """Counts for the review UI header."""
+    with database.get_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+              (SELECT count(*) FROM product_aliases WHERE status = 'proposed')
+                AS proposed,
+              (SELECT count(*) FROM product_aliases WHERE status = 'confirmed')
+                AS confirmed,
+              (SELECT count(*) FROM product_aliases WHERE status = 'rejected')
+                AS rejected,
+              (SELECT count(*) FROM products WHERE status = 'confirmed')
+                AS products_confirmed,
+              (SELECT count(*) FROM deals WHERE product_id IS NOT NULL)
+                AS deals_linked,
+              (SELECT count(*) FROM deals) AS deals_total
+            """
+        )
+        return dict(cursor.fetchone())

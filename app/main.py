@@ -16,7 +16,7 @@ from app.config import settings
 from app.db import init_db, close_db
 from app.services.cache_service import init_cache, close_cache, cache
 from app.models.schemas import HealthCheckResponse
-from app.routes import users, stores, recipes, shopping_lists
+from app.routes import users, stores, recipes, shopping_lists, admin_products
 
 # Configure logging
 logging.basicConfig(
@@ -158,6 +158,10 @@ app.include_router(users.router, prefix=settings.api_prefix)
 app.include_router(stores.router, prefix=settings.api_prefix)
 app.include_router(recipes.router, prefix=settings.api_prefix)
 app.include_router(shopping_lists.router, prefix=settings.api_prefix)
+# Admin review UI. Deliberately NOT under api_prefix: it is an internal
+# tool, not a versioned client API. See app/routes/admin_products.py for
+# the standing note that these routes mutate allergen labels with no auth.
+app.include_router(admin_products.router)
 
 
 # Root endpoint
