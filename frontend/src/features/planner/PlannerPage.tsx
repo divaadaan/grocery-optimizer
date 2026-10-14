@@ -110,7 +110,7 @@ export function PlannerPage() {
         </div>
       </Card>
 
-      {generate.isPending && <GenerationProgress />}
+      {generate.isPending && <GenerationProgress job={generate.job} />}
       {generate.isError && <ErrorBanner error={generate.error} />}
 
       {result && (

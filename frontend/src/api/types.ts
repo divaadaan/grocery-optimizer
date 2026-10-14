@@ -118,6 +118,38 @@ export interface RecipeGenerationResponse {
   warnings: string[];
 }
 
+/** Generation is a background job: POST /recipes/generate returns this. */
+export type JobState = "pending" | "running" | "completed" | "failed";
+
+export interface RecipeGenerationJobCreated {
+  job_id: string;
+  user_id: number;
+  state: JobState;
+  created_at: string;
+  status_url: string;
+}
+
+export interface RecipeGenerationJobStatus {
+  job_id: string;
+  user_id: number;
+  state: JobState;
+  /** Human-readable current work, e.g. "SousChef 2/3 cooking…". */
+  stage: string;
+  /** 1-based position in `pipeline`; 0 while the job is still queued. */
+  stage_index: number;
+  stage_total: number;
+  /** The nominal stage checklist, server-supplied so it cannot drift. */
+  pipeline: string[];
+  created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  elapsed_seconds: number;
+  /** Set once state === "completed". */
+  result: RecipeGenerationResponse | null;
+  /** Set once state === "failed". */
+  error: string | null;
+}
+
 // ---------------------------------------------------------------------------
 // Shopping lists
 // ---------------------------------------------------------------------------

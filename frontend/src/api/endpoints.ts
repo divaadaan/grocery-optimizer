@@ -9,8 +9,9 @@ import type {
   DealInfo,
   HealthCheckResponse,
   PostalCodeDiscoveryResponse,
+  RecipeGenerationJobCreated,
+  RecipeGenerationJobStatus,
   RecipeGenerationRequest,
-  RecipeGenerationResponse,
   RecipeInfo,
   ShoppingListResponse,
   UserCreate,
@@ -59,8 +60,14 @@ export const searchDeals = (postalCode: string, q: string) =>
 
 // Recipes ---------------------------------------------------------------
 
-export const generateRecipes = (req: RecipeGenerationRequest) =>
-  post<RecipeGenerationResponse>(`${API_PREFIX}/recipes/generate`, req);
+/** Starts a background job; the plan arrives via getGenerationStatus. */
+export const startRecipeGeneration = (req: RecipeGenerationRequest) =>
+  post<RecipeGenerationJobCreated>(`${API_PREFIX}/recipes/generate`, req);
+
+export const getGenerationStatus = (jobId: string) =>
+  get<RecipeGenerationJobStatus>(
+    `${API_PREFIX}/recipes/generate/status/${encodeURIComponent(jobId)}`,
+  );
 
 export const getRecipe = (recipeId: number) =>
   get<RecipeInfo>(`${API_PREFIX}/recipes/${recipeId}`);

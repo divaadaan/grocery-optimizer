@@ -45,6 +45,12 @@ Conventions:
   `formatMoney` handle both.
 - Stub endpoints (501) render as "coming soon" panels via `QueryError`,
   so pages activate as backend roadmap items land.
-- Recipe generation is synchronous and slow (local LLMs); `GenerationProgress`
-  shows the real pipeline stages + elapsed time. When the async job API lands
-  (ROADMAP item 2), only `useGenerateRecipes` and `GenerationProgress` change.
+- Recipe generation is a background job (local LLMs take minutes):
+  `POST /recipes/generate` returns a `job_id` and `useGenerateRecipes` polls
+  `GET /recipes/generate/status/{job_id}` every 2s until the job is
+  `completed`/`failed`. The hook keeps the mutation-shaped surface
+  (`mutate`/`isPending`/`isError`/`error`/`data`) — `isPending` now spans the
+  whole run — and adds `job` for live progress. `GenerationProgress` renders
+  the server-supplied stage checklist, so stages cannot drift from the graph.
+  Jobs live in the API process' memory: a backend restart loses an in-flight
+  job, which surfaces as a 404 on the next poll.

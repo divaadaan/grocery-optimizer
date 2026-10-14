@@ -157,6 +157,53 @@ class RecipeGenerationResponse(BaseModel):
     warnings: List[str] = Field(default_factory=list)
 
 
+class RecipeGenerationJobCreated(BaseModel):
+    """Handle returned immediately by POST /recipes/generate."""
+    job_id: str
+    user_id: int
+    state: str = Field(description="pending | running | completed | failed")
+    created_at: datetime
+    status_url: str = Field(description="Poll this URL for progress and the result")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "job_id": "9f1c2e5b7a4d4f0e8b3a6c1d2e5f7a90",
+                "user_id": 1,
+                "state": "pending",
+                "created_at": "2026-10-14T14:00:00",
+                "status_url": "/api/v1/recipes/generate/status/9f1c2e5b7a4d4f0e8b3a6c1d2e5f7a90"
+            }
+        }
+
+
+class RecipeGenerationJobStatus(BaseModel):
+    """Progress snapshot for a recipe-generation job."""
+    job_id: str
+    user_id: int
+    state: str = Field(description="pending | running | completed | failed")
+    stage: str = Field(description="Human-readable description of current work")
+    stage_index: int = Field(description="1-based position in stage_total; 0 while queued")
+    stage_total: int
+    pipeline: List[str] = Field(
+        default_factory=list,
+        description="The nominal stage checklist, for rendering progress"
+    )
+    created_at: datetime
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
+    elapsed_seconds: float
+    result: Optional[RecipeGenerationResponse] = Field(
+        default=None,
+        description="Populated once state == completed; same shape the "
+                    "synchronous endpoint used to return"
+    )
+    error: Optional[str] = Field(
+        default=None,
+        description="Populated once state == failed"
+    )
+
+
 # ============================================================================
 # Shopping List Schemas
 # ============================================================================

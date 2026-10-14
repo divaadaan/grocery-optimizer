@@ -6,14 +6,23 @@ from fastapi import APIRouter, HTTPException, status
 import logging
 from datetime import datetime
 
+from app.config import settings
 from app.models.schemas import (
     RecipeGenerationRequest,
     RecipeGenerationResponse,
+    RecipeGenerationJobCreated,
+    RecipeGenerationJobStatus,
     RecipeInfo,
     ErrorResponse
 )
 from app.services.user_service import UserService
 from app.services.database import DatabaseService
+from app.services.recipe_jobs import (
+    COMPLETED,
+    PIPELINE_STAGES,
+    RecipeJob,
+    job_registry,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,34 +49,150 @@ def _recipe_row_to_info(recipe: dict) -> RecipeInfo:
     )
 
 
+def _build_generation_response(
+    result: dict,
+    generation_time: float
+) -> RecipeGenerationResponse:
+    """
+    Map a finished graph state to the recipe-generation response payload.
+
+    This is the contract the synchronous endpoint used to return directly;
+    it now travels to the client inside the job's `result` field, unchanged.
+    """
+    # saved_recipe_ids (set by finalize_meal_plan) aligns in order with
+    # approved_recipe_ids; fall back to 0 defensively if it's missing (e.g.
+    # partial/failure paths that never reached finalize).
+    saved_recipe_ids = result.get("saved_recipe_ids", [])
+    recipe_id_map = dict(zip(result["approved_recipe_ids"], saved_recipe_ids))
+
+    recipes = []
+    for recipe_id in result["approved_recipe_ids"]:
+        recipe_data = result["generated_recipes"][recipe_id]
+        recipes.append(RecipeInfo(
+            recipe_id=recipe_id_map.get(recipe_id, 0),
+            name=recipe_data["name"],
+            ingredients=recipe_data["ingredients"],
+            instructions=recipe_data["instructions"],
+            total_cost=recipe_data["total_cost"],
+            servings=recipe_data["servings"],
+            estimated_prep_time=recipe_data.get("estimated_prep_time"),
+            meal_type=recipe_data.get("meal_type"),
+            cuisine_type=recipe_data.get("cuisine_type"),
+            nutrition_facts=result["validation_results"].get(recipe_id, {}).get("nutrition_facts"),
+            health_score=result["validation_results"].get(recipe_id, {}).get("health_score"),
+            created_at=datetime.now()
+        ))
+
+    return RecipeGenerationResponse(
+        recipes=recipes,
+        total_cost=result["total_cost"],
+        cost_per_meal=result["cost_per_meal"],
+        estimated_savings=result["estimated_savings"],
+        generation_time=generation_time,
+        status=result["status"],
+        warnings=result.get("warnings", [])
+    )
+
+
+def _run_generation_job(job_id: str, user: dict, request: RecipeGenerationRequest) -> None:
+    """
+    Worker body for one generation job. Runs on the registry's thread pool,
+    never on the event loop, so it may block freely.
+    """
+    import time
+
+    # Imported here (not at module scope) so the agent/LangGraph stack is
+    # only pulled in when a generation actually runs, and so tests can patch
+    # the module attribute.
+    from app import main_recipe_generation
+
+    job_registry.mark_running(job_id)
+    start_time = time.time()
+
+    try:
+        result = main_recipe_generation.run_recipe_generation(
+            user_id=user["user_id"],
+            postal_code=user["postal_code"],
+            budget=float(user["budget"]),
+            household_size=user["household_size"],
+            dietary_restrictions=user["dietary_restrictions"],
+            num_meals=request.num_meals,
+            preferences=request.preferences,
+            progress_callback=lambda node: job_registry.report_node(job_id, node),
+        )
+    except Exception as e:
+        logger.error(f"Error in LangGraph workflow for job {job_id}: {e}", exc_info=True)
+        job_registry.fail(job_id, f"Recipe generation workflow failed: {e}")
+        return
+
+    if result.get("status") != COMPLETED:
+        errors = result.get("errors") or ["Unknown error"]
+        job_registry.fail(job_id, f"Recipe generation failed: {'; '.join(errors)}")
+        return
+
+    try:
+        response = _build_generation_response(result, time.time() - start_time)
+    except Exception as e:
+        logger.error(f"Error building response for job {job_id}: {e}", exc_info=True)
+        job_registry.fail(job_id, f"Recipe generation produced an unusable result: {e}")
+        return
+
+    job_registry.complete(job_id, response.model_dump())
+    logger.info(f"Recipe job {job_id} completed with {len(response.recipes)} recipes")
+
+
+def _status_url(job_id: str) -> str:
+    return f"{settings.api_prefix}/recipes/generate/status/{job_id}"
+
+
+def _job_status(job: RecipeJob) -> RecipeGenerationJobStatus:
+    return RecipeGenerationJobStatus(
+        job_id=job.job_id,
+        user_id=job.user_id,
+        state=job.state,
+        stage=job.stage,
+        stage_index=job.stage_index,
+        stage_total=len(PIPELINE_STAGES),
+        pipeline=list(PIPELINE_STAGES),
+        created_at=job.created_at,
+        started_at=job.started_at,
+        finished_at=job.finished_at,
+        elapsed_seconds=job.elapsed_seconds,
+        result=job.result,
+        error=job.error,
+    )
+
+
 @router.post("/generate",
-             response_model=RecipeGenerationResponse,
+             response_model=RecipeGenerationJobCreated,
+             status_code=status.HTTP_202_ACCEPTED,
              responses={
                  404: {"model": ErrorResponse, "description": "User not found"},
                  500: {"model": ErrorResponse, "description": "Internal server error"}
              })
-async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGenerationResponse:
+async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGenerationJobCreated:
     """
-    Generate optimized meal plan with recipes.
+    Start generating an optimized meal plan. Returns immediately with a job.
 
-    Uses AI agents (Chef Orchestrator, SousChefs, Nutritionist) to generate
-    a complete meal plan based on available deals and user preferences.
+    Generation uses AI agents (Chef Orchestrator, SousChefs, Nutritionist) and
+    takes minutes with local models, so this endpoint does **not** wait for it:
+    it validates the request, queues the work, and returns a `job_id`. Poll
+    `GET /recipes/generate/status/{job_id}` for progress and the result.
 
     - **user_id**: User ID for preferences and postal code
     - **num_meals**: Number of meals to generate (default: 7)
     - **preferences**: Optional preferences (cuisine types, meal types, ingredients to avoid)
 
-    **Process:**
+    **Process (reported as progress stages):**
     1. Fetch user preferences and local deals
     2. Chef Orchestrator plans ingredient groups
     3. 3 SousChefs generate recipes in parallel
-    4. Nutritionist validates recipes
-    5. Return approved recipes with costs
-
-    **Note:** This is currently a stub. Full LangGraph implementation will be added.
+    4. Nutritionist validates recipes (rejected ones are retried)
+    5. Approved recipes are persisted and returned in the job result
     """
     try:
-        # Validate user exists
+        # Validate user exists before accepting the job — a bad user_id is a
+        # 404 here rather than a job that fails a minute later.
         user = UserService.get_user_by_id(request.user_id)
         if not user:
             raise HTTPException(
@@ -75,85 +200,54 @@ async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGeneration
                 detail=f"User with ID {request.user_id} not found"
             )
 
-        logger.info(f"Starting recipe generation for user {request.user_id}")
+        job = job_registry.create(user_id=user["user_id"], num_meals=request.num_meals)
+        job_registry.submit(job.job_id, lambda: _run_generation_job(job.job_id, user, request))
 
-        # Run LangGraph recipe generation workflow
-        import time
-        start_time = time.time()
+        logger.info(f"Queued recipe generation job {job.job_id} for user {request.user_id}")
 
-        from app.main_recipe_generation import run_recipe_generation
-
-        try:
-            result = run_recipe_generation(
-                user_id=user["user_id"],
-                postal_code=user["postal_code"],
-                budget=float(user["budget"]),
-                household_size=user["household_size"],
-                dietary_restrictions=user["dietary_restrictions"],
-                num_meals=request.num_meals,
-                preferences=request.preferences
-            )
-
-            generation_time = time.time() - start_time
-
-            if result["status"] != "completed":
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Recipe generation failed: {'; '.join(result.get('errors', ['Unknown error']))}"
-                )
-
-            # Convert recipes to response format. saved_recipe_ids (set by
-            # finalize_meal_plan) aligns in order with approved_recipe_ids;
-            # fall back to 0 defensively if it's missing (e.g. partial/failure
-            # paths that never reached finalize).
-            saved_recipe_ids = result.get("saved_recipe_ids", [])
-            recipe_id_map = dict(zip(result["approved_recipe_ids"], saved_recipe_ids))
-
-            recipes = []
-            for recipe_id in result["approved_recipe_ids"]:
-                recipe_data = result["generated_recipes"][recipe_id]
-                recipes.append(RecipeInfo(
-                    recipe_id=recipe_id_map.get(recipe_id, 0),
-                    name=recipe_data["name"],
-                    ingredients=recipe_data["ingredients"],
-                    instructions=recipe_data["instructions"],
-                    total_cost=recipe_data["total_cost"],
-                    servings=recipe_data["servings"],
-                    estimated_prep_time=recipe_data.get("estimated_prep_time"),
-                    meal_type=recipe_data.get("meal_type"),
-                    cuisine_type=recipe_data.get("cuisine_type"),
-                    nutrition_facts=result["validation_results"].get(recipe_id, {}).get("nutrition_facts"),
-                    health_score=result["validation_results"].get(recipe_id, {}).get("health_score"),
-                    created_at=datetime.now()
-                ))
-
-            return RecipeGenerationResponse(
-                recipes=recipes,
-                total_cost=result["total_cost"],
-                cost_per_meal=result["cost_per_meal"],
-                estimated_savings=result["estimated_savings"],
-                generation_time=generation_time,
-                status=result["status"],
-                warnings=result.get("warnings", [])
-            )
-
-        except HTTPException:
-            raise
-        except Exception as e:
-            logger.error(f"Error in LangGraph workflow: {e}", exc_info=True)
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Recipe generation workflow failed: {str(e)}"
-            )
+        return RecipeGenerationJobCreated(
+            job_id=job.job_id,
+            user_id=job.user_id,
+            state=job.state,
+            created_at=job.created_at,
+            status_url=_status_url(job.job_id),
+        )
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error generating recipes for user {request.user_id}: {e}")
+        logger.error(f"Error starting recipe generation for user {request.user_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate recipes"
+            detail="Failed to start recipe generation"
         )
+
+
+@router.get("/generate/status/{job_id}",
+            response_model=RecipeGenerationJobStatus,
+            responses={
+                404: {"model": ErrorResponse, "description": "Job not found"}
+            })
+async def get_generation_status(job_id: str) -> RecipeGenerationJobStatus:
+    """
+    Poll a recipe-generation job.
+
+    Returns the job `state` (`pending`, `running`, `completed`, `failed`), the
+    current `stage` (a real LangGraph pipeline stage, e.g. "SousChef 2/3
+    cooking…") and, once terminal, either `result` (the full meal plan,
+    including persisted `recipe_id`s) or `error`.
+
+    Jobs are held in memory by the API process: they are lost on restart, and
+    an unknown or evicted `job_id` is a 404.
+    """
+    job = job_registry.get(job_id)
+    if job is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Recipe generation job {job_id} not found"
+        )
+
+    return _job_status(job)
 
 
 @router.get("/{recipe_id}",
