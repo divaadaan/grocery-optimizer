@@ -1,6 +1,12 @@
 # Development Roadmap
 
-Canonical plan as of 2026-06-12. Supersedes `NEXT_STEPS.md` (see git history
+Canonical plan, last revised 2026-10-14 (originally 2026-06-12). Dated
+`*Shipped:*` / `*Progress:*` entries below are historical records — the test
+counts inside them were true when written and are deliberately not rewritten.
+Current suite: **69 passed, 11 deselected** on `feat/async-recipe-generation`,
+**214 passed, 11 deselected** on `feat/flipp-ingestion` (`pytest -m "not llm"`).
+
+Supersedes `NEXT_STEPS.md` (see git history
 for the WSL-migration log and verification notes it contained).
 
 ## Done
@@ -18,6 +24,24 @@ for the WSL-migration log and verification notes it contained).
   search, meal-plan generation (with long-running-job UX), and a shopping-list
   page wired against the 501 stub so it lights up when the backend lands.
   See `frontend/README.md` for architecture and run instructions.
+
+## Product framing (2026-10-14)
+
+The hero metric is **meeting dietary goals within the spend limit the user
+sets** — not savings against a regular price. Flyer data supplies a pre-promo
+price on only ~17% of items (measured live), so `estimated_savings` degrades on
+real data and must degrade to *absent* rather than to a fabricated number. The
+replacement is a self-derived baseline accumulated in `price_snapshots`
+(`observed_sale_median`, delta `discount_vs_typical_sale`), which needs ~4-8
+weeks of runs before it says anything. Budget adherence needs no history, so it
+is the day-one metric and savings is secondary.
+
+One gap this exposes, not yet closed: `users.budget` is documented as a
+*monthly* budget (`app/routes/users.py:36`) but `app/agents/graph.py:69`
+applies it as the ceiling for a *single* generation, with no accumulation
+against completed `shopping_lists.total_cost`. `mark-complete` is the natural
+spend-recording signal. Until that is wired, "within your spend limit" is
+aspirational.
 
 ## Next
 
@@ -40,6 +64,32 @@ for the WSL-migration log and verification notes it contained).
    LangGraph node events ("SousChef 2/3 cooking…"). Frontend impact is
    contained: swap `useGenerateRecipes` in `frontend/src/hooks/queries.ts` and
    feed real stages to `GenerationProgress`.
+
+   *Shipped (2026-10-14):* **Done**, two commits on
+   `feat/async-recipe-generation`. The framing above understated the defect: the
+   synchronous `graph.invoke()` ran inside an `async def` endpoint with no
+   executor, so one generation pinned the event loop for *every* client, not just
+   the caller — an availability bug, not a UX wart. `0b1d1f6` fixes only that
+   (`asyncio.to_thread`), landed separately on purpose. `6d6db31` adds the job
+   model: `POST /recipes/generate` → `202` + `job_id`; `GET
+   /recipes/generate/status/{job_id}` → state, `stage`, `stage_index`/
+   `stage_total`, a server-supplied `pipeline` checklist, and the **unchanged**
+   `RecipeGenerationResponse` (real `recipe_id`s preserved) when terminal. User
+   validation stays in the POST so a bad `user_id` is still a 404 up front.
+   Progress is real, not simulated: `run_recipe_generation` moved to
+   `graph.stream(stream_mode=["updates","values"])` (the last `values` chunk
+   equals what `invoke` returned) and the registry counts the three parallel
+   SousChefs to produce "SousChef 2/3 cooking…". `stage_index` is a position in
+   a 6-step checklist, not a monotonic percentage — the retry loop revisits
+   step 5. Storage is an in-process dict + 2-worker `ThreadPoolExecutor`;
+   concurrency capped at 2 because the single local Ollama is the real
+   bottleneck. Limits, all documented in `app/services/recipe_jobs.py`: lost on
+   restart, wrong for >1 uvicorn worker, eviction past 200 jobs drops only
+   terminal ones, and no ownership check on a `job_id` beyond uuid4
+   unguessability (there is no auth). Tests 46 → 69.
+   *Caveat:* no non-`llm` test drives the real compiled graph, so the
+   `stream_mode` contract rests on a stub graph plus a standalone langgraph
+   experiment. The first live generation is the real check on stage ordering.
 
 3. **Shopping Optimizer agent + endpoints.** Consolidate approved-recipe
    ingredients, assign items to stores by best price, persist to
@@ -65,6 +115,92 @@ for the WSL-migration log and verification notes it contained).
 4. **Real deal ingestion (Flipp).** Replace seed data; `flipp_api_key`/
    `flipp_api_url` already exist in settings. Add a scheduled refresh and wire
    `POST /postal-code/discover` to it (currently it only reads what's in the DB).
+
+   *Shipped (2026-10-14):* **Done**, `6d8b306` on `feat/flipp-ingestion`, and
+   verified end-to-end against the live provider and the live Neon database.
+
+   The `flipp_api_key` premise was false: there is no official Flipp API and no
+   credentials ever existed — `.env` held the `.env.example` placeholder
+   verbatim, and `https://api.flipp.com/v2` corresponds to nothing. The setting
+   is retired. The source is the unofficial, keyless backend
+   `backflipp.wishabi.com/flipp/items/search`. Because it is search-by-term and
+   cannot enumerate a flyer, ingestion is **staples-driven**: 50 `(term,
+   category)` pairs in `app/services/flipp_staples.py`, capped at 60 so an edit
+   cannot turn a refresh into a crawl. Politeness is built in: identifying UA,
+   10s timeout, 2 retries with jittered backoff on transport errors and 429/5xx
+   only (403/404 fail fast), a 1.5s minimum inter-request interval held under a
+   lock, and a process-wide refresh lock. Category comes from the search term —
+   `_L1`/`_L2` are useless (every grocery item is `Food, Beverages & Tobacco`)
+   and `_L1` is used only as a negative filter. `brand` is unobtainable: the
+   payload carries opaque `brand_ids` with no names.
+
+   **Price history is now written.** `price_snapshots` was dead-but-ready schema
+   that no Python touched (it did hold 60 seeded rows). Ingestion appends to it,
+   with a `price_basis` column distinguishing `sale_only` /
+   `regular_and_sale` / `regular_only` / `unknown`, because "we only got one
+   number" and "shelf price equals sale price" are different facts and guessing
+   between them corrupts everything downstream. `price` became nullable so a
+   caller with only a promo price is not forced to invent a shelf price.
+
+   Idempotency: deals keyed `(store_id, source, source_item_id, valid_from)` —
+   `valid_from` is in the key deliberately, or next week's flyer would overwrite
+   this week's row instead of accumulating history. Snapshots keyed the same with
+   `time` truncated to UTC midnight so two runs in a day collapse. A merchant can
+   print the identical offer twice in one flyer with distinct `flyer_item_id`s
+   (10 such pairs observed live across two terms); `dedupe()` collapses them and
+   picks the representative by **lowest `source_item_id`, not encounter order**,
+   because encounter order follows unstable relevance ranking and would silently
+   insert a second row next week.
+
+   Two latent bugs found and fixed: every `UPDATE` on `stores` raised `42703`
+   (the shared `update_updated_at_column()` trigger assigns `NEW.updated_at`, a
+   column `stores` does not have — it has `last_updated`; nothing had ever
+   updated a store row so it never fired), and `fetch_current_deals` ordered by
+   `discount_percentage DESC` where Postgres sorts NULLs **first**, so
+   mostly-NULL real discounts would have filled the `LIMIT 200` with
+   unmeasurable deals.
+
+   Migrations `001`–`005` **applied to Neon on 2026-10-14**, each validated
+   first by executing against the real schema inside a rolled-back transaction
+   (individually and as a sequence). A `schema_migrations` ledger was created on
+   Neon, which had none — `make migrate` in `../sql4e` targets only the study DB.
+   `005` is `COMMENT ON FUNCTION` only and deliberately adds **no** current
+   `price_snapshots` partitions: `cleanup_old_price_partitions()`'s 90-day cutoff
+   is safe *by accident* today, since the loop globs `price_snapshots_%`,
+   `TO_DATE('default','YYYY_MM')` raises, and the inner `EXCEPTION WHEN OTHERS`
+   swallows it — so with no current-month partitions all real rows live in
+   `default` and only the four empty 2025 partitions are reachable. Adding
+   partitions would convert that into a live hazard, and a naive `CREATE TABLE
+   ... PARTITION OF` fails with `23514` against a populated default partition.
+   **Do not schedule or invoke that function.**
+
+   Live verification: run 1 wrote 35 stores / 98 deals / 98 snapshots; an
+   identical re-run inserted **zero** (98 deals updated, 98 snapshots skipped),
+   with zero natural-key duplicates in either table and zero `price_basis`
+   invariant violations. Measured `regular_price` coverage **0.173**.
+   `sale_baseline` correctly returns `None` at one observed week, and
+   `discount_vs_typical_sale` returns `None` rather than raising.
+
+   `scripts/README.md` and `SETUP.md` claimed `price_snapshots` was a TimescaleDB
+   hypertable with 7-day chunks, 90-day retention and a `price_snapshots_daily`
+   continuous aggregate. None of that exists — it is native PG range
+   partitioning. Both corrected, guarded by `test_migrations.py`.
+
+   *Deferred, deliberately:* dietary compliance. `app/agents/dietary.py` matches
+   forbidden terms by naive casefold substring, which real flyer names break both
+   ways — false positives ("Beefsteak Tomatoes" → `beef`) and, worse, false
+   negatives (`prosciutto`, `kielbasa`, `capicollo`, `gelatin`, `lard`,
+   `marzipan` contain no forbidden term). Gated instead: two flags, both default
+   off (`DEAL_INGESTION_ENABLED`, `INGESTED_DEALS_FOR_RESTRICTED_DIETS`), and a
+   user with any restriction is served only `source IN ('seed','manual')` deals,
+   filtered in SQL before the `LIMIT`. `test_deal_gate.py` characterises the gap
+   rather than hiding it. **See the debt list — this gate is currently vacuous.**
+
+   *No scheduler.* `POST /postal-code/refresh` is the manual trigger (503 while
+   disabled, 409 if already running); `POST /postal-code/discover?refresh=true`
+   auto-ingests only on a genuine cold start, rate-limited to one attempt per
+   postal code per hour; `scripts/ingest_deals.py` is the CLI. Refresh weekly
+   when flyers turn over.
 
 5. **Model experimentation + SFT.** Cheap `.env` swaps first: `qwen2.5:3b` /
    `llama3.2:3b` chef, `qwen2.5:1.5b` vs `smollm:360m` sous. Then fine-tune
@@ -213,8 +349,41 @@ for the WSL-migration log and verification notes it contained).
 
 ## Engineering debt / smaller items
 
+- **Restricted users currently get zero deals.** Measured against Neon on
+  2026-10-14: an unrestricted user gets 49 valid deals (all `flipp`), a
+  vegetarian user gets **0**. The diet gate is working correctly — no `flipp`
+  deal leaked — but its "safe" fallback is empty, because **all 41 seed deals
+  expired 2026-07-21** and none are still valid. This predates ingestion (every
+  user got zero deals before, since the only deals were expired), but the effect
+  is that the deferred compliance fix is now *blocking* for anyone with a
+  dietary restriction. Two ways out: land the `products` table so real deals can
+  be served safely, or refresh the seed catalogue with current dates.
+- **The `products` table is now a baseline problem too, not only a compliance
+  one.** `sale_baseline` matches `product_name` exactly, and real flyer names
+  fragment badly — one product yielded three series (`Boneless, Skinless Chicken
+  Breasts`, `Fresh Boneless, Skinless Chicken Breas`, `Maple Leaf Prime raised
+  without antibi`). Three LACTANTIA rows at the same $4.96 from one merchant
+  survived `dedupe()` because their truncated names differ by a few characters,
+  which would triple-weight one offer in a future median. One row arrived as
+  `ANNIE'S SHELLS & CHEDDAR 170 G BEATRICE CHOCOLAT` — two products mashed
+  together by the flyer. Exact-name matching will rarely accumulate four weeks on
+  a single string, so the baseline stays sparse until names are normalised.
+  `idx_price_snapshots_product_trgm` is already in place for the fuzzy version.
+- A flyer-only baseline samples **sale** prices, so `observed_sale_median` sits
+  below true shelf price and any delta against it understates by construction.
+  Surfaced per baseline as `measures_sale_prices_only`. Closing it needs a
+  non-flyer price source, not more flyer history.
+- `starlette` 0.35.1's `TestClient` is incompatible with the installed `httpx`
+  0.28.1 (`Client.__init__() got an unexpected keyword argument 'app'`). Went
+  unnoticed because the repo had zero route tests until 2026-10-14; the new ones
+  drive the app through `httpx.ASGITransport` instead. The pin conflict stands.
+- `frontend/tsconfig.app.tsbuildinfo` is a tracked build artifact — it dirties
+  the tree on every `tsc -b`. Should be gitignored and removed from the index.
 - ~~`estimated_savings` for shopping lists hardcoded to 0.0 pending item 3.~~
-  Resolved — computed in `shopping_optimizer` from `regular − sale`.
+  Resolved — computed in `shopping_optimizer` from `regular − sale`. Superseded
+  in practice by the 2026-10-14 framing: with ~17% regular-price coverage this
+  figure is unreliable on ingested data, and `discount_vs_typical_sale` is the
+  intended replacement once the baseline has history.
 - Shopping-list v2 levers (deferred): store-assignment that minimizes trips
   (v1 is cheapest-per-item); `mark-complete` targets the user's latest list
   rather than a specific `list_id`.
