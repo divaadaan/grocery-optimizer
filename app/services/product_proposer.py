@@ -116,6 +116,14 @@ meat word appears.
 - "gelatin" and "lard" are animal-derived: contains_meat is true.
 - "marzipan", "praline", "frangipane", "nutella" contain nuts.
 - "pesto" usually contains pine nuts AND cheese.
+- COCONUT IS NOT A NUT for this app. contains_nuts is false for coconut milk, \
+coconut cream, coconut oil and shredded coconut. The FDA classifies coconut as \
+a tree nut for labelling purposes, but coconut allergy is rare and largely \
+unrelated to tree-nut allergy, and treating it as a nut would withhold a \
+staple from every nut-free user for no benefit. Decided 2026-10-14; do not \
+re-litigate it per item.
+- Lactose-free milk is STILL DAIRY. Lactose is removed, not the milk: \
+contains_dairy is true, so it fails vegan.
 - Worcestershire and many fish sauces contain anchovy: contains_fish.
 - Vegan analogues ("Vegan Chicken Strips", "Fishless Fingers") contain NO animal \
 product. Attributes describe the food, not the name.

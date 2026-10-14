@@ -74,6 +74,20 @@ def test_instructions_carry_the_known_trap_cases():
     assert "allergic" in text
 
 
+def test_instructions_record_the_settled_judgement_calls():
+    """Two calls were made by the owner on 2026-10-14 and must not be
+    re-litigated per item by a future labelling pass:
+
+    * coconut is NOT a nut for this app (FDA labels it a tree nut, but coconut
+      allergy is rare and largely unrelated, and treating it as one would
+      withhold a staple from every nut-free user for nothing).
+    * lactose-free milk IS still dairy (the lactose is removed, not the milk).
+    """
+    text = pp.LABELLING_INSTRUCTIONS.lower()
+    assert "coconut is not a nut" in text
+    assert "lactose-free milk is still dairy" in text
+
+
 def test_output_format_example_names_every_attribute():
     """The labeller works from this example, so an omission here becomes a
     missing attribute on every label."""
