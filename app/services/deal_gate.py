@@ -46,6 +46,34 @@ reach them as soon as ``DEAL_INGESTION_ENABLED`` is on.
 vocabulary that covers the cured-meat / hidden-animal-product / nut-derivative
 tail above.** Flipping it is the act of accepting allergen risk on behalf of
 users; it is not a performance tuning knob.
+
+THE FIX HAS LANDED — PREFER ``PRODUCTS_CATALOG_ENABLED``
+--------------------------------------------------------
+``app/services/products.py`` plus migrations 006-008 replace the substring
+oracle with curated per-product attributes, which is the proper fix rather
+than the deferral this module was written to make safe. When
+``PRODUCTS_CATALOG_ENABLED`` is on, a restricted user is served deals linked to
+a **confirmed** product whose attributes clear their restrictions, regardless
+of source — so a real ingested deal can reach them safely, which the
+source-based gate could never allow.
+
+The two flags are not additive, and the products gate is strictly the stronger
+one, so it wins outright:
+
+* ``PRODUCTS_CATALOG_ENABLED`` on  -> product-backed gate.
+  ``INGESTED_DEALS_FOR_RESTRICTED_DIETS`` is **ignored**, because "trust every
+  ingested name" and "trust only confirmed products" cannot both be in force
+  and the second is the safe one. A restricted user sees only confirmed-product
+  deals even with the older flag on.
+* ``PRODUCTS_CATALOG_ENABLED`` off -> the original source-based gate below,
+  with the deferral and its caveats exactly as described above.
+
+Note what the products gate does *not* need: the oracle. Keeping it as a veto
+would reintroduce the false positives (a product a curator named "beefsteak
+tomato" would be withheld from vegetarians) while adding no protection on the
+false negatives that motivated all of this — ``marzipan`` contains no nut
+term, so the oracle never catches it. It is kept as a review-time alarm
+instead; see ``products.oracle_disagreement``.
 """
 from __future__ import annotations
 
@@ -86,6 +114,35 @@ def ingested_deals_allowed(
     if not restrictions_are_active(restrictions):
         return True
     return bool(allow_for_restricted)
+
+
+#: The three gate modes. ``OPEN`` means no filtering is needed at all.
+GATE_OPEN = "open"
+GATE_PRODUCTS = "products"
+GATE_CURATED_SOURCES = "curated_sources"
+
+
+def gate_mode(
+    restrictions: Iterable[str] | None,
+    *,
+    products_enabled: bool | None = None,
+    allow_for_restricted: bool | None = None,
+) -> str:
+    """Which gate applies to this user. See the module docstring for the why.
+
+    Precedence is deliberate and not a free choice: the products gate is the
+    stronger guarantee, so it outranks the source gate whenever it is on.
+    """
+    if products_enabled is None:
+        products_enabled = settings.products_catalog_enabled
+
+    if not restrictions_are_active(restrictions):
+        return GATE_OPEN
+    if products_enabled:
+        return GATE_PRODUCTS
+    if ingested_deals_allowed(restrictions, allow_for_restricted=allow_for_restricted):
+        return GATE_OPEN
+    return GATE_CURATED_SOURCES
 
 
 def allowed_sources(
