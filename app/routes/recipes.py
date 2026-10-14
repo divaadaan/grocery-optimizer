@@ -3,6 +3,7 @@ Recipe generation endpoints
 """
 
 from fastapi import APIRouter, HTTPException, status
+import asyncio
 import logging
 from datetime import datetime
 
@@ -84,7 +85,13 @@ async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGeneration
         from app.main_recipe_generation import run_recipe_generation
 
         try:
-            result = run_recipe_generation(
+            # run_recipe_generation is fully synchronous (LangGraph
+            # graph.invoke + blocking Ollama calls) and takes minutes with
+            # local models. Called directly from this async endpoint it would
+            # block the event loop, stalling *every* other request — not just
+            # this caller's. Offload it to a worker thread.
+            result = await asyncio.to_thread(
+                run_recipe_generation,
                 user_id=user["user_id"],
                 postal_code=user["postal_code"],
                 budget=float(user["budget"]),
