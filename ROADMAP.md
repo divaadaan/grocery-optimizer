@@ -349,6 +349,32 @@ aspirational.
 
 ## Engineering debt / smaller items
 
+- **Multi-product flyer tiles are ingested as one nonsense deal.** A tile can
+  advertise several unrelated products at one price; the provider returns it as
+  a single item with one `name` and one `current_price`, and ingestion stores it
+  as one row. `ANNIE'S SHELLS & CHEDDAR 170 G BEATRICE CHOCOLATE MILK 1 L
+  GOLDFISH CRACKERS 168 - 227 G` should be three deals (mac-and-cheese,
+  chocolate milk, crackers) and is instead one unusable row that matches no
+  ingredient, cannot be priced, and can only be withheld. Measured on the live
+  catalogue 2026-10-14 (91 distinct names): 5 names carry ≥2 size tokens so are
+  certainly multi-product, 25 contain `" or "`, **28 (31%) carry at least one
+  signal**. Characterised by `app/tests/test_multiproduct_lineitems.py`, which
+  asserts today's wrong behaviour so the fix has a test to invert.
+  *Not a regex fix.* `" or "` means two different things and only meaning tells
+  them apart: `NEILSON TRUTASTE 1%, 2% OR SKIM MILK, 4 L` is **one** product
+  with three variants, `MARC ANGELO CHICKEN BREAST BITES OR PORK MEATBALLS` is
+  **two** products. A splitter that split everything would shatter `milk` into a
+  dozen fake products. The shape of the fix is cheap heuristic *detection*
+  (≥2 size tokens had zero false positives; `" or "` has many) plus labelled
+  *decomposition*, since the propose/review step already decides semantics.
+  Three consequences to plan for: **price attribution** (one price usually means
+  "each of these is $X", but `2 for $5` and a `from` prefix do not — `sale_story`
+  and `pre_price_text` are the only signals); **the natural key changes**, since
+  deals are keyed `(store_id, source, source_item_id, valid_from)` by migration
+  002 and one tile has one `source_item_id`, so splitting needs a discriminator
+  (likely `product_id`) and therefore a migration; and **snapshots gain** from
+  it, because a mashed name is currently a one-observation series that never
+  recurs.
 - **Restricted users currently get zero deals.** Measured against Neon on
   2026-10-14: an unrestricted user gets 49 valid deals (all `flipp`), a
   vegetarian user gets **0**. The diet gate is working correctly — no `flipp`
