@@ -113,6 +113,10 @@ def stub(monkeypatch):
         unknown = set(updates) - set(products.ATTRIBUTES)
         if unknown:
             raise ValueError(f"unknown attribute(s): {sorted(unknown)}")
+        # Product 2 stands in for a confirmed product that stores nuts=True.
+        if product_id == 2 and updates.get("contains_nuts") is False:
+            raise products.AttributeConflict(
+                2, "almond milk", {"contains_nuts": (True, False)})
         calls["set_attributes"].append((product_id, dict(updates)))
         return {k: bool(v) for k, v in updates.items()}
 
@@ -280,6 +284,45 @@ async def test_confirm_applies_attributes_then_confirms(client, stub):
     # carry the pre-edit labels.
     assert stub["set_attributes"] == [(1, attrs)]
     assert stub["confirm"] == [(1, [11, 12], "divad")]
+
+
+@pytest.mark.asyncio
+async def test_confirming_onto_a_confirmed_product_with_a_flipped_attribute_is_409(
+        client, stub):
+    """Curated attributes are the dietary authority: a stale tab must not flip
+    them, and the alias must stay proposed (no partial write)."""
+    async with client as http:
+        res = await http.post("/admin/products/decide", json={
+            "product_id": 2, "alias_ids": [21], "action": "confirm",
+            "attributes": {"contains_nuts": False, "contains_dairy": False},
+        })
+    assert res.status_code == 409
+    detail = res.json()["detail"]
+    assert "almond milk" in detail and "contains_nuts" in detail
+    assert "stored True, requested False" in detail
+    assert "correction step" in detail
+    assert stub["confirm"] == []
+    assert stub["set_attributes"] == []
+
+
+@pytest.mark.asyncio
+async def test_confirming_onto_a_confirmed_product_with_stored_values_works(
+        client, stub):
+    async with client as http:
+        res = await http.post("/admin/products/decide", json={
+            "product_id": 2, "alias_ids": [21], "action": "confirm",
+            "attributes": {"contains_nuts": True},
+        })
+    assert res.status_code == 200
+    assert stub["confirm"] == [(2, [21], "web")]
+
+
+@pytest.mark.asyncio
+async def test_review_page_locks_confirmed_products_and_shows_errors_on_card(client):
+    async with client as http:
+        page = (await http.get("/admin/review")).text
+    assert 'group.product_status === "confirmed"' in page
+    assert "group.error" in page
 
 
 @pytest.mark.asyncio

@@ -318,7 +318,58 @@ def test_set_attributes_never_turns_none_into_false():
         7, {"contains_dairy": True, "contains_animal_byproduct": None},
         database=_RecordingDB(cursor))
     assert out == {"contains_dairy": True}
-    assert "contains_animal_byproduct" not in cursor.calls[0][0]
+    assert "contains_animal_byproduct" not in cursor.calls[-1][0]
+
+
+class _LockedRowCursor(_RecordingCursor):
+    """Returns the product row for the SELECT ... FOR UPDATE."""
+
+
+def _stored(status, **attrs):
+    row = {"status": status, "canonical_name": "milk",
+           **{a: False for a in products.ATTRIBUTES}}
+    row.update(attrs)
+    return row
+
+
+def test_set_attributes_confirmed_same_value_is_accepted_without_overwrite():
+    cursor = _LockedRowCursor(one=_stored("confirmed", contains_dairy=True))
+    out = products.set_attributes(
+        7, {"contains_dairy": True, "contains_nuts": False},
+        database=_RecordingDB(cursor))
+    assert out == {"contains_dairy": True, "contains_nuts": False}
+    sql = cursor.calls[-1][0]
+    assert "contains_dairy = COALESCE(contains_dairy," in sql
+
+
+def test_set_attributes_confirmed_fills_null_byproduct():
+    cursor = _LockedRowCursor(
+        one=_stored("confirmed", contains_animal_byproduct=None))
+    out = products.set_attributes(
+        7, {"contains_animal_byproduct": True}, database=_RecordingDB(cursor))
+    assert out == {"contains_animal_byproduct": True}
+    assert "COALESCE(contains_animal_byproduct," in cursor.calls[-1][0]
+
+
+def test_set_attributes_confirmed_change_raises_and_writes_nothing():
+    cursor = _LockedRowCursor(one=_stored("confirmed", contains_nuts=True))
+    with pytest.raises(products.AttributeConflict) as err:
+        products.set_attributes(
+            7, {"contains_nuts": False, "contains_dairy": False},
+            database=_RecordingDB(cursor))
+    assert err.value.conflicts == {"contains_nuts": (True, False)}
+    assert "contains_nuts: stored True, requested False" in str(err.value)
+    assert "'milk'" in str(err.value)
+    assert not any(sql.lstrip().startswith("UPDATE") for sql, _ in cursor.calls)
+
+
+def test_set_attributes_proposed_is_freely_editable():
+    cursor = _LockedRowCursor(one=_stored("proposed", contains_nuts=True))
+    out = products.set_attributes(
+        7, {"contains_nuts": False}, database=_RecordingDB(cursor))
+    assert out == {"contains_nuts": False}
+    sql = cursor.calls[-1][0]
+    assert "contains_nuts = %(contains_nuts)s" in sql and "COALESCE" not in sql
 
 
 def test_product_allows_with_no_restrictions_allows_anything():
