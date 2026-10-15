@@ -58,6 +58,19 @@ Reusing the main `.venv` by absolute path is safe precisely because nothing is
 installed as a package: the worktree's code wins on `sys.path` and the main venv
 supplies site-packages. Untracked files do not propagate into a worktree.
 
+Worktrees created by the Claude Code harness (`.claude/worktrees/agent-*`) are
+made by Windows git, so their `.git` file holds a `//wsl.localhost/...` gitdir
+that WSL git cannot read. Run WSL git there with both set:
+
+```
+GIT_DIR=/home/divad/projects/grocery-optimizer/.git/worktrees/<worktree dir name>
+GIT_WORK_TREE=<the worktree's linux path>
+```
+
+Before committing from any Windows-side edit, compare `git diff --stat` with
+`git diff --ignore-cr-at-eol --stat`; if they differ, CRLF crept in — normalise
+with `sed -i 's/\r$//'`. Commit with WSL git.
+
 ### Worktrees isolate code, not state
 
 Every worktree still talks to the **same Postgres** and the **same local
@@ -80,6 +93,13 @@ explicitly by path. Never `git checkout`, `git switch`, `git stash`, or
   hypertable with a retention policy and a `price_snapshots_daily` aggregate.
   That is false — it is a native PostgreSQL partitioned table. Trust
   `scripts/init_db.sql` over those docs.
+- **The app's database is Neon**, via `DATABASE_URL` in `.env` — not the
+  `sql4e` study container that `migrations/README.md` describes `make migrate`
+  applying to. Migrations that the running app needs must reach Neon, which is
+  a deliberate, owner-approved step; record each in `schema_migrations`.
+- Neon closes idle connections. A long-running `uvicorn` will throw
+  `SSL connection has been closed unexpectedly` on its first query after a few
+  idle hours; restart the server rather than retrying writes into a dead pool.
 - `cleanup_old_price_partitions()` in `scripts/init_db.sql` drops partitions
   older than 90 days. Nothing schedules it, and nothing should: the project
   accumulates long-run price history deliberately.
@@ -91,9 +111,25 @@ sets** — not savings against a regular price. Deal data mostly lacks a reliabl
 regular price, so savings is a secondary metric and must degrade to absent
 rather than to a fabricated number.
 
-Dietary compliance is a deterministic code path (`app/agents/dietary.py`), never
-learned or LLM-judged behavior. That conclusion cost an entire SFT track — do not
-reintroduce an LLM as the compliance judge.
+Dietary compliance is a deterministic code path, never learned or LLM-judged
+behavior. That conclusion cost an entire SFT track — do not reintroduce an LLM
+as the compliance judge.
+
+It is decided **only from curated product attributes** (`contains_meat/fish/
+dairy/egg/nuts/animal_byproduct` on `products`; the restriction → attribute map
+is `RESTRICTION_ATTRIBUTES` in `app/services/products.py`). Two readers, one
+authority:
+
+- Serving: `app/services/deal_gate.py` — a restricted user gets a deal only if
+  every product linked to it (`deal_products`) is confirmed and clears.
+- Recipes: `app/agents/dietary.py` — every SousChef ingredient cites a `deal_id`
+  or a staple `product_id`; the verdict is a lookup on the cited products.
+
+**No name, keyword or substring matching anywhere downstream of product review**
+— not as a filter, a veto, a review alarm or a backfill heuristic. An ingredient
+or deal *name* never decides anything. NULL attributes fail closed. A diet the
+attributes can't express (halal, kosher, gluten-free) needs a new attribute, not
+a word list.
 
 ## Conventions
 
