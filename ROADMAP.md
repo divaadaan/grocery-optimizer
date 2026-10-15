@@ -1,10 +1,10 @@
 # Development Roadmap
 
-Canonical plan, last revised 2026-10-14 (originally 2026-06-12). Dated
+Canonical plan, last revised 2026-10-15 (originally 2026-06-12). Dated
 `*Shipped:*` / `*Progress:*` entries below are historical records — the test
 counts inside them were true when written and are deliberately not rewritten.
-Current suite: **69 passed, 11 deselected** on `feat/async-recipe-generation`,
-**214 passed, 11 deselected** on `feat/flipp-ingestion` (`pytest -m "not llm"`).
+Current suite on `main`: **666 passed, 5 skipped, 4 deselected**
+(`pytest -m "not llm"`, after #19).
 
 Supersedes `NEXT_STEPS.md` (see git history
 for the WSL-migration log and verification notes it contained).
@@ -42,6 +42,43 @@ applies it as the ceiling for a *single* generation, with no accumulation
 against completed `shopping_lists.total_cost`. `mark-complete` is the natural
 spend-recording signal. Until that is wired, "within your spend limit" is
 aspirational.
+
+*Closed (2026-10-15, #14):* the budget has a defined weekly/monthly calendar
+period (migration 012), spend accumulates from completed lists only,
+`budget_remaining` means what it says, and the Chef plans against what is left.
+`mark-complete` targets a named `list_id`.
+
+## Direction (2026-10-15)
+
+- **Dietary compliance is curated product attributes, full stop.** The
+  substring oracle is gone from serving (#17), recipes (#18) and review (#17);
+  its last code was deleted in #19. A restricted user is always served through
+  the products gate (the `PRODUCTS_CATALOG_ENABLED` and
+  `INGESTED_DEALS_FOR_RESTRICTED_DIETS` flags no longer exist). SousChef
+  ingredients **cite** a `deal_id` or a staple `product_id`; an uncited or
+  unoffered citation is an output-validation failure and retries. The owner's
+  rule: no name/substring matching anywhere downstream of product review.
+- **`contains_animal_byproduct` (#19)** closes the honey gap for vegans.
+  Nullable; NULL fails closed. Gelatin/lard/tallow/rennet are `contains_meat`.
+  The gate's SQL uses `IS NOT FALSE` — with a nullable column a bare `OR` chain
+  evaluates to NULL and would have served undecided products.
+- **Pantry staples are catalogue products** (`products.assumed_on_hand`,
+  migration 014 — 26 staples, plus Honey from 015), offered to the SousChef as
+  citable and priced at $0. Distinct from the older `is_pantry_staple`
+  (shelf-stable but still bought).
+- **Moving off small models.** Small-model recipe generation was not
+  satisfactory; larger-model selection and live schema testing are deferred
+  until more of the pipeline is built. Item 5's SFT track is historical, and
+  its SousChef completions predate the citation schema, so `training/` no longer
+  validates against `RecipeBatch`.
+- **First full product review (2026-10-15).** 82 proposals confirmed as
+  reviewer `claude-review-2026-10-15` from an owner-approved draft; deals linked
+  93 → 252 of 333. Servable deals: vegan 8 → 112, vegetarian 64 → 206,
+  nut-free 92 → 223. Labelling rules the owner set: soft bread is not assumed
+  dairy/egg; traditional-rennet cheeses are meat; honey is conservative for
+  whole-grain/sprouted/protein/gluten-free breads, granola and PB bars but not
+  plain sliced bread; bone-char sugar is not extended to sugar-containing
+  products. Migrations 014 and 015 applied to Neon the same day.
 
 ## Next
 
@@ -195,6 +232,8 @@ aspirational.
    user with any restriction is served only `source IN ('seed','manual')` deals,
    filtered in SQL before the `LIMIT`. `test_deal_gate.py` characterises the gap
    rather than hiding it. **See the debt list — this gate is currently vacuous.**
+   *Resolved (2026-10-15):* see "Direction (2026-10-15)" — compliance moved to
+   curated product attributes and both flags were removed.
 
    *No scheduler.* `POST /postal-code/refresh` is the manual trigger (503 while
    disabled, 409 if already running); `POST /postal-code/discover?refresh=true`
@@ -415,6 +454,8 @@ aspirational.
   is that the deferred compliance fix is now *blocking* for anyone with a
   dietary restriction. Two ways out: land the `products` table so real deals can
   be served safely, or refresh the seed catalogue with current dates.
+  *Resolved (2026-10-15):* the products route — after the first full review a
+  vegetarian user can be served 206 deals, a vegan 112.
 - **The `products` table is now a baseline problem too, not only a compliance
   one.** `sale_baseline` matches `product_name` exactly, and real flyer names
   fragment badly — one product yielded three series (`Boneless, Skinless Chicken
@@ -442,8 +483,28 @@ aspirational.
   figure is unreliable on ingested data, and `discount_vs_typical_sale` is the
   intended replacement once the baseline has history.
 - Shopping-list v2 levers (deferred): store-assignment that minimizes trips
-  (v1 is cheapest-per-item); `mark-complete` targets the user's latest list
-  rather than a specific `list_id`.
+  (v1 is cheapest-per-item). (`mark-complete` now targets a named `list_id`,
+  #14.)
+- **Shopping lists still match ingredients by name** (`shopping_optimizer.py`),
+  so on-hand staples appear as "Any store" at $0, and savings reaches the API as
+  `0.0` instead of absent (non-Optional `Decimal` in `schemas.py`). In flight
+  2026-10-15 on `feat/shopping-list-citations`.
+- **`price_is_per_item` stays NULL on re-seen aliases.** The proposer import's
+  upsert only bumps `times_seen`, so labelled pricing never reaches an existing
+  alias, and `infer_price_is_per_item` misses "starting at", "ea/lb", bare size
+  units and loyalty-points text. ~35 current deals are unlinkable for it. In
+  flight 2026-10-15 on `fix/price-per-item-fill` (fill-NULL-only upsert).
+- **The review API can't rename, recategorise or merge products**, or create a
+  product for one item of a tile. P84 "cheese tofu" is really a fish-paste
+  product (attributes correct, name misleading); alias a394 (a Villaggio /
+  Dempster's tile) waits on a product the API can't create.
+- **Diets without attributes.** `halal`, `kosher` and `gluten_free` have no
+  product attribute: the deal gate restricts these users to confirmed products,
+  but nothing checks the diet itself, and the recipe verdict approves them
+  without a lookup.
+- `training/` no longer matches the citation schema (no `pantry_json` in
+  `training/data_app/sous_chef.py`; SFT completions lack citations). Left as the
+  historical SFT record.
 - No auth — the frontend "session" is a localStorage user profile; revisit
   when the API grows write endpoints worth protecting.
 - Frontend deal categories are derived from the loaded page of deals; add a
