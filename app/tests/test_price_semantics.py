@@ -66,8 +66,10 @@ def test_multibuy_overrides_a_per_item_unit():
 # --------------------------------------------------------------------------
 
 @pytest.mark.parametrize("prefix", ["from", "From", "FROM $"])
-def test_from_prefix_decides_false(prefix):
-    assert infer("each", None, prefix) is False
+def test_from_prefix_decides_true(prefix):
+    """Product-owner decision: "from $X" carries no quantity, so per item."""
+    assert infer("each", None, prefix) is True
+    assert infer(None, None, prefix) is True
 
 
 @pytest.mark.parametrize("prefix", ["NOW", "Online Price", None, ""])
@@ -279,9 +281,10 @@ def test_a_number_in_the_prefix_is_still_not_a_quantity(prefix):
 
 
 @pytest.mark.parametrize("prefix", ["starting at", "Starting At", "STARTING AT $"])
-def test_starting_at_is_a_floor_like_from(prefix):
-    """Identical meaning to "from" -- a floor across the tile's variants."""
-    assert infer("each", None, prefix) is False
+def test_starting_at_is_per_item_like_from(prefix):
+    """Identical meaning to "from"."""
+    assert infer("each", None, prefix) is True
+    assert infer(None, None, prefix) is True
 
 
 @pytest.mark.parametrize(
@@ -318,3 +321,95 @@ def test_points_promos_still_are_not_multibuy_after_the_widening():
     for story in ["100 Scene+ PTS when you buy 2",
                   "200 Scene+ PTS when you buy 1"]:
         assert infer("each", story) is True
+
+
+# --------------------------------------------------------------------------
+# Common flyer phrasings: unit pricing, package sizes, promo text
+# --------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "unit",
+    ["ea/lb", "EA/LB", "/lb", "per lb", "Per LB", "/kg", "per kg", "$3.99 /lb",
+     "ea./lb"],
+)
+def test_weight_unit_pricing_decides_true(unit):
+    assert infer(unit) is True
+
+
+@pytest.mark.parametrize(
+    "unit",
+    ["312g", "675 g", "2 L", "12 count", "1lb bag", "1.5 L", "500 ml", "6 pk",
+     "355 mL", "12 ct", "16 oz"],
+)
+def test_package_size_without_multibuy_decides_true(unit):
+    assert infer(unit) is True
+
+
+@pytest.mark.parametrize(
+    "unit, story, prefix",
+    [
+        ("312g", "2 FOR $5", None),         # multi-buy beats a size
+        ("2 L", "BOGO", None),
+        ("12 count", None, "2/"),
+        ("1lb bag", "Buy 2 Get 1", None),
+        ("ea/lb", "3/$10", None),
+        ("2 for 12 count", None, None),      # multi-buy inside the unit field
+    ],
+)
+def test_multibuy_still_beats_size_and_unit_pricing(unit, story, prefix):
+    assert infer(unit, story, prefix) is False
+
+
+@pytest.mark.parametrize(
+    "unit", ["/100 ml", "box", "case", "bag", "L", "g", "lb. bag of 2 for"]
+)
+def test_sizes_need_a_number_and_a_known_unit(unit):
+    """No number, or a unit-price per 100 ml: still not decided as a size.
+
+    ("lb. bag of 2 for" is False via the multi-buy rule, the rest are None.)
+    """
+    expected = False if "2 for" in unit else None
+    assert infer(unit) is expected
+
+
+@pytest.mark.parametrize(
+    "story",
+    ["only", "Only $5", "ALWAYS LOW PRICE", "Always Low Price", "Rollback",
+     "SAVE $3", "Save $2.50", "100 Scene+ PTS when you buy 3",
+     "20 PC Optimum pts"],
+)
+def test_promo_text_is_never_multibuy(story):
+    """Promo wording neither makes a multi-buy nor, alone, decides anything."""
+    assert infer("312g", story) is True
+    assert infer("each", story) is True
+
+
+@pytest.mark.parametrize(
+    "story", ["Only $5", "Rollback", "SAVE $3", "Save $2.50",
+              "100 Scene+ PTS when you buy 3", "20 PC Optimum pts"],
+)
+def test_savings_and_points_stories_alone_stay_undecided(story):
+    assert infer(None, story) is None
+
+
+@pytest.mark.parametrize(
+    "prefix", ["only", "Only", "ONLY $", "ALWAYS LOW PRICE", "Always Low Price"]
+)
+def test_price_lead_in_prefix_decides_true(prefix):
+    """The wording sits where a "2/" would; it is a single price, not a bundle."""
+    assert infer(None, None, prefix) is True
+    assert infer(None, "Rollback", prefix) is True
+    assert infer(None, "2 FOR $5", prefix) is False
+
+
+@pytest.mark.parametrize("prefix", ["only", "Only", "NOW", "Save $3"])
+def test_promo_prefix_does_not_block_a_unit(prefix):
+    assert infer("675 g", None, prefix) is True
+
+
+def test_bare_price_with_no_markers_stays_undecided():
+    """A dropped "2/" prefix is exactly what a bare whole-dollar price hides."""
+    assert infer(None, None, None) is None
+    assert infer("", "", "") is None
+    assert infer(None, "", "20/20") is None
+    assert infer(None, None, "Online Price") is None
