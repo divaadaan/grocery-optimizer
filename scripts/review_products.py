@@ -332,6 +332,21 @@ def cmd_link() -> int:
     return 0
 
 
+def cmd_reinfer() -> int:
+    """Fill undecided tile pricing from the deal text, after an ingestion run."""
+    stats = products.reinfer_alias_prices()
+    print(f"  aliases examined   {stats['examined']}")
+    print(f"  decided per-item   {stats['filled_true']}")
+    print(f"  decided bundle     {stats['filled_false']}")
+    print(f"  still undecided    {stats['still_null']}")
+    if stats["still_null"]:
+        print("\nStill-undecided aliases stay withheld: the provider sent no")
+        print("unit, no sale_story and no pre_price_text for those tiles, so")
+        print("there is nothing to infer from. Decide them by hand in review,")
+        print("or leave them withheld.")
+    return 0
+
+
 def cmd_unmapped() -> int:
     rows = products.unmapped_names()
     if not rows:
@@ -373,6 +388,8 @@ def main(argv: list[str] | None = None) -> int:
                        help="deal names with no product")
     group.add_argument("--audit", action="store_true",
                        help="attributes vs the substring oracle")
+    group.add_argument("--reinfer-prices", dest="reinfer", action="store_true",
+                       help="fill undecided tile pricing from the deal text")
     args = parser.parse_args(argv)
 
     if args.list:
@@ -383,6 +400,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_link()
     if args.unmapped:
         return cmd_unmapped()
+    if args.reinfer:
+        return cmd_reinfer()
     return cmd_audit()
 
 

@@ -105,6 +105,7 @@ class NormalizedDeal:
     source_item_id: str
     search_term: str
     sale_story: str | None = None
+    pre_price_text: str | None = None
 
     @property
     def price_basis(self) -> str:
@@ -272,6 +273,7 @@ def normalize_item(raw: dict[str, Any], *, search_term: str) -> NormalizedDeal |
         source_item_id=str(item_id),
         search_term=search_term,
         sale_story=(raw.get("sale_story") or None),
+        pre_price_text=(raw.get("pre_price_text") or None),
     )
 
 
@@ -404,11 +406,11 @@ _DEAL_UPSERT = """
 INSERT INTO deals (
     store_id, product_name, brand, sale_price, regular_price,
     discount_percentage, unit, category, valid_from, valid_until,
-    source, source_item_id
+    source, source_item_id, sale_story, pre_price_text
 ) VALUES (
     %(store_id)s, %(product_name)s, NULL, %(sale_price)s, %(regular_price)s,
     %(discount_percentage)s, %(unit)s, %(category)s, %(valid_from)s, %(valid_until)s,
-    %(source)s, %(source_item_id)s
+    %(source)s, %(source_item_id)s, %(sale_story)s, %(pre_price_text)s
 )
 ON CONFLICT (store_id, source, source_item_id, valid_from) DO UPDATE SET
     product_name        = EXCLUDED.product_name,
@@ -419,7 +421,9 @@ ON CONFLICT (store_id, source, source_item_id, valid_from) DO UPDATE SET
     -- first term to find an item owns its category, so a re-run in a
     -- different term order does not churn the value
     category            = COALESCE(deals.category, EXCLUDED.category),
-    valid_until         = EXCLUDED.valid_until
+    valid_until         = EXCLUDED.valid_until,
+    sale_story          = COALESCE(EXCLUDED.sale_story, deals.sale_story),
+    pre_price_text      = COALESCE(EXCLUDED.pre_price_text, deals.pre_price_text)
 -- (xmax = 0) distinguishes insert from update. It drives report counters only,
 -- never control flow, because the idiom can misreport under a concurrent
 -- writer -- and the refresh lock in app/routes/stores.py means there is not
@@ -491,6 +495,11 @@ def persist_deals(
                         "valid_until": deal.valid_until,
                         "source": source,
                         "source_item_id": deal.source_item_id,
+                        # Persisted since migration 011. These are the only
+                        # signals that distinguish "2 for $5" from "each", and
+                        # they were previously read and discarded.
+                        "sale_story": deal.sale_story,
+                        "pre_price_text": deal.pre_price_text,
                     },
                 )
                 row = cursor.fetchone()

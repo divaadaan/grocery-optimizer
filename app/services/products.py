@@ -609,3 +609,134 @@ def review_stats(database=db) -> dict[str, int]:
             """
         )
         return dict(cursor.fetchone())
+
+
+# --------------------------------------------------------------------------
+# Price semantics: is sale_price this product's own price?
+# --------------------------------------------------------------------------
+
+#: "2 FOR $5", "3/$10", "2/5.00" -- the price covers a quantity, so it is not
+#: any single product's price.
+_MULTIBUY_RE = re.compile(
+    r"\b\d+\s*(?:for|/)\s*\$?\s*\d", re.IGNORECASE
+)
+#: "buy 2 get 1", "buy one get one", "BOGO" -- same conclusion, different
+#: wording. The quantity may be a word rather than a digit, so the gap between
+#: "buy" and "get" is matched by length rather than by shape, bounded tightly
+#: enough that unrelated text containing both words does not collide.
+_BOGO_RE = re.compile(r"\bbogo\b|\bbuy\b[^.!?]{0,12}\bget\b", re.IGNORECASE)
+
+#: A bare quantity prefix printed to the left of the price: "2/", "3 /".
+#: Anchored at the start so a prefix that merely contains a number ("Save 2
+#: Ways") does not match. Observed live as pre_price_text='2/' on a $7.00 tile.
+_QTY_PREFIX_RE = re.compile(r"^\s*(\d+)\s*/\s*$")
+
+#: Units that mean the price attaches to one item or to a measure of it, so it
+#: IS this product's price. "lb" and "kg" count: $7.99/lb is the price of a
+#: pound of whichever product you pick off the tile.
+_PER_ITEM_UNITS = frozenset({
+    "each", "ea", "ea.", "lb", "lbs", "kg", "100 g", "100g", "unit", "pk", "pack",
+})
+
+
+def infer_price_is_per_item(
+    unit: str | None,
+    sale_story: str | None = None,
+    pre_price_text: str | None = None,
+) -> bool | None:
+    """Does ``deals.sale_price`` apply to one product on its own?
+
+    Returns ``True``, ``False``, or ``None`` for undecided. **None is a real
+    answer and must stay one**: ``deal_products.price_is_per_item`` is NOT NULL,
+    so an undecided price blocks the link rather than defaulting. A wrong
+    ``True`` puts a bundle price on a single product's line in a shopping list,
+    which is worse than withholding the deal.
+
+    Precedence is deliberate. A multi-buy story beats a per-item unit, because
+    "2 FOR $5" with ``unit='ea.'`` means two items for five dollars, not five
+    dollars each -- reading the unit first would halve every such price.
+    """
+    story = (sale_story or "").strip()
+    prefix = (pre_price_text or "").strip()
+
+    if story and (_MULTIBUY_RE.search(story) or _BOGO_RE.search(story)):
+        return False
+    # The quantity can live in the PREFIX instead of the story, as a bare
+    # "2/" rendered to the left of the price -- observed live on
+    # "BEATRICE CHOCOLATE MILK OR BUTTER MILK" at $7.00, meaning two for $7.
+    # Checking only the story missed it and left the tile undecided.
+    if prefix and _QTY_PREFIX_RE.match(prefix):
+        return False
+    # "from $4.99" is a floor across the tile's variants, not a price.
+    if prefix and re.search(r"\bfrom\b", prefix, re.IGNORECASE):
+        return False
+
+    normalized = (unit or "").strip().lower().lstrip("/")
+    if normalized in _PER_ITEM_UNITS:
+        return True
+
+    # A savings story with no quantity ("save $10", "SAVE 30%", "Rollback")
+    # says nothing about per-item pricing, so it does not decide this either
+    # way. Undecided.
+    return None
+
+
+def reinfer_alias_prices(database=db) -> dict[str, int]:
+    """Fill NULL ``price_is_per_item`` on proposed aliases from the deal text.
+
+    Runs after ingestion, because the signals live on the deal rows: ``unit``,
+    and since migration 011 ``sale_story`` and ``pre_price_text``. A labeller
+    working from the name alone often cannot tell, and leaves NULL; the source
+    text frequently can.
+
+    Only ever fills NULL. A value already decided -- by the labeller or by a
+    reviewer -- is left alone, because this is a cheap heuristic and should not
+    overrule a human. Confirmed aliases are untouched for the same reason.
+    """
+    stats = {"examined": 0, "filled_true": 0, "filled_false": 0, "still_null": 0}
+
+    with database.get_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT a.alias_id,
+                   max(d.unit)           AS unit,
+                   max(d.sale_story)     AS sale_story,
+                   max(d.pre_price_text) AS pre_price_text
+            FROM product_aliases a
+            JOIN deals d ON d.product_name = a.raw_example
+            WHERE a.price_is_per_item IS NULL
+              AND a.status = 'proposed'
+            GROUP BY a.alias_id
+            """
+        )
+        rows = [dict(r) for r in cursor.fetchall()]
+        stats["examined"] = len(rows)
+
+        for row in rows:
+            verdict = infer_price_is_per_item(
+                row["unit"], row["sale_story"], row["pre_price_text"]
+            )
+            if verdict is None:
+                stats["still_null"] += 1
+                continue
+            cursor.execute(
+                """
+                UPDATE product_aliases
+                SET price_is_per_item = %(v)s
+                WHERE alias_id = %(id)s AND price_is_per_item IS NULL
+                """,
+                {"v": verdict, "id": row["alias_id"]},
+            )
+            if verdict:
+                stats["filled_true"] += 1
+            else:
+                stats["filled_false"] += 1
+
+    if stats["filled_true"] or stats["filled_false"]:
+        logger.info(
+            "Re-inferred pricing for %d alias(es) (%d per-item, %d bundle); "
+            "%d still undecided.",
+            stats["filled_true"] + stats["filled_false"],
+            stats["filled_true"], stats["filled_false"], stats["still_null"],
+        )
+    return stats
