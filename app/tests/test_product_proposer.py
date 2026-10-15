@@ -252,13 +252,20 @@ def test_proposal_defaults_a_missing_attribute_to_true():
     """If an attribute somehow gets past validation, the safe reading is
     "contains it". A False default would turn a malformed label permissive."""
     thin = {"raw_name": "MYSTERY", "canonical_name": "mystery", "confidence": 0.1}
-    proposal = pp.proposal_from_payload(thin)
+    [proposal] = pp.proposals_from_payload(thin)
     assert all(proposal.attributes[a] is True for a in pp.ATTRIBUTES)
 
 
 def test_proposal_lowercases_the_canonical_name():
-    proposal = pp.proposal_from_payload(_label(canonical_name="  CHICKEN Breast  "))
+    [proposal] = pp.proposals_from_payload(_label(canonical_name="  CHICKEN Breast  "))
     assert proposal.canonical_name == "chicken breast"
+
+
+def test_single_product_entry_prices_per_item_by_definition():
+    """There is nothing else on the tile for the price to be shared with."""
+    [proposal] = pp.proposals_from_payload(_label())
+    assert proposal.price_is_per_item is True
+    assert proposal.tile_position == 0
 
 
 # --------------------------------------------------------------------------
@@ -273,6 +280,20 @@ class FakePersistCursor:
         self._known = list(known_products)
         self._times_seen = times_seen
         self._next = None
+        #: persist_proposals reads rowcount after the supersede UPDATE.
+        self.rowcount = 0
+
+    @property
+    def alias_inserts(self):
+        """Only the alias INSERTs, excluding the supersede UPDATE.
+
+        Both statements mention product_aliases, so filtering on the table name
+        alone double-counts.
+        """
+        return [
+            (sql, params) for sql, params in self.calls
+            if "INSERT INTO product_aliases" in sql
+        ]
 
     def execute(self, sql, params=None):
         params = params or {}
@@ -356,18 +377,41 @@ def test_persist_reuses_an_existing_product_instead_of_duplicating():
     statements = " ".join(sql for sql, _ in cursor.calls)
     assert "INSERT INTO products" not in statements
     assert stats["products_proposed"] == 0
-    alias_params = [p for sql, p in cursor.calls if "product_aliases" in sql][0]
+    alias_params = cursor.alias_inserts[0][1]
     assert alias_params["pid"] == 7
 
 
 def test_persist_leaves_product_null_for_an_unmappable_string():
+    """The unplaced path uses its own statement with NULL hardcoded.
+
+    Migration 010 made the uniqueness partial, so the conflict target differs
+    between the placed and unplaced cases and they cannot share one statement.
+    """
     cursor = FakePersistCursor()
     stats = pp.persist_proposals(
         [_proposal(unmappable=True, canonical_name="")], database=FakeDB(cursor)
     )
     assert stats["products_proposed"] == 0
-    alias_params = [p for sql, p in cursor.calls if "product_aliases" in sql][0]
-    assert alias_params["pid"] is None
+    alias_sql, alias_params = cursor.alias_inserts[0]
+    assert "WHERE product_id IS NULL" in alias_sql
+    assert "NULL" in alias_sql
+    # No pid is bound at all on this path.
+    assert "pid" not in alias_params
+
+
+def test_only_one_unplaced_row_per_name_is_possible():
+    """Guards the partial index that stops an unplaceable string re-queueing.
+
+    Plain (normalized_name, product_id) uniqueness would let unlimited NULL
+    rows accumulate, since NULLs compare distinct -- one new review-queue entry
+    per ingestion run, forever.
+    """
+    cursor = FakePersistCursor()
+    pp.persist_proposals(
+        [_proposal(unmappable=True, canonical_name="")], database=FakeDB(cursor)
+    )
+    alias_sql = cursor.alias_inserts[0][0]
+    assert "ON CONFLICT (normalized_name) WHERE product_id IS NULL" in alias_sql
 
 
 def test_persist_clamps_confidence_for_the_check_constraint():
@@ -375,12 +419,12 @@ def test_persist_clamps_confidence_for_the_check_constraint():
     must not become a failed INSERT."""
     cursor = FakePersistCursor()
     pp.persist_proposals([_proposal(confidence=7.5)], database=FakeDB(cursor))
-    alias_params = [p for sql, p in cursor.calls if "product_aliases" in sql][0]
+    alias_params = cursor.alias_inserts[0][1]
     assert alias_params["conf"] == 1.0
 
     cursor = FakePersistCursor()
     pp.persist_proposals([_proposal(confidence=-3)], database=FakeDB(cursor))
-    alias_params = [p for sql, p in cursor.calls if "product_aliases" in sql][0]
+    alias_params = cursor.alias_inserts[0][1]
     assert alias_params["conf"] == 0.0
 
 
@@ -390,8 +434,116 @@ def test_persist_counts_a_reseen_alias_separately():
     stats = pp.persist_proposals([_proposal()], database=FakeDB(cursor))
     assert stats["aliases_seen_again"] == 1
     assert stats["aliases_new"] == 0
-    alias_sql = [sql for sql, _ in cursor.calls if "product_aliases" in sql][0]
-    assert "ON CONFLICT (normalized_name) DO UPDATE" in alias_sql
+    alias_sql = cursor.alias_inserts[0][0]
+    # Per (name, product) since migration 010: each product of a tile is
+    # tracked separately, so re-seeing a tile bumps each of its rows.
+    assert "ON CONFLICT (normalized_name, product_id)" in alias_sql
+    assert "DO UPDATE" in alias_sql
+
+
+# --------------------------------------------------------------------------
+# Multi-product tiles
+# --------------------------------------------------------------------------
+
+def _tile(**overrides):
+    base = {
+        "raw_name": ("ANNIE'S SHELLS & CHEDDAR 170 G BEATRICE CHOCOLATE MILK 1 L "
+                     "GOLDFISH CRACKERS 168 - 227 G"),
+        "confidence": 0.8,
+        "reason": "three unrelated products at one price",
+        "unmappable": False,
+        "products": [
+            {"match_existing_product": None, "canonical_name": "mac and cheese",
+             "category": "pantry", "contains_meat": False, "contains_fish": False,
+             "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
+             "is_pantry_staple": True, "price_is_per_item": True},
+            {"match_existing_product": None, "canonical_name": "chocolate milk",
+             "category": "dairy", "contains_meat": False, "contains_fish": False,
+             "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
+             "is_pantry_staple": False, "price_is_per_item": True},
+            {"match_existing_product": None, "canonical_name": "crackers",
+             "category": "snacks", "contains_meat": False, "contains_fish": False,
+             "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
+             "is_pantry_staple": True, "price_is_per_item": True},
+        ],
+    }
+    base.update(overrides)
+    return base
+
+
+def test_a_tile_validates():
+    assert pp.validate_payload(_tile()) == []
+
+
+def test_a_tile_yields_one_proposal_per_product_with_positions():
+    proposals = pp.proposals_from_payload(_tile())
+    assert [p.canonical_name for p in proposals] == [
+        "mac and cheese", "chocolate milk", "crackers"]
+    assert [p.tile_position for p in proposals] == [0, 1, 2]
+    # Every proposal shares the one source string, which is what links them.
+    assert len({p.normalized_name for p in proposals}) == 1
+
+
+def test_tile_products_are_validated_individually():
+    tile = _tile()
+    del tile["products"][1]["contains_nuts"]
+    problems = pp.validate_payload(tile)
+    assert any("products[1]" in p and "contains_nuts" in p for p in problems)
+
+
+def test_tile_rejects_the_same_product_twice():
+    """(normalized_name, product_id) is unique, so a duplicate would collide --
+    better to say so than to let the upsert silently absorb it."""
+    tile = _tile()
+    tile["products"][2]["canonical_name"] = "chocolate milk"
+    assert any("same product twice" in p for p in pp.validate_payload(tile))
+
+
+def test_tile_cannot_also_be_unmappable():
+    assert any("cannot be true alongside" in p
+               for p in pp.validate_payload(_tile(unmappable=True)))
+
+
+def test_tile_needs_a_non_empty_products_list():
+    assert pp.validate_payload(_tile(products=[])) != []
+    assert pp.validate_payload(_tile(products="milk")) != []
+
+
+def test_undecided_tile_price_is_allowed_and_preserved():
+    """null is a real answer. Guessing is what we are avoiding."""
+    tile = _tile()
+    for spec in tile["products"]:
+        spec["price_is_per_item"] = None
+    assert pp.validate_payload(tile) == []
+    proposals = pp.proposals_from_payload(tile)
+    assert all(p.price_is_per_item is None for p in proposals)
+
+
+def test_tile_price_must_be_a_bool_or_null_not_a_string():
+    tile = _tile()
+    tile["products"][0]["price_is_per_item"] = "yes"
+    assert any("price_is_per_item" in p for p in pp.validate_payload(tile))
+
+
+def test_persist_writes_one_alias_row_per_tile_product():
+    cursor = FakePersistCursor()
+    stats = pp.persist_proposals(
+        pp.proposals_from_payload(_tile()), database=FakeDB(cursor)
+    )
+    alias_calls = [params for _, params in cursor.alias_inserts]
+    assert len(alias_calls) == 3
+    assert [p["pos"] for p in alias_calls] == [0, 1, 2]
+    assert stats["products_proposed"] == 3
+    assert stats["tile_rows"] == 2  # positions 1 and 2
+
+
+def test_load_counts_tiles(tmp_path):
+    path = tmp_path / "labels.json"
+    path.write_text(json.dumps({"labels": [_label(), _tile()]}), encoding="utf-8")
+    load = pp.load_labels(path)
+    assert load.ok
+    assert len(load.proposals) == 4  # 1 single + 3 from the tile
+    assert load.tiles == 1
 
 
 def test_persist_skips_a_name_that_normalises_to_nothing():

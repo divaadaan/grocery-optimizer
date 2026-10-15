@@ -82,6 +82,17 @@ def _counts(url: str) -> dict[str, int]:
     return out
 
 
+def _tables(url: str) -> set[str]:
+    """Public table names, for a before/after leak check."""
+    with psycopg.connect(url, autocommit=True) as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT table_name FROM information_schema.tables "
+            "WHERE table_schema = %s",
+            ("public",),
+        )
+        return {row[0] for row in cur.fetchall()}
+
+
 def check(url: str, pending: list[str]) -> int:
     """Validate each pending migration in its real context, then roll back.
 
@@ -92,6 +103,7 @@ def check(url: str, pending: list[str]) -> int:
     nothing about the migration. The transaction is rolled back either way, so
     nothing persists.
     """
+    before_tables = _tables(url)
     print(f"Validating {len(pending)} migration(s) cumulatively against the live "
           f"schema (rolled back)\n")
     failed = []
@@ -117,15 +129,13 @@ def check(url: str, pending: list[str]) -> int:
             conn.close()
 
     print("\nConfirming nothing persisted")
-    with psycopg.connect(url, autocommit=True) as conn, conn.cursor() as cur:
-        cur.execute(
-            """
-            SELECT count(*) FROM information_schema.tables
-            WHERE table_name IN ('products', 'product_aliases')
-            """
-        )
-        leaked = cur.fetchone()[0]
-    print(f"  new tables now present: {leaked} (expected 0)")
+    # Snapshot-diff rather than naming the tables a migration should create:
+    # hardcoded names go stale the moment that migration is applied for real,
+    # and then report a false leak on every later run.
+    new_tables = sorted(_tables(url) - before_tables)
+    leaked = len(new_tables)
+    print(f"  tables created by the rolled-back run: {leaked} (expected 0)"
+          + (f" -> {new_tables}" if new_tables else ""))
 
     if failed or leaked:
         print("\nPROBLEMS FOUND")

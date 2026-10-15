@@ -229,19 +229,49 @@ def test_filter_is_empty_without_restrictions():
 
 def test_filter_requires_confirmed_status_and_every_attribute():
     fragment, params = products.compliant_product_filter(["vegan"])
-    assert "p.status = 'confirmed'" in fragment
+    # Anything not confirmed counts as violating.
+    assert "p.status <> 'confirmed'" in fragment
     for attr in ("contains_meat", "contains_fish", "contains_dairy", "contains_egg"):
-        assert f"p.{attr} IS NOT TRUE" in fragment
+        assert f"p.{attr}" in fragment
     # Nuts are not implied by vegan.
     assert "contains_nuts" not in fragment
     assert params == {}
 
 
-def test_filter_uses_exists_so_unlinked_deals_are_excluded():
-    """``product_id IS NULL`` must fail the predicate, not bypass it."""
+def test_filter_reads_the_junction_not_the_single_fk():
+    """A deal can advertise several products, so compliance is over all of them.
+
+    Reading ``deals.product_id`` would see only one product of a multi-product
+    flyer tile and could clear a deal whose other products violate.
+    """
     fragment, _ = products.compliant_product_filter(["vegetarian"])
-    assert "EXISTS" in fragment
-    assert "p.product_id = d.product_id" in fragment
+    assert "deal_products" in fragment
+    assert "dp.deal_id = d.deal_id" in fragment
+    assert "d.product_id" not in fragment
+
+
+def test_filter_needs_both_exists_and_not_exists():
+    """The two clauses do different jobs and neither is redundant.
+
+    EXISTS makes an unlinked deal fail. Without it, NOT EXISTS alone is
+    vacuously true for a deal with no products -- "nothing violates it" --
+    which would serve a completely unknown item to a restricted user.
+    """
+    fragment, _ = products.compliant_product_filter(["vegetarian"])
+    assert "AND EXISTS (" in fragment
+    assert "AND NOT EXISTS (" in fragment
+    # The EXISTS clause must not itself be filtered by attributes, or an
+    # unlinked deal and a violating deal become indistinguishable.
+    head = fragment.split("NOT EXISTS")[0]
+    assert "contains_" not in head
+
+
+def test_filter_treats_an_unconfirmed_product_as_violating():
+    """Proposed and rejected are not 'unknown but probably fine'."""
+    fragment, _ = products.compliant_product_filter(["no_nuts"])
+    violation = fragment.split("AND (")[1]
+    assert "p.status <> 'confirmed'" in violation
+    assert "p.contains_nuts" in violation
 
 
 def test_filter_has_no_placeholders_to_bind():
