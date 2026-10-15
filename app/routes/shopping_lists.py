@@ -15,7 +15,6 @@ from app.services.user_service import UserService
 from app.services.database import DatabaseService
 from app.services.store_service import StoreService
 from app.services.shopping_optimizer import optimize_shopping_list, stores_from_items
-from app.services.deal_gate import filter_deals
 
 logger = logging.getLogger(__name__)
 
@@ -37,14 +36,15 @@ def _build_and_persist(user_id: int, user: dict) -> ShoppingListResponse:
             detail="No recipes found for this user. Generate a meal plan first."
         )
 
-    # ALLERGEN-SAFETY GATE (deferred compliance fix — app/services/deal_gate.py).
-    # The optimizer only prices ingredients the user's recipes already name, so
-    # the risk here is lower than on the generation path, but it can still
-    # assign an ingredient to an ingested deal whose raw flyer name defeats
-    # dietary.py's substring oracle. Same rule applies: no machine-ingested
-    # deals for a restricted user while the flag is off.
-    deals = StoreService.get_current_deals_by_postal_code(user["postal_code"])
-    deals = filter_deals(deals, user.get("dietary_restrictions"))
+    # DIETARY GATE (app/services/deal_gate.py). The optimizer only prices
+    # ingredients the user's recipes already name, but it matches them to
+    # deals loosely, so it could still put an unsafe product on the list.
+    # Same rule as recipe generation: a restricted user is priced only against
+    # deals whose confirmed products clear their restrictions.
+    deals = StoreService.get_current_deals_by_postal_code(
+        user["postal_code"],
+        dietary_restrictions=user.get("dietary_restrictions"),
+    )
     result = optimize_shopping_list(recipes, deals)
 
     regular_total = result.total_cost + result.estimated_savings
@@ -133,12 +133,12 @@ async def get_shopping_list(user_id: int) -> ShoppingListResponse:
 
 
 @router.post("/{user_id}/generate",
-              response_model=ShoppingListResponse,
-              status_code=status.HTTP_201_CREATED,
-              responses={
-                  404: {"model": ErrorResponse, "description": "Shopping list not found"},
-                  500: {"model": ErrorResponse, "description": "Internal server error"}
-              })
+             response_model=ShoppingListResponse,
+             status_code=status.HTTP_201_CREATED,
+             responses={
+                 404: {"model": ErrorResponse, "description": "Shopping list not found"},
+                 500: {"model": ErrorResponse, "description": "Internal server error"}
+             })
 async def generate_shopping_list(user_id: int) -> ShoppingListResponse:
     """
     Regenerate the shopping list for a user from their current recipes.

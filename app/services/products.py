@@ -1,43 +1,21 @@
-"""Canonical products: compliance from curated data, not from string matching.
+"""Canonical products: dietary compliance from curated data.
 
-Why this module exists
-----------------------
-``app/agents/dietary.py`` decides compliance by casefold-substring matching a
-fixed vocabulary against whatever string the flyer printed. Its own docstring
-states the precondition: *"No current seed/deal item collides."* Real ingested
-names break it in both directions, and the dangerous direction is the quiet
-one -- ``prosciutto``, ``capicollo``, ``kielbasa``, ``pancetta``, ``gelatin``,
-``lard`` and ``marzipan`` contain no term in that vocabulary at all. No amount
-of tightening to token boundaries fixes those: they are a *vocabulary* problem,
-not a *matching* problem.
+A ``products`` row carries explicit boolean attributes (``contains_meat``,
+``contains_fish``, ``contains_dairy``, ``contains_egg``, ``contains_nuts``)
+that a human confirmed in review. Those attributes are the **only** authority
+on whether a deal may be served to a user with dietary restrictions.
 
-So compliance moves off the string and onto the product. A ``products`` row
-carries explicit boolean attributes a human confirmed; this module reads them.
-
-The authority question, stated plainly
---------------------------------------
-Curated attributes are **authoritative**. The substring oracle is kept, but as
-an *alarm*, not a veto -- and the alarm is wired into review
-(``scripts/review_products.py``), not into the serving path. Two reasons:
-
-1. The oracle cannot catch the cases that motivated this work. ``marzipan``
-   contains no nut term, so an oracle veto adds no protection where protection
-   is actually needed.
-2. A veto would reintroduce the false positives. If a curator names a product
-   "beefsteak tomato", a conjunction of oracle-and-attributes would withhold a
-   vegan vegetable from a vegetarian -- the exact failure the attributes exist
-   to end.
-
-Where the oracle earns its keep is at confirmation time: showing a reviewer
-"the substring oracle reads `beef` in this name -- is ``contains_meat=false``
-right?" catches human mislabelling at the moment the human is already looking.
+Product names are never matched against a vocabulary. Name matching fails in
+both directions on real flyer text -- "Beefsteak Tomatoes" reads as beef while
+"marzipan" and "prosciutto" contain no forbidden word at all -- so it can only
+add false positives on top of the curated attributes, never safety.
 
 Fail-closed, everywhere
 -----------------------
-``deals.product_id IS NULL`` means "not linked to a confirmed product". It
-never means "safe". A user with any dietary restriction is served only deals
-linked to a **confirmed** product whose attributes clear their restrictions;
-unlinked, proposed-but-unconfirmed, and rejected all withhold the deal.
+No junction row means "not linked to a confirmed product". It never means
+"safe". A user with any dietary restriction is served only deals linked to
+**confirmed** products whose attributes clear their restrictions; unlinked,
+proposed-but-unconfirmed, and rejected all withhold the deal.
 """
 from __future__ import annotations
 
@@ -46,21 +24,21 @@ from datetime import datetime, timezone
 import re
 from typing import Any, Iterable
 
-from app.agents import dietary
 from app.db.database import db
 
 logger = logging.getLogger(__name__)
 
 #: Restriction label -> product attributes that must all be False to comply.
-#: This mirrors ``dietary.forbidden_terms_for`` exactly: whatever that function
-#: forbids by substring, this forbids by attribute. Keeping the two in step is
-#: the point -- if a restriction label is added to one, it belongs in both.
+#: The single source of truth for what a restriction label means when serving
+#: deals. A label missing here enforces no attribute (see
+#: :func:`restrictions_to_attributes`), so a new label belongs here first.
 RESTRICTION_ATTRIBUTES: dict[str, tuple[str, ...]] = {
     "vegan": ("contains_meat", "contains_fish", "contains_dairy", "contains_egg"),
     "vegetarian": ("contains_meat", "contains_fish"),
     "pescatarian": ("contains_meat",),
     "no_nuts": ("contains_nuts",),
     "nut_free": ("contains_nuts",),
+    "dairy_free": ("contains_dairy",),
 }
 
 #: Attribute columns, in a stable order, for SQL generation and review display.
@@ -112,11 +90,10 @@ def normalize_name(raw: str | None) -> str:
 def restrictions_to_attributes(restrictions: Iterable[str] | None) -> tuple[str, ...]:
     """Attributes that must be False for a product to clear ``restrictions``.
 
-    Unknown labels contribute nothing -- they are not silently treated as
-    "allows everything", because a label this module does not understand also
-    does not appear in :data:`RESTRICTION_ATTRIBUTES` for the oracle, and the
-    caller's gate withholds unlinked deals regardless. Unknown labels ARE
-    logged, so a typo'd restriction does not pass unnoticed.
+    Unknown labels contribute no attribute, but they still count as a
+    restriction: :func:`compliant_product_filter` withholds every deal not
+    linked to a confirmed product for such a user. Unknown labels ARE logged,
+    so a typo'd restriction does not pass unnoticed.
     """
     required: set[str] = set()
     unknown: list[str] = []
@@ -132,8 +109,7 @@ def restrictions_to_attributes(restrictions: Iterable[str] | None) -> tuple[str,
     if unknown:
         logger.warning(
             "Unrecognised dietary restriction label(s) %s - no product attribute "
-            "enforces them. Add them to products.RESTRICTION_ATTRIBUTES and to "
-            "dietary.forbidden_terms_for together.",
+            "enforces them. Add them to products.RESTRICTION_ATTRIBUTES.",
             unknown,
         )
     return tuple(sorted(required))
@@ -161,35 +137,29 @@ def product_allows(product: dict[str, Any], restrictions: Iterable[str] | None) 
     return True
 
 
-def oracle_disagreement(product: dict[str, Any]) -> list[str]:
-    """Restriction labels where the substring oracle and the attributes differ.
-
-    The alarm described in this module's docstring. Not consulted when serving
-    deals -- it is surfaced at review time and logged at link time, because its
-    job is catching human mislabelling, not vetoing curated data.
-    """
-    name = product.get("canonical_name") or ""
-    out: list[str] = []
-    for label in ("vegan", "vegetarian", "pescatarian", "no_nuts"):
-        by_attrs = product_allows(product, [label])
-        by_oracle = dietary.is_compliant(name, [label])
-        if by_attrs != by_oracle:
-            out.append(label)
-    return out
+def restrictions_are_active(restrictions: Iterable[str] | None) -> bool:
+    """True if the user has at least one non-blank dietary restriction."""
+    if not restrictions:
+        return False
+    return any((r or "").strip() for r in restrictions)
 
 
 def compliant_product_filter(restrictions: Iterable[str] | None) -> tuple[str, dict]:
     """SQL fragment + params restricting a ``deals d`` query to safe products.
 
     Returns ``("", {})`` when the user has no restrictions, so the caller can
-    skip the join entirely. Otherwise the fragment requires a linked,
-    *confirmed* product whose attributes are all False for the restriction --
-    an EXISTS, so it composes with the caller's existing WHERE and applies
-    before any LIMIT.
+    skip the join entirely. Otherwise the fragment requires every product
+    linked to the deal to be *confirmed* with all the restriction's attributes
+    False -- EXISTS clauses, so it composes with the caller's existing WHERE and
+    applies before any LIMIT.
+
+    A restriction whose labels map to no attribute (unknown labels) still gets
+    the linked-and-confirmed requirement: having a restriction at all is what
+    puts a user behind this gate.
     """
-    required = restrictions_to_attributes(restrictions)
-    if not required:
+    if not restrictions_are_active(restrictions):
         return "", {}
+    required = restrictions_to_attributes(restrictions)
     # Attribute names come from our own constant, never from user input.
     for attr in required:
         assert attr in ATTRIBUTES, f"unknown attribute {attr!r}"
@@ -204,7 +174,9 @@ def compliant_product_filter(restrictions: Iterable[str] | None) -> tuple[str, d
     #                 junction rows fails, so unlinked is withheld rather than
     #                 vacuously "nothing violates it, let it through".
     #   NOT EXISTS -> no linked product is unconfirmed or violating.
-    violates = " OR ".join(f"p.{attr}" for attr in required)
+    violates = " OR ".join(
+        ["p.status <> 'confirmed'"] + [f"p.{attr}" for attr in required]
+    )
     fragment = f"""
           AND EXISTS (
               SELECT 1 FROM deal_products dp
@@ -214,7 +186,7 @@ def compliant_product_filter(restrictions: Iterable[str] | None) -> tuple[str, d
               SELECT 1 FROM deal_products dp
               JOIN products p ON p.product_id = dp.product_id
               WHERE dp.deal_id = d.deal_id
-                AND (p.status <> 'confirmed' OR {violates})
+                AND ({violates})
           )"""
     return fragment, {}
 
@@ -383,28 +355,6 @@ def confirmed_products(database=db) -> list[dict]:
         return [dict(r) for r in cursor.fetchall()]
 
 
-def log_oracle_disagreements(database=db) -> list[dict]:
-    """Confirmed products whose attributes contradict the substring oracle.
-
-    Run after review as a cheap audit. A disagreement is usually the oracle
-    being wrong (that is why this table exists), but it is occasionally a
-    mislabelled product, and the only way to tell is to look.
-    """
-    flagged = []
-    for product in confirmed_products(database=database):
-        labels = oracle_disagreement(product)
-        if labels:
-            flagged.append({"product": product, "labels": labels})
-            logger.warning(
-                "Product %r (id=%s): curated attributes disagree with the "
-                "substring oracle for %s. Attributes govern; verify the labels.",
-                product["canonical_name"],
-                product["product_id"],
-                labels,
-            )
-    return flagged
-
-
 # --------------------------------------------------------------------------
 # Review service: shared by the CLI and the admin web page
 # --------------------------------------------------------------------------
@@ -497,7 +447,6 @@ def group_proposals(rows: list[dict]) -> tuple[list[dict], list[dict]]:
     for group in groups.values():
         group["times_seen"] = sum(a["times_seen"] for a in group["aliases"])
         group["clears"] = clears_labels(group)
-        group["oracle_disagreement"] = oracle_disagreement(group)
 
     ordered = sorted(
         groups.values(),

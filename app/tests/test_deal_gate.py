@@ -1,137 +1,273 @@
-"""Unit tests for the deal-source gate that holds the deferred compliance fix.
+"""The dietary gate: which deals reach a user with restrictions.
 
-These tests encode an ACCEPTED ALLERGEN-SAFETY DEFERRAL. ``app/agents/dietary.py``
-decides dietary compliance by casefold substring match, which is unsound against
-raw flyer product names in the dangerous direction: ``prosciutto``, ``chorizo``,
-``kielbasa``, ``gelatin``, ``lard`` and ``marzipan`` contain no forbidden term,
-so a nut-free or vegetarian plan built from ingested deals can include them.
+A restricted user is served only deals whose linked products are all confirmed
+and whose curated attributes clear the restrictions. Product names play no
+part: these tests pin that a correctly-labelled "Peanut Butter" reaches a vegan
+and "Beefsteak Tomatoes" reaches a vegetarian, while unlinked, proposed,
+rejected and violating products are withheld whatever their source.
 
-The fix is deferred by decision, not by oversight. The gate is what makes the
-deferral safe, so these tests are the thing standing between a restricted user
-and a flyer name the oracle cannot read. If one of them starts failing, the
-answer is not to update the assertion.
+The SQL fragment is executed for real against an in-memory SQLite schema with
+the same shape as ``deals`` / ``deal_products`` / ``products``, so the
+semantics are tested, not just the text. No Postgres is touched.
 """
+import sqlite3
+
 import pytest
 
-from app.agents import dietary
-from app.services.deal_gate import (
-    CURATED_SOURCES,
-    allowed_sources,
-    filter_deals,
-    ingested_deals_allowed,
-    restrictions_are_active,
-)
+from app.config import settings
+from app.services import deal_gate, products
 
-SEED_DEAL = {"product_name": "Chicken Breast Boneless", "source": "seed"}
-INGESTED_DEAL = {"product_name": "MINA HALAL BONELESS CHICKEN BREAST", "source": "flipp"}
-INGESTED_SNEAKY = {"product_name": "Prosciutto di Parma 100g", "source": "flipp"}
-LEGACY_DEAL = {"product_name": "Pasta Penne"}  # pre-migration row: no source key
+# --------------------------------------------------------------------------
+# A tiny catalogue, executed through the real fragment
+# --------------------------------------------------------------------------
+
+#: (product_id, canonical_name, status, meat, fish, dairy, egg, nuts)
+PRODUCTS = [
+    (1, "peanut butter", "confirmed", 0, 0, 0, 0, 1),
+    (2, "beefsteak tomatoes", "confirmed", 0, 0, 0, 0, 0),
+    (3, "butternut squash", "confirmed", 0, 0, 0, 0, 0),
+    (4, "prosciutto", "confirmed", 1, 0, 0, 0, 0),
+    (5, "marzipan", "confirmed", 0, 0, 0, 0, 1),
+    (6, "milk", "confirmed", 0, 0, 1, 0, 0),
+    (7, "tofu", "proposed", 0, 0, 0, 0, 0),
+    (8, "lentils", "rejected", 0, 0, 0, 0, 0),
+    (9, "chicken breast", "confirmed", 1, 0, 0, 0, 0),
+]
+
+#: (deal_id, product_name as printed, source, [linked product ids])
+DEALS = [
+    (101, "KRAFT PEANUT BUTTER 1KG", "flipp", [1]),
+    (102, "Beefsteak Tomatoes", "flipp", [2]),
+    (103, "Butternut Squash", "seed", [3]),
+    (104, "Prosciutto di Parma 100g", "flipp", [4]),
+    (105, "Marzipan Bar", "flipp", [5]),
+    (106, "NATREL MILK 2L", "flipp", [6]),
+    (107, "Firm Tofu", "flipp", [7]),          # proposed, not confirmed
+    (108, "Green Lentils", "flipp", [8]),      # rejected
+    (109, "Mystery Item", "seed", []),          # unlinked, even from seed
+    (110, "Chicken or Tomatoes", "flipp", [9, 2]),  # tile: one violating product
+]
 
 
-# --- the gap the gate exists to contain -------------------------------------
-
-@pytest.mark.parametrize("product_name", [
-    "Prosciutto di Parma",
-    "Chorizo Sausage Sticks",   # 'sausage' IS matched - included as a control
-    "Kielbasa Ring",
-    "Capicollo Hot",
-    "Pancetta Cubes",
-    "Gelatin Dessert Mix",
-    "Lard 454g",
-    "Marzipan Bar",
-])
-def test_documents_which_flyer_names_the_oracle_misreads(product_name):
-    """Characterisation, not aspiration: records today's oracle behaviour.
-
-    Every name here is animal- or nut-derived. ``is_compliant`` returning True
-    for any of them is a false negative. This test asserts the *current* state
-    so the deferral is measurable; it is expected to need rewriting when
-    dietary.py is fixed.
-    """
-    vegan_ok = dietary.is_compliant(product_name, ["vegan"])
-    nut_free_ok = dietary.is_compliant(product_name, ["no_nuts"])
-    # At least one restriction fails to catch it (chorizo is the one the
-    # substring vocabulary happens to cover, via "sausage").
-    assert vegan_ok or nut_free_ok, (
-        f"{product_name!r} is now caught by both oracles - if dietary.py was "
-        "fixed, revisit app/services/deal_gate.py and this test"
+@pytest.fixture
+def conn():
+    c = sqlite3.connect(":memory:")
+    c.executescript(
+        """
+        CREATE TABLE products (
+            product_id INTEGER PRIMARY KEY, canonical_name TEXT, status TEXT,
+            contains_meat BOOLEAN, contains_fish BOOLEAN, contains_dairy BOOLEAN,
+            contains_egg BOOLEAN, contains_nuts BOOLEAN);
+        CREATE TABLE deals (deal_id INTEGER PRIMARY KEY, product_name TEXT,
+                            source TEXT);
+        CREATE TABLE deal_products (deal_id INTEGER, product_id INTEGER);
+        """
     )
+    c.executemany("INSERT INTO products VALUES (?,?,?,?,?,?,?,?)", PRODUCTS)
+    for deal_id, name, source, pids in DEALS:
+        c.execute("INSERT INTO deals VALUES (?,?,?)", (deal_id, name, source))
+        for pid in pids:
+            c.execute("INSERT INTO deal_products VALUES (?,?)", (deal_id, pid))
+    yield c
+    c.close()
 
 
-def test_oracle_also_false_positives_on_safe_flyer_produce():
-    # The harmless direction, recorded for completeness.
-    assert dietary.is_compliant("Beefsteak Tomatoes", ["vegetarian"]) is False
-    assert dietary.is_compliant("Hamburger Buns", ["vegetarian"]) is False
-    assert dietary.is_compliant("Butternut Squash", ["no_nuts"]) is False
+def served(conn, restrictions):
+    fragment, params = deal_gate.deal_filter(restrictions)
+    assert params == {}
+    rows = conn.execute(
+        "SELECT d.product_name FROM deals d WHERE 1=1" + fragment
+        + " ORDER BY d.deal_id"
+    ).fetchall()
+    return [r[0] for r in rows]
 
 
-# --- the gate ---------------------------------------------------------------
+# --- the owner's intent -----------------------------------------------------
+
+def test_peanut_butter_reaches_a_vegan(conn):
+    assert "KRAFT PEANUT BUTTER 1KG" in served(conn, ["vegan"])
+
+
+def test_beefsteak_tomatoes_reach_a_vegetarian(conn):
+    assert "Beefsteak Tomatoes" in served(conn, ["vegetarian"])
+
+
+def test_butternut_squash_reaches_a_nut_free_user(conn):
+    assert "Butternut Squash" in served(conn, ["no_nuts"])
+    assert "Butternut Squash" in served(conn, ["nut_free"])
+
+
+# --- attributes withhold what names would miss ------------------------------
+
+def test_prosciutto_is_withheld_from_a_vegetarian(conn):
+    assert "Prosciutto di Parma 100g" not in served(conn, ["vegetarian"])
+
+
+def test_marzipan_is_withheld_from_a_nut_free_user(conn):
+    assert "Marzipan Bar" not in served(conn, ["no_nuts"])
+
+
+def test_peanut_butter_is_withheld_from_a_nut_free_user(conn):
+    assert "KRAFT PEANUT BUTTER 1KG" not in served(conn, ["no_nuts"])
+
+
+def test_dairy_free_withholds_milk(conn):
+    names = served(conn, ["dairy_free"])
+    assert "NATREL MILK 2L" not in names
+    assert "Beefsteak Tomatoes" in names
+
+
+def test_vegan_sees_exactly_the_confirmed_plant_products(conn):
+    assert served(conn, ["vegan"]) == [
+        "KRAFT PEANUT BUTTER 1KG", "Beefsteak Tomatoes", "Butternut Squash",
+        "Marzipan Bar",
+    ]
+
+
+# --- fail closed ------------------------------------------------------------
+
+@pytest.mark.parametrize("name", [
+    "Firm Tofu",        # proposed
+    "Green Lentils",    # rejected
+    "Mystery Item",     # unlinked, and from a hand-curated source
+])
+def test_anything_not_confirmed_is_withheld(conn, name):
+    assert name not in served(conn, ["vegetarian"])
+
+
+def test_a_tile_is_withheld_if_any_product_on_it_violates(conn):
+    assert "Chicken or Tomatoes" not in served(conn, ["vegetarian"])
+    # Pescatarian forbids meat too; nut-free does not care about chicken.
+    assert "Chicken or Tomatoes" in served(conn, ["no_nuts"])
+
+
+def test_an_unrecognised_restriction_still_gates(conn):
+    """Unknown label: no attribute to enforce, but still no unconfirmed deal."""
+    names = served(conn, ["halal"])
+    assert "Mystery Item" not in names
+    assert "Firm Tofu" not in names
+    assert "Beefsteak Tomatoes" in names
+
+
+def test_source_plays_no_part(conn):
+    """Seed and Flipp deals are judged identically, by their products."""
+    fragment, _ = deal_gate.deal_filter(["vegan"])
+    assert "source" not in fragment
+    names = served(conn, ["vegan"])
+    assert "Beefsteak Tomatoes" in names     # flipp
+    assert "Butternut Squash" in names       # seed
+    assert "Mystery Item" not in names       # seed, unlinked
+
+
+# --- unrestricted users -----------------------------------------------------
+
+@pytest.mark.parametrize("restrictions", [None, [], ["", "  "]])
+def test_unrestricted_user_sees_every_deal(conn, restrictions):
+    assert deal_gate.deal_filter(restrictions) == ("", {})
+    assert len(served(conn, restrictions)) == len(DEALS)
+
+
+# --- module surface ---------------------------------------------------------
 
 def test_restrictions_are_active():
-    assert restrictions_are_active(["vegan"]) is True
-    assert restrictions_are_active([]) is False
-    assert restrictions_are_active(None) is False
-    assert restrictions_are_active(["", "  "]) is False
+    assert deal_gate.restrictions_are_active(["vegan"]) is True
+    assert deal_gate.restrictions_are_active([]) is False
+    assert deal_gate.restrictions_are_active(None) is False
+    assert deal_gate.restrictions_are_active(["", "  "]) is False
 
 
-def test_unrestricted_user_sees_ingested_deals():
-    # Nothing for the unsound oracle to get wrong, so no reason to withhold.
-    assert ingested_deals_allowed([], allow_for_restricted=False) is True
-    assert allowed_sources([], allow_for_restricted=False) is None
+def test_gate_scope_separates_gated_from_open():
+    assert deal_gate.gate_scope(None) == "open"
+    assert deal_gate.gate_scope([]) == "open"
+    assert deal_gate.gate_scope(["vegan"]) != "open"
+    assert deal_gate.gate_scope(["halal"]) != "open"
+    # Labels with the same attributes share a scope, so they share a cache.
+    assert deal_gate.gate_scope(["no_nuts"]) == deal_gate.gate_scope(["nut_free"])
+    assert deal_gate.gate_scope(["vegan"]) != deal_gate.gate_scope(["vegetarian"])
 
 
-def test_restricted_user_is_withheld_ingested_deals_by_default():
-    assert ingested_deals_allowed(["vegan"], allow_for_restricted=False) is False
-    assert allowed_sources(["vegan"], allow_for_restricted=False) == sorted(CURATED_SOURCES)
-
-
-def test_restricted_user_sees_ingested_deals_only_when_explicitly_waived():
-    assert ingested_deals_allowed(["vegan"], allow_for_restricted=True) is True
-    assert allowed_sources(["vegan"], allow_for_restricted=True) is None
-
-
-def test_the_flag_defaults_to_off_in_settings():
-    """The deferral must be opt-in. A default of True would ship the gap open."""
-    from app.config import settings
-    assert settings.ingested_deals_for_restricted_diets is False
+def test_the_gate_reads_no_setting():
+    """No flag can serve unvetted deals to a restricted user: the gate's
+    public surface is exactly these functions, none of which consult config."""
+    assert set(deal_gate.__all__) == {
+        "deal_filter", "gate_scope", "restrictions_are_active",
+    }
+    assert not hasattr(deal_gate, "settings")
     assert settings.deal_ingestion_enabled is False
 
 
-# --- filtering --------------------------------------------------------------
-
-def test_filter_withholds_ingested_deals_from_restricted_user():
-    deals = [SEED_DEAL, INGESTED_DEAL, INGESTED_SNEAKY]
-    kept = filter_deals(deals, ["vegetarian"], allow_for_restricted=False)
-    assert kept == [SEED_DEAL]
+def test_deal_filter_is_the_products_gate():
+    for r in (["vegan"], ["vegetarian", "no_nuts"], ["halal"]):
+        assert deal_gate.deal_filter(r) == products.compliant_product_filter(r)
 
 
-def test_filter_is_a_passthrough_for_unrestricted_user():
-    deals = [SEED_DEAL, INGESTED_DEAL]
-    assert filter_deals(deals, [], allow_for_restricted=False) == deals
+# --------------------------------------------------------------------------
+# The two read paths apply the gate in SQL
+# --------------------------------------------------------------------------
+
+class _FakeCursor:
+    def __init__(self, sink):
+        self.sink = sink
+
+    def execute(self, query, params=None):
+        self.sink.append((query, params))
+
+    def fetchall(self):
+        return []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
 
 
-def test_filter_passes_everything_through_once_waived():
-    deals = [SEED_DEAL, INGESTED_DEAL]
-    assert filter_deals(deals, ["vegan"], allow_for_restricted=True) == deals
+class _FakeDB:
+    def __init__(self):
+        self.calls = []
+
+    def get_cursor(self):
+        return _FakeCursor(self.calls)
 
 
-def test_legacy_rows_without_a_source_count_as_curated():
-    """Pre-migration `deals` rows have no source column.
+def test_fetch_current_deals_gates_a_restricted_user_before_the_limit():
+    from app.services.database import DatabaseService
 
-    Failing closed on them would empty the seed catalog for every restricted
-    user, which breaks the app without making anyone safer - the seed names are
-    exactly the hand-written ones the oracle IS sound against.
-    """
-    kept = filter_deals([LEGACY_DEAL, INGESTED_DEAL], ["vegan"], allow_for_restricted=False)
-    assert kept == [LEGACY_DEAL]
-
-
-def test_filter_does_not_mutate_its_input():
-    deals = [SEED_DEAL, INGESTED_DEAL]
-    filter_deals(deals, ["vegan"], allow_for_restricted=False)
-    assert len(deals) == 2
+    svc = DatabaseService()
+    svc.db = _FakeDB()
+    svc.fetch_current_deals("M5V3A8", dietary_restrictions=["vegan"])
+    query, _ = svc.db.calls[0]
+    assert "deal_products" in query
+    assert "d.source = ANY" not in query
+    assert query.index("deal_products") < query.index("LIMIT")
 
 
-def test_curated_sources_does_not_include_a_machine_source():
-    assert "flipp" not in CURATED_SOURCES
-    assert CURATED_SOURCES == frozenset({"seed", "manual"})
+def test_fetch_current_deals_is_open_for_an_unrestricted_user():
+    from app.services.database import DatabaseService
+
+    svc = DatabaseService()
+    svc.db = _FakeDB()
+    svc.fetch_current_deals("M5V3A8", dietary_restrictions=[])
+    query, _ = svc.db.calls[0]
+    assert "deal_products" not in query
+
+
+def test_store_service_gates_and_keys_the_cache_by_scope(monkeypatch):
+    from app.services import store_service
+
+    fake = _FakeDB()
+    keys = []
+    monkeypatch.setattr(store_service, "db", fake)
+    monkeypatch.setattr(store_service.cache, "get", lambda k: keys.append(k))
+    monkeypatch.setattr(store_service.cache, "set", lambda *a, **kw: None)
+
+    store_service.StoreService.get_current_deals_by_postal_code(
+        "M5V3A8", dietary_restrictions=["vegetarian"]
+    )
+    store_service.StoreService.get_current_deals_by_postal_code("M5V3A8")
+
+    gated_query, open_query = fake.calls[0][0], fake.calls[1][0]
+    assert "deal_products" in gated_query
+    assert "deal_products" not in open_query
+    assert keys[0] != keys[1]
+    assert keys[1].endswith(":open")

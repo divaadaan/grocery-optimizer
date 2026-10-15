@@ -22,8 +22,8 @@ The labelling is done by whichever Claude session is already working in this
 repo, not by an outbound API call. The app needs no ``ANTHROPIC_API_KEY``, no
 SDK dependency, and no network egress to categorise its own data -- and
 labelling in-session means the labeller can read ``seed_catalog.py``,
-``dietary.py`` and the existing catalogue for context instead of being handed a
-prompt through a pinhole.
+``products.RESTRICTION_ATTRIBUTES`` and the existing catalogue for context
+instead of being handed a prompt through a pinhole.
 
 So the seam is a file, in three steps::
 

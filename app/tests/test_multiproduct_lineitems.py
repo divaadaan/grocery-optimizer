@@ -1,8 +1,8 @@
 """Characterises a KNOWN DEFECT: multi-product flyer tiles become one deal.
 
-This file asserts what the code does *today*, which is wrong. It is written in
-the same spirit as ``test_deal_gate.py``: make an accepted gap visible and
-measurable instead of leaving it as folklore, so that whoever fixes it has a
+This file asserts what the code does *today*, which is wrong. The point is to
+make an accepted gap visible and measurable instead of leaving it as
+folklore, so that whoever fixes it has a
 failing test to flip rather than a paragraph to rediscover.
 
 The defect

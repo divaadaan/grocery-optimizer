@@ -149,15 +149,3 @@ async def link() -> dict[str, Any]:
     """Run the deterministic link step and report what it attached."""
     stats = products.link_deals()
     return {"link": stats, "stats": products.review_stats()}
-
-
-@router.get("/products/audit")
-async def audit() -> dict[str, Any]:
-    """Confirmed products whose attributes contradict the substring oracle."""
-    flagged = products.log_oracle_disagreements()
-    return {
-        "flagged": [
-            {"product": item["product"], "labels": item["labels"]}
-            for item in flagged
-        ]
-    }

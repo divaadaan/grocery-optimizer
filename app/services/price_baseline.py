@@ -186,9 +186,9 @@ def sale_baseline(
 
     Matches ``product_name`` exactly — ingestion stores the raw flyer string,
     so "CHICKEN BREAST" and "Fresh Chicken Breast" are separate series. That
-    is honest but sparse; collapsing them needs the deferred ``products``
-    table (see ROADMAP / the compliance deferral note in
-    ``app/services/deal_gate.py``). ``idx_price_snapshots_product_trgm`` is
+    is honest but sparse; collapsing them is what ``price_snapshots.product_id``
+    (linked by ``app/services/products.py``) is for, but this lookup does not
+    use it yet. ``idx_price_snapshots_product_trgm`` is
     already in place for whoever builds the fuzzy version.
     """
     if not product_name:

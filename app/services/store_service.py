@@ -8,6 +8,7 @@ import logging
 from app.db import db
 from app.services.cache_service import cache
 from app.config import settings
+from app.services.deal_gate import deal_filter, gate_scope
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,11 @@ class StoreService:
             return [dict(row) for row in results]
 
     @staticmethod
-    def get_current_deals_by_postal_code(postal_code: str, category: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_current_deals_by_postal_code(
+        postal_code: str,
+        category: Optional[str] = None,
+        dietary_restrictions: Optional[List[str]] = None,
+    ) -> List[Dict[str, Any]]:
         """
         Get all current deals for stores in a postal code.
         Uses Redis caching for performance.
@@ -40,17 +45,19 @@ class StoreService:
         Args:
             postal_code: Postal code to search
             category: Optional category filter
+            dietary_restrictions: The user's restrictions. Any restriction
+                applies the products gate (app/services/deal_gate.py) in SQL;
+                ``None`` means no user context and returns every deal.
 
         Returns:
             List of deals with store information
         """
-        # Try cache first. The "v2" is a cache-shape version: rows now carry
-        # `source`, which app/services/deal_gate.py reads to decide whether a
-        # restricted user may see them. A pre-v2 cached row has no `source` and
-        # the gate treats a missing source as curated (fail-open, so the seed
-        # catalog keeps working pre-migration) — so stale entries must not be
-        # served. Bump this suffix again if the row shape changes.
-        cache_key = f"deals:v2:{postal_code}:{category or 'all'}"
+        # Try cache first. The "v3" is a cache-key version: the key now carries
+        # the dietary gate's scope, because a gated and an ungated read of one
+        # postal code are different deal sets and must never share an entry.
+        # Bump this again if the row shape or key meaning changes.
+        scope = gate_scope(dietary_restrictions)
+        cache_key = f"deals:v3:{postal_code}:{category or 'all'}:{scope}"
         cached_deals = cache.get(cache_key)
         if cached_deals is not None:
             logger.debug(f"Returning {len(cached_deals)} deals from cache")
@@ -88,6 +95,10 @@ class StoreService:
             query += " AND d.category = %(category)s"
             params["category"] = category
 
+        fragment, extra = deal_filter(dietary_restrictions)
+        query += fragment
+        params.update(extra)
+
         query += " ORDER BY d.discount_percentage DESC, d.sale_price ASC;"
 
         with db.get_cursor() as cursor:
@@ -110,7 +121,7 @@ class StoreService:
         Returns the number of keys dropped (0 when Redis is disabled, which is
         the default — the cache is a no-op then and this is harmless).
         """
-        return cache.delete_pattern(f"deals:v2:{postal_code}:*")
+        return cache.delete_pattern(f"deals:v3:{postal_code}:*")
 
     @staticmethod
     def get_deals_by_category(postal_code: str, categories: List[str]) -> Dict[str, List[Dict[str, Any]]]:
