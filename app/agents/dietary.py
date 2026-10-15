@@ -26,18 +26,19 @@ it is carried into violation messages for humans and never decides anything.
 A user with no restriction this app understands is approved without lookups:
 there is nothing for a product attribute to decide.
 
+An attribute must be explicitly ``False`` to comply. ``None`` -- an undecided
+``contains_animal_byproduct`` on a product confirmed before migration 015 --
+fails closed, so a vegan recipe citing it is rejected until a reviewer decides.
+
 The substring oracle this module used to be -- ``eggplant`` read as egg,
 ``coconut milk`` as dairy, while ``anchovies``, ``prosciutto`` and ``gelatin``
-slipped through -- no longer decides any recipe verdict.
+slipped through -- has been deleted. No product name is matched anywhere.
 """
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping, Optional, Sequence
 
-# Module import, not ``from ... import name``: products.py imports this module
-# (for the deprecated oracle below), so a name import would fail whenever
-# products is imported first. Attributes are resolved at call time.
 from app.services import products as _products
 
 #: Attributes whose failure is an allergen problem rather than a diet choice.
@@ -95,9 +96,24 @@ class Violation:
 
 
 def _failed_attributes(product: dict, required: tuple[str, ...]) -> tuple[str, ...]:
-    """Attributes that are not explicitly False -- None counts as failing,
+    """Attributes that do not clear -- None (undecided) counts as failing,
     exactly as in ``product_allows``."""
-    return tuple(a for a in required if product.get(a) is not False)
+    return tuple(a for a in required if product.get(a) is None or product.get(a))
+
+
+def _describe_failed(product: dict, failed: tuple[str, ...]) -> str:
+    """'has contains_meat' / 'has contains_animal_byproduct undecided'.
+
+    Kept apart because they mean different things to whoever reads the
+    feedback: one is a fact, the other is a review that has not happened."""
+    has = [a for a in failed if product.get(a)]
+    undecided = [a for a in failed if product.get(a) is None]
+    parts = []
+    if has:
+        parts.append(f"has {', '.join(has)}")
+    if undecided:
+        parts.append(f"has {', '.join(undecided)} undecided (not yet reviewed)")
+    return "; ".join(parts) or f"has {', '.join(failed)}"
 
 
 def _product_label(product: dict) -> str:
@@ -118,8 +134,9 @@ def _check_products(
                                  f"{_product_label(product)} is not a confirmed product"))
         elif not _products.product_allows(product, restrictions):
             failed = _failed_attributes(product, required) or required
-            out.append(Violation(display, citation, failed,
-                                 f"{_product_label(product)} has {', '.join(failed)}"))
+            out.append(Violation(
+                display, citation, failed,
+                f"{_product_label(product)} {_describe_failed(product, failed)}"))
     return out
 
 
@@ -186,44 +203,3 @@ def compliance_report(
         "meets_restrictions": not diet,
         "details": [{**asdict(v), "attributes": list(v.attributes)} for v in violations],
     }
-
-
-# --------------------------------------------------------------------------
-# DEPRECATED substring vocabulary. Nothing in the recipe verdict reads it.
-# Kept only until the remaining callers (Chef pre-filter, review-time alarm)
-# are removed on another branch; the coordinator deletes it afterwards.
-# --------------------------------------------------------------------------
-
-MEAT_POULTRY = ["chicken", "beef", "pork", "turkey", "lamb", "veal", "steak", "bacon", "ham", "sausage"]  # deprecated  # noqa: E501
-FISH_SEAFOOD = ["salmon", "tuna", "fish", "shrimp", "anchovy"]  # deprecated
-DAIRY = ["milk", "cheese", "yogurt", "butter", "cream"]  # deprecated
-EGG = ["egg"]  # deprecated
-NUTS = ["nut", "almond", "cashew", "walnut", "pecan", "pistachio", "hazelnut", "peanut"]  # deprecated  # noqa: E501
-
-
-# deprecated: substring oracle
-def forbidden_terms_for(restrictions: list[str]) -> list[str]:
-    """Union of forbidden name-substrings implied by the restriction labels."""
-    r = {x.strip().lower() for x in restrictions}
-    terms: set[str] = set()
-    if "vegan" in r:
-        terms |= set(MEAT_POULTRY) | set(FISH_SEAFOOD) | set(DAIRY) | set(EGG)
-    if "vegetarian" in r:
-        terms |= set(MEAT_POULTRY) | set(FISH_SEAFOOD)
-    if "pescatarian" in r:
-        terms |= set(MEAT_POULTRY)
-    if "no_nuts" in r or "nut_free" in r:
-        terms |= set(NUTS)
-    return sorted(terms)
-
-
-# deprecated: substring oracle
-def _name_violates(name: str, forbidden: list[str]) -> bool:
-    n = (name or "").casefold()
-    return any(term in n for term in forbidden)
-
-
-# deprecated: substring oracle
-def is_compliant(product_name: str, restrictions: list[str]) -> bool:
-    """True if a single product name is allowed under the restrictions (substring)."""
-    return not _name_violates(product_name, forbidden_terms_for(restrictions))

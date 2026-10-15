@@ -79,6 +79,8 @@
   }
   .attrs input { margin: 0; accent-color: var(--accent); }
   .attrs label.on { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+  .attrs label.unknown { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+  .rule { color: var(--ink-dim); font-size: .8rem; margin: 0 0 .4rem; }
 
   .clears { font-size: .85rem; margin: .4rem 0 .6rem; }
   .pill {
@@ -157,7 +159,9 @@
 // dietary judgement is a property of the product, which is what makes
 // batching it safe -- confirming "milk contains dairy" once is not weaker
 // than confirming it fifteen times.
-const state = { groups: [], orphans: [], attributes: [], stats: {}, active: 0 };
+const state = {
+  groups: [], orphans: [], undecided: [], attributes: [], rules: {}, stats: {}, active: 0,
+};
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => (
@@ -179,21 +183,32 @@ const ATTR_LABEL = {
   contains_dairy: "dairy",
   contains_egg: "egg",
   contains_nuts: "nuts",
+  contains_animal_byproduct: "animal by-product",
 };
+
+// The split reviewers get backwards. Shown on every card.
+const BYPRODUCT_RULE =
+  "Animal by-product = honey, beeswax, carmine/cochineal, shellac/glaze, " +
+  "bone-char sugar, lanolin vitamin D3. Gelatin, lard, tallow and animal " +
+  "rennet are MEAT, not by-product. Amber = undecided: it fails closed " +
+  "until you click it.";
 
 // Mirrors app/services/products.RESTRICTION_ATTRIBUTES so the "clears" line
 // updates as you toggle, without a round trip. The server recomputes it from
 // the same table on save, so this is a preview and never the authority.
 const RESTRICTION_ATTRS = {
-  vegan: ["contains_meat", "contains_fish", "contains_dairy", "contains_egg"],
+  vegan: ["contains_meat", "contains_fish", "contains_dairy", "contains_egg",
+          "contains_animal_byproduct"],
   vegetarian: ["contains_meat", "contains_fish"],
   pescatarian: ["contains_meat"],
   no_nuts: ["contains_nuts"],
 };
 
+// An attribute clears only when it is explicitly false. null (undecided)
+// fails closed, exactly as on the server.
 function clearsFor(group) {
   return Object.keys(RESTRICTION_ATTRS).filter(
-    (label) => !RESTRICTION_ATTRS[label].some((a) => group[a])
+    (label) => RESTRICTION_ATTRS[label].every((a) => group[a] === false)
   );
 }
 
@@ -206,7 +221,9 @@ async function load() {
   const data = await res.json();
   state.groups = data.groups.map((g) => ({ ...g, decided: null, dropped: new Set() }));
   state.orphans = data.orphans;
+  state.undecided = (data.undecided || []).map((p) => ({ ...p, decided: null }));
   state.attributes = data.attributes;
+  state.rules = data.rules || {};
   state.stats = data.stats;
   state.active = 0;
   render();
@@ -225,12 +242,19 @@ function renderStats() {
 
 function groupCard(group, index) {
   const clears = clearsFor(group);
-  const attrs = state.attributes.map((attr) => `
-    <label class="${group[attr] ? "on" : ""}">
+  // Three states: checked (contains), unchecked (does not), indeterminate
+  // (null: nobody decided). Indeterminate is set after render, since HTML
+  // has no attribute for it.
+  const attrs = state.attributes.map((attr) => {
+    const unknown = group[attr] === null || group[attr] === undefined;
+    return `
+    <label class="${unknown ? "unknown" : group[attr] ? "on" : ""}"
+           title="${esc(state.rules[attr] || "")}">
       <input type="checkbox" data-attr="${attr}" data-i="${index}"
-             ${group[attr] ? "checked" : ""}>
-      ${esc(ATTR_LABEL[attr] || attr)}
-    </label>`).join("");
+             ${unknown ? "data-unknown" : ""} ${group[attr] ? "checked" : ""}>
+      ${esc(ATTR_LABEL[attr] || attr)}${unknown ? " ?" : ""}
+    </label>`;
+  }).join("");
 
   const aliases = group.aliases.map((a) => {
     // A multi-product tile: this one string is shared across several product
@@ -276,6 +300,7 @@ function groupCard(group, index) {
       ${group.is_pantry_staple ? " &middot; pantry staple" : ""}
     </div>
     <div class="attrs">${attrs}</div>
+    <div class="rule">${esc(BYPRODUCT_RULE)}</div>
     <div class="clears">clears:
       ${clears.length
         ? clears.map((c) => `<span class="pill">${esc(c)}</span>`).join("")
@@ -318,10 +343,59 @@ function orphanCard() {
   </section>`;
 }
 
+// Confirmed products withheld by a NULL attribute -- added after they were
+// reviewed (migration 015). Not proposals, so the queue above never shows
+// them. Each answer fills only a NULL; it cannot overwrite a decision.
+function undecidedCard() {
+  if (!state.undecided.length) return "";
+  const rows = state.undecided.map((p, i) => {
+    const asks = p.undecided.map((attr) => `
+      <span class="note">contains ${esc(ATTR_LABEL[attr] || attr)}?</span>
+      <button data-fill="${attr}" data-v="true" data-u="${i}"
+              title="${esc(state.rules[attr] || "")}">Yes</button>
+      <button data-fill="${attr}" data-v="false" data-u="${i}">No</button>`).join("");
+    return `
+    <li>
+      <div class="aliasrow"><b>${esc(p.canonical_name)}</b>
+        <span class="note">${esc(p.category)} &middot; a &ldquo;no&rdquo; would
+        also clear ${p.would_clear.map((c) => `<span class="pill">${esc(c)}</span>`).join("")}</span>
+      </div>
+      <div class="row">${p.decided
+        ? `<span class="note">${esc(p.decided)}</span>` : asks}</div>
+    </li>`;
+  }).join("");
+  return `
+  <section class="card">
+    <h2>${state.undecided.length} confirmed product(s) with an undecided attribute</h2>
+    <div class="meta">Withheld from the labels shown until you decide</div>
+    <div class="rule">${esc(BYPRODUCT_RULE)}</div>
+    <ul class="aliases">${rows}</ul>
+  </section>`;
+}
+
+async function fillUndecided(index, attr, value) {
+  const p = state.undecided[index];
+  if (!p || p.decided) return;
+  try {
+    const out = await post("/admin/products/fill", {
+      product_id: p.product_id, attributes: { [attr]: value },
+    });
+    p.undecided = p.undecided.filter((a) => a !== attr);
+    const clears = out.clears.length ? out.clears.join(", ") : "none of them";
+    if (!p.undecided.length) p.decided = `saved; clears ${clears}`;
+    toast(`${p.canonical_name}: ${ATTR_LABEL[attr] || attr} = ${value ? "yes" : "no"}`);
+  } catch (err) {
+    toast(`failed: ${err.message}`);
+    return;
+  }
+  render();
+}
+
 function render() {
   renderStats();
   const pending = state.groups.filter((g) => !g.decided);
-  if (!pending.length && !state.orphans.length) {
+  const undecided = state.undecided.filter((p) => !p.decided);
+  if (!pending.length && !state.orphans.length && !undecided.length) {
     $("#main").innerHTML = `
       <p class="empty">Nothing left to review.<br>
       <button class="primary" id="link2">Link to deals</button></p>`;
@@ -330,7 +404,11 @@ function render() {
     return;
   }
   $("#main").innerHTML =
-    state.groups.map((g, i) => groupCard(g, i)).join("") + orphanCard();
+    state.groups.map((g, i) => groupCard(g, i)).join("") + orphanCard()
+    + undecidedCard();
+  document.querySelectorAll("input[data-unknown]").forEach((box) => {
+    box.indeterminate = true;
+  });
   const ro = $("#reject-orphans");
   if (ro) ro.addEventListener("click", rejectOrphans);
 }
@@ -362,8 +440,13 @@ async function decide(index, action) {
     return;
   }
 
+  // Undecided (null) attributes are left out, not sent as false: confirming
+  // must never turn "nobody decided" into "safe". They stay null and keep
+  // failing closed until someone clicks them.
   const attributes = {};
-  state.attributes.forEach((attr) => { attributes[attr] = !!group[attr]; });
+  state.attributes.forEach((attr) => {
+    if (group[attr] === true || group[attr] === false) attributes[attr] = group[attr];
+  });
 
   try {
     if (action === "confirm") {
@@ -450,6 +533,12 @@ document.addEventListener("click", (event) => {
     const i = Number(act.dataset.i);
     if (act.dataset.act === "skip") { state.active = i; advance(); render(); }
     else decide(i, act.dataset.act);
+    return;
+  }
+  const fillBtn = event.target.closest("[data-fill]");
+  if (fillBtn) {
+    fillUndecided(Number(fillBtn.dataset.u), fillBtn.dataset.fill,
+                  fillBtn.dataset.v === "true");
     return;
   }
   const drop = event.target.closest("[data-drop]");

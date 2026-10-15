@@ -45,9 +45,18 @@ class Decision(BaseModel):
     product_id: Optional[int] = None
     alias_ids: list[int] = Field(default_factory=list)
     action: Literal["confirm", "reject"]
-    # Attribute overrides applied before confirming. Only the five known
-    # columns are accepted; anything else is a 400, not a silent no-op.
+    # Attribute overrides applied before confirming. Only products.ATTRIBUTES
+    # are accepted; anything else is a 400, not a silent no-op. An attribute
+    # the reviewer left undecided is omitted, not sent as false.
     attributes: Optional[dict[str, bool]] = None
+    reviewer: Optional[str] = None
+
+
+class Fill(BaseModel):
+    """Decide NULL attributes on an already-confirmed product."""
+
+    product_id: int
+    attributes: dict[str, bool]
     reviewer: Optional[str] = None
 
 
@@ -84,10 +93,33 @@ async def queue(limit: int = 5000) -> dict[str, Any]:
     return {
         "groups": groups,
         "orphans": orphans,
+        # Confirmed products withheld by a NULL attribute (migration 015).
+        # Not proposals, so they would otherwise never be shown again.
+        "undecided": products.undecided_products(),
         "attributes": list(products.ATTRIBUTES),
+        "rules": dict(products.ATTRIBUTE_RULES),
         "labels": list(products.REVIEW_LABELS),
         "stats": products.review_stats(),
     }
+
+
+@router.post("/products/fill")
+async def fill(body: Fill) -> dict[str, Any]:
+    """Set NULL attributes on a confirmed product. Never overwrites a value."""
+    reviewer = _reviewer(body.reviewer)
+    if not body.attributes:
+        raise HTTPException(status_code=400, detail="no attributes given")
+    try:
+        values = products.fill_undecided_attributes(body.product_id, body.attributes)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if not values:
+        raise HTTPException(status_code=404, detail="no such product")
+    logger.info("Review: %r filled %s on product %s",
+                reviewer, body.attributes, body.product_id)
+    return {"product_id": body.product_id, "attributes": values,
+            "clears": products.clears_labels(
+                {"product_id": body.product_id, **values})}
 
 
 @router.post("/products/decide", response_model=DecisionResult)

@@ -29,6 +29,7 @@ def _group(**overrides):
         "contains_dairy": True,
         "contains_egg": False,
         "contains_nuts": False,
+        "contains_animal_byproduct": False,
         "times_seen": 8,
         "clears": ["vegetarian", "pescatarian", "no_nuts"],
         "aliases": [
@@ -53,6 +54,14 @@ ORPHAN = {
     **{attr: None for attr in ATTRS},
 }
 
+UNDECIDED = {
+    "product_id": 5, "canonical_name": "strawberry jam", "category": "pantry",
+    "status": "confirmed", "is_pantry_staple": True,
+    **{attr: False for attr in ATTRS}, "contains_animal_byproduct": None,
+    "undecided": ["contains_animal_byproduct"],
+    "clears": ["vegetarian", "pescatarian", "no_nuts"], "would_clear": ["vegan"],
+}
+
 STATS = {"proposed": 3, "confirmed": 0, "rejected": 0,
          "products_confirmed": 0, "deals_linked": 0, "deals_total": 10}
 
@@ -67,10 +76,23 @@ def client():
 def stub(monkeypatch):
     """Replace every DB-touching service call with a recorder."""
     calls = {"confirm": [], "reject": [], "reject_product": [],
-             "set_attributes": [], "link": 0}
+             "set_attributes": [], "fill": [], "link": 0}
 
     monkeypatch.setattr(products, "pending_proposals",
                         lambda **kw: [ORPHAN])
+    monkeypatch.setattr(products, "undecided_products",
+                        lambda **kw: [dict(UNDECIDED)])
+
+    def _fill(product_id, updates, **kw):
+        unknown = set(updates) - set(products.ATTRIBUTES)
+        if unknown:
+            raise ValueError(f"unknown attribute(s): {sorted(unknown)}")
+        calls["fill"].append((product_id, dict(updates)))
+        if product_id != UNDECIDED["product_id"]:
+            return {}
+        return {attr: UNDECIDED[attr] for attr in ATTRS} | updates
+
+    monkeypatch.setattr(products, "fill_undecided_attributes", _fill)
     monkeypatch.setattr(products, "group_proposals",
                         lambda rows: ([_group()], [ORPHAN]))
     monkeypatch.setattr(products, "review_stats", lambda **kw: dict(STATS))
@@ -302,6 +324,67 @@ async def test_every_decision_returns_fresh_stats(client, stub):
             "product_id": 1, "alias_ids": [11], "action": "confirm",
         })
     assert res.json()["stats"] == STATS
+
+
+# --------------------------------------------------------------------------
+# Undecided attributes on confirmed products (migration 015)
+# --------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_queue_lists_confirmed_products_with_an_undecided_attribute(client, stub):
+    async with client as http:
+        body = (await http.get("/admin/products/queue")).json()
+    assert body["undecided"][0]["product_id"] == 5
+    assert body["undecided"][0]["undecided"] == ["contains_animal_byproduct"]
+    assert "contains_animal_byproduct" in body["attributes"]
+    assert "gelatin" in body["rules"]["contains_meat"]
+    assert "honey" in body["rules"]["contains_animal_byproduct"]
+
+
+@pytest.mark.asyncio
+async def test_fill_sets_an_undecided_attribute_and_reports_what_it_clears(client, stub):
+    async with client as http:
+        res = await http.post("/admin/products/fill", json={
+            "product_id": 5, "attributes": {"contains_animal_byproduct": False},
+        })
+    assert res.status_code == 200
+    assert stub["fill"] == [(5, {"contains_animal_byproduct": False})]
+    assert "vegan" in res.json()["clears"]
+
+
+@pytest.mark.asyncio
+async def test_fill_rejects_unknown_and_empty_attributes(client, stub):
+    async with client as http:
+        bad = await http.post("/admin/products/fill", json={
+            "product_id": 5, "attributes": {"contains_sqlinjection": True}})
+        empty = await http.post("/admin/products/fill", json={
+            "product_id": 5, "attributes": {}})
+        null = await http.post("/admin/products/fill", json={
+            "product_id": 5, "attributes": {"contains_animal_byproduct": None}})
+    assert bad.status_code == 400
+    assert empty.status_code == 400
+    assert null.status_code == 422
+    assert stub["fill"] == []
+
+
+@pytest.mark.asyncio
+async def test_fill_on_a_missing_product_is_a_404(client, stub):
+    async with client as http:
+        res = await http.post("/admin/products/fill", json={
+            "product_id": 999, "attributes": {"contains_animal_byproduct": True}})
+    assert res.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_review_page_treats_undecided_as_failing_and_states_the_rule(client):
+    """The page's preview must not read null as false, and must not send an
+    undecided attribute as false when confirming."""
+    async with client as http:
+        page = (await http.get("/admin/review")).text
+    assert '"contains_animal_byproduct"' in page
+    assert "every((a) => group[a] === false)" in page
+    assert "attributes[attr] = !!group[attr]" not in page
+    assert "Gelatin, lard, tallow and animal" in page
 
 
 # --------------------------------------------------------------------------

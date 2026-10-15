@@ -19,6 +19,7 @@ def _product(pid, name, *, status="confirmed", **attrs):
         "product_id": pid, "canonical_name": name, "status": status,
         "contains_meat": False, "contains_fish": False, "contains_dairy": False,
         "contains_egg": False, "contains_nuts": False,
+        "contains_animal_byproduct": False,
     }
     row.update(attrs)
     return row
@@ -120,11 +121,14 @@ def test_cured_meat_without_a_forbidden_term_is_caught():
 
 
 def test_dietary_module_no_longer_matches_substrings_for_recipes():
-    """recipe_violations takes a catalog; there is no name-based entry point."""
+    """recipe_violations takes a catalog; there is no name-based entry point,
+    and the deprecated substring oracle is gone from the module entirely."""
     import inspect
-    src = (inspect.getsource(dietary.recipe_violations)
-           + inspect.getsource(dietary.ingredient_violations))
-    assert "forbidden_terms_for" not in src and "_name_violates" not in src
+    src = inspect.getsource(dietary)
+    for name in ("forbidden_terms_for", "_name_violates", "is_compliant",
+                 "MEAT_POULTRY", "FISH_SEAFOOD"):
+        assert not hasattr(dietary, name), name
+        assert name not in src, name
 
 
 # --------------------------------------------------------------------------
@@ -211,6 +215,91 @@ def test_citation_catalog_from_state():
     assert set(catalog.staples) == {"101", "102"}
     assert catalog.deal_products["1"] == [EGGPLANT]
     assert CitationCatalog.from_state({}).staples == {}
+
+
+# --------------------------------------------------------------------------
+# contains_animal_byproduct (migration 015): honey and undecided products
+# --------------------------------------------------------------------------
+
+HONEY = _product(104, "Honey", contains_animal_byproduct=True)
+#: Confirmed before 015 and never revisited: the new column is NULL.
+UNDECIDED_JAM = _product(47, "Strawberry Jam", contains_animal_byproduct=None)
+BYPRODUCT_CATALOG = CitationCatalog(
+    deal_products={"9": [UNDECIDED_JAM]},
+    staples={"101": SALT, "104": HONEY},
+)
+
+
+def test_recipe_citing_honey_staple_is_rejected_for_a_vegan():
+    report = _rep(["vegan"], {"name": "honey", "product_id": 104},
+                  catalog=BYPRODUCT_CATALOG)
+    assert report["approved"] is False
+    assert report["meets_restrictions"] is False
+    assert report["allergen_free"] is True
+    assert report["details"][0]["attributes"] == ["contains_animal_byproduct"]
+    assert report["violations"] == [
+        "honey (pantry product 104): product 104 'Honey' has contains_animal_byproduct"
+    ]
+
+
+@pytest.mark.parametrize("restrictions", [["vegetarian"], ["pescatarian"],
+                                          ["no_nuts"], ["dairy_free"]])
+def test_recipe_citing_honey_staple_is_approved_for_non_vegans(restrictions):
+    report = _rep(restrictions, {"name": "honey", "product_id": 104},
+                  {"name": "salt", "product_id": 101}, catalog=BYPRODUCT_CATALOG)
+    assert report["approved"] is True, report["violations"]
+
+
+def test_undecided_byproduct_fails_closed_for_a_vegan_recipe():
+    """NULL is not False: nobody has asked whether the jam contains, say,
+    carmine. Rejected, and the feedback says it is undecided, not present."""
+    report = _rep(["vegan"], {"name": "jam", "deal_id": 9}, catalog=BYPRODUCT_CATALOG)
+    assert report["approved"] is False
+    assert report["details"][0]["attributes"] == ["contains_animal_byproduct"]
+    assert "undecided" in report["violations"][0]
+
+
+def test_undecided_byproduct_does_not_affect_a_vegetarian_recipe():
+    report = _rep(["vegetarian"], {"name": "jam", "deal_id": 9},
+                  catalog=BYPRODUCT_CATALOG)
+    assert report["approved"] is True
+
+
+def test_honey_is_never_offered_to_a_vegan_sous_chef():
+    from app.agents.sous_chef import offered_staples
+    staples = [SALT, HONEY, {**UNDECIDED_JAM, "product_id": 105}]
+    assert [s["product_id"] for s in offered_staples(staples, ["vegan"])] == [101]
+    offered = offered_staples(staples, ["vegan", "no_nuts"])
+    assert [s["product_id"] for s in offered] == [101]
+    assert [s["product_id"] for s in offered_staples(staples, ["vegetarian"])] == [
+        101, 104, 105]
+
+
+def test_honey_staple_is_absent_from_a_vegan_sous_chef_prompt():
+    chef = _sous_chef([_batch({"name": "Eggplant", "deal_id": 1},
+                              {"name": "Salt", "product_id": 101})])
+    chef.generate_recipes(
+        chef_id="sous_chef_1", ingredient_group=[{"product_name": "E", "deal_id": 1}],
+        target_recipe_count=1, household_size=2, dietary_restrictions=["vegan"],
+        available_deals=DEALS, pantry_staples=[SALT, HONEY],
+    )
+    prompt = chef.llm.calls[0][0].content
+    assert '"product_id": 101' in prompt
+    assert '"product_id": 104' not in prompt and "Honey" not in prompt
+
+
+def test_citing_an_unoffered_honey_staple_is_fed_back_to_a_vegan_sous_chef():
+    chef = _sous_chef([
+        _batch({"name": "Eggplant", "deal_id": 1}, {"name": "honey", "product_id": 104}),
+        _batch({"name": "Eggplant", "deal_id": 1}),
+    ])
+    recipes = chef.generate_recipes(
+        chef_id="sous_chef_1", ingredient_group=[{"product_name": "E", "deal_id": 1}],
+        target_recipe_count=1, household_size=2, dietary_restrictions=["vegan"],
+        available_deals=DEALS, pantry_staples=[SALT, HONEY],
+    )
+    assert "cites product_id 104" in chef.llm.calls[1][2].content
+    assert [i.get("product_id") for i in recipes[0]["ingredients"]] == [None]
 
 
 # --------------------------------------------------------------------------
