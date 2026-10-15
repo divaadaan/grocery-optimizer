@@ -438,12 +438,26 @@ def pending_proposals(limit: int = 5000, database=db) -> list[dict]:
             """
             SELECT a.alias_id, a.normalized_name, a.raw_example, a.confidence,
                    a.proposal_reason, a.times_seen, a.source,
+                   a.tile_position, a.price_is_per_item,
                    p.product_id, p.canonical_name, p.category,
                    p.status AS product_status, p.is_pantry_staple,
                    p.contains_meat, p.contains_fish, p.contains_dairy,
-                   p.contains_egg, p.contains_nuts
+                   p.contains_egg, p.contains_nuts,
+                   -- Every product this same string maps to. A multi-product
+                   -- tile appears in several groups, and without this the
+                   -- reviewer sees the whole tile text under one product with
+                   -- no sign the rest of it went anywhere.
+                   COALESCE(sib.names, ARRAY[]::text[]) AS tile_products
             FROM product_aliases a
             LEFT JOIN products p ON p.product_id = a.product_id
+            LEFT JOIN LATERAL (
+                SELECT array_agg(p2.canonical_name ORDER BY a2.tile_position)
+                       AS names
+                FROM product_aliases a2
+                JOIN products p2 ON p2.product_id = a2.product_id
+                WHERE a2.normalized_name = a.normalized_name
+                  AND a2.status <> 'rejected'
+            ) sib ON true
             WHERE a.status = 'proposed'
             ORDER BY a.times_seen DESC, a.normalized_name
             LIMIT %(limit)s
