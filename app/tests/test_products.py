@@ -90,7 +90,8 @@ def test_restriction_attribute_map_covers_the_enforceable_labels():
         (["dairy_free"], ("contains_dairy",)),
         (
             ["vegan"],
-            ("contains_dairy", "contains_egg", "contains_fish", "contains_meat"),
+            ("contains_animal_byproduct", "contains_dairy", "contains_egg",
+             "contains_fish", "contains_meat"),
         ),
         # Union, not last-wins.
         (
@@ -131,6 +132,7 @@ def _product(**overrides):
         "contains_dairy": False,
         "contains_egg": False,
         "contains_nuts": False,
+        "contains_animal_byproduct": False,
         "is_pantry_staple": False,
     }
     base.update(overrides)
@@ -197,6 +199,128 @@ def test_product_allows_fails_closed_on_none_attribute():
     assert products.product_allows(_product(contains_nuts=None), ["no_nuts"]) is False
 
 
+# --------------------------------------------------------------------------
+# contains_animal_byproduct (migration 015)
+# --------------------------------------------------------------------------
+
+def test_animal_byproduct_is_a_vegan_attribute_only():
+    assert "contains_animal_byproduct" in products.ATTRIBUTES
+    for label, attrs in products.RESTRICTION_ATTRIBUTES.items():
+        assert ("contains_animal_byproduct" in attrs) == (label == "vegan"), label
+
+
+def test_honey_fails_vegan_and_clears_everything_else():
+    honey = _product(canonical_name="honey", contains_animal_byproduct=True)
+    assert products.product_allows(honey, ["vegan"]) is False
+    for label in ("vegetarian", "pescatarian", "no_nuts", "nut_free", "dairy_free"):
+        assert products.product_allows(honey, [label]) is True, label
+
+
+def test_undecided_byproduct_fails_vegan_quietly(caplog):
+    """NULL is a legitimate state since 015 -- fails closed, but it is not a
+    partial-row bug, so it does not warn on every product every request."""
+    jam = _product(canonical_name="jam", contains_animal_byproduct=None)
+    with caplog.at_level("WARNING"):
+        assert products.product_allows(jam, ["vegan"]) is False
+        assert products.product_allows(jam, ["vegetarian"]) is True
+    assert caplog.text == ""
+
+
+def test_attribute_rules_cover_every_attribute_and_state_the_split():
+    assert set(products.ATTRIBUTE_RULES) == set(products.ATTRIBUTES)
+    meat = products.ATTRIBUTE_RULES["contains_meat"]
+    byproduct = products.ATTRIBUTE_RULES["contains_animal_byproduct"]
+    for word in ("gelatin", "lard", "tallow", "rennet"):
+        assert word in meat
+    for word in ("honey", "beeswax", "carmine", "shellac", "bone-char", "lanolin"):
+        assert word in byproduct
+
+
+def test_review_clears_treat_undecided_as_failing():
+    groups, _ = products.group_proposals(
+        [_alias_row(contains_nuts=False, contains_animal_byproduct=None)])
+    assert groups[0]["clears"] == ["vegetarian", "pescatarian", "no_nuts"]
+    groups, _ = products.group_proposals(
+        [_alias_row(contains_nuts=False, contains_animal_byproduct=True)])
+    assert groups[0]["clears"] == ["vegetarian", "pescatarian", "no_nuts"]
+
+
+class _RecordingCursor:
+    def __init__(self, rows=(), one=None):
+        self.rows = list(rows)
+        self.one = one
+        self.calls = []
+
+    def execute(self, sql, params=None):
+        self.calls.append((sql, params))
+
+    def fetchall(self):
+        return self.rows
+
+    def fetchone(self):
+        return self.one
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+class _RecordingDB:
+    def __init__(self, cursor):
+        self.cursor = cursor
+
+    def get_cursor(self):
+        return self.cursor
+
+
+def test_undecided_products_lists_only_rows_whose_null_decides_a_verdict():
+    rows = [
+        _product(product_id=1, canonical_name="jam", status="confirmed",
+                 contains_animal_byproduct=None),
+        # Fails vegan on meat already: no by-product value changes anything.
+        _product(product_id=2, canonical_name="chicken", status="confirmed",
+                 contains_meat=True, contains_animal_byproduct=None),
+    ]
+    cursor = _RecordingCursor(rows)
+    out = products.undecided_products(database=_RecordingDB(cursor))
+    assert [p["product_id"] for p in out] == [1]
+    assert out[0]["undecided"] == ["contains_animal_byproduct"]
+    assert out[0]["would_clear"] == ["vegan"]
+    assert "vegan" not in out[0]["clears"]
+    sql = cursor.calls[0][0]
+    assert "status = 'confirmed'" in sql and "contains_animal_byproduct IS NULL" in sql
+
+
+def test_fill_undecided_attributes_only_ever_replaces_null():
+    cursor = _RecordingCursor(one={a: False for a in products.ATTRIBUTES})
+    out = products.fill_undecided_attributes(
+        7, {"contains_animal_byproduct": False}, database=_RecordingDB(cursor))
+    assert out["contains_animal_byproduct"] is False
+    sql, params = cursor.calls[0]
+    assert ("contains_animal_byproduct = COALESCE(contains_animal_byproduct, "
+            "%(contains_animal_byproduct)s)") in sql
+    assert set(PLACEHOLDER.findall(sql)) <= set(params)
+    assert params["pid"] == 7
+
+
+def test_fill_undecided_attributes_rejects_unknown_columns():
+    with pytest.raises(ValueError):
+        products.fill_undecided_attributes(
+            7, {"contains_sqlinjection": True},
+            database=_RecordingDB(_RecordingCursor()))
+
+
+def test_set_attributes_never_turns_none_into_false():
+    cursor = _RecordingCursor()
+    out = products.set_attributes(
+        7, {"contains_dairy": True, "contains_animal_byproduct": None},
+        database=_RecordingDB(cursor))
+    assert out == {"contains_dairy": True}
+    assert "contains_animal_byproduct" not in cursor.calls[0][0]
+
+
 def test_product_allows_with_no_restrictions_allows_anything():
     steak = _product(canonical_name="ribeye", contains_meat=True)
     assert products.product_allows(steak, []) is True
@@ -258,8 +382,10 @@ def test_filter_requires_confirmed_status_and_every_attribute():
     fragment, params = products.compliant_product_filter(["vegan"])
     # Anything not confirmed counts as violating.
     assert "p.status <> 'confirmed'" in fragment
-    for attr in ("contains_meat", "contains_fish", "contains_dairy", "contains_egg"):
-        assert f"p.{attr}" in fragment
+    for attr in ("contains_meat", "contains_fish", "contains_dairy", "contains_egg",
+                 "contains_animal_byproduct"):
+        # IS NOT FALSE, so a NULL (undecided) attribute violates too.
+        assert f"p.{attr} IS NOT FALSE" in fragment
     # Nuts are not implied by vegan.
     assert "contains_nuts" not in fragment
     assert params == {}

@@ -29,6 +29,7 @@ def _label(**overrides):
         "contains_dairy": False,
         "contains_egg": False,
         "contains_nuts": False,
+        "contains_animal_byproduct": False,
         "is_pantry_staple": False,
         "confidence": 0.95,
         "reason": "Chicken is poultry.",
@@ -47,8 +48,12 @@ def test_export_bundle_carries_names_instructions_and_catalogue():
         "canonical_name": "milk 2%", "category": "dairy",
         "contains_meat": False, "contains_fish": False, "contains_dairy": True,
         "contains_egg": False, "contains_nuts": False,
+        "contains_animal_byproduct": None,
     }]
     bundle = pp.export_bundle(["RAW MILK 2L"], existing)
+    # Undecided stays null in the hand-off; it is not shown to the labeller
+    # as false.
+    assert bundle["existing_products"][0]["contains_animal_byproduct"] is None
     assert bundle["unmapped"] == ["RAW MILK 2L"]
     assert bundle["existing_products"][0]["canonical_name"] == "milk 2%"
     assert bundle["existing_products"][0]["contains_dairy"] is True
@@ -86,6 +91,25 @@ def test_instructions_record_the_settled_judgement_calls():
     text = pp.LABELLING_INSTRUCTIONS.lower()
     assert "coconut is not a nut" in text
     assert "lactose-free milk is still dairy" in text
+
+
+def test_instructions_carry_the_animal_byproduct_labelling_rule():
+    """Honey et al. are a separate, vegan-only attribute; gelatin, lard,
+    tallow and rennet stay contains_meat so vegetarians keep avoiding them."""
+    text = pp.LABELLING_INSTRUCTIONS.lower()
+    assert "contains_animal_byproduct" in text
+    for word in ("honey", "beeswax", "carmine", "shellac", "bone-char", "lanolin"):
+        assert word in text
+    assert ("gelatin, lard, tallow and animal rennet are contains_meat, not this "
+            "attribute") in text
+
+
+def test_a_label_missing_the_byproduct_attribute_is_rejected():
+    payload = _label()
+    del payload["contains_animal_byproduct"]
+    problems = pp.validate_payload(payload)
+    assert any("contains_animal_byproduct" in p for p in problems)
+    assert pp.validate_payload(_label(contains_animal_byproduct=None))
 
 
 def test_output_format_example_names_every_attribute():
@@ -477,14 +501,17 @@ def _tile(**overrides):
             {"match_existing_product": None, "canonical_name": "mac and cheese",
              "category": "pantry", "contains_meat": False, "contains_fish": False,
              "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
+             "contains_animal_byproduct": False,
              "is_pantry_staple": True, "price_is_per_item": True},
             {"match_existing_product": None, "canonical_name": "chocolate milk",
              "category": "dairy", "contains_meat": False, "contains_fish": False,
              "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
+             "contains_animal_byproduct": False,
              "is_pantry_staple": False, "price_is_per_item": True},
             {"match_existing_product": None, "canonical_name": "crackers",
              "category": "snacks", "contains_meat": False, "contains_fish": False,
              "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
+             "contains_animal_byproduct": False,
              "is_pantry_staple": True, "price_is_per_item": True},
         ],
     }

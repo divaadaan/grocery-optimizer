@@ -42,6 +42,7 @@ Usage::
     python scripts/review_products.py --link
     python scripts/review_products.py --unmapped
     python scripts/review_products.py --reinfer-prices
+    python scripts/review_products.py --fill-undecided
 """
 from __future__ import annotations
 
@@ -59,7 +60,15 @@ ATTR_LABEL = {
     "contains_dairy": "dairy",
     "contains_egg": "egg",
     "contains_nuts": "nuts",
+    "contains_animal_byproduct": "animal by-product",
 }
+
+#: Shown wherever a reviewer decides contains_animal_byproduct. The split is
+#: easy to get backwards, and backwards serves gelatin to a vegetarian.
+BYPRODUCT_RULE = (
+    "animal by-product = honey, beeswax, carmine/cochineal, shellac/glaze, "
+    "bone-char sugar, lanolin vitamin D3.\n"
+    "  Gelatin, lard, tallow and animal rennet are MEAT, not by-product.")
 
 #: How many of a group's aliases to print before truncating.
 ALIAS_PREVIEW = 6
@@ -84,7 +93,13 @@ def _attr_summary(row: dict) -> str:
     if row.get("product_id") is None:
         return "UNKNOWN - no product linked, withheld from all restricted users"
     present = [ATTR_LABEL[a] for a in products.ATTRIBUTES if row.get(a)]
-    return ", ".join(present) if present else "no animal products or nuts"
+    # NULL is "nobody decided", which fails closed -- never "absent".
+    undecided = [ATTR_LABEL[a] for a in products.ATTRIBUTES if row.get(a) is None]
+    summary = ", ".join(present) if present else (
+        "no animal products or nuts" if not undecided else "nothing known")
+    if undecided:
+        summary += f"; UNDECIDED: {', '.join(undecided)}"
+    return summary
 
 
 def _clears(row: dict) -> str:
@@ -135,13 +150,16 @@ decision covers every flyer string that maps to that product.
                                 restrictions those labels clear
   n = NO, wrong or unusable  -> rejects all its strings; they stay withheld
                                 and will not come back in next week's queue
-  e = EDIT the attributes    -> flip meat/fish/dairy/egg/nuts, then decide
+  e = EDIT the attributes    -> flip meat/fish/dairy/egg/nuts/animal
+                                by-product, then decide
   p = PICK strings one by one-> for a group where one string does not belong
   s = SKIP, decide later     -> no decision; stays in the queue
   q = QUIT                   -> stops here, keeps what you decided
 
 Nothing reaches a user until you confirm it. When unsure, skip or reject --
-a withheld deal costs one offer, a wrong label costs more."""
+a withheld deal costs one offer, a wrong label costs more.
+
+""" + BYPRODUCT_RULE
 
 _WORDS = {"yes": "y", "no": "n", "edit": "e", "pick": "p",
           "skip": "s", "quit": "q", "exit": "q"}
@@ -205,12 +223,16 @@ def _edit_attributes(group: dict) -> bool:
         "d": "contains_dairy",
         "e": "contains_egg",
         "n": "contains_nuts",
+        "a": "contains_animal_byproduct",
     }
     print("  Current labels:")
     for letter, attr in keys.items():
-        state = "YES" if group[attr] else "no "
-        print(f"    {letter} = contains {ATTR_LABEL[attr]:<16} {state}")
+        value = group.get(attr)
+        state = "???" if value is None else ("YES" if value else "no ")
+        print(f"    {letter} = contains {ATTR_LABEL[attr]:<18} {state}")
+    print(f"  {BYPRODUCT_RULE}")
     print("  Type the letters you want to FLIP, e.g. 'dn' flips dairy and nuts.")
+    print("  An undecided (???) label is not flipped; you are asked for it.")
     print("  Press Enter alone to leave them as they are.")
     raw = input("  flip> ").strip().lower()
 
@@ -222,7 +244,19 @@ def _edit_attributes(group: dict) -> bool:
         print("  unchanged")
         return False
 
-    updates = {attr: not bool(group[attr]) for attr in flips}
+    updates = {}
+    for attr in flips:
+        if group.get(attr) is None:
+            # Flipping an unknown has no meaning; "not None" would read as
+            # True by accident. Ask instead.
+            answer = _ask(f"  does it contain {ATTR_LABEL[attr]}? [y/n/s]> ", "yns")
+            if answer != "s":
+                updates[attr] = answer == "y"
+        else:
+            updates[attr] = not bool(group[attr])
+    if not updates:
+        print("  unchanged")
+        return False
     products.set_attributes(group["product_id"], updates)
     group.update(updates)
     for attr, value in updates.items():
@@ -324,6 +358,50 @@ def cmd_review() -> int:
     return 0
 
 
+def cmd_fill_undecided() -> int:
+    """Decide NULL attributes on products that are already confirmed.
+
+    Migration 015 added contains_animal_byproduct with no value for products
+    reviewed before it existed. NULL fails closed, so those products are
+    withheld from vegans -- and being confirmed, they never re-enter the
+    proposal queue. This walks the ones whose NULL actually decides a verdict.
+    Writes only fill NULLs (``products.fill_undecided_attributes``), so nothing
+    a reviewer already decided can be changed from here.
+    """
+    pending = products.undecided_products()
+    if not pending:
+        print("No confirmed product has an undecided attribute that matters.")
+        return 0
+    print(f"{len(pending)} confirmed product(s) have an undecided attribute that "
+          f"is withholding them from someone.\n")
+    print(f"  {BYPRODUCT_RULE}\n")
+    print("  y = it contains this   n = it does not   s = skip   q = quit\n")
+
+    filled = 0
+    for product in pending:
+        print("-" * 72)
+        print(f"  product    {product['canonical_name']}  [{product['category']}]")
+        print(f"  contains   {_attr_summary(product)}")
+        print(f"  clears     {_clears(product)}")
+        print(f"  a 'no' would also clear: {', '.join(product['would_clear'])}")
+        updates: dict[str, bool] = {}
+        for attr in product["undecided"]:
+            answer = _ask(f"  contains {ATTR_LABEL[attr]}? [y/n/s/q]> ", "ynsq")
+            if answer == "q":
+                print(f"Filled {filled} attribute(s).")
+                return 0
+            if answer in "yn":
+                updates[attr] = answer == "y"
+        if updates:
+            products.fill_undecided_attributes(product["product_id"], updates)
+            filled += len(updates)
+            saved = ", ".join(f"{ATTR_LABEL[a]}={v}" for a, v in updates.items())
+            print(f"  saved {saved}")
+    print("-" * 72)
+    print(f"Filled {filled} attribute(s).")
+    return 0
+
+
 # --------------------------------------------------------------------------
 # Non-interactive commands
 # --------------------------------------------------------------------------
@@ -380,12 +458,18 @@ def main(argv: list[str] | None = None) -> int:
                        help="deal names with no product")
     group.add_argument("--reinfer-prices", dest="reinfer", action="store_true",
                        help="fill undecided tile pricing from the deal text")
+    group.add_argument("--fill-undecided", dest="fill_undecided",
+                       action="store_true",
+                       help="decide NULL attributes (e.g. animal by-product) "
+                            "on already-confirmed products")
     args = parser.parse_args(argv)
 
     if args.list:
         return cmd_list()
     if args.review:
         return cmd_review()
+    if args.fill_undecided:
+        return cmd_fill_undecided()
     if args.link:
         return cmd_link()
     if args.unmapped:

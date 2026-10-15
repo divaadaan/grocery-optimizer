@@ -21,17 +21,21 @@ from app.services import deal_gate, products
 # A tiny catalogue, executed through the real fragment
 # --------------------------------------------------------------------------
 
-#: (product_id, canonical_name, status, meat, fish, dairy, egg, nuts)
+#: (product_id, canonical_name, status, meat, fish, dairy, egg, nuts,
+#:  animal_byproduct). The last is nullable (migration 015); None is a product
+#:  confirmed before the column existed and never revisited.
 PRODUCTS = [
-    (1, "peanut butter", "confirmed", 0, 0, 0, 0, 1),
-    (2, "beefsteak tomatoes", "confirmed", 0, 0, 0, 0, 0),
-    (3, "butternut squash", "confirmed", 0, 0, 0, 0, 0),
-    (4, "prosciutto", "confirmed", 1, 0, 0, 0, 0),
-    (5, "marzipan", "confirmed", 0, 0, 0, 0, 1),
-    (6, "milk", "confirmed", 0, 0, 1, 0, 0),
-    (7, "tofu", "proposed", 0, 0, 0, 0, 0),
-    (8, "lentils", "rejected", 0, 0, 0, 0, 0),
-    (9, "chicken breast", "confirmed", 1, 0, 0, 0, 0),
+    (1, "peanut butter", "confirmed", 0, 0, 0, 0, 1, 0),
+    (2, "beefsteak tomatoes", "confirmed", 0, 0, 0, 0, 0, 0),
+    (3, "butternut squash", "confirmed", 0, 0, 0, 0, 0, 0),
+    (4, "prosciutto", "confirmed", 1, 0, 0, 0, 0, None),
+    (5, "marzipan", "confirmed", 0, 0, 0, 0, 1, 0),
+    (6, "milk", "confirmed", 0, 0, 1, 0, 0, None),
+    (7, "tofu", "proposed", 0, 0, 0, 0, 0, 0),
+    (8, "lentils", "rejected", 0, 0, 0, 0, 0, 0),
+    (9, "chicken breast", "confirmed", 1, 0, 0, 0, 0, None),
+    (10, "honey", "confirmed", 0, 0, 0, 0, 0, 1),
+    (11, "strawberry jam", "confirmed", 0, 0, 0, 0, 0, None),
 ]
 
 #: (deal_id, product_name as printed, source, [linked product ids])
@@ -46,6 +50,8 @@ DEALS = [
     (108, "Green Lentils", "flipp", [8]),      # rejected
     (109, "Mystery Item", "seed", []),          # unlinked, even from seed
     (110, "Chicken or Tomatoes", "flipp", [9, 2]),  # tile: one violating product
+    (111, "BILLY BEE HONEY 500G", "flipp", [10]),
+    (112, "Smucker's Strawberry Jam", "flipp", [11]),  # by-product undecided
 ]
 
 
@@ -57,13 +63,14 @@ def conn():
         CREATE TABLE products (
             product_id INTEGER PRIMARY KEY, canonical_name TEXT, status TEXT,
             contains_meat BOOLEAN, contains_fish BOOLEAN, contains_dairy BOOLEAN,
-            contains_egg BOOLEAN, contains_nuts BOOLEAN);
+            contains_egg BOOLEAN, contains_nuts BOOLEAN,
+            contains_animal_byproduct BOOLEAN);
         CREATE TABLE deals (deal_id INTEGER PRIMARY KEY, product_name TEXT,
                             source TEXT);
         CREATE TABLE deal_products (deal_id INTEGER, product_id INTEGER);
         """
     )
-    c.executemany("INSERT INTO products VALUES (?,?,?,?,?,?,?,?)", PRODUCTS)
+    c.executemany("INSERT INTO products VALUES (?,?,?,?,?,?,?,?,?)", PRODUCTS)
     for deal_id, name, source, pids in DEALS:
         c.execute("INSERT INTO deals VALUES (?,?,?)", (deal_id, name, source))
         for pid in pids:
@@ -122,6 +129,39 @@ def test_vegan_sees_exactly_the_confirmed_plant_products(conn):
         "KRAFT PEANUT BUTTER 1KG", "Beefsteak Tomatoes", "Butternut Squash",
         "Marzipan Bar",
     ]
+
+
+# --- contains_animal_byproduct (migration 015) ------------------------------
+
+def test_honey_is_withheld_from_a_vegan_and_served_to_a_vegetarian(conn):
+    assert "BILLY BEE HONEY 500G" not in served(conn, ["vegan"])
+    for restriction in ("vegetarian", "pescatarian", "no_nuts", "dairy_free"):
+        assert "BILLY BEE HONEY 500G" in served(conn, [restriction]), restriction
+
+
+def test_undecided_byproduct_is_withheld_from_a_vegan(conn):
+    """NULL must not read as false. A bare ``p.contains_animal_byproduct`` in
+    the OR chain evaluates to NULL, NOT EXISTS sees no violating row, and the
+    deal is served -- fail OPEN. This runs the real fragment through SQLite's
+    three-valued logic to prove it does not."""
+    assert "Smucker's Strawberry Jam" not in served(conn, ["vegan"])
+
+
+def test_undecided_byproduct_does_not_affect_other_restrictions(conn):
+    for restriction in ("vegetarian", "pescatarian", "no_nuts", "dairy_free"):
+        assert "Smucker's Strawberry Jam" in served(conn, [restriction]), restriction
+
+
+def test_undecided_byproduct_does_not_unblock_a_product_failing_otherwise(conn):
+    """Chicken with a NULL by-product still fails vegetarian on meat."""
+    assert "Chicken or Tomatoes" not in served(conn, ["vegetarian"])
+    assert "NATREL MILK 2L" in served(conn, ["vegetarian"])
+
+
+def test_gate_scope_changes_for_vegans_only():
+    assert "contains_animal_byproduct" in deal_gate.gate_scope(["vegan"])
+    for label in ("vegetarian", "pescatarian", "no_nuts", "dairy_free"):
+        assert "contains_animal_byproduct" not in deal_gate.gate_scope([label])
 
 
 # --- fail closed ------------------------------------------------------------

@@ -84,10 +84,12 @@ def main() -> int:
                 INSERT INTO products (
                     canonical_name, category, contains_meat, contains_fish,
                     contains_dairy, contains_egg, contains_nuts,
+                    contains_animal_byproduct,
                     status, proposed_by, reviewed_by, reviewed_at
                 ) VALUES (
                     'milk (verification)', 'dairy', false, false,
                     true, false, false,
+                    false,
                     'confirmed', 'verification', 'verification', now()
                 ) RETURNING product_id
                 """

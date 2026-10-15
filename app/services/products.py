@@ -1,9 +1,24 @@
 """Canonical products: dietary compliance from curated data.
 
 A ``products`` row carries explicit boolean attributes (``contains_meat``,
-``contains_fish``, ``contains_dairy``, ``contains_egg``, ``contains_nuts``)
-that a human confirmed in review. Those attributes are the **only** authority
-on whether a deal may be served to a user with dietary restrictions.
+``contains_fish``, ``contains_dairy``, ``contains_egg``, ``contains_nuts``,
+``contains_animal_byproduct``) that a human confirmed in review. Those
+attributes are the **only** authority on whether a deal may be served to a
+user with dietary restrictions.
+
+An attribute must be explicitly ``False`` to clear a restriction. ``NULL``
+means "nobody has decided" and fails closed, exactly like ``True``. Only
+``contains_animal_byproduct`` can be NULL (migration 015 added it to a
+catalogue that already had confirmed rows, and inventing a value for them
+would be a guess); the other five are NOT NULL. Products whose NULL decides a
+verdict are listed by :func:`undecided_products` so a reviewer can settle them.
+
+``contains_animal_byproduct`` is an animal-derived ingredient that is not meat,
+fish, dairy or egg: honey, beeswax, carmine/cochineal, shellac/confectioner's
+glaze, bone-char-refined sugar, lanolin-derived vitamin D3. Slaughter
+by-products that vegetarians also avoid -- gelatin, lard, tallow, animal
+rennet -- are ``contains_meat``, NOT this attribute, so that they keep failing
+vegetarian and pescatarian. See :data:`ATTRIBUTE_RULES`.
 
 Product names are never matched against a vocabulary. Name matching fails in
 both directions on real flyer text -- "Beefsteak Tomatoes" reads as beef while
@@ -33,7 +48,10 @@ logger = logging.getLogger(__name__)
 #: deals. A label missing here enforces no attribute (see
 #: :func:`restrictions_to_attributes`), so a new label belongs here first.
 RESTRICTION_ATTRIBUTES: dict[str, tuple[str, ...]] = {
-    "vegan": ("contains_meat", "contains_fish", "contains_dairy", "contains_egg"),
+    # Vegan only: honey and the other non-meat animal products are a vegan
+    # concern, and vegetarians and pescatarians eat them.
+    "vegan": ("contains_meat", "contains_fish", "contains_dairy", "contains_egg",
+              "contains_animal_byproduct"),
     "vegetarian": ("contains_meat", "contains_fish"),
     "pescatarian": ("contains_meat",),
     "no_nuts": ("contains_nuts",),
@@ -48,7 +66,35 @@ ATTRIBUTES: tuple[str, ...] = (
     "contains_dairy",
     "contains_egg",
     "contains_nuts",
+    "contains_animal_byproduct",
 )
+
+#: The attribute columns as SQL select lists. Built from our own constant,
+#: never from input, so interpolating them is safe.
+_ATTR_SELECT = ", ".join(ATTRIBUTES)
+_P_ATTR_SELECT = ", ".join(f"p.{a}" for a in ATTRIBUTES)
+
+#: Attributes whose column is nullable (NULL = undecided, fails closed).
+NULLABLE_ATTRIBUTES: frozenset[str] = frozenset({"contains_animal_byproduct"})
+
+#: What each attribute means, for labellers and reviewers. The proposer's
+#: LLM instructions and both review surfaces show these, so the rule a
+#: labeller follows and the rule a reviewer checks are the same text.
+ATTRIBUTE_RULES: dict[str, str] = {
+    "contains_meat": (
+        "any mammal or bird flesh, including cured and processed forms, AND "
+        "slaughter by-products vegetarians also avoid: gelatin, lard, tallow, "
+        "animal rennet"),
+    "contains_fish": "any fish OR shellfish",
+    "contains_dairy": "milk-derived, including butter, cheese, cream, yogurt, whey",
+    "contains_egg": "egg or egg-derived",
+    "contains_nuts": "tree nuts or peanuts, including derived pastes and flours",
+    "contains_animal_byproduct": (
+        "an animal-derived ingredient that is NOT meat, fish, dairy or egg: "
+        "honey, beeswax, carmine/cochineal, shellac/confectioner's glaze, "
+        "bone-char-refined sugar, lanolin-derived vitamin D3. Gelatin, lard, "
+        "tallow and animal rennet are contains_meat, not this"),
+}
 
 # Size/pack tokens a flyer appends to a name. Stripped so that
 # "LACTANTIA MILK 2 L" and "LACTANTIA MILK, 2L" normalise alike.
@@ -118,13 +164,14 @@ def restrictions_to_attributes(restrictions: Iterable[str] | None) -> tuple[str,
 def product_allows(product: dict[str, Any], restrictions: Iterable[str] | None) -> bool:
     """True if this product's curated attributes clear the restrictions.
 
-    A product whose row is missing an attribute is **not** compliant. The
-    column is NOT NULL in the schema, so a missing key means the caller
-    selected a partial row -- failing closed beats assuming False.
+    Every required attribute must be explicitly ``False``. ``None`` is an
+    undecided ``contains_animal_byproduct`` (migration 015) and fails closed.
+    A **missing key** means the caller selected a partial row, which is a bug
+    worth a warning -- and it fails closed too, because assuming False is how
+    an unknown becomes "safe".
     """
     for attr in restrictions_to_attributes(restrictions):
-        value = product.get(attr)
-        if value is None:
+        if attr not in product:
             logger.warning(
                 "Product %s has no %s - treating as non-compliant. Select the "
                 "full attribute set before calling product_allows().",
@@ -132,7 +179,8 @@ def product_allows(product: dict[str, Any], restrictions: Iterable[str] | None) 
                 attr,
             )
             return False
-        if value:
+        value = product[attr]
+        if value is None or value:
             return False
     return True
 
@@ -174,8 +222,13 @@ def compliant_product_filter(restrictions: Iterable[str] | None) -> tuple[str, d
     #                 junction rows fails, so unlinked is withheld rather than
     #                 vacuously "nothing violates it, let it through".
     #   NOT EXISTS -> no linked product is unconfirmed or violating.
+    #
+    # "IS NOT FALSE", not a bare column: contains_animal_byproduct is nullable
+    # (migration 015), and a bare NULL makes the OR chain NULL rather than
+    # true, so NOT EXISTS would read an undecided product as clean -- fail
+    # OPEN. IS NOT FALSE is true for both true and NULL.
     violates = " OR ".join(
-        ["p.status <> 'confirmed'"] + [f"p.{attr}" for attr in required]
+        ["p.status <> 'confirmed'"] + [f"p.{attr} IS NOT FALSE" for attr in required]
     )
     fragment = f"""
           AND EXISTS (
@@ -343,10 +396,9 @@ def confirmed_products(database=db) -> list[dict]:
     """Every confirmed product, for the proposer's "match an existing one" set."""
     with database.get_cursor() as cursor:
         cursor.execute(
-            """
+            f"""
             SELECT product_id, canonical_name, category, is_pantry_staple,
-                   contains_meat, contains_fish, contains_dairy,
-                   contains_egg, contains_nuts
+                   {_ATTR_SELECT}
             FROM products
             WHERE status = 'confirmed'
             ORDER BY canonical_name
@@ -385,14 +437,13 @@ def pending_proposals(limit: int = 5000, database=db) -> list[dict]:
     """Proposed aliases with their product, most-seen first."""
     with database.get_cursor() as cursor:
         cursor.execute(
-            """
+            f"""
             SELECT a.alias_id, a.normalized_name, a.raw_example, a.confidence,
                    a.proposal_reason, a.times_seen, a.source,
                    a.tile_position, a.price_is_per_item,
                    p.product_id, p.canonical_name, p.category,
                    p.status AS product_status, p.is_pantry_staple,
-                   p.contains_meat, p.contains_fish, p.contains_dairy,
-                   p.contains_egg, p.contains_nuts,
+                   {_P_ATTR_SELECT},
                    -- Every product this same string maps to. A multi-product
                    -- tile appears in several groups, and without this the
                    -- reviewer sees the whole tile text under one product with
@@ -467,7 +518,9 @@ def set_attributes(
     unknown = set(updates) - set(ATTRIBUTES)
     if unknown:
         raise ValueError(f"unknown attribute(s): {sorted(unknown)}")
-    clean = {k: bool(v) for k, v in updates.items()}
+    # None is "undecided", not False: dropped, so the column keeps whatever it
+    # holds. bool(None) would silently turn an unknown into "safe".
+    clean = {k: bool(v) for k, v in updates.items() if v is not None}
     if not clean:
         return {}
     sets = ", ".join(f"{attr} = %({attr})s" for attr in clean)
@@ -477,6 +530,93 @@ def set_attributes(
             {**clean, "pid": product_id},
         )
     return clean
+
+
+# --------------------------------------------------------------------------
+# Undecided attributes on already-confirmed products
+# --------------------------------------------------------------------------
+#
+# Migration 015 added contains_animal_byproduct as a nullable column, so every
+# product confirmed before it carries NULL there -- and NULL fails closed, so
+# those products are withheld from vegans. They are already confirmed, so the
+# proposal queue never shows them again. These two functions are the way back:
+# list the products whose NULL is deciding a verdict, and let a reviewer fill
+# it in. Filling only ever replaces NULL, so it cannot overrule a decision.
+
+def _null_decides(product: dict[str, Any]) -> list[str]:
+    """Review labels this product would clear if its NULL attributes were
+    False. Empty means no NULL here changes any verdict -- e.g. chicken with
+    an undecided animal-byproduct still fails vegan on contains_meat."""
+    decides = []
+    for label in REVIEW_LABELS:
+        attrs = RESTRICTION_ATTRIBUTES[label]
+        values = [product.get(a) for a in attrs]
+        if any(v is None for v in values) and not any(values):
+            decides.append(label)
+    return decides
+
+
+def undecided_products(database=db) -> list[dict]:
+    """Confirmed products with a NULL attribute that decides a verdict.
+
+    Each row carries ``undecided`` (the NULL attributes), ``clears`` (what it
+    clears today) and ``would_clear`` (labels a False would open). Products
+    already failing every affected label on another attribute are left out:
+    no value for the NULL would change what anyone is served.
+    """
+    nulls = " OR ".join(f"{a} IS NULL" for a in sorted(NULLABLE_ATTRIBUTES))
+    with database.get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT product_id, canonical_name, category, status,
+                   is_pantry_staple, {_ATTR_SELECT}
+            FROM products
+            WHERE status = 'confirmed' AND ({nulls})
+            ORDER BY canonical_name
+            """
+        )
+        rows = [dict(r) for r in cursor.fetchall()]
+    out = []
+    for row in rows:
+        would = _null_decides(row)
+        if not would:
+            continue
+        row["undecided"] = [a for a in ATTRIBUTES if row.get(a) is None]
+        row["clears"] = clears_labels(row)
+        row["would_clear"] = would
+        out.append(row)
+    return out
+
+
+def fill_undecided_attributes(
+    product_id: int, updates: dict[str, bool], database=db
+) -> dict[str, Any]:
+    """Set attributes that are currently NULL; never overwrite a decision.
+
+    For confirmed products whose attribute was added after they were reviewed
+    (migration 015). ``COALESCE(column, value)`` makes the write a no-op on any
+    column that already holds a value, so a stale browser tab or a second
+    reviewer cannot flip a decided attribute through this path. Returns the
+    row's attribute values after the write.
+    """
+    unknown = set(updates) - set(ATTRIBUTES)
+    if unknown:
+        raise ValueError(f"unknown attribute(s): {sorted(unknown)}")
+    clean = {k: bool(v) for k, v in updates.items() if v is not None}
+    if not clean:
+        return {}
+    sets = ", ".join(f"{attr} = COALESCE({attr}, %({attr})s)" for attr in clean)
+    with database.get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            UPDATE products SET {sets}
+            WHERE product_id = %(pid)s
+            RETURNING {_ATTR_SELECT}
+            """,
+            {**clean, "pid": product_id},
+        )
+        row = cursor.fetchone()
+    return dict(row) if row else {}
 
 
 def confirm_group(

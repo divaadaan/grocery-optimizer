@@ -99,11 +99,20 @@ For each string in `unmapped`, decide whether it is one of the products in \
 PRODUCT -- what the food actually contains, not what words appear in the string.
 
 Attribute rules:
-- contains_meat: any mammal or bird flesh, including cured and processed forms.
+- contains_meat: any mammal or bird flesh, including cured and processed forms, \
+AND slaughter by-products that vegetarians also avoid: gelatin, lard, tallow, \
+animal rennet.
 - contains_fish: any fish OR shellfish.
 - contains_dairy: milk-derived, including butter, cheese, cream, yogurt, whey.
 - contains_egg: egg or egg-derived.
 - contains_nuts: tree nuts or peanuts, including derived pastes and flours.
+- contains_animal_byproduct: an animal-derived ingredient that is NOT meat, \
+fish, dairy or egg -- honey, beeswax, carmine/cochineal (red colouring, E120), \
+shellac/confectioner's glaze, bone-char-refined sugar, lanolin-derived vitamin \
+D3. Only vegans avoid these; vegetarians eat honey. LABELLING RULE: gelatin, \
+lard, tallow and animal rennet are contains_meat, NOT this attribute, because \
+vegetarians avoid them too. A product with honey is contains_animal_byproduct \
+true and contains_meat false.
 - is_pantry_staple: shelf-stable basics bought by the bag/box (flour, rice, \
 sugar, oil, pasta, canned goods).
 
@@ -150,6 +159,11 @@ a tree nut for labelling purposes, but coconut allergy is rare and largely \
 unrelated to tree-nut allergy, and treating it as a nut would withhold a \
 staple from every nut-free user for no benefit. Decided 2026-10-14; do not \
 re-litigate it per item.
+- Honey, honey-sweetened products ("honey garlic sauce", "honey oat bread") \
+and anything glazed with shellac are contains_animal_byproduct true. \
+White and brown cane sugar of unknown origin may be bone-char refined: \
+contains_animal_byproduct true unless the product says beet, organic or \
+certified vegan. Candy and yogurt coloured with carmine are true.
 - Lactose-free milk is STILL DAIRY. Lactose is removed, not the milk: \
 contains_dairy is true, so it fails vegan.
 - A string that is pure marketing copy, or so garbled that the products cannot \
@@ -159,7 +173,9 @@ conservative (true).
 canonical_name must be a short generic name: lowercase, no brand, no size. \
 "chicken breast", not "Maple Leaf Prime Boneless Chicken Breasts 500g". Set \
 match_existing_product to an existing canonical_name when the item IS that \
-product, else null.
+product, else null. In `existing_products`, null for an attribute means a \
+human has not decided it yet; it is not false. Your own labels must always be \
+true or false.
 
 When you cannot tell, set unmappable true, or set the attribute to true and say \
 why you are unsure in `reason`. A false "safe" label can expose an allergic \
@@ -480,12 +496,12 @@ _PRODUCT_INSERT = """
 INSERT INTO products (
     canonical_name, category,
     contains_meat, contains_fish, contains_dairy,
-    contains_egg, contains_nuts, is_pantry_staple,
+    contains_egg, contains_nuts, contains_animal_byproduct, is_pantry_staple,
     status, proposed_by, proposal_reason
 ) VALUES (
     %(name)s, %(category)s,
     %(contains_meat)s, %(contains_fish)s, %(contains_dairy)s,
-    %(contains_egg)s, %(contains_nuts)s, %(staple)s,
+    %(contains_egg)s, %(contains_nuts)s, %(contains_animal_byproduct)s, %(staple)s,
     'proposed', %(by)s, %(reason)s
 )
 RETURNING product_id
