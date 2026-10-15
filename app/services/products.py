@@ -759,8 +759,8 @@ _QTY_PREFIX_RE = re.compile(
     r"^\s*\d+\s*(?:/\s*(?:\$\s*[\d.,]+)?|for\b.*)$", re.IGNORECASE
 )
 
-#: A price floor across a tile's variants rather than a price: "from $4.99",
-#: "starting at $4.99". Both renderings observed live; only "from" was handled.
+#: "from $4.99", "starting at $4.99". Both renderings observed live.
+#: Treated as per item (no quantity is implied).
 _FLOOR_RE = re.compile(r"\b(?:from|starting\s+at)\b", re.IGNORECASE)
 
 #: A per-item price printed INSIDE the unit field: "or $2.89 each", "2.87 /ea",
@@ -780,6 +780,26 @@ _PER_ITEM_UNITS = frozenset({
     # "pkg" found live by the 5-term probe.
     "pkg",
 })
+
+
+#: Whole-field price lead-ins (pre_price_text only; savings and points stories
+#: are NOT here and stay undecided on their own).
+_PRICE_LEAD_RE = re.compile(r"^\s*(?:only|always\s+low\s+price)\s*\$?\s*$",
+                            re.IGNORECASE)
+
+#: Weight unit pricing written with a slash or "per": "ea/lb", "/lb", "per lb",
+#: "/kg", "$3.99 /lb". Deliberately weights only: "/100 ml" is not matched.
+_UNIT_PRICE_RE = re.compile(
+    r"(?:/|\bper\b)\s*(?:lbs?|kg|100\s*g)\b", re.IGNORECASE
+)
+
+#: A package size at the start of the unit field: "312g", "675 g", "2 L",
+#: "12 count", "1lb bag", "1.5 L". Anchored with no leading slash so the
+#: "/100 ml" unit-price form stays undecided.
+_PACKAGE_SIZE_RE = re.compile(
+    r"^\d+(?:[.,]\d+)?\s*(?:g|kg|mg|ml|l|lb|lbs|oz|fl\.?\s*oz|ct|count|pk|pack)\b",
+    re.IGNORECASE,
+)
 
 
 def infer_price_is_per_item(
@@ -806,24 +826,39 @@ def infer_price_is_per_item(
     # Checking only the story is the bug the 5-term probe found: a tile with
     # pre_price_text='2 for' and unit='ea.' returned True, halving the price in
     # precisely the case this function's docstring says it prevents.
-    for text in (story, prefix):
+    for text in (story, prefix, (unit or "").strip()):
         if text and (_MULTIBUY_RE.search(text) or _BOGO_RE.search(text)):
             return False
     # The quantity can also be a bare "2/" to the left of the price -- observed
     # live on "BEATRICE CHOCOLATE MILK OR BUTTER MILK" at $7.00.
     if prefix and _QTY_PREFIX_RE.match(prefix):
         return False
-    # "from $4.99" / "starting at $4.99" is a floor across the tile's variants,
-    # not a price.
-    if prefix and _FLOOR_RE.search(prefix):
-        return False
     # A per-item price quoted inside the unit field proves the headline price is
     # not the per-item one.
     if unit and _PRICE_IN_UNIT_RE.search(unit):
         return False
 
-    normalized = (unit or "").strip().lower().lstrip("/")
+    # "from $4.99" / "starting at $4.99": no quantity is attached, so the
+    # printed price is one item's (the cheapest variant's). Decided by the
+    # product owner as per item; it is not a multi-buy.
+    if prefix and _FLOOR_RE.search(prefix):
+        return True
+    # "only $5" / "ALWAYS LOW PRICE $5": wording printed directly before the
+    # price itself, which names a single price rather than a quantity. A dropped
+    # "2/" would have left the "2/" text, not this.
+    if prefix and _PRICE_LEAD_RE.match(prefix):
+        return True
+
+    unit_text = (unit or "").strip()
+    normalized = unit_text.lower().lstrip("/")
     if normalized in _PER_ITEM_UNITS:
+        return True
+    # Unit pricing: "ea/lb", "/lb", "per lb", "/kg".
+    if _UNIT_PRICE_RE.search(unit_text):
+        return True
+    # A package size with no multi-buy marker ("312g", "2 L", "12 count",
+    # "1lb bag"): the price is for one package.
+    if _PACKAGE_SIZE_RE.match(unit_text):
         return True
 
     # A savings story with no quantity ("save $10", "SAVE 30%", "Rollback")

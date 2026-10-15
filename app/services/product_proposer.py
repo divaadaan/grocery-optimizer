@@ -466,6 +466,12 @@ def load_labels(path: str | Path, *, expected: Iterable[str] | None = None) -> L
 #: One name may map to many products (migration 010), so the conflict target is
 #: the pairing. Both targets name a PARTIAL index, so the predicate has to be
 #: repeated for Postgres to infer it.
+#:
+#: On conflict only ``times_seen`` and ``price_is_per_item`` move. Pricing is
+#: filled when NULL and never overwritten: NULL is the absence of a decision (a
+#: confirmed alias predating migration 010 has one), so filling it overrules
+#: nobody. Status, confidence, reason and tile_position are deliberately left
+#: alone -- those are review state, and a re-import must not rewrite them.
 _ALIAS_UPSERT_PLACED = """
 INSERT INTO product_aliases (
     normalized_name, raw_example, product_id, status, source,
@@ -475,7 +481,10 @@ INSERT INTO product_aliases (
     %(conf)s, %(reason)s, %(pos)s, %(per_item)s
 )
 ON CONFLICT (normalized_name, product_id) WHERE product_id IS NOT NULL
-DO UPDATE SET times_seen = product_aliases.times_seen + 1
+DO UPDATE SET
+    times_seen = product_aliases.times_seen + 1,
+    price_is_per_item = COALESCE(
+        product_aliases.price_is_per_item, EXCLUDED.price_is_per_item)
 RETURNING times_seen
 """
 
@@ -488,7 +497,10 @@ INSERT INTO product_aliases (
     %(conf)s, %(reason)s, %(pos)s, %(per_item)s
 )
 ON CONFLICT (normalized_name) WHERE product_id IS NULL
-DO UPDATE SET times_seen = product_aliases.times_seen + 1
+DO UPDATE SET
+    times_seen = product_aliases.times_seen + 1,
+    price_is_per_item = COALESCE(
+        product_aliases.price_is_per_item, EXCLUDED.price_is_per_item)
 RETURNING times_seen
 """
 
