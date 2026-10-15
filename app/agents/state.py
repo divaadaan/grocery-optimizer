@@ -10,17 +10,22 @@ def merge_dicts(left: Dict, right: Dict) -> Dict:
     """Reducer for dict channels written by parallel nodes (e.g. 3 SousChefs)."""
     return {**left, **right}
 
+
 class Recipe(TypedDict):
     """Individual recipe structure."""
     recipe_id: str
     name: str
-    ingredients: List[Dict]  # [{name, quantity, unit, price, store_id}]
+    # [{name, deal_id | product_id, quantity, unit, price}]. Exactly one of
+    # deal_id (an assigned deal) / product_id (a pantry staple) is set; name
+    # is display-only. price is computed by costing.py from the citation.
+    ingredients: List[Dict]
     instructions: List[str]
     servings: int
     total_cost: float
     estimated_prep_time: int
     meal_type: str
     cuisine_type: Optional[str]
+
 
 class ValidationResult(TypedDict):
     """Nutritionist validation output."""
@@ -30,6 +35,7 @@ class ValidationResult(TypedDict):
     nutrition_facts: Dict  # {calories, protein_g, carbs_g, fat_g, vitamins}
     dietary_compliance: Dict  # {allergen_free: bool, meets_restrictions: bool}
     health_score: float  # 0-100
+
 
 class RecipeGenerationState(TypedDict):
     """Complete LangGraph state."""
@@ -52,6 +58,15 @@ class RecipeGenerationState(TypedDict):
     # Deal data from database
     available_deals: List[Dict]
     deal_index: Dict[str, Dict]
+
+    # Curated product catalog for citations, loaded by load_recipe_catalog.
+    # pantry_staples: confirmed products with assumed_on_hand (migration 014),
+    #   with their attribute columns -- citable by product_id.
+    # deal_products: str(deal_id) -> products linked through deal_products,
+    #   with status + attributes. The Nutritionist's compliance verdict reads
+    #   these and nothing else.
+    pantry_staples: List[Dict]
+    deal_products: Dict[str, List[Dict]]
 
     # Chef orchestration
     ingredient_groups: List[List[Dict]]  # 3 groups for 3 SousChefs
@@ -95,6 +110,6 @@ class RecipeGenerationState(TypedDict):
 
     # Workflow control — append-only channels, nodes return only new entries
     status: Literal["initializing", "planning", "generating",
-                   "validating", "retrying", "completed", "failed"]
+                    "validating", "retrying", "completed", "failed"]
     errors: Annotated[List[str], operator.add]
     warnings: Annotated[List[str], operator.add]

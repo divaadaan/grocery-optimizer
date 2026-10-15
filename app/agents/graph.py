@@ -3,9 +3,10 @@ from langgraph.types import Send
 from typing import Literal, List, Union
 from .state import RecipeGenerationState
 from .chef_orchestrator import ChefOrchestrator
-from .costing import price_recipe
+from .costing import deals_by_id, price_recipe, sum_savings
 from .sous_chef import SousChef, sous_chef_generate_node
 from .nutritionist import Nutritionist
+from ..services import products, recipe_catalog
 from ..services.database import DatabaseService
 from ..services.mlflow_logger import MLflowLogger
 
@@ -13,6 +14,48 @@ from ..services.mlflow_logger import MLflowLogger
 chef = ChefOrchestrator()
 nutritionist = Nutritionist()
 db_service = DatabaseService()
+
+
+def load_recipe_catalog(state: RecipeGenerationState) -> dict:
+    """
+    Node 1b: Load the curated products recipes cite, once per run.
+
+    * pantry_staples -> confirmed ``assumed_on_hand`` products; offered to the
+      SousChefs as citable product_ids (filtered by restriction there).
+    * deal_products  -> for every available deal, its linked products and
+      their attributes; the Nutritionist's compliance verdict reads these.
+
+    Linked products are only fetched when the user has a restriction the
+    attributes enforce: for anyone else compliance is trivially approved and
+    the read would be wasted.
+
+    A failed read degrades, it never fails open: no staples means recipes
+    can only cite deals; no deal links means a restricted user's recipes are
+    all rejected (an unresolvable citation is a violation).
+    """
+    update: dict = {"pantry_staples": [], "deal_products": {}}
+    warnings = []
+    try:
+        update["pantry_staples"] = recipe_catalog.fetch_pantry_staples()
+    except Exception as e:
+        print(f"[Catalog] pantry staples unavailable: {e}")
+        warnings.append(f"Pantry staples unavailable ({type(e).__name__}); "
+                        "recipes may cite assigned deals only")
+
+    if products.restrictions_to_attributes(state["dietary_restrictions"]):
+        deal_ids = [d.get("deal_id") for d in state.get("available_deals") or []]
+        try:
+            update["deal_products"] = recipe_catalog.fetch_deal_products(deal_ids)
+        except Exception as e:
+            print(f"[Catalog] deal product links unavailable: {e}")
+            warnings.append(f"Deal product links unavailable ({type(e).__name__}); "
+                            "dietary compliance cannot be confirmed for any deal")
+
+    print(f"[Catalog] {len(update['pantry_staples'])} pantry staples, "
+          f"{len(update['deal_products'])} linked deals")
+    if warnings:
+        update["warnings"] = warnings
+    return update
 
 
 def budget_remaining_after(state: RecipeGenerationState, total_cost: float) -> float:
@@ -34,6 +77,22 @@ def budget_remaining_after(state: RecipeGenerationState, total_cost: float) -> f
     """
     spent = state.get("budget_spent_this_period") or 0.0
     return state["budget"] - spent - total_cost
+
+
+def _savings(state: RecipeGenerationState, recipes) -> float:
+    """Savings across ``recipes`` from their cited deals' regular prices.
+
+    costing returns None when no cited deal carries a regular price, and that
+    is the honest answer. It is reported here as 0.0 only because the state
+    channel, the API response model and the MLflow metric are all typed as a
+    plain number today; making them Optional is the remaining step to let
+    savings be genuinely absent end to end. 0.0 understates rather than
+    fabricates: no regular price is ever invented.
+    """
+    lookup = deals_by_id(state.get("available_deals") or [])
+    total = sum_savings(price_recipe(r["ingredients"], lookup).estimated_savings
+                        for r in recipes)
+    return total if total is not None else 0.0
 
 
 def fan_out_to_sous_chefs(
@@ -62,6 +121,8 @@ def fan_out_to_sous_chefs(
             "household_size": state["household_size"],
             "dietary_restrictions": state["dietary_restrictions"],
             "deal_index": state["deal_index"],
+            "available_deals": state.get("available_deals") or [],
+            "pantry_staples": state.get("pantry_staples") or [],
             "chef_id": f"sous_chef_{i+1}",
             "ingredient_group": state["ingredient_groups"][i],
             "target_recipe_count": recipes_per_chef[i],
@@ -76,16 +137,13 @@ def aggregate_recipes(state: RecipeGenerationState) -> dict:
     """
     print(f"[Orchestrator] Aggregating {len(state['generated_recipes'])} recipes...")
 
-    # Per-recipe total_cost was computed from the deal index at creation
-    # (costing.price_recipe) — model arithmetic is not trusted anywhere
+    # Per-recipe total_cost was computed from the ingredient citations at
+    # creation (costing.price_recipe) — model arithmetic is not trusted anywhere
     total_cost = sum(
         recipe["total_cost"]
         for recipe in state["generated_recipes"].values()
     )
-    estimated_savings = sum(
-        price_recipe(recipe["ingredients"], state["deal_index"]).estimated_savings
-        for recipe in state["generated_recipes"].values()
-    )
+    estimated_savings = _savings(state, state["generated_recipes"].values())
     num_recipes = len(state["generated_recipes"])
     budget_remaining = budget_remaining_after(state, total_cost)
 
@@ -102,7 +160,9 @@ def aggregate_recipes(state: RecipeGenerationState) -> dict:
     }
 
 
-def route_after_validation(state: RecipeGenerationState) -> Literal["finalize", "retry", "finalize_partial", "handle_failure"]:
+def route_after_validation(
+    state: RecipeGenerationState,
+) -> Literal["finalize", "retry", "finalize_partial", "handle_failure"]:
     """
     Conditional edge: Decide next step after Nutritionist validation.
     Pure routing — must not write state.
@@ -111,7 +171,8 @@ def route_after_validation(state: RecipeGenerationState) -> Literal["finalize", 
     num_approved = len(state["approved_recipe_ids"])
     num_requested = state["num_meals"]
 
-    print(f"[Router] Approved: {num_approved}, Rejected: {num_rejected}, Iteration: {state['iteration_count']}")
+    print(f"[Router] Approved: {num_approved}, Rejected: {num_rejected}, "
+          f"Iteration: {state['iteration_count']}")
 
     # Nothing approved and nothing to retry — generation produced no usable
     # recipes at all; finalizing would falsely report success
@@ -166,6 +227,8 @@ def retry_generation(state: RecipeGenerationState) -> dict:
             ingredient_group=ingredient_group,
             household_size=state["household_size"],
             dietary_restrictions=state["dietary_restrictions"],
+            available_deals=state.get("available_deals") or [],
+            pantry_staples=state.get("pantry_staples") or [],
             deal_index=state["deal_index"],
         )
 
@@ -205,10 +268,7 @@ def finalize_meal_plan(state: RecipeGenerationState) -> dict:
     # Final metrics cover the *approved* meal plan only — aggregate's interim
     # numbers include recipes that were later rejected or regenerated
     total_cost = sum(r["total_cost"] for r in approved_recipes)
-    estimated_savings = sum(
-        price_recipe(r["ingredients"], state["deal_index"]).estimated_savings
-        for r in approved_recipes
-    )
+    estimated_savings = _savings(state, approved_recipes)
     num_approved = len(approved_recipes)
 
     # Log final metrics to MLflow
@@ -274,6 +334,7 @@ def create_recipe_generation_graph():
 
     # Add nodes
     workflow.add_node("initialize_chef", chef.initialize)
+    workflow.add_node("load_recipe_catalog", load_recipe_catalog)
     workflow.add_node("plan_ingredient_groups", chef.plan_ingredient_groups)
     workflow.add_node("sous_chef_generate", sous_chef_generate_node)
     workflow.add_node("aggregate_recipes", aggregate_recipes)
@@ -285,7 +346,8 @@ def create_recipe_generation_graph():
 
     # Define edges
     workflow.set_entry_point("initialize_chef")
-    workflow.add_edge("initialize_chef", "plan_ingredient_groups")
+    workflow.add_edge("initialize_chef", "load_recipe_catalog")
+    workflow.add_edge("load_recipe_catalog", "plan_ingredient_groups")
 
     # Fan-out: Send() dispatches 3 parallel sous_chef_generate tasks
     workflow.add_conditional_edges("plan_ingredient_groups", fan_out_to_sous_chefs)

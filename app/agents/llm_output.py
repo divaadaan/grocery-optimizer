@@ -11,7 +11,15 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 
 # NB: langchain_core is imported lazily inside invoke_validated (the only place
 # it's used) so the schemas below can be imported with just pydantic installed —
@@ -71,12 +79,40 @@ class ChefPlan(BaseModel):
 
 # --- SousChef -----------------------------------------------------------
 
+def _citation_id(value: Any) -> Any:
+    """Coerce a citation to an int id: 12, "12" and " 12 " -> 12; None/"" ->
+    None. Anything else is passed through so validation fails with the
+    offending value in the error the model sees."""
+    if value is None or (isinstance(value, str) and not value.strip()):
+        return None
+    if isinstance(value, bool):
+        return value  # True is not an id; let int validation reject it
+    if isinstance(value, str) and value.strip().isdigit():
+        return int(value.strip())
+    return value
+
+
 class RecipeIngredient(BaseModel):
+    """One recipe ingredient. It must cite exactly one source:
+
+    * ``deal_id``    -- a deal assigned to this SousChef, or
+    * ``product_id`` -- an always-on-hand pantry staple product.
+
+    ``name`` is for display only; dietary compliance and costing read the
+    citation, never the name (``dietary.py``, ``costing.py``). Whether the
+    cited id was actually *offered* to this SousChef is checked by
+    :class:`RecipeBatch` against the validation context, because that set is
+    per-call data the schema itself cannot know.
+    """
     model_config = ConfigDict(extra="allow")
 
     name: str
+    deal_id: Optional[int] = None
+    product_id: Optional[int] = None
     quantity: str = ""
     unit: str = ""
+    # Legacy, model-supplied. Never used for cost: costing.py prices from the
+    # citation. Accepted so older outputs still parse.
     price: float = 0.0
 
     @field_validator("quantity", "unit", mode="before")
@@ -88,6 +124,23 @@ class RecipeIngredient(BaseModel):
     @classmethod
     def _price(cls, v):
         return _lenient_float(v)
+
+    @field_validator("deal_id", "product_id", mode="before")
+    @classmethod
+    def _ids(cls, v):
+        return _citation_id(v)
+
+    @model_validator(mode="after")
+    def _exactly_one_citation(self):
+        cited = (self.deal_id is not None) + (self.product_id is not None)
+        if cited != 1:
+            what = "no citation" if cited == 0 else "both a deal_id and a product_id"
+            raise ValueError(
+                f"ingredient {self.name!r} has {what}: every ingredient must cite "
+                "exactly one of deal_id (one of your assigned deals) or "
+                "product_id (one of the listed pantry staples)"
+            )
+        return self
 
 
 class GeneratedRecipe(BaseModel):
@@ -151,12 +204,61 @@ class RecipeBatch(BaseModel):
             if cls._looks_like_recipe(data):
                 return {"recipes": [data]}
             for value in data.values():
-                if isinstance(value, list) and any(cls._looks_like_recipe(r) for r in value):
+                if isinstance(value, list) and any(
+                    cls._looks_like_recipe(r) for r in value
+                ):
                     return {"recipes": [r for r in value if isinstance(r, dict)]}
             recipe_like = [v for v in data.values() if cls._looks_like_recipe(v)]
             if recipe_like:
                 return {"recipes": recipe_like}
         return data  # let validation fail with a useful error
+
+    @model_validator(mode="after")
+    def _citations_were_offered(self, info: ValidationInfo):
+        """Every citation must name an id this SousChef was actually offered.
+
+        The allowed sets arrive through pydantic's validation context (see
+        :func:`citation_context`), so this runs inside ``invoke_validated``'s
+        retry loop and a bad citation goes back to the model with the list of
+        valid ids. Without a context (e.g. the training/ dataset gate) only
+        the structural one-citation rule above applies.
+        """
+        ctx = info.context or {}
+        if CITATION_CONTEXT_KEY not in ctx:
+            return self
+        allowed_deals, allowed_products = ctx[CITATION_CONTEXT_KEY]
+        bad = []
+        for recipe in self.recipes:
+            for ing in recipe.ingredients:
+                if ing.deal_id is not None and ing.deal_id not in allowed_deals:
+                    bad.append(f"{ing.name!r} cites deal_id {ing.deal_id}")
+                if ing.product_id is not None and ing.product_id not in allowed_products:
+                    bad.append(f"{ing.name!r} cites product_id {ing.product_id}")
+        if bad:
+            raise ValueError(
+                "ingredients cite ids you were not given: " + "; ".join(bad)
+                + f". Valid deal_ids: {sorted(allowed_deals)}. Valid pantry "
+                f"product_ids: {sorted(allowed_products)}. Use only these ids, "
+                "or leave the ingredient out."
+            )
+        return self
+
+
+#: Validation-context key carrying (allowed_deal_ids, allowed_product_ids).
+CITATION_CONTEXT_KEY = "citations"
+
+
+def citation_context(deal_ids, product_ids) -> Dict[str, Any]:
+    """Validation context for :class:`RecipeBatch`: the ids one SousChef call
+    may cite. Ids are coerced to int, matching :class:`RecipeIngredient`."""
+    def ints(ids):
+        out = set()
+        for i in ids:
+            v = _citation_id(i)
+            if isinstance(v, int) and not isinstance(v, bool):
+                out.add(v)
+        return frozenset(out)
+    return {CITATION_CONTEXT_KEY: (ints(deal_ids), ints(product_ids))}
 
 
 # --- Nutritionist -------------------------------------------------------
@@ -214,7 +316,9 @@ def raw_output_report(err: "LLMOutputError", max_chars: int = 2000) -> str:
     n = len(err.raw_attempts)
     lines = []
     for i, raw in enumerate(err.raw_attempts, 1):
-        text = raw if len(raw) <= max_chars else raw[:max_chars] + f"… [+{len(raw) - max_chars} chars]"
+        text = raw if len(raw) <= max_chars else (
+            raw[:max_chars] + f"… [+{len(raw) - max_chars} chars]"
+        )
         lines.append(f"  attempt {i}/{n}: {text}")
     return "\n".join(lines)
 
@@ -232,6 +336,7 @@ def invoke_validated(
     prompt: str,
     schema: Type[T],
     max_attempts: int = 3,
+    context: Optional[Dict[str, Any]] = None,
 ) -> Tuple[T, str]:
     """Invoke the LLM and validate its JSON output against `schema`.
 
@@ -239,6 +344,10 @@ def invoke_validated(
     appended to the conversation and it is asked again. Returns
     (validated model, raw content of the accepted response); raises
     LLMOutputError once attempts are exhausted.
+
+    ``context`` is passed to pydantic as the validation context, for checks
+    that need per-call data (e.g. :func:`citation_context`). Its failures are
+    ordinary validation errors and get the same feedback-and-retry.
     """
     from langchain_core.messages import AIMessage, HumanMessage
 
@@ -256,12 +365,13 @@ def invoke_validated(
             last_error = f"not valid JSON ({e})"
         else:
             try:
-                return schema.model_validate(data), raw
+                return schema.model_validate(data, context=context), raw
             except ValidationError as e:
                 last_error = f"JSON did not match the required schema:\n{str(e)[:1500]}"
 
         if attempt < max_attempts:
-            print(f"[llm_output] {schema.__name__} attempt {attempt}/{max_attempts} invalid — retrying")
+            print(f"[llm_output] {schema.__name__} attempt {attempt}/{max_attempts} "
+                  "invalid — retrying")
             messages = messages + [
                 AIMessage(content=raw),
                 HumanMessage(content=_RETRY_PROMPT.format(error=last_error)),

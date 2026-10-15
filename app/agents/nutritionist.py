@@ -5,9 +5,10 @@ from typing import Dict
 from .state import RecipeGenerationState, ValidationResult
 from .prompts import PromptTemplates
 from .llm_output import NutritionistVerdict, invoke_validated
-from .dietary import compliance_report
+from .dietary import CitationCatalog, compliance_report
 from ..config import settings
 from ..services.mlflow_logger import MLflowLogger
+
 
 class Nutritionist:
     """Nutritionist agent for recipe validation."""
@@ -31,6 +32,9 @@ class Nutritionist:
         rejected_ids = []
         errors = []
         call_log = []
+        # The curated products the recipes' citations resolve to, loaded once
+        # per run by the load_recipe_catalog node.
+        catalog = CitationCatalog.from_state(state)
 
         for recipe_id, recipe in state["generated_recipes"].items():
             # Skip already validated recipes in retry scenarios
@@ -43,18 +47,22 @@ class Nutritionist:
             # verdict is ignored. Every model tried (SFT'd SmolLM2, qwen2.5:1.5b,
             # llama3.1:8b, mistral:7b) false-rejects compliant recipes and
             # confabulates violations regardless of prompt/base/SFT
-            # (ROADMAP 2026-07-15); see app/agents/dietary.py.
-            report = compliance_report(recipe, state["dietary_restrictions"])
+            # (ROADMAP 2026-07-15). The verdict is a lookup of each cited
+            # deal/staple's curated product attributes; ingredient names are
+            # never read. See app/agents/dietary.py.
+            report = compliance_report(recipe, state["dietary_restrictions"], catalog)
             approved = report["approved"]
             violations = report["violations"]
 
             restrictions_desc = ", ".join(state["dietary_restrictions"]) or "no dietary"
             if approved:
-                feedback = f"Approved: all ingredients comply with the {restrictions_desc} restriction."
+                feedback = (f"Approved: all ingredients comply with the "
+                            f"{restrictions_desc} restriction.")
             else:
                 feedback = (
-                    f"Rejected: {', '.join(violations)} violate the "
-                    f"{restrictions_desc} restriction."
+                    f"Rejected for the {restrictions_desc} restriction: "
+                    f"{'; '.join(violations)}. Remove these ingredients or "
+                    "replace them with other assigned deals or pantry staples."
                 )
 
             # The LLM is advisory only: it supplies nutrition facts + a rough
@@ -71,7 +79,8 @@ class Nutritionist:
                 nutrition_facts = verdict.nutrition_facts
                 health_score = verdict.health_score
             except Exception as e:
-                print(f"[Nutritionist] advisory nutrition facts unavailable for {recipe['name']}: {e}")
+                print(f"[Nutritionist] advisory nutrition facts unavailable for "
+                      f"{recipe['name']}: {e}")
                 errors.append(f"Nutrition-facts error for {recipe_id}: {str(e)}")
 
             result = ValidationResult(
@@ -93,7 +102,8 @@ class Nutritionist:
                 print(f"[Nutritionist] ✓ APPROVED: {recipe['name']}")
             else:
                 rejected_ids.append(recipe_id)
-                print(f"[Nutritionist] ✗ REJECTED: {recipe['name']}  (violations: {', '.join(violations)})")
+                print(f"[Nutritionist] ✗ REJECTED: {recipe['name']}  "
+                      f"(violations: {'; '.join(violations)})")
 
             duration = time.time() - start_time
 
@@ -110,7 +120,8 @@ class Nutritionist:
         # Log aggregate metrics
         MLflowLogger.log_validation_results(validation_results)
 
-        print(f"[Nutritionist] Summary: {len(approved_ids)} approved, {len(rejected_ids)} rejected")
+        print(f"[Nutritionist] Summary: {len(approved_ids)} approved, "
+              f"{len(rejected_ids)} rejected")
 
         # validation_results / agent_call_log / errors have reducers — return
         # only new entries. The id lists are plain channels — return full values.
