@@ -637,8 +637,16 @@ def review_stats(database=db) -> dict[str, int]:
 
 #: "2 FOR $5", "3/$10", "2/5.00" -- the price covers a quantity, so it is not
 #: any single product's price.
+#: Three explicit forms rather than one loose "digit, separator, digit". The
+#: loose version matched "20/20", which is two numbers either side of a slash
+#: and not a quantity -- harmless while this was only applied to sale_story,
+#: and a false positive the moment it was also applied to pre_price_text.
+#: A slash form therefore has to carry a currency marker or a decimal price.
 _MULTIBUY_RE = re.compile(
-    r"\b\d+\s*(?:for|/)\s*\$?\s*\d", re.IGNORECASE
+    r"\b\d+\s*for\b"                 # "2 FOR $5", "4 FOR 10", bare "2 for"
+    r"|\b\d+\s*/\s*\$\s*[\d.,]+"     # "3/$10"
+    r"|\b\d+\s*/\s*\d+[.,]\d+",      # "2/5.00"
+    re.IGNORECASE,
 )
 #: "buy 2 get 1", "buy one get one", "BOGO" -- same conclusion, different
 #: wording. The quantity may be a word rather than a digit, so the gap between
@@ -646,16 +654,42 @@ _MULTIBUY_RE = re.compile(
 #: enough that unrelated text containing both words does not collide.
 _BOGO_RE = re.compile(r"\bbogo\b|\bbuy\b[^.!?]{0,12}\bget\b", re.IGNORECASE)
 
-#: A bare quantity prefix printed to the left of the price: "2/", "3 /".
-#: Anchored at the start so a prefix that merely contains a number ("Save 2
-#: Ways") does not match. Observed live as pre_price_text='2/' on a $7.00 tile.
-_QTY_PREFIX_RE = re.compile(r"^\s*(\d+)\s*/\s*$")
+#: A bare quantity prefix printed to the left of the price: "2/", "3 /", and
+#: also the worded form "2 for" with the price rendered separately. Anchored at
+#: the start so a prefix that merely contains a number ("Save 2 Ways") does not
+#: match. The worded form was found live by the 5-term probe: it reached this
+#: function as pre_price_text='2 for' and, because only _QTY_PREFIX_RE was
+#: consulted for prefixes and it required a slash, returned True -- halving the
+#: price in exactly the case the docstring below promises it would not.
+#: Two alternatives, not one loose pattern. A trailing `\d*` after the slash
+#: would also match "20/20", which is two numbers either side of a slash and
+#: not a quantity at all -- reading it as multi-buy would withhold a decidable
+#: deal. So: a slash form that is either bare or followed by a CURRENCY amount,
+#: or the worded "N for" form.
+_QTY_PREFIX_RE = re.compile(
+    r"^\s*\d+\s*(?:/\s*(?:\$\s*[\d.,]+)?|for\b.*)$", re.IGNORECASE
+)
+
+#: A price floor across a tile's variants rather than a price: "from $4.99",
+#: "starting at $4.99". Both renderings observed live; only "from" was handled.
+_FLOOR_RE = re.compile(r"\b(?:from|starting\s+at)\b", re.IGNORECASE)
+
+#: A per-item price printed INSIDE the unit field: "or $2.89 each", "2.87 /ea",
+#: "or 4.29/ 4.77 ea". 13 rows in the 5-term probe did this. It means the
+#: headline sale_price is NOT the single-item price -- the single-item price is
+#: the number quoted here -- so the headline must not be read as per-item.
+#: Requires a digit, so a bare "ea"/"each" unit is unaffected.
+_PRICE_IN_UNIT_RE = re.compile(
+    r"\d+[.,]\d{2}.*\b(?:ea|each)\b|\bor\b.*\d+[.,]\d{2}", re.IGNORECASE
+)
 
 #: Units that mean the price attaches to one item or to a measure of it, so it
 #: IS this product's price. "lb" and "kg" count: $7.99/lb is the price of a
 #: pound of whichever product you pick off the tile.
 _PER_ITEM_UNITS = frozenset({
     "each", "ea", "ea.", "lb", "lbs", "kg", "100 g", "100g", "unit", "pk", "pack",
+    # "pkg" found live by the 5-term probe.
+    "pkg",
 })
 
 
@@ -679,16 +713,24 @@ def infer_price_is_per_item(
     story = (sale_story or "").strip()
     prefix = (pre_price_text or "").strip()
 
-    if story and (_MULTIBUY_RE.search(story) or _BOGO_RE.search(story)):
-        return False
-    # The quantity can live in the PREFIX instead of the story, as a bare
-    # "2/" rendered to the left of the price -- observed live on
-    # "BEATRICE CHOCOLATE MILK OR BUTTER MILK" at $7.00, meaning two for $7.
-    # Checking only the story missed it and left the tile undecided.
+    # A multi-buy claim can appear in EITHER field, and must be checked in both.
+    # Checking only the story is the bug the 5-term probe found: a tile with
+    # pre_price_text='2 for' and unit='ea.' returned True, halving the price in
+    # precisely the case this function's docstring says it prevents.
+    for text in (story, prefix):
+        if text and (_MULTIBUY_RE.search(text) or _BOGO_RE.search(text)):
+            return False
+    # The quantity can also be a bare "2/" to the left of the price -- observed
+    # live on "BEATRICE CHOCOLATE MILK OR BUTTER MILK" at $7.00.
     if prefix and _QTY_PREFIX_RE.match(prefix):
         return False
-    # "from $4.99" is a floor across the tile's variants, not a price.
-    if prefix and re.search(r"\bfrom\b", prefix, re.IGNORECASE):
+    # "from $4.99" / "starting at $4.99" is a floor across the tile's variants,
+    # not a price.
+    if prefix and _FLOOR_RE.search(prefix):
+        return False
+    # A per-item price quoted inside the unit field proves the headline price is
+    # not the per-item one.
+    if unit and _PRICE_IN_UNIT_RE.search(unit):
         return False
 
     normalized = (unit or "").strip().lower().lstrip("/")
@@ -709,9 +751,21 @@ def reinfer_alias_prices(database=db) -> dict[str, int]:
     working from the name alone often cannot tell, and leaves NULL; the source
     text frequently can.
 
-    Only ever fills NULL. A value already decided -- by the labeller or by a
-    reviewer -- is left alone, because this is a cheap heuristic and should not
-    overrule a human. Confirmed aliases are untouched for the same reason.
+    Only ever fills NULL, and that is the whole safety property: a value
+    already decided -- by the labeller or a reviewer -- is left alone, because
+    this is a cheap heuristic and must not overrule a human.
+
+    **Confirmed aliases are included, deliberately.** They were excluded at
+    first, on the same "don't overrule a human" reasoning, which conflated two
+    different things: a NULL is not a decision, it is the absence of one. The
+    cost of that conflation was found live. The 115 aliases confirmed in the
+    first review pass predate migration 010, which is what added this column,
+    so every one of them carries NULL -- and ``link_deals`` refuses a NULL by
+    design. The result was that newly ingested deals under already-confirmed
+    names ("Boneless, Skinless Chicken Breasts", "Natrel fine-filtered milk")
+    could never link, and no amount of re-running fixed it: the backfill
+    skipped them for being confirmed, and review never re-offers a confirmed
+    alias. Filling a NULL on a confirmed row overrules nobody.
     """
     stats = {"examined": 0, "filled_true": 0, "filled_false": 0, "still_null": 0}
 
@@ -725,7 +779,12 @@ def reinfer_alias_prices(database=db) -> dict[str, int]:
             FROM product_aliases a
             JOIN deals d ON d.product_name = a.raw_example
             WHERE a.price_is_per_item IS NULL
-              AND a.status = 'proposed'
+              -- Proposed AND confirmed. Rejected is excluded because nothing
+              -- will ever read it. See the docstring: confirmed rows from
+              -- before migration 010 all carry NULL, and skipping them left
+              -- newly ingested deals under confirmed names permanently
+              -- unlinkable.
+              AND a.status IN ('proposed', 'confirmed')
             GROUP BY a.alias_id
             """
         )

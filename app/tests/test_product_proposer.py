@@ -261,11 +261,32 @@ def test_proposal_lowercases_the_canonical_name():
     assert proposal.canonical_name == "chicken breast"
 
 
-def test_single_product_entry_prices_per_item_by_definition():
-    """There is nothing else on the tile for the price to be shared with."""
+def test_single_product_entry_leaves_pricing_undecided():
+    """A single product is NOT per-item by definition -- 2-for-$7 is routine.
+
+    This test previously asserted the opposite, under the name
+    "..._prices_per_item_by_definition", on the reasoning that a single-product
+    tile has nothing to share the price with. The 5-term probe disproved it:
+    nine single-product names carried `pre_price_text` of '2/' or '3/' at a
+    multi-buy price (Dempster's sliced breads, COMPLIMENTS Peanut Butter, both
+    $7.00). And because `reinfer_alias_prices` only fills NULLs, the wrong True
+    could never be corrected -- omitting the field shipped halved prices
+    permanently.
+
+    None is both honest and recoverable: the backfill fills it from the deal
+    text, and whatever it cannot decide stays withheld rather than priced wrong.
+    """
     [proposal] = pp.proposals_from_payload(_label())
-    assert proposal.price_is_per_item is True
+    assert proposal.price_is_per_item is None
     assert proposal.tile_position == 0
+
+
+def test_an_explicit_single_product_price_is_kept():
+    """A labeller who DOES decide is believed, in both directions."""
+    [yes] = pp.proposals_from_payload(_label(price_is_per_item=True))
+    assert yes.price_is_per_item is True
+    [no] = pp.proposals_from_payload(_label(price_is_per_item=False))
+    assert no.price_is_per_item is False
 
 
 # --------------------------------------------------------------------------
