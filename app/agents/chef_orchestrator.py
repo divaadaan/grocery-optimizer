@@ -6,6 +6,7 @@ from .prompts import PromptTemplates
 from .llm_output import ChefPlan, LLMOutputError, invoke_validated, raw_output_report
 from .dietary import is_compliant
 from ..config import settings
+from ..services.budget import available_for_plan
 from ..services.database import DatabaseService
 from ..services.mlflow_logger import MLflowLogger
 
@@ -121,9 +122,22 @@ class ChefOrchestrator:
             print(f"[Chef] Filtered out {dropped} deal(s) violating {restrictions}")
 
         # Prepare prompt
+        # The budget shown to the model is what is actually LEFT of the user's
+        # period budget, not the whole period's money. state["budget"] is the
+        # ceiling for a calendar week or month (app/services/budget.py);
+        # planning against it after the user has already spent most of it is
+        # how "within your spend limit" stopped being true. Floored at zero so
+        # an overspent user's prompt never reads "Budget: $-12.40".
+        spent = state.get("budget_spent_this_period") or 0.0
+        budget_available = available_for_plan(state["budget"] - spent)
+        if spent:
+            print(f"[Chef] Planning against ${budget_available:.2f} of "
+                  f"${state['budget']:.2f} (already spent ${spent:.2f} this "
+                  f"{state.get('budget_period') or 'period'})")
+
         prompt = PromptTemplates.CHEF_INGREDIENT_PLANNING.format(
             deals_json=json.dumps(compliant_deals[:100], indent=2),  # Limit for context
-            budget=state["budget"],
+            budget=round(budget_available, 2),
             household_size=state["household_size"],
             num_meals=state["num_meals"],
             dietary_restrictions=", ".join(state["dietary_restrictions"]),

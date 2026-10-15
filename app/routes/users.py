@@ -6,11 +6,13 @@ from fastapi import APIRouter, HTTPException, status
 import logging
 
 from app.models.schemas import (
+    BudgetStatusResponse,
     UserCreate,
     UserResponse,
     UserUpdate,
     ErrorResponse
 )
+from app.services.budget import budget_status
 from app.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
@@ -33,7 +35,12 @@ async def register_user(user_data: UserCreate) -> UserResponse:
 
     - **email**: User's email address (must be unique)
     - **postal_code**: User's postal code for finding local deals
-    - **budget**: Monthly grocery budget (default: $100.00)
+    - **budget**: Grocery spend limit for ONE budget period (default: $100.00).
+      Not a per-meal-plan ceiling: spend accumulates across the period from
+      completed shopping lists. See `GET /users/{user_id}/budget`.
+    - **budget_period**: How long that period is — `"weekly"` (Monday-anchored
+      ISO week) or `"monthly"` (calendar month from the 1st). Default
+      `"monthly"`. Calendar-anchored, not rolling.
     - **household_size**: Number of people in household (default: 1)
     - **dietary_restrictions**: List of dietary restrictions (e.g., ["vegetarian", "gluten_free"])
     """
@@ -45,6 +52,7 @@ async def register_user(user_data: UserCreate) -> UserResponse:
             email=user["email"],
             postal_code=user["postal_code"],
             budget=user["budget"],
+            budget_period=user.get("budget_period") or "monthly",
             household_size=user["household_size"],
             dietary_restrictions=user["dietary_restrictions"],
             created_at=user["created_at"],
@@ -88,11 +96,54 @@ async def get_user(user_id: int) -> UserResponse:
         email=user["email"],
         postal_code=user["postal_code"],
         budget=user["budget"],
+        budget_period=user.get("budget_period") or "monthly",
         household_size=user["household_size"],
         dietary_restrictions=user["dietary_restrictions"],
         created_at=user["created_at"],
         is_active=user["is_active"]
     )
+
+
+@router.get("/{user_id}/budget",
+            response_model=BudgetStatusResponse,
+            responses={
+                404: {"model": ErrorResponse, "description": "User not found"},
+                500: {"model": ErrorResponse, "description": "Internal server error"}
+            })
+async def get_budget_status(user_id: int) -> BudgetStatusResponse:
+    """
+    How much of the user's spend limit is left in the current period.
+
+    `users.budget` is the ceiling for one period of length `budget_period`,
+    not for one meal plan. `spent` is the summed `total_cost` of the shopping
+    lists this user has **marked complete** inside the current period — lists
+    that exist but were never bought are plans, not spend, and do not count.
+
+    The period is calendar-anchored and half-open: `period_start` inclusive,
+    `period_end` exclusive. Monthly runs from the 1st at 00:00; weekly from
+    Monday at 00:00. Nothing is stored: `spent` is derived from the rows on
+    every call, so there is no running total that can drift away from them.
+
+    `remaining` goes negative when the user is over the limit — that is
+    reported, not clamped. `available_for_plan` is the same figure floored at
+    zero, and is what the generation path is allowed to spend.
+    """
+    user = UserService.get_user_by_id(user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with ID {user_id} not found"
+        )
+
+    try:
+        return BudgetStatusResponse(**budget_status(user))
+    except Exception as e:
+        logger.error(f"Error computing budget status for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to compute budget status"
+        )
 
 
 @router.put("/{user_id}",
@@ -105,8 +156,13 @@ async def update_user(user_id: int, user_data: UserUpdate) -> UserResponse:
     """
     Update user preferences.
 
-    Update user's postal code, budget, household size, or dietary restrictions.
-    Only provided fields will be updated.
+    Update user's postal code, budget, budget period, household size, or
+    dietary restrictions. Only provided fields will be updated.
+
+    Changing `budget_period` re-anchors the window immediately — the next read
+    of `GET /users/{user_id}/budget` reports spend for the *new* period
+    containing now, which may differ sharply from the old one. Past spend is
+    not re-dated; only the window over it changes.
     """
     try:
         user = UserService.update_user(user_id, user_data)
@@ -122,6 +178,7 @@ async def update_user(user_id: int, user_data: UserUpdate) -> UserResponse:
             email=user["email"],
             postal_code=user["postal_code"],
             budget=user["budget"],
+            budget_period=user.get("budget_period") or "monthly",
             household_size=user["household_size"],
             dietary_restrictions=user["dietary_restrictions"],
             created_at=user["created_at"],

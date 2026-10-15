@@ -15,6 +15,27 @@ nutritionist = Nutritionist()
 db_service = DatabaseService()
 
 
+def budget_remaining_after(state: RecipeGenerationState, total_cost: float) -> float:
+    """What is left of the user's *period* budget if this plan is bought.
+
+    ``state["budget"]`` is the ceiling for one budget period (a calendar week
+    or month — ``app/services/budget.py``), not for one generation, and
+    ``budget_spent_this_period`` is what completed shopping lists have already
+    taken out of it. This used to be ``budget - total_cost``, which gave every
+    generation inside the period the whole period's money: four weekly plans
+    in a month each believed they had the full monthly budget.
+
+    Deliberately not floored at zero — an over-budget plan must report a
+    negative number rather than a reassuring zero. (The figure handed to the
+    *prompts* is floored; see ``budget.available_for_plan``.)
+
+    ``.get`` with a 0.0 default so a state assembled without the new channel
+    degrades to the old arithmetic instead of raising.
+    """
+    spent = state.get("budget_spent_this_period") or 0.0
+    return state["budget"] - spent - total_cost
+
+
 def fan_out_to_sous_chefs(
     state: RecipeGenerationState,
 ) -> Union[List[Send], Literal["handle_failure"]]:
@@ -66,9 +87,12 @@ def aggregate_recipes(state: RecipeGenerationState) -> dict:
         for recipe in state["generated_recipes"].values()
     )
     num_recipes = len(state["generated_recipes"])
-    budget_remaining = state["budget"] - total_cost
+    budget_remaining = budget_remaining_after(state, total_cost)
 
-    print(f"[Orchestrator] Total cost: ${total_cost:.2f}, Budget remaining: ${budget_remaining:.2f}")
+    spent = state.get("budget_spent_this_period") or 0.0
+    print(f"[Orchestrator] Total cost: ${total_cost:.2f}, already spent this "
+          f"{state.get('budget_period') or 'period'}: ${spent:.2f}, "
+          f"budget remaining: ${budget_remaining:.2f}")
 
     return {
         "total_cost": total_cost,
@@ -202,7 +226,7 @@ def finalize_meal_plan(state: RecipeGenerationState) -> dict:
         "total_cost": total_cost,
         "cost_per_meal": total_cost / num_approved if num_approved else 0,
         "estimated_savings": estimated_savings,
-        "budget_remaining": state["budget"] - total_cost,
+        "budget_remaining": budget_remaining_after(state, total_cost),
         "saved_recipe_ids": recipe_ids,
     }
 

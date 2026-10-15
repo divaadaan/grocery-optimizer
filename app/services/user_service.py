@@ -31,11 +31,11 @@ class UserService:
         """
         query = """
         INSERT INTO users (
-            email, postal_code, budget, household_size, dietary_restrictions
+            email, postal_code, budget, budget_period, household_size, dietary_restrictions
         ) VALUES (
-            %(email)s, %(postal_code)s, %(budget)s, %(household_size)s, %(dietary_restrictions)s
+            %(email)s, %(postal_code)s, %(budget)s, %(budget_period)s, %(household_size)s, %(dietary_restrictions)s
         )
-        RETURNING user_id, email, postal_code, budget, household_size,
+        RETURNING user_id, email, postal_code, budget, budget_period, household_size,
                   dietary_restrictions, created_at, is_active;
         """
 
@@ -45,6 +45,7 @@ class UserService:
                     "email": user_data.email,
                     "postal_code": user_data.postal_code,
                     "budget": float(user_data.budget),
+                    "budget_period": user_data.budget_period,
                     "household_size": user_data.household_size,
                     "dietary_restrictions": json.dumps(user_data.dietary_restrictions)
                 })
@@ -66,7 +67,7 @@ class UserService:
     def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
         """Get user by ID."""
         query = """
-        SELECT user_id, email, postal_code, budget, household_size,
+        SELECT user_id, email, postal_code, budget, budget_period, household_size,
                dietary_restrictions, created_at, last_login, is_active
         FROM users
         WHERE user_id = %(user_id)s AND is_active = true;
@@ -81,7 +82,7 @@ class UserService:
     def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
         """Get user by email."""
         query = """
-        SELECT user_id, email, postal_code, budget, household_size,
+        SELECT user_id, email, postal_code, budget, budget_period, household_size,
                dietary_restrictions, created_at, last_login, is_active
         FROM users
         WHERE email = %(email)s AND is_active = true;
@@ -107,6 +108,10 @@ class UserService:
             updates.append("budget = %(budget)s")
             params["budget"] = float(user_data.budget)
 
+        if user_data.budget_period is not None:
+            updates.append("budget_period = %(budget_period)s")
+            params["budget_period"] = user_data.budget_period
+
         if user_data.household_size is not None:
             updates.append("household_size = %(household_size)s")
             params["household_size"] = user_data.household_size
@@ -122,7 +127,7 @@ class UserService:
         UPDATE users
         SET {', '.join(updates)}, updated_at = NOW()
         WHERE user_id = %(user_id)s AND is_active = true
-        RETURNING user_id, email, postal_code, budget, household_size,
+        RETURNING user_id, email, postal_code, budget, budget_period, household_size,
                   dietary_restrictions, created_at, updated_at, is_active;
         """
 

@@ -37,7 +37,13 @@ class RecipeGenerationState(TypedDict):
     # Input configuration
     user_id: int
     postal_code: str
+    # Spend limit for one budget period (users.budget), NOT for this one meal
+    # plan. budget_period names the period; budget_spent_this_period is what
+    # completed shopping lists have already consumed of it. See
+    # app/services/budget.py.
     budget: float
+    budget_period: str
+    budget_spent_this_period: float
     household_size: int
     dietary_restrictions: List[str]
     num_meals: int
@@ -73,7 +79,11 @@ class RecipeGenerationState(TypedDict):
     retry_strategy: Literal["reassign_chef", "new_ingredients"]
     recipes_pending_retry: Dict[str, str]
 
-    # Cost tracking
+    # Cost tracking. budget_remaining is what is left of the *period* budget
+    # after already-completed spend and this plan:
+    #   budget - budget_spent_this_period - total_cost
+    # It was budget - total_cost, which handed every generation in the period
+    # the whole period's money.
     total_cost: float
     cost_per_meal: float
     estimated_savings: float
