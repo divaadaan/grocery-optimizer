@@ -2,9 +2,10 @@
 Shopping list endpoints
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 import logging
 from datetime import datetime
+from typing import Optional
 
 from app.models.schemas import (
     ShoppingListResponse,
@@ -115,7 +116,8 @@ async def get_shopping_list(user_id: int) -> ShoppingListResponse:
                 estimated_savings=latest["estimated_savings"],
                 stores=stores_from_items(latest["items"]),
                 created_at=latest["created_at"],
-                is_completed=latest["is_completed"]
+                is_completed=latest["is_completed"],
+                completed_at=latest.get("completed_at"),
             )
 
         return _build_and_persist(user_id, user)
@@ -174,18 +176,47 @@ async def generate_shopping_list(user_id: int) -> ShoppingListResponse:
              responses={
                  404: {"model": ErrorResponse, "description": "Shopping list not found"}
              })
-async def mark_shopping_list_complete(user_id: int):
+async def mark_shopping_list_complete(
+    user_id: int,
+    list_id: Optional[int] = Query(
+        None,
+        description="The list that was bought. Omit for the legacy behaviour "
+                    "(the user's most recent list), which is ambiguous and "
+                    "deprecated.",
+    ),
+):
     """
-    Mark a shopping list as completed.
+    Mark a shopping list as bought. **This is the spend-recording event.**
 
-    Updates the shopping list status when user finishes shopping.
+    Completing a list stamps `completed_at` and makes its `total_cost` count
+    against the user's budget for the period containing that instant
+    (`GET /users/{user_id}/budget`). A list that is never completed is a plan,
+    not spend.
+
+    - **list_id** (query, optional): the list to complete. Always prefer it.
+      404 if no such list belongs to this user — a list_id is never honoured
+      across users, since that would charge someone else's budget.
+    - Omitting `list_id` keeps the original behaviour, the user's **most
+      recent** list, unchanged for existing clients. It is deprecated: "most
+      recent" moves if the client regenerates between shopping and reporting,
+      so the wrong purchase can be recorded. Nothing in this repo's frontend
+      calls it either way (verified), so the compatibility path exists for
+      external callers only.
+
+    Re-marking a list keeps its first `completed_at`: a second call is not a
+    second purchase. Still 204 with no body, as before.
     """
-    success = db_service.mark_shopping_list_complete(user_id)
+    success = db_service.mark_shopping_list_complete(user_id, list_id)
 
     if not success:
+        detail = (
+            f"No shopping list {list_id} found for user {user_id}"
+            if list_id is not None
+            else f"No shopping list found for user {user_id}"
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No shopping list found for user {user_id}"
+            detail=detail
         )
 
     return None
