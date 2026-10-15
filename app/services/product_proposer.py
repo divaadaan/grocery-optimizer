@@ -376,12 +376,22 @@ def proposals_from_payload(payload: dict[str, Any]) -> list[Proposal]:
     products = payload.get("products")
     if products:
         return [build(spec, i, False) for i, spec in enumerate(products)]
-    # A single-product entry prices per item by definition: there is nothing
-    # else on the tile for the price to be shared with.
-    single = build(payload, 0, bool(payload.get("unmappable", False)))
-    if not single.unmappable and single.price_is_per_item is None:
-        single.price_is_per_item = True
-    return [single]
+    # A single-product entry is left UNDECIDED when the label omits the field.
+    #
+    # This used to default to True, reasoning that "a single product prices per
+    # item by definition: there is nothing else on the tile for the price to be
+    # shared with". That reasoning is wrong -- a single product is routinely
+    # 2-for-$7, and the 5-term probe found nine such names (Dempster's sliced
+    # breads and COMPLIMENTS Peanut Butter at $7.00, with pre_price_text '2/'
+    # or '3/'). Worse, because reinfer_alias_prices only ever fills NULLs, a
+    # wrong True was never corrected: a labeller who merely omitted the field
+    # would have shipped halved prices permanently.
+    #
+    # None is the honest answer, and it is also the recoverable one --
+    # reinfer_alias_prices fills it from the deal's unit / sale_story /
+    # pre_price_text, and anything it cannot decide stays withheld rather than
+    # priced wrongly.
+    return [build(payload, 0, bool(payload.get("unmappable", False)))]
 
 
 def load_labels(path: str | Path, *, expected: Iterable[str] | None = None) -> LabelLoad:

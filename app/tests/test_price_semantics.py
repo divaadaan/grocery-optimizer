@@ -192,7 +192,12 @@ class FakeReinferCursor:
             assert "price_is_per_item IS NULL" in sql
         else:
             assert "price_is_per_item IS NULL" in sql
-            assert "status = 'proposed'" in sql
+            # Proposed AND confirmed. Confirmed rows from before migration 010
+            # all carry NULL, and skipping them left newly ingested deals
+            # under confirmed names permanently unlinkable. Filling a NULL
+            # overrules nobody; the safety property is "only ever fills NULL".
+            assert "status IN ('proposed', 'confirmed')" in sql
+            assert "rejected" not in sql
 
     def fetchall(self):
         return self._rows
@@ -241,3 +246,75 @@ def test_backfill_writes_nothing_when_nothing_is_decidable():
     stats = reinfer_alias_prices(database=FakeReinferDB(cursor))
     assert stats["still_null"] == 1
     assert cursor.updates == []
+
+
+# --------------------------------------------------------------------------
+# Renderings found by the 5-term probe
+# --------------------------------------------------------------------------
+
+@pytest.mark.parametrize("prefix", ["2 for", "2 FOR", "3 for", "2 for $5"])
+def test_worded_quantity_prefix_decides_false(prefix):
+    """THE bug the probe found.
+
+    This function's docstring promises a multi-buy beats a per-item unit. It
+    did not for this rendering: the multi-buy pattern was applied only to
+    sale_story, and the prefix pattern required a slash, so "2 for" with
+    unit "ea." returned True and halved the price in exactly the documented
+    case. A comment that was wrong about working code.
+    """
+    assert infer("ea.", None, prefix) is False
+    assert infer("each", None, prefix) is False
+
+
+@pytest.mark.parametrize("prefix", ["20/20", "Save 2 Ways", "2 Day Sale", "NOW"])
+def test_a_number_in_the_prefix_is_still_not_a_quantity(prefix):
+    """Widening the pattern for "2 for" must not swallow "20/20".
+
+    Two numbers either side of a slash is not a quantity, and reading it as
+    multi-buy would withhold a decidable deal. The slash form therefore
+    accepts only a bare trailing slash or a currency amount after it. This
+    test caught that regression when the pattern was first widened.
+    """
+    assert infer("each", None, prefix) is True
+
+
+@pytest.mark.parametrize("prefix", ["starting at", "Starting At", "STARTING AT $"])
+def test_starting_at_is_a_floor_like_from(prefix):
+    """Identical meaning to "from" -- a floor across the tile's variants."""
+    assert infer("each", None, prefix) is False
+
+
+@pytest.mark.parametrize(
+    "unit",
+    ["or $2.89 each", "2.87 /ea", "or 4.29/ 4.77 ea", "or $4.00 each"],
+)
+def test_a_price_inside_the_unit_field_means_the_headline_is_not_per_item(unit):
+    """13 probe rows put the per-item price INTO the unit field.
+
+    That is simultaneously proof the headline price is not per-item, and the
+    per-item number you actually want. Reading the field as a plain unit took
+    the headline as per-item.
+    """
+    assert infer(unit) is False
+
+
+@pytest.mark.parametrize("unit", ["ea", "ea.", "each", "lb", "pkg"])
+def test_a_bare_unit_is_unaffected_by_that_rule(unit):
+    """The price-in-unit rule requires a digit, so plain units still decide."""
+    assert infer(unit) is True
+
+
+def test_pkg_is_a_per_item_unit():
+    """Found live by the probe; a one-word addition."""
+    assert infer("pkg") is True
+
+
+def test_points_promos_still_are_not_multibuy_after_the_widening():
+    """Regression guard: "N PTS when you buy 2" is a points offer.
+
+    Ten probe rows look like this. The price IS per item; only the points need
+    a second item. Widening the quantity patterns must not turn these False.
+    """
+    for story in ["100 Scene+ PTS when you buy 2",
+                  "200 Scene+ PTS when you buy 1"]:
+        assert infer("each", story) is True
