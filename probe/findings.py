@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""The probe's findings: oracle disagreements, multi-product rate, allergens."""
+"""The probe's findings: multi-product rate, allergens, prices, unmapped deals."""
 from __future__ import annotations
 
 import json
@@ -10,7 +10,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.dirname(HERE))
 
-from app.agents import dietary
 from app.db.database import db
 from app.services import products as P
 from app.tests.test_multiproduct_lineitems import SIZE_TOKEN, looks_multiproduct
@@ -64,61 +63,7 @@ with db.get_cursor() as cursor:
 
 print()
 print("=" * 78)
-print("2. ORACLE DISAGREEMENTS  (products.oracle_disagreement)")
-print("=" * 78)
-print("by_attrs = curated columns; by_oracle = dietary.py casefold substring.")
-print("Case A = oracle FALSE POSITIVE (attrs safe, oracle says unsafe)")
-print("Case B = oracle FALSE NEGATIVE (attrs unsafe, oracle says safe) "
-      "<-- dangerous\n")
-
-case_a, case_b = [], []
-for p in proposed:
-    labels = P.oracle_disagreement(p)
-    if not labels:
-        continue
-    for label in labels:
-        by_attrs = P.product_allows(p, [label])
-        by_oracle = dietary.is_compliant(p["canonical_name"], [label])
-        # Which forbidden substring tripped the oracle, if any.
-        name = p["canonical_name"].casefold()
-        tripped = [t for t in dietary.forbidden_terms_for([label]) if t in name]
-        rec = (p["canonical_name"], label, by_attrs, by_oracle, tripped)
-        (case_a if by_attrs and not by_oracle else case_b).append(rec)
-
-def show(bucket, title):
-    print(f"--- {title}: {len(bucket)} disagreement(s) ---")
-    by_name: dict[str, list] = {}
-    for name, label, a, o, t in bucket:
-        by_name.setdefault(name, []).append((label, t))
-    for name in sorted(by_name):
-        entries = by_name[name]
-        labs = ", ".join(l for l, _ in entries)
-        trip = sorted({x for _, ts in entries for x in ts})
-        print(f"  {name}")
-        print(f"      labels: {labs}")
-        if trip:
-            print(f"      oracle tripped on substring(s): {trip}")
-        else:
-            print(f"      oracle saw no forbidden substring at all")
-    print()
-
-show(case_a, "CASE A  oracle false positive")
-show(case_b, "CASE B  oracle false negative")
-
-nut_b = [r for r in case_b if r[1] == "no_nuts"]
-print(f"CASE B on the ALLERGEN path (no_nuts): {len(nut_b)}")
-for name, label, a, o, t in nut_b:
-    print(f"  {name}  -- attributes say contains_nuts, oracle sees no nut word")
-
-print(f"\ntotals: {len(case_a)} Case A, {len(case_b)} Case B, "
-      f"{len(case_a) + len(case_b)} disagreements over "
-      f"{len(proposed)} proposed products")
-print(f"distinct products in disagreement: "
-      f"{len({r[0] for r in case_a + case_b})}")
-
-print()
-print("=" * 78)
-print("3. MULTI-PRODUCT TILES")
+print("2. MULTI-PRODUCT TILES")
 print("=" * 78)
 
 names = [r["product_name"] for r in ROWS]
@@ -156,7 +101,7 @@ for n in sized_fp:
 
 print()
 print("=" * 78)
-print("4. NAMES PER TERM  (re-projecting the full 50)")
+print("3. NAMES PER TERM  (re-projecting the full 50)")
 print("=" * 78)
 per_term = json.load(open(os.path.join(HERE, "per_term.json"), encoding="utf-8"))
 keys_union = set()
@@ -179,7 +124,7 @@ print(f"  (prior estimate from 2 terms: ~45/term -> ~2,000)")
 
 print()
 print("=" * 78)
-print("5. PRICE SEMANTICS AFTER reinfer")
+print("4. PRICE SEMANTICS AFTER reinfer")
 print("=" * 78)
 with db.get_cursor() as cursor:
     cursor.execute(
@@ -208,7 +153,7 @@ print(f"\n  {blocked} of {total} proposed aliases ({blocked / total:.0%}) would 
 
 print()
 print("=" * 78)
-print("6. THE unmapped_deal_names VIEW vs link_deals")
+print("5. THE unmapped_deal_names VIEW vs link_deals")
 print("=" * 78)
 with db.get_cursor() as cursor:
     cursor.execute(
