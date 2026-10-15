@@ -40,8 +40,8 @@ Usage::
     python scripts/review_products.py --list
     python scripts/review_products.py --review
     python scripts/review_products.py --link
-    python scripts/review_products.py --audit
     python scripts/review_products.py --unmapped
+    python scripts/review_products.py --reinfer-prices
 """
 from __future__ import annotations
 
@@ -193,13 +193,6 @@ def _show_group(group: dict) -> None:
     reasons = {a["proposal_reason"] for a in aliases if a["proposal_reason"]}
     if reasons:
         print(f"  reason     {sorted(reasons)[0]}")
-
-    # The oracle alarm, surfaced where a human is already looking at the label
-    # rather than used as a veto at request time.
-    if group["oracle_disagreement"]:
-        print(f"  ** the substring oracle disagrees for "
-              f"{group['oracle_disagreement']} -- check the labels against the "
-              f"name before confirming")
 
 
 def _edit_attributes(group: dict) -> bool:
@@ -375,22 +368,6 @@ def cmd_unmapped() -> int:
     return 0
 
 
-def cmd_audit() -> int:
-    flagged = products.log_oracle_disagreements()
-    if not flagged:
-        print("No confirmed product contradicts the substring oracle.")
-        return 0
-    print(f"{len(flagged)} confirmed product(s) disagree with the substring oracle.")
-    print("Usually the oracle is wrong -- that is why this table exists -- but")
-    print("occasionally it is a mislabelled product, and only looking tells you.\n")
-    for item in flagged:
-        product = item["product"]
-        print(f"  {product['canonical_name']!r} (id={product['product_id']}) "
-              f"-> {item['labels']}")
-        print(f"      contains: {_attr_summary(product)}")
-    return 0
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     group = parser.add_mutually_exclusive_group(required=True)
@@ -401,8 +378,6 @@ def main(argv: list[str] | None = None) -> int:
                        help="apply confirmed mappings to deals")
     group.add_argument("--unmapped", action="store_true",
                        help="deal names with no product")
-    group.add_argument("--audit", action="store_true",
-                       help="attributes vs the substring oracle")
     group.add_argument("--reinfer-prices", dest="reinfer", action="store_true",
                        help="fill undecided tile pricing from the deal text")
     args = parser.parse_args(argv)
@@ -415,9 +390,7 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_link()
     if args.unmapped:
         return cmd_unmapped()
-    if args.reinfer:
-        return cmd_reinfer()
-    return cmd_audit()
+    return cmd_reinfer()
 
 
 if __name__ == "__main__":

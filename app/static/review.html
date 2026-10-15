@@ -87,10 +87,6 @@
   }
   .pill.none { background: var(--bad-bg); color: var(--bad); }
 
-  .alarm {
-    background: var(--warn-bg); color: var(--warn);
-    border-radius: 8px; padding: .5rem .7rem; font-size: .85rem; margin: .5rem 0;
-  }
   .reason { color: var(--ink-dim); font-size: .85rem; font-style: italic; margin: .3rem 0 .5rem; }
 
   ul.aliases { margin: .4rem 0 .7rem; padding: 0; list-style: none; max-height: 13rem; overflow-y: auto; }
@@ -267,12 +263,6 @@ function groupCard(group, index) {
     </li>`;
   }).join("");
 
-  const alarm = (group.oracle_disagreement || []).length ? `
-    <div class="alarm"><b>The substring oracle disagrees</b> for
-      ${esc(group.oracle_disagreement.join(", "))}. It is usually the oracle that is
-      wrong &mdash; that is why these attributes exist &mdash; but check the labels
-      against the name before confirming.</div>` : "";
-
   const reason = group.aliases.find((a) => a.proposal_reason);
   const kept = group.aliases.length - group.dropped.size;
 
@@ -291,7 +281,6 @@ function groupCard(group, index) {
         ? clears.map((c) => `<span class="pill">${esc(c)}</span>`).join("")
         : '<span class="pill none">none of them</span>'}
     </div>
-    ${alarm}
     ${reason ? `<div class="reason">${esc(reason.proposal_reason)}</div>` : ""}
     <ul class="aliases">${aliases}</ul>
     <div class="row">

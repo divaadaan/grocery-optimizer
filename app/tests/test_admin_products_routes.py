@@ -31,7 +31,6 @@ def _group(**overrides):
         "contains_nuts": False,
         "times_seen": 8,
         "clears": ["vegetarian", "pescatarian", "no_nuts"],
-        "oracle_disagreement": [],
         "aliases": [
             {"alias_id": 11, "raw_example": "BEATRICE MILK", "times_seen": 4,
              "confidence": 0.95, "proposal_reason": "cow's milk", "source": "x",
@@ -161,10 +160,31 @@ async def test_queue_returns_groups_orphans_and_stats(client, stub):
 
 
 @pytest.mark.asyncio
-async def test_queue_exposes_the_oracle_alarm_field(client, stub):
+async def test_queue_does_not_judge_product_names(client, stub):
+    """Review shows the attributes and what they clear, nothing name-derived.
+
+    The substring alarm that used to sit here is gone: curated attributes are
+    the only authority, and a name-matching hint mostly cried wolf
+    ("beefsteak tomato", "peanut butter").
+    """
     async with client as http:
         res = await http.get("/admin/products/queue")
-    assert "oracle_disagreement" in res.json()["groups"][0]
+    group = res.json()["groups"][0]
+    assert group["clears"] == ["vegetarian", "pescatarian", "no_nuts"]
+
+
+@pytest.mark.asyncio
+async def test_audit_route_is_gone(client):
+    async with client as http:
+        res = await http.get("/admin/products/audit")
+    assert res.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_review_page_has_no_name_matching_alarm(client):
+    async with client as http:
+        res = await http.get("/admin/review")
+    assert "oracle" not in res.text.lower()
 
 
 # --------------------------------------------------------------------------

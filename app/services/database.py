@@ -5,21 +5,16 @@ import json
 
 # Import the connection pool from db module
 from app.db import db
-from app.services.deal_gate import (
-    GATE_CURATED_SOURCES,
-    GATE_PRODUCTS,
-    allowed_sources,
-    gate_mode,
-)
-from app.services.products import compliant_product_filter
+from app.services.deal_gate import deal_filter
 
 
 def _jsonable(row: Dict) -> Dict:
     """Convert DB row values json.dumps chokes on (Decimal) to plain floats."""
     return {k: float(v) if isinstance(v, Decimal) else v for k, v in row.items()}
 
+
 class DatabaseService:
-    """Handle all database interactions for recipe generation (uses shared connection pool)."""
+    """Handle all database interactions for recipe generation (shared pool)."""
 
     def __init__(self):
         # Use the shared database connection pool
@@ -39,18 +34,16 @@ class DatabaseService:
 
         Query deals table for valid offers, joining with stores.
 
-        ``dietary_restrictions`` is the ALLERGEN-SAFETY GATE, not a filter on
-        the deals themselves. When the user has any restriction and
-        ``INGESTED_DEALS_FOR_RESTRICTED_DIETS`` is off (the default), only
-        curated sources are returned, because ``app/agents/dietary.py``'s
-        substring compliance oracle is not sound against raw flyer product
-        names. Read ``app/services/deal_gate.py`` before touching this.
+        ``dietary_restrictions`` is the DIETARY GATE. When the user has any
+        restriction, only deals whose linked products are confirmed and clear
+        the restrictions by their curated attributes are returned
+        (``app/services/deal_gate.py``). This is the only dietary filter on
+        the deal set; the Chef does not re-judge product names.
 
-        Passing ``None`` means "no user context" and returns every source -
+        Passing ``None`` means "no user context" and returns every deal -
         callers on the recipe-generation path MUST pass the user's
         restrictions.
         """
-        mode = gate_mode(dietary_restrictions)
 
         query = """
         SELECT
@@ -72,20 +65,14 @@ class DatabaseService:
         """
         params: Dict = {"postal_code": postal_code}
 
-        # Both gates filter in SQL rather than in Python so the LIMIT below is
-        # applied to the *allowed* set. Filtering after the LIMIT could hand a
+        # Filtered in SQL rather than in Python so the LIMIT below is applied
+        # to the *allowed* set. Filtering after the LIMIT could hand a
         # restricted user an empty deal list while permitted deals sat just
-        # past row 200.
-        if mode == GATE_PRODUCTS:
-            # Requires a linked, confirmed product whose curated attributes
-            # clear the restrictions. Unlinked deals (product_id IS NULL) fail
-            # the EXISTS and are withheld — NULL is never read as safe.
-            fragment, extra = compliant_product_filter(dietary_restrictions)
-            query += fragment
-            params.update(extra)
-        elif mode == GATE_CURATED_SOURCES:
-            query += " AND d.source = ANY(%(sources)s)"
-            params["sources"] = allowed_sources(dietary_restrictions)
+        # past row 200. Unlinked deals fail the gate's EXISTS and are withheld
+        # — no link is never read as safe.
+        fragment, extra = deal_filter(dietary_restrictions)
+        query += fragment
+        params.update(extra)
 
         # NULLS LAST matters now that real data exists: ingested deals usually
         # have no regular_price and therefore no discount_percentage, and

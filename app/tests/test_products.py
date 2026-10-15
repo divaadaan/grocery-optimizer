@@ -10,8 +10,7 @@ import re
 
 import pytest
 
-from app.agents import dietary
-from app.services import deal_gate, products
+from app.services import products
 
 PLACEHOLDER = re.compile(r"%\((\w+)\)s")
 
@@ -67,15 +66,16 @@ def test_normalize_name_is_idempotent():
 # restrictions -> attributes
 # --------------------------------------------------------------------------
 
-def test_restriction_attribute_map_matches_the_oracle_labels():
-    """Every label the substring oracle understands must have attributes.
+def test_restriction_attribute_map_covers_the_enforceable_labels():
+    """Every label the app enforces must map to attributes.
 
-    The two must move together. If a label is added to
-    ``dietary.forbidden_terms_for`` and not here, the products gate would
-    silently stop enforcing it.
+    ``RESTRICTION_ATTRIBUTES`` is the single source of truth; a label missing
+    here enforces nothing beyond "linked and confirmed".
     """
-    oracle_labels = {"vegan", "vegetarian", "pescatarian", "no_nuts", "nut_free"}
-    assert oracle_labels <= set(products.RESTRICTION_ATTRIBUTES)
+    labels = {"vegan", "vegetarian", "pescatarian", "no_nuts", "nut_free",
+              "dairy_free"}
+    assert labels <= set(products.RESTRICTION_ATTRIBUTES)
+    assert set(products.REVIEW_LABELS) <= set(products.RESTRICTION_ATTRIBUTES)
 
 
 @pytest.mark.parametrize(
@@ -87,6 +87,7 @@ def test_restriction_attribute_map_matches_the_oracle_labels():
         (["pescatarian"], ("contains_meat",)),
         (["no_nuts"], ("contains_nuts",)),
         (["nut_free"], ("contains_nuts",)),
+        (["dairy_free"], ("contains_dairy",)),
         (
             ["vegan"],
             ("contains_dairy", "contains_egg", "contains_fish", "contains_meat"),
@@ -154,22 +155,33 @@ def test_product_allows_dairy_splits_vegan_from_vegetarian():
     assert products.product_allows(cheese, ["vegan"]) is False
 
 
-def test_product_allows_catches_the_hidden_cases_the_oracle_misses():
-    """The whole point: these have no forbidden substring in their names."""
-    for name, attrs in [
-        ("prosciutto", {"contains_meat": True}),
-        ("kielbasa", {"contains_meat": True}),
-        ("capicollo", {"contains_meat": True}),
-        ("gelatin", {"contains_meat": True}),
-        ("lard", {"contains_meat": True}),
-        ("marzipan", {"contains_nuts": True}),
-    ]:
-        product = _product(canonical_name=name, **attrs)
-        restriction = "no_nuts" if attrs.get("contains_nuts") else "vegetarian"
-        # The oracle lets every one of these through...
-        assert dietary.is_compliant(name, [restriction]) is True
-        # ...and the curated attributes do not.
-        assert products.product_allows(product, [restriction]) is False
+@pytest.mark.parametrize("name, attrs, restriction", [
+    ("prosciutto", {"contains_meat": True}, "vegetarian"),
+    ("kielbasa", {"contains_meat": True}, "vegetarian"),
+    ("capicollo", {"contains_meat": True}, "vegetarian"),
+    ("gelatin", {"contains_meat": True}, "vegetarian"),
+    ("lard", {"contains_meat": True}, "vegetarian"),
+    ("marzipan", {"contains_nuts": True}, "no_nuts"),
+])
+def test_product_allows_blocks_by_attribute_whatever_the_name(name, attrs, restriction):
+    """No word in these names says meat or nut; the attribute does."""
+    product = _product(canonical_name=name, **attrs)
+    assert products.product_allows(product, [restriction]) is False
+
+
+@pytest.mark.parametrize("name, restriction", [
+    # The owner's intent, pinned. Each name contains a word a name-matcher
+    # would read as forbidden ("butter", "nut", "beef", "ham"); each product
+    # is correctly labelled safe, and the label is what decides.
+    ("Peanut Butter", "vegan"),
+    ("Beefsteak Tomatoes", "vegetarian"),
+    ("Butternut Squash", "no_nuts"),
+    ("Hamburger Buns", "vegetarian"),
+    ("Coconut Milk", "vegan"),
+])
+def test_product_allows_safe_food_whatever_the_name(name, restriction):
+    product = _product(canonical_name=name)
+    assert products.product_allows(product, [restriction]) is True
 
 
 def test_product_allows_fails_closed_on_a_missing_attribute(caplog):
@@ -191,31 +203,31 @@ def test_product_allows_with_no_restrictions_allows_anything():
 
 
 # --------------------------------------------------------------------------
-# oracle disagreement — the review-time alarm
+# review grouping — attributes only
 # --------------------------------------------------------------------------
 
-def test_oracle_disagreement_flags_the_false_positive_case():
-    """A correctly-labelled beefsteak tomato disagrees with the oracle.
-
-    This is the alarm doing its job in the harmless direction: the attributes
-    are right, the oracle is wrong, and the reviewer sees why their name choice
-    is confusing.
-    """
-    tomato = _product(canonical_name="beefsteak tomato")
-    labels = products.oracle_disagreement(tomato)
-    assert "vegetarian" in labels and "vegan" in labels
-
-
-def test_oracle_disagreement_flags_the_dangerous_mislabel():
-    """A human marking marzipan nut-free must show up as a disagreement."""
-    mislabelled = _product(canonical_name="marzipan almond paste", contains_nuts=False)
-    assert "no_nuts" in products.oracle_disagreement(mislabelled)
+def _alias_row(**overrides):
+    row = {
+        "alias_id": 1, "normalized_name": "peanut butter",
+        "raw_example": "KRAFT PEANUT BUTTER 1KG", "confidence": 0.9,
+        "proposal_reason": None, "times_seen": 3, "source": "x",
+        "tile_position": 0, "price_is_per_item": True,
+        "product_status": "proposed", "tile_products": ["peanut butter"],
+        **_product(canonical_name="peanut butter", category="pantry",
+                   contains_nuts=True),
+    }
+    row.update(overrides)
+    return row
 
 
-def test_oracle_disagreement_silent_when_they_agree():
-    assert products.oracle_disagreement(_product(canonical_name="tomato")) == []
-    beef = _product(canonical_name="ground beef", contains_meat=True)
-    assert products.oracle_disagreement(beef) == []
+def test_review_group_clears_follow_the_attributes_not_the_name():
+    """Peanut butter, labelled plant-based with nuts, clears vegan in review."""
+    groups, orphans = products.group_proposals([_alias_row()])
+    assert orphans == []
+    assert groups[0]["clears"] == ["vegan", "vegetarian", "pescatarian"]
+    # The reviewer's labels decide, in both directions.
+    groups, _ = products.group_proposals([_alias_row(contains_dairy=True)])
+    assert groups[0]["clears"] == ["vegetarian", "pescatarian"]
 
 
 # --------------------------------------------------------------------------
@@ -225,6 +237,21 @@ def test_oracle_disagreement_silent_when_they_agree():
 def test_filter_is_empty_without_restrictions():
     assert products.compliant_product_filter([]) == ("", {})
     assert products.compliant_product_filter(None) == ("", {})
+    assert products.compliant_product_filter(["", "  "]) == ("", {})
+
+
+def test_filter_still_gates_a_restriction_with_no_known_attribute():
+    """An unrecognised label is still a restriction, so the user is gated.
+
+    It enforces no attribute, but unlinked and unconfirmed deals are withheld
+    exactly as for any other restricted user — never "open".
+    """
+    fragment, params = products.compliant_product_filter(["halal"])
+    assert "AND EXISTS (" in fragment
+    assert "AND NOT EXISTS (" in fragment
+    assert "p.status <> 'confirmed'" in fragment
+    assert "contains_" not in fragment
+    assert params == {}
 
 
 def test_filter_requires_confirmed_status_and_every_attribute():
@@ -292,39 +319,3 @@ def test_filter_rejects_an_attribute_outside_the_constant(monkeypatch):
     )
     with pytest.raises(AssertionError):
         products.compliant_product_filter(["bogus"])
-
-
-# --------------------------------------------------------------------------
-# gate_mode precedence
-# --------------------------------------------------------------------------
-
-def test_gate_open_for_unrestricted_users():
-    assert deal_gate.gate_mode([], products_enabled=False) == deal_gate.GATE_OPEN
-    assert deal_gate.gate_mode(None, products_enabled=True) == deal_gate.GATE_OPEN
-
-
-def test_gate_falls_back_to_sources_when_products_disabled():
-    mode = deal_gate.gate_mode(
-        ["vegetarian"], products_enabled=False, allow_for_restricted=False
-    )
-    assert mode == deal_gate.GATE_CURATED_SOURCES
-
-
-def test_gate_products_outranks_the_older_waiver():
-    """The stronger guarantee wins. Both flags on must not mean "trust all".
-
-    ``INGESTED_DEALS_FOR_RESTRICTED_DIETS`` waives the source gate on the
-    strength of the substring oracle. Once the products gate is on, that waiver
-    must not reopen the unsafe path.
-    """
-    mode = deal_gate.gate_mode(
-        ["vegetarian"], products_enabled=True, allow_for_restricted=True
-    )
-    assert mode == deal_gate.GATE_PRODUCTS
-
-
-def test_gate_old_waiver_still_opens_when_products_off():
-    mode = deal_gate.gate_mode(
-        ["vegetarian"], products_enabled=False, allow_for_restricted=True
-    )
-    assert mode == deal_gate.GATE_OPEN

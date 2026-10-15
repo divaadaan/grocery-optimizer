@@ -4,33 +4,54 @@ import time
 from .state import RecipeGenerationState
 from .prompts import PromptTemplates
 from .llm_output import ChefPlan, LLMOutputError, invoke_validated, raw_output_report
-from .dietary import is_compliant
 from ..config import settings
 from ..services.budget import available_for_plan
 from ..services.database import DatabaseService
 from ..services.mlflow_logger import MLflowLogger
 
 
-def _enforce_group_compliance(groups, compliant_deals, restrictions):
-    """Strip any selection that violates the restrictions (defence against the
-    LLM emitting a forbidden/hallucinated product despite a pre-filtered menu),
-    then backfill emptied groups from unused compliant deals so the downstream
-    contract of 3 non-empty groups holds. Returns (cleaned_groups, num_removed).
+def _deal_id(deal):
+    return deal.get("deal_id", deal.get("id"))
+
+
+def _restrict_to_served_deals(groups, served_deals):
+    """Keep only selections that name a deal we actually served.
+
+    Every deal in ``served_deals`` already passed the dietary gate in
+    ``fetch_current_deals``, so membership in that set is the whole safety
+    property here: a selection the model invented (a product not on the menu)
+    is the only way an unsafe item could enter a group. A selection is matched
+    by exact ``product_name`` first, then by ``deal_id``, and is rewritten to
+    the served deal's own name and id so downstream lookups by name resolve.
+
+    Groups emptied by the strip are backfilled from unused served deals so the
+    downstream contract of 3 non-empty groups holds.
+    Returns ``(cleaned_groups, num_removed)``.
     """
+    by_name = {d.get("product_name"): d for d in served_deals}
+    by_id = {str(_deal_id(d)): d for d in served_deals if _deal_id(d) is not None}
+
     used: set = set()
     cleaned: list = []
     removed = 0
     for group in groups:
         kept = []
         for sel in group:
-            if is_compliant(sel.get("product_name", ""), restrictions):
-                kept.append(sel)
-                used.add(sel.get("product_name", ""))
-            else:
+            deal = by_name.get(sel.get("product_name"))
+            if deal is None and sel.get("deal_id") is not None:
+                deal = by_id.get(str(sel.get("deal_id")))
+            if deal is None:
                 removed += 1
+                continue
+            kept.append({
+                **sel,
+                "product_name": deal.get("product_name", ""),
+                "deal_id": _deal_id(deal),
+            })
+            used.add(deal.get("product_name"))
         cleaned.append(kept)
 
-    spare = [d for d in compliant_deals if d.get("product_name") not in used]
+    spare = [d for d in served_deals if d.get("product_name") not in used]
     for group in cleaned:
         if not group and spare:
             deal = spare.pop(0)
@@ -38,7 +59,7 @@ def _enforce_group_compliance(groups, compliant_deals, restrictions):
             group.append({
                 "product_name": deal.get("product_name", ""),
                 "quantity_estimate": "",
-                "deal_id": deal.get("deal_id", deal.get("id")),
+                "deal_id": _deal_id(deal),
             })
     return cleaned, removed
 
@@ -71,14 +92,12 @@ class ChefOrchestrator:
 
         # Fetch deals from database.
         #
-        # ALLERGEN-SAFETY GATE: the restrictions are passed so that a user with
-        # dietary restrictions is served only curated deals while
-        # INGESTED_DEALS_FOR_RESTRICTED_DIETS is off. Machine-ingested flyer
-        # product names defeat dietary.py's substring oracle in the dangerous
-        # direction (prosciutto, chorizo, gelatin and marzipan contain no
-        # forbidden term), so real deals must not silently reach this path.
-        # The deferral is deliberate and documented in app/services/deal_gate.py.
-        # Do not drop this argument to "fetch more deals".
+        # DIETARY GATE: the restrictions are passed so that a user with any
+        # dietary restriction is served only deals linked to confirmed products
+        # whose curated attributes clear those restrictions
+        # (app/services/deal_gate.py). This is the only dietary filter on the
+        # deal set; nothing downstream re-judges product names. Do not drop
+        # this argument to "fetch more deals".
         deals = self.db.fetch_current_deals(
             state["postal_code"],
             dietary_restrictions=state["dietary_restrictions"],
@@ -110,16 +129,12 @@ class ChefOrchestrator:
 
         # Dietary compliance is enforced in code, not left to the LLM (which
         # groups meat into vegetarian plans regardless of the prompt — ROADMAP
-        # 2026-07-15). Show the model only compliant deals so a forbidden item
-        # can't be selected in the first place.
-        restrictions = state["dietary_restrictions"]
-        compliant_deals = [
-            d for d in state["available_deals"]
-            if is_compliant(d.get("product_name", ""), restrictions)
-        ]
-        dropped = len(state["available_deals"]) - len(compliant_deals)
-        if dropped:
-            print(f"[Chef] Filtered out {dropped} deal(s) violating {restrictions}")
+        # 2026-07-15). It is enforced upstream: available_deals were already
+        # cleared against the user's restrictions by curated product
+        # attributes in fetch_current_deals, so every deal shown here is safe.
+        # The model is not trusted to stay on that menu, which is what
+        # _restrict_to_served_deals below is for.
+        served_deals = state["available_deals"]
 
         # Prepare prompt
         # The budget shown to the model is what is actually LEFT of the user's
@@ -136,7 +151,7 @@ class ChefOrchestrator:
                   f"{state.get('budget_period') or 'period'})")
 
         prompt = PromptTemplates.CHEF_INGREDIENT_PLANNING.format(
-            deals_json=json.dumps(compliant_deals[:100], indent=2),  # Limit for context
+            deals_json=json.dumps(served_deals[:100], indent=2),  # Limit for context
             budget=round(budget_available, 2),
             household_size=state["household_size"],
             num_meals=state["num_meals"],
@@ -154,13 +169,13 @@ class ChefOrchestrator:
                 for group in plan.ingredient_groups
             ]
 
-            # Safety net: strip any non-compliant item the model emitted anyway
-            # (hallucinated or otherwise), backfilling emptied groups.
-            ingredient_groups, removed = _enforce_group_compliance(
-                ingredient_groups, compliant_deals, restrictions
+            # Safety net: a selection must be a deal we served. Strip anything
+            # the model invented, backfilling emptied groups.
+            ingredient_groups, removed = _restrict_to_served_deals(
+                ingredient_groups, served_deals
             )
             if removed:
-                print(f"[Chef] Removed {removed} non-compliant item(s) from LLM groups")
+                print(f"[Chef] Removed {removed} item(s) not in the served deal set")
 
             ingredient_reuse_map = plan.ingredient_reuse_map
 

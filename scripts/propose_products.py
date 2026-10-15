@@ -2,8 +2,9 @@
 """Export unmapped deal names for labelling, and import the labels back.
 
 No API key, no SDK, no network egress. The labelling is done by whichever
-Claude session is working in this repo -- it can read ``dietary.py``,
-``seed_catalog.py`` and the existing catalogue for context, which an outbound
+Claude session is working in this repo -- it can read
+``products.RESTRICTION_ATTRIBUTES``, ``seed_catalog.py`` and the existing
+catalogue for context, which an outbound
 API call handed a prompt through a pinhole cannot.
 
 Three steps::
@@ -51,7 +52,7 @@ def cmd_export(path: Path, limit: int, include_expired: bool) -> int:
     print("\nNext: ask a Claude session to label it --")
     print(f'  "label the items in {path} following its instructions, '
           f'write <labelled>.json"')
-    print(f"Then: python scripts/propose_products.py --import <labelled>.json")
+    print("Then: python scripts/propose_products.py --import <labelled>.json")
     return 0
 
 

@@ -66,30 +66,9 @@ class Settings(BaseSettings):
     # See app/services/flipp_client.py.
     deal_ingestion_enabled: bool = Field(default=False, env="DEAL_INGESTION_ENABLED")
 
-    # SAFETY GATE — read app/services/deal_gate.py before changing this.
-    # Off: users with dietary restrictions are served only curated deals,
-    # because app/agents/dietary.py's substring compliance oracle is unsafe
-    # against raw flyer product names (it misses prosciutto, chorizo, gelatin,
-    # marzipan...). Turning this on accepts allergen risk on users' behalf.
-    ingested_deals_for_restricted_diets: bool = Field(
-        default=False, env="INGESTED_DEALS_FOR_RESTRICTED_DIETS"
-    )
-
-    # The products catalog: compliance read from curated per-product attributes
-    # instead of substring-matching the raw flyer name. This is the real fix
-    # for the gap the flag above defers, and it supersedes it — when this is
-    # on, a user with restrictions is served ingested deals that are linked to
-    # a CONFIRMED product whose attributes clear their restrictions, and
-    # nothing else. Unlinked and proposed-but-unconfirmed deals are withheld.
-    #
-    # Safe to turn on as soon as migrations 006-008 are applied: with an empty
-    # catalog it withholds everything from restricted users, which is where
-    # they already are (all seed deals expired 2026-07-21). It only ever adds
-    # deals back as products get confirmed.
-    # See app/services/products.py and scripts/review_products.py.
-    products_catalog_enabled: bool = Field(
-        default=False, env="PRODUCTS_CATALOG_ENABLED"
-    )
+    # There is deliberately no dietary-gate flag. Users with dietary
+    # restrictions are always served through the products gate
+    # (app/services/deal_gate.py); a switch could only turn safety off.
 
     flipp_search_url: str = Field(
         default="https://backflipp.wishabi.com/flipp/items/search",
