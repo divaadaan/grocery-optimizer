@@ -1,9 +1,11 @@
 class PromptTemplates:
     """Centralized prompt templates for all agents."""
 
-    CHEF_INGREDIENT_PLANNING = """You are a professional Chef Orchestrator managing a meal planning system.
+    CHEF_INGREDIENT_PLANNING = """You are a professional Chef Orchestrator \
+managing a meal planning system.
 
-Your task: Analyze available grocery deals and create 3 optimized ingredient groups for your team of 3 SousChefs.
+Your task: Analyze available grocery deals and create 3 optimized ingredient \
+groups for your team of 3 SousChefs.
 
 **Available Deals:**
 {deals_json}
@@ -16,7 +18,8 @@ Your task: Analyze available grocery deals and create 3 optimized ingredient gro
 - Preferences: {preferences}
 
 **Optimization Strategy:**
-1. Maximize ingredient reuse across groups (prefer ingredients that appear in multiple groups)
+1. Maximize ingredient reuse across groups (prefer ingredients that appear in \
+multiple groups)
 2. Balance cost across all 3 groups
 3. Ensure each group has complementary ingredients (protein + starch + vegetables)
 4. Respect dietary restrictions strictly
@@ -38,17 +41,24 @@ Your task: Analyze available grocery deals and create 3 optimized ingredient gro
 
 Generate the 3 ingredient groups now:"""
 
-    SOUS_CHEF_RECIPE_GENERATION = """You are a creative SousChef specializing in practical, delicious recipes.
+    SOUS_CHEF_RECIPE_GENERATION = """You are a creative SousChef specializing in \
+practical, delicious recipes.
 
-**Your Assigned Ingredients:**
+**Your Assigned Deals (cite each by its deal_id):**
 {ingredients_json}
+
+**Pantry Staples Already On Hand (cite each by its product_id):**
+{pantry_json}
 
 **Recipe Requirements:**
 - Number of recipes to create: {target_recipe_count}
 - Servings per recipe: {servings}
 - Dietary restrictions: {dietary_restrictions}
-- Use ONLY the assigned ingredients (you can use basic pantry staples: salt, pepper, oil, water)
-- Calculate exact costs using the provided prices
+- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.
+- EVERY ingredient must cite exactly one source: "deal_id" for an assigned deal,
+  OR "product_id" for a pantry staple. Copy the id exactly from the lists above.
+- If an ingredient is not in either list, leave it out of the recipe.
+- "name" is how the ingredient reads in the recipe; costs are computed for you.
 
 **Output Format (JSON array):**
 [
@@ -57,11 +67,11 @@ Generate the 3 ingredient groups now:"""
     "meal_type": "breakfast|lunch|dinner",
     "cuisine_type": "Italian|Mexican|Asian|American|etc",
     "ingredients": [
-      {{"name": "...", "quantity": "...", "unit": "...", "price": 0.00}}
+      {{"name": "...", "deal_id": 123, "quantity": "...", "unit": "..."}},
+      {{"name": "...", "product_id": 45, "quantity": "...", "unit": "..."}}
     ],
     "instructions": ["Step 1...", "Step 2...", ...],
     "estimated_prep_time": 30,
-    "total_cost": 0.00,
     "servings": {servings}
   }},
   ...
@@ -77,29 +87,36 @@ Generate {target_recipe_count} creative recipes now:"""
 **Nutritionist Feedback:**
 {feedback}
 
-**Your Assigned Ingredients:**
+**Your Assigned Deals (cite each by its deal_id):**
 {ingredients_json}
 
-**Task:**
-Create a NEW recipe using these ingredients that addresses the feedback.
-- Fix the specific issues mentioned
-- Maintain dietary compliance
-- Keep costs within budget
-- Ensure nutritional balance
+**Pantry Staples Already On Hand (cite each by its product_id):**
+{pantry_json}
 
-**Output Format (same JSON as before):**
+**Task:**
+Create a NEW recipe using only these deals and staples that addresses the feedback.
+- Fix the specific issues mentioned: drop any ingredient the feedback names
+- Maintain dietary compliance
+- Ensure nutritional balance
+- EVERY ingredient must cite exactly one source: "deal_id" for an assigned deal,
+  OR "product_id" for a pantry staple, copied exactly from the lists above
+
+**Output Format (JSON):**
 {{
   "name": "Revised Recipe Name",
   "meal_type": "...",
-  "ingredients": [...],
+  "ingredients": [
+    {{"name": "...", "deal_id": 123, "quantity": "...", "unit": "..."}},
+    {{"name": "...", "product_id": 45, "quantity": "...", "unit": "..."}}
+  ],
   "instructions": [...],
-  "total_cost": 0.00,
   "servings": {servings}
 }}
 
 Generate the revised recipe now:"""
 
-    NUTRITIONIST_VALIDATION = """You are a professional Nutritionist validating recipe quality and safety.
+    NUTRITIONIST_VALIDATION = """You are a professional Nutritionist validating \
+recipe quality and safety.
 
 **Recipe to Validate:**
 {recipe_json}
@@ -143,7 +160,8 @@ If you reject this recipe, provide specific, actionable feedback for improvement
 
 Validate the recipe now:"""
 
-    CHEF_NEW_INGREDIENTS_SELECTION = """You are a Chef Orchestrator selecting alternative ingredients.
+    CHEF_NEW_INGREDIENTS_SELECTION = """You are a Chef Orchestrator selecting \
+alternative ingredients.
 
 **Context:** Some recipes were rejected and need new ingredient combinations.
 
