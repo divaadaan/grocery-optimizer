@@ -617,9 +617,15 @@ def review_stats(database=db) -> dict[str, int]:
                 AS rejected,
               (SELECT count(*) FROM products WHERE status = 'confirmed')
                 AS products_confirmed,
-              (SELECT count(*) FROM deals WHERE product_id IS NOT NULL)
+              -- Counted from the junction, which is authoritative. Counting
+              -- deals.product_id under-reports: a decomposed tile leaves that
+              -- column NULL because one column cannot hold several products,
+              -- so every tile looked unlinked (80 vs the real 93).
+              (SELECT count(DISTINCT deal_id) FROM deal_products)
                 AS deals_linked,
-              (SELECT count(*) FROM deals) AS deals_total
+              (SELECT count(*) FROM deals) AS deals_total,
+              (SELECT count(*) FROM deals WHERE product_id IS NOT NULL)
+                AS deals_single_product
             """
         )
         return dict(cursor.fetchone())
