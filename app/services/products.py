@@ -507,10 +507,47 @@ def group_proposals(rows: list[dict]) -> tuple[list[dict], list[dict]]:
     return ordered, orphans
 
 
+class AttributeConflict(Exception):
+    """A write would change a decided attribute on a confirmed product.
+
+    ``conflicts`` maps attribute -> (stored, requested). Deliberately not a
+    ValueError: callers map ValueError to "bad input" (400), whereas this is a
+    well-formed request that disagrees with curated data (409).
+    """
+
+    def __init__(self, product_id: int, name: str | None,
+                 conflicts: dict[str, tuple[bool, bool]]):
+        self.product_id = product_id
+        self.name = name
+        self.conflicts = conflicts
+        detail = "; ".join(
+            f"{attr}: stored {stored}, requested {wanted}"
+            for attr, (stored, wanted) in sorted(conflicts.items())
+        )
+        super().__init__(
+            f"product {product_id} ({name!r}) is already confirmed and its "
+            f"attributes cannot be changed here ({detail}). Nothing was "
+            f"written. Changing a confirmed product's attributes needs a "
+            f"deliberate correction step, which does not exist yet."
+        )
+
+
 def set_attributes(
     product_id: int, updates: dict[str, bool], database=db
 ) -> dict[str, bool]:
-    """Overwrite attributes on a not-yet-confirmed product.
+    """Set attributes on a product under review.
+
+    A proposed product's attributes are freely editable. A *confirmed*
+    product's are curated and serving users, so there:
+
+    * a value equal to the stored one is a no-op (review drafts re-send them);
+    * a NULL attribute is filled, like ``fill_undecided_attributes``;
+    * a change to an existing non-NULL value raises ``AttributeConflict`` and
+      writes nothing.
+
+    Deliberately changing a confirmed product's attributes is a legitimate
+    need, but it requires a deliberate correction step that does not exist
+    yet; do not route it through here.
 
     Rejects anything outside ``ATTRIBUTES``: these names are interpolated into
     SQL, so the whitelist is load-bearing, not tidiness.
@@ -523,8 +560,26 @@ def set_attributes(
     clean = {k: bool(v) for k, v in updates.items() if v is not None}
     if not clean:
         return {}
-    sets = ", ".join(f"{attr} = %({attr})s" for attr in clean)
     with database.get_cursor() as cursor:
+        # Lock the row so the check and the write see the same state.
+        cursor.execute(
+            f"SELECT status, canonical_name, {_ATTR_SELECT} FROM products "
+            "WHERE product_id = %(pid)s FOR UPDATE",
+            {"pid": product_id},
+        )
+        row = cursor.fetchone()
+        if row is not None and row["status"] == "confirmed":
+            conflicts = {
+                attr: (row[attr], want) for attr, want in clean.items()
+                if row[attr] is not None and row[attr] != want
+            }
+            if conflicts:
+                raise AttributeConflict(
+                    product_id, row["canonical_name"], conflicts)
+            sets = ", ".join(
+                f"{attr} = COALESCE({attr}, %({attr})s)" for attr in clean)
+        else:
+            sets = ", ".join(f"{attr} = %({attr})s" for attr in clean)
         cursor.execute(
             f"UPDATE products SET {sets} WHERE product_id = %(pid)s",
             {**clean, "pid": product_id},

@@ -257,7 +257,11 @@ def _edit_attributes(group: dict) -> bool:
     if not updates:
         print("  unchanged")
         return False
-    products.set_attributes(group["product_id"], updates)
+    try:
+        products.set_attributes(group["product_id"], updates)
+    except products.AttributeConflict as exc:
+        print(f"  REFUSED: {exc}")
+        return False
     group.update(updates)
     for attr, value in updates.items():
         print(f"  {ATTR_LABEL[attr]} -> {value}")

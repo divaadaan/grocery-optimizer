@@ -160,6 +160,10 @@ async def decide(decision: Decision) -> DecisionResult:
             applied = products.set_attributes(
                 decision.product_id, decision.attributes
             )
+        except products.AttributeConflict as exc:
+            # Raised before any write, and before confirm_group below, so the
+            # alias stays proposed and no attribute changed.
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 

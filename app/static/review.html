@@ -242,6 +242,10 @@ function renderStats() {
 
 function groupCard(group, index) {
   const clears = clearsFor(group);
+  // A confirmed product's attributes are curated and serving users; the
+  // server refuses changes (409), so do not offer them. The card then sends
+  // the stored values, which the server accepts as a no-op.
+  const locked = group.product_status === "confirmed";
   // Three states: checked (contains), unchecked (does not), indeterminate
   // (null: nobody decided). Indeterminate is set after render, since HTML
   // has no attribute for it.
@@ -251,7 +255,8 @@ function groupCard(group, index) {
     <label class="${unknown ? "unknown" : group[attr] ? "on" : ""}"
            title="${esc(state.rules[attr] || "")}">
       <input type="checkbox" data-attr="${attr}" data-i="${index}"
-             ${unknown ? "data-unknown" : ""} ${group[attr] ? "checked" : ""}>
+             ${unknown ? "data-unknown" : ""} ${group[attr] ? "checked" : ""}
+             ${locked ? "disabled" : ""}>
       ${esc(ATTR_LABEL[attr] || attr)}${unknown ? " ?" : ""}
     </label>`;
   }).join("");
@@ -300,6 +305,8 @@ function groupCard(group, index) {
       ${group.is_pantry_staple ? " &middot; pantry staple" : ""}
     </div>
     <div class="attrs">${attrs}</div>
+    ${group.error ? `<div class="reason" role="alert"
+        style="color: var(--warn); font-weight: 600">${esc(group.error)}</div>` : ""}
     <div class="rule">${esc(BYPRODUCT_RULE)}</div>
     <div class="clears">clears:
       ${clears.length
@@ -474,9 +481,14 @@ async function decide(index, action) {
       state.stats = out.stats;
       group.decided = `rejected ${out.decided}`;
     }
+    group.error = null;
     toast(`${group.canonical_name}: ${group.decided}`);
   } catch (err) {
+    // Keep the message on the card: a toast vanishes, and a refused confirm
+    // (409) needs the reviewer to read which attribute disagreed.
+    group.error = `Not saved: ${err.message}`;
     toast(`failed: ${err.message}`);
+    render();
     return;
   }
   advance();
