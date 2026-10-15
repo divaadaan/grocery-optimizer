@@ -1,0 +1,4605 @@
+[
+ {
+  "product_name": "PC® LUSCIOUS LOVELIES STRAWBERRY TOMATOES, 340 G",
+  "normalized": "pc luscious lovelies strawberry tomatoes",
+  "deal_count": 3,
+  "store_count": 3,
+  "min_price": 6.0,
+  "max_price": 6.0,
+  "units": [],
+  "sale_stories": [
+   "PRODUCT OF CANADA"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Aman's Milk or Suji Rusk 600 g",
+  "normalized": "aman s milk or suji rusk",
+  "deal_count": 2,
+  "store_count": 2,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $1.30"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "COMPLIMENTS White or Whole Wheat Bread",
+  "normalized": "compliments white or whole wheat bread",
+  "deal_count": 2,
+  "store_count": 2,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [],
+  "sale_stories": [
+   "100 Scene+ PTS when you buy 2",
+   "200 Scene+ PTS when you buy 3"
+  ],
+  "pre_price_texts": [
+   "HOT PRICE"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "COUNTRY HARVEST BREAD, 600-605 G OR BAGELS, 450 G",
+  "normalized": "country harvest bread 600 or bagels",
+  "deal_count": 2,
+  "store_count": 2,
+  "min_price": 7.5,
+  "max_price": 7.5,
+  "units": [
+   "or $4.29 ea.",
+   "or 4,29$ ea."
+  ],
+  "sale_stories": [
+   "SAVE $1.48 WHEN YOU BUY 2"
+  ],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Canned Tomatoes",
+  "normalized": "canned tomatoes",
+  "deal_count": 2,
+  "store_count": 2,
+  "min_price": 0.99,
+  "max_price": 2.0,
+  "units": [
+   "796ml"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry",
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "KRAFT PEANUT BUTTER",
+  "normalized": "kraft peanut butter",
+  "deal_count": 2,
+  "store_count": 2,
+  "min_price": 5.95,
+  "max_price": 5.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Kraft peanut butter",
+  "normalized": "kraft peanut butter",
+  "deal_count": 2,
+  "store_count": 2,
+  "min_price": 5.97,
+  "max_price": 6.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PC® TOMATO CHERRY MIXIANY, 340 G",
+  "normalized": "pc tomato cherry mixiany",
+  "deal_count": 2,
+  "store_count": 1,
+  "min_price": 7.0,
+  "max_price": 7.0,
+  "units": [],
+  "sale_stories": [
+   "Get PC Optimum 2,000 pts. For every $8* spent. $2 back in points."
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PROMISE GLUTEN-FREE BREAD, BUNS, ROLLS, PITAS, ENGLISH MUFFINS OR NAAN, 240-480 G",
+  "normalized": "promise gluten free bread buns rolls pitas english muffins or naan 240",
+  "deal_count": 2,
+  "store_count": 2,
+  "min_price": 6.5,
+  "max_price": 6.5,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "ROOSTER® TOFU, 454 G",
+  "normalized": "rooster tofu",
+  "deal_count": 2,
+  "store_count": 1,
+  "min_price": 4.98,
+  "max_price": 4.98,
+  "units": [
+   "or $2.89 each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "(라이트 스탠다드/고주)_150G*4 DW) CANNED TUNA",
+  "normalized": "150g 4 dw canned tuna",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 8.88,
+  "max_price": 8.88,
+  "units": [
+   "pk"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Seafood"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "4 pack tomatoes",
+  "normalized": "tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.5,
+  "max_price": 2.5,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "ACE BAKERY BISTRO BREAD LOAF (595g) or ROLLS (5's)",
+  "normalized": "ace bakery bistro bread loaf or rolls 5 s",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.49,
+  "max_price": 3.49,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "ACE BAKERY Bistro Breads",
+  "normalized": "ace bakery bistro breads",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.49,
+  "max_price": 5.49,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "ANNIE'S SHELLS & CHEDDAR 170 G BEATRICE CHOCOLATE MILK 1 L GOLDFISH CRACKERS 168 - 227 G",
+  "normalized": "annie s shells cheddar beatrice chocolate milk goldfish crackers 168",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "AYLMER ACCENTS, 540 ML OR RO TEL DICED TOMATOES, 283/284 G",
+  "normalized": "aylmer accents or ro tel diced tomatoes 283",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.0,
+  "max_price": 2.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Asparagus",
+  "normalized": "asparagus",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Avocados",
+  "normalized": "avocados",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.49,
+  "max_price": 1.49,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "BAGELS 4'S CEDAR PITA 5'S",
+  "normalized": "bagels 4 s cedar pita 5 s",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.29,
+  "max_price": 1.29,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "BAGELS OR CEDAR PITA",
+  "normalized": "bagels or cedar pita",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.29,
+  "max_price": 1.29,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "BEATRICE CHOCOLATE MILK OR BUTTER MILK",
+  "normalized": "beatrice chocolate milk or butter milk",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.0,
+  "max_price": 7.0,
+  "units": [],
+  "sale_stories": [
+   "UP TO 24% OFF"
+  ],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "BREADED HADDOCK",
+  "normalized": "breaded haddock",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 27.99,
+  "max_price": 27.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $2"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "BROCCOLI CROWNS, BUNCH SPINACH OR TOMATOES ON THE VINE",
+  "normalized": "broccoli crowns bunch spinach or tomatoes on the vine",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "ea/lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Baby Spinach",
+  "normalized": "baby spinach",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.49,
+  "max_price": 3.49,
+  "units": [
+   "312g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Bananas",
+  "normalized": "bananas",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 0.69,
+  "max_price": 0.69,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Beef Sirloin Steak",
+  "normalized": "beef sirloin steak",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 9.99,
+  "max_price": 9.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Bell Peppers Red",
+  "normalized": "bell peppers red",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.49,
+  "max_price": 1.49,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Benefits By Nature Tomatoes Organic 796mL All Kinds",
+  "normalized": "benefits by nature tomatoes organic all kinds",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.79,
+  "max_price": 3.79,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Benefits By Nature Tomatoes Strained Organic",
+  "normalized": "benefits by nature tomatoes strained organic",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.79,
+  "max_price": 3.79,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Bistro Bread",
+  "normalized": "bistro bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.49,
+  "max_price": 5.49,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Boneless, Skinless Chicken Breasts",
+  "normalized": "boneless skinless chicken breasts",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 34.99,
+  "max_price": 34.99,
+  "units": [],
+  "sale_stories": [
+   "save $5"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Boxed and Breaded Poultry",
+  "normalized": "boxed and breaded poultry",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 20.0,
+  "max_price": 20.0,
+  "units": [
+   "or $7.99 ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "3/"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Bread Whole Wheat",
+  "normalized": "bread whole wheat",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "675g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Breaded Buttermilk",
+  "normalized": "breaded buttermilk",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 14.99,
+  "max_price": 14.99,
+  "units": [],
+  "sale_stories": [
+   "150 Scene+ PTS when you buy 1"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Breaded Chicken Breasts",
+  "normalized": "breaded chicken breasts",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 14.99,
+  "max_price": 14.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Broccoli Crowns",
+  "normalized": "broccoli crowns",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Butter Salted",
+  "normalized": "butter salted",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.49,
+  "max_price": 4.49,
+  "units": [
+   "454g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "COMPLIMENTS Canned Tomatoes",
+  "normalized": "compliments canned tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.0,
+  "max_price": 2.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "COMPLIMENTS Garlic Texas Toast, Garlic Parmesan Breadsticks or Brioche Bread or Buns Black Frid'Eh",
+  "normalized": "compliments garlic texas toast garlic parmesan breadsticks or brioche bread or buns black frid eh",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [],
+  "sale_stories": [
+   "300 Scene+ PTS when you buy 2"
+  ],
+  "pre_price_texts": [
+   "starting at"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "COMPLIMENTS Grain Breads",
+  "normalized": "compliments grain breads",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [
+   "150 Scene+ PTS when you buy 2"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "COMPLIMENTS Peanut Butter",
+  "normalized": "compliments peanut butter",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.0,
+  "max_price": 7.0,
+  "units": [],
+  "sale_stories": [
+   "100 Scene+ PTS when you buy 2"
+  ],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "COMPLIMENTS Pita Bread",
+  "normalized": "compliments pita bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.0,
+  "max_price": 3.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "COUNTRY HARVEST BREAD, 600 G OR BAGELS, 6'S",
+  "normalized": "country harvest bread or bagels 6 s",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.0,
+  "max_price": 3.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Canadian Grown Tomatoes",
+  "normalized": "canadian grown tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "pkg"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Carrots",
+  "normalized": "carrots",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.49,
+  "max_price": 1.49,
+  "units": [
+   "2lb bag"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Cedar italian strained tomato",
+  "normalized": "cedar italian strained tomato",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.0,
+  "max_price": 5.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Cedar oil or water chunk light canned tuna",
+  "normalized": "cedar oil or water chunk light canned tuna",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.0,
+  "max_price": 5.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "3/"
+  ],
+  "categories": [
+   "Seafood"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Cheese Bread",
+  "normalized": "cheese bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 6.79,
+  "max_price": 6.79,
+  "units": [],
+  "sale_stories": [
+   "100 Scene+ PTS when you buy 2"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Cheese Cheddar",
+  "normalized": "cheese cheddar",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.49,
+  "max_price": 5.49,
+  "units": [
+   "400g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Chicken Breast Boneless",
+  "normalized": "chicken breast boneless",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 8.99,
+  "max_price": 8.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Chicken Breast Grills",
+  "normalized": "chicken breast grills",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 14.99,
+  "max_price": 14.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $10"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Chicken Thighs Boneless",
+  "normalized": "chicken thighs boneless",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 6.99,
+  "max_price": 6.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Compliments Canned Tomato Paste 156 ml",
+  "normalized": "compliments canned tomato paste",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 0.99,
+  "max_price": 0.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $0.50"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Compliments Grape Tomato 283 g",
+  "normalized": "compliments grape tomato",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $1.00"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Country Harvest 100% Whole Grain Sliced Bread",
+  "normalized": "country harvest 100 whole grain sliced bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.29,
+  "max_price": 3.29,
+  "units": [
+   "600g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Country Harvest Farmhouse white or whole wheat bread",
+  "normalized": "country harvest farmhouse white or whole wheat bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.98,
+  "max_price": 2.98,
+  "units": [],
+  "sale_stories": [
+   "Rollback"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Country Style Chicken Breasts",
+  "normalized": "country style chicken breasts",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 29.99,
+  "max_price": 29.99,
+  "units": [],
+  "sale_stories": [
+   "save $2"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Couscous",
+  "normalized": "couscous",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "200g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Cranberry Walnut Artisan Bread",
+  "normalized": "cranberry walnut artisan bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $2"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Cream Cheese",
+  "normalized": "cream cheese",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "250g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "D'ITALIANO BREAD OR BUNS, 420-675 G",
+  "normalized": "d italiano bread or buns 420",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.0,
+  "max_price": 3.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "only"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "D'ITALIANO Bread",
+  "normalized": "d italiano bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "pk"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "D'ITALIANO Bread Selected",
+  "normalized": "d italiano bread selected",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "DEMPSTER'S BREAD 650 G BUNS 410 G ENGLISH MUFFINS 375 G",
+  "normalized": "dempster s bread buns english muffins",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.44,
+  "max_price": 2.44,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "DEMPSTER'S BREAD PS",
+  "normalized": "dempster s bread ps",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.44,
+  "max_price": 2.44,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "DEMPSTER'S English Muffins 6pk, COMPLIMENTS Dinner Rolls 12 pk or RUDOLPH'S Bavarian Bread selected 500 g",
+  "normalized": "dempster s english muffins compliments dinner rolls or rudolph s bavarian bread selected",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "DEMPSTER'S WHITE, WHOLE WHEAT BREADS OR SIGNATURE BUNS",
+  "normalized": "dempster s white whole wheat breads or signature buns",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 6.0,
+  "max_price": 6.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2 for"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "DEMPSTER'S WHOLE GRAIN BREAD",
+  "normalized": "dempster s whole grain bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "DEMPSTER'S WHOLE GRAIN BREAD, AND BAGELS",
+  "normalized": "dempster s whole grain bread and bagels",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "DRAMAS Cherry Tomatoes on the Vine",
+  "normalized": "dramas cherry tomatoes on the vine",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Dempster's Hamburger Buns 4 pk, White or Whole Wheat Bread 380 g or English Muffins 6 pk",
+  "normalized": "dempster s hamburger buns white or whole wheat bread or english muffins",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.0,
+  "max_price": 2.0,
+  "units": [],
+  "sale_stories": [
+   "SAVE UP TO 89¢"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Dempster's Protein bread",
+  "normalized": "dempster s protein bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.98,
+  "max_price": 3.98,
+  "units": [],
+  "sale_stories": [
+   "Rollback"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Dempster's Protein bread or bagels",
+  "normalized": "dempster s protein bread or bagels",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.98,
+  "max_price": 3.98,
+  "units": [],
+  "sale_stories": [
+   "Rollback"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Dempster's Sandwich Bread 675g pkg, Dempster's Bagels 5-6 pack, Tortillas 7\", English Muffins 6 pack or Vachon Snack Cakes 6 pack",
+  "normalized": "dempster s sandwich bread pkg dempster s bagels 5 tortillas 7 english muffins or vachon snack cakes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE AT LEAST 80¢"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Dempster's Sourdough English Muffins 6 pk, Compliments Whole Grain Bread 600 g or Hostess Snack Cakes 202-206 g",
+  "normalized": "dempster s sourdough english muffins compliments whole grain bread or hostess snack cakes 202",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [],
+  "sale_stories": [
+   "SAVE UP TO $1.50"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Dempster's White or 100% Whole Wheat Bread",
+  "normalized": "dempster s white or 100 whole wheat bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Dempster's White or Whole Wheat Bread 675 g or Buns 8 pk",
+  "normalized": "dempster s white or whole wheat bread or buns",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [],
+  "sale_stories": [
+   "SAVE $1"
+  ],
+  "pre_price_texts": [
+   "Scene+ Member Pricing"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Dempster's Whole Grain, Signature or Raisin Bread 600 g or Malt Bread 340 g or Compliments Tortillas 10\"",
+  "normalized": "dempster s whole grain signature or raisin bread or malt bread or compliments tortillas 10",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $1"
+  ],
+  "pre_price_texts": [
+   "Scene+ Member Pricing"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Dempster's sliced bread",
+  "normalized": "dempster s sliced bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 6.0,
+  "max_price": 6.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Dempster's sliced breads",
+  "normalized": "dempster s sliced breads",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.0,
+  "max_price": 7.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "EB Flower Cheese Tofu",
+  "normalized": "eb flower cheese tofu",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "ELMHURST NON-DAIRY BEVERAGE OR CREAMER, 473/946 mL",
+  "normalized": "elmhurst non dairy beverage or creamer 473",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.99,
+  "max_price": 7.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "EXTRA LARGE BEEFSTEAK TOMATOES",
+  "normalized": "extra large beefsteak tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Eggs Large",
+  "normalized": "eggs large",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [
+   "12 count"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "FARMER'S MARKET AVOCADOS 5's PC BALANCIA TOMATOES",
+  "normalized": "farmer s market avocados 5 s pc balancia tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "FRENCH OR ITALIAN BREAD, 383 G",
+  "normalized": "french or italian bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.5,
+  "max_price": 1.5,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "FRONT STREET BAKERY CIABATTA, RUSTIC COUNTRY BREADS OR BAGUETTES",
+  "normalized": "front street bakery ciabatta rustic country breads or baguettes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Farm Boy Garlic Bread 325 g (frozen)",
+  "normalized": "farm boy garlic bread frozen",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $1.00"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Farm Boy™ Gluten-Free Breads",
+  "normalized": "farm boy gluten free breads",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 6.99,
+  "max_price": 6.99,
+  "units": [
+   "- $7.99 ea"
+  ],
+  "sale_stories": [
+   "Save $1 ea"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Farm Boy™ Homestyle Garlic Bread",
+  "normalized": "farm boy homestyle garlic bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [
+   "Save $1 ea"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Farm Boy™ Ontario Grown Tomatoes",
+  "normalized": "farm boy ontario grown tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.97,
+  "max_price": 1.97,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Farm Boy™ Taralli Bread Sticks",
+  "normalized": "farm boy taralli bread sticks",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [
+   "pkg"
+  ],
+  "sale_stories": [
+   "Save $1/pkg"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "French or Italian Bread",
+  "normalized": "french or italian bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "FreshCo Sourdough or Pumpernickel Bread 540-610 g",
+  "normalized": "freshco sourdough or pumpernickel bread 540",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.0,
+  "max_price": 3.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "only"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "GREENHOUSE TOMATOES ON THE VINE",
+  "normalized": "greenhouse tomatoes on the vine",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.5,
+  "max_price": 2.5,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Garlic",
+  "normalized": "garlic",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 0.99,
+  "max_price": 0.99,
+  "units": [
+   "bulb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Garlic Texas Toast, Garlic Parmesan Breadsticks or Brioche Bread or Buns",
+  "normalized": "garlic texas toast garlic parmesan breadsticks or brioche bread or buns",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [],
+  "sale_stories": [
+   "300 Scene+ PTS when you buy 2"
+  ],
+  "pre_price_texts": [
+   "starting at"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Giant Value bread",
+  "normalized": "giant value bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.97,
+  "max_price": 1.97,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Grape Tomatoes 283 g Product of Canada or Mexico or Mini Seedless Cucumbers 6 pk Product of Ontario, Canada No. 1",
+  "normalized": "grape tomatoes product of canada or mexico or mini seedless cucumbers product of ontario canada no 1",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "only"
+  ],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Greek Yogurt",
+  "normalized": "greek yogurt",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "650g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Green Beans",
+  "normalized": "green beans",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Ground Beef Lean",
+  "normalized": "ground beef lean",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "HERSHEY'S 25 COUNT PEANUT BUTTER CUPS, (267-390 G)",
+  "normalized": "hershey s peanut butter cups 267",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.0,
+  "max_price": 7.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Half Loaf White or Whole Wheat Bread",
+  "normalized": "half loaf white or whole wheat bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.0,
+  "max_price": 2.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Hot House Tomatoes Large 1 Count",
+  "normalized": "hot house tomatoes large",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $0.50"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Hothouse Tomatoes",
+  "normalized": "hothouse tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Hothouse Tomatoes Product of Ontario, Canada No. 1, 2.20/kg",
+  "normalized": "hothouse tomatoes product of ontario canada no 1 2 20 kg",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.0,
+  "max_price": 1.0,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "only"
+  ],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "IRRESISTIBLE BREAD OR DEMPSTER'S PULL-APARTS",
+  "normalized": "irresistible bread or dempster s pull aparts",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "JIF PEANUT BUTTER",
+  "normalized": "jif peanut butter",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Jif Peanut Butter",
+  "normalized": "jif peanut butter",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [
+   "1kg"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Jif peanut butter",
+  "normalized": "jif peanut butter",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.97,
+  "max_price": 4.97,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [
+   "SAVE $1"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Jin's Roasted Tofu Series",
+  "normalized": "jin s roasted tofu series",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "KING'S HAWAIIAN ROLLS 340 G IRRESISTIBLE BRIOCHE BREAD OR BUNS 480 - 500 G SUN-MAID OR DEMPSTER'S RAISIN BREAD 340 - 600 G",
+  "normalized": "king s hawaiian rolls irresistible brioche bread or buns 480 sun maid or dempster s raisin bread 340",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.49,
+  "max_price": 4.49,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "KING'S HAWAIIAN ROLLS, IRRESISTIBLE BRIOCHE BREAD OR BUNS, SUN-MAID OR DEMPSTER'S RAISIN BREAD",
+  "normalized": "king s hawaiian rolls irresistible brioche bread or buns sun maid or dempster s raisin bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.49,
+  "max_price": 4.49,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "KRAFT PEANUT BUTTER 750 G - 1 KG BONNE MAMAN JAM 250 ML",
+  "normalized": "kraft peanut butter bonne maman jam",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.95,
+  "max_price": 5.95,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "KRAFT PEANUT BUTTER OR HAZELNUT SPREAD",
+  "normalized": "kraft peanut butter or hazelnut spread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 6.99,
+  "max_price": 6.99,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "KRAFT PEANUT BUTTER, 750 G/ 1 KG",
+  "normalized": "kraft peanut butter",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.97,
+  "max_price": 5.97,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "KRAFT PEANUT BUTTER, 750 G/1 KG",
+  "normalized": "kraft peanut butter",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.97,
+  "max_price": 5.97,
+  "units": [],
+  "sale_stories": [
+   "Get PC Optimum 1,000 pts, $1 back in points"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Kraft Peanut Butter 500 g or Cheez Whiz 450 g",
+  "normalized": "kraft peanut butter or cheez whiz",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.0,
+  "max_price": 4.0,
+  "units": [],
+  "sale_stories": [
+   "SAVE UP TO $1.99"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Kraft Peanut Butter Series 1KG",
+  "normalized": "kraft peanut butter series",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 8.98,
+  "max_price": 8.98,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "LACTANTIA ACTOSE FREE MILK, TOSE FREE CREAMS, ASIS ORANGE JUICE LADELPHIA CREAM, CHEESE PRODUCT",
+  "normalized": "lactantia actose free milk tose free creams asis orange juice ladelphia cream cheese product",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.96,
+  "max_price": 4.96,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "LACTANTIA LACTOSE FREE MILK 2 L LACTOSE FREE CREAMS 1 L OASIS ORANGE JUICE 1.5 L PHILADELPHIA CREAM CHEESE PRODUCT 340 G",
+  "normalized": "lactantia lactose free milk lactose free creams oasis orange juice philadelphia cream cheese product",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.96,
+  "max_price": 4.96,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "LACTANTIA LACTOSE FREE MILK OR LACTOSE FREE CREAMS OR OASIS ORANGE JUICE OR PHILADELPHIA CREAM CHEESE PRODUCT",
+  "normalized": "lactantia lactose free milk or lactose free creams or oasis orange juice or philadelphia cream cheese product",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.96,
+  "max_price": 4.96,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "LACTANTIA LACTOSE FREE MILK, 2L, LACTOSE FREE CREAMS, 1L, OASIS ORANGE JUICE, 1.5L",
+  "normalized": "lactantia lactose free milk lactose free creams oasis orange juice",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.96,
+  "max_price": 4.96,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "LIFE SMART CANNED TOMATOES",
+  "normalized": "life smart canned tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "NOW"
+  ],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "LINDO TOMATO PASTE",
+  "normalized": "lindo tomato paste",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.49,
+  "max_price": 3.49,
+  "units": [],
+  "sale_stories": [
+   "41% SAVINGS"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Lettuce Romaine",
+  "normalized": "lettuce romaine",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Longo's Bake at Home Artisan Garlic Bread or Cheese & Garlic Bread",
+  "normalized": "longo s bake at home artisan garlic bread or cheese garlic bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.49,
+  "max_price": 4.49,
+  "units": [],
+  "sale_stories": [
+   "EARN 200 POINTS WITH YOUR THANK YOU REWARDS CARD"
+  ],
+  "pre_price_texts": [
+   "FROM"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Longo's Fresh Flavour Bomb Cherry Tomatoes on the Vine",
+  "normalized": "longo s fresh flavour bomb cherry tomatoes on the vine",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Longo's Frozen Breaded Calamari Rings",
+  "normalized": "longo s frozen breaded calamari rings",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 8.99,
+  "max_price": 8.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $2"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Longo's Ravioli Asiago Cheese & Basil Grilled Sundried Tomato Jumbo 365 g",
+  "normalized": "longo s ravioli asiago cheese basil grilled sundried tomato jumbo",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.79,
+  "max_price": 5.79,
+  "units": [],
+  "sale_stories": [
+   "SAVE $0.20"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "MARANATHA PEANUT BUTTER",
+  "normalized": "maranatha peanut butter",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 9.99,
+  "max_price": 9.99,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "MARC ANGELO CHICKEN BREAST BITES OR PORK MEATBALLS",
+  "normalized": "marc angelo chicken breast bites or pork meatballs",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [
+   "60 points"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "MECHAALANY TOMATO PASTE",
+  "normalized": "mechaalany tomato paste",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "MEDLEY, CHERRY OR GRAPE TOMATOES",
+  "normalized": "medley cherry or grape tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [],
+  "sale_stories": [
+   "33% savings"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "MUSAFIR PANEER BITES, BREADED BURGERS OR NUGGETS",
+  "normalized": "musafir paneer bites breaded burgers or nuggets",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 6.99,
+  "max_price": 6.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "MUSAFIR PANEER BURGERS, BREADED BURGERS OR NUGGETS",
+  "normalized": "musafir paneer burgers breaded burgers or nuggets",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 6.99,
+  "max_price": 6.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "MUTTI FINELY CHOPPED TOMATOES, 398 mL",
+  "normalized": "mutti finely chopped tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "MUTTI Strained Tomatoes plain or with basil 680 mL or Peeled or Finely Chopped Tomatoes 796 mL",
+  "normalized": "mutti strained tomatoes plain or with basil or peeled or finely chopped tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.49,
+  "max_price": 5.49,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Mid-Day Squares No Bread PB&J Apple Cinnamon",
+  "normalized": "mid day squares no bread pb j apple cinnamon",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.99,
+  "max_price": 7.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $2"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Milk 2%",
+  "normalized": "milk 2",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.49,
+  "max_price": 4.49,
+  "units": [
+   "2L"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Montreal style bagels",
+  "normalized": "montreal style bagels",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.59,
+  "max_price": 1.59,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Mushrooms White",
+  "normalized": "mushrooms white",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [
+   "227g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Mutti Canned Tomatoes Finely Chopped 398 ml",
+  "normalized": "mutti canned tomatoes finely chopped",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.49,
+  "max_price": 3.49,
+  "units": [],
+  "sale_stories": [
+   "SAVE $1.20"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Mutti Finely Chopped Tomatoes",
+  "normalized": "mutti finely chopped tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.0,
+  "max_price": 5.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Mutti Finely Chopped Tomatoes 398 mL",
+  "normalized": "mutti finely chopped tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE 50¢"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Mutti Finely Chopped Tomatoes 796 mL",
+  "normalized": "mutti finely chopped tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $1"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Mutti Polpa, Basil or Garlic Tomatoes",
+  "normalized": "mutti polpa basil or garlic tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.49,
+  "max_price": 3.49,
+  "units": [],
+  "sale_stories": [
+   "SAVE AT LEAST $1"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "NEILSON 35% CREAM, 473 ML OR ULTRAFILTERED MILK, 1 L",
+  "normalized": "neilson 35 cream or ultrafiltered milk",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.25,
+  "max_price": 4.25,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "NEILSON CREAM or MILK2GO",
+  "normalized": "neilson cream or milk2go",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "NEILSON TRUTASTE MICROFILTERED MILK (4L), KRAFT SINGLES (22's) or CRACKER BARREL CHEESE SLICES (12's)",
+  "normalized": "neilson trutaste microfiltered milk kraft singles 22 s or cracker barrel cheese slices 12 s",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 6.19,
+  "max_price": 6.19,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "NEILSON TRUTASTE MILK, CHOCOLATE MILK, 4 L, LACTOSE FREE MILK, 2 L OR PROTEIN, 1.89 L",
+  "normalized": "neilson trutaste milk chocolate milk lactose free milk or protein",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.49,
+  "max_price": 5.49,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "NO NAME CANNED TUNA",
+  "normalized": "no name canned tuna",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.5,
+  "max_price": 1.5,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Seafood"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "NO NAME® BREAD, 675 G",
+  "normalized": "no name bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.5,
+  "max_price": 2.5,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "NUTELLA HAZELNUT or PEANUT BUTTER SPREAD",
+  "normalized": "nutella hazelnut or peanut butter spread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 9.29,
+  "max_price": 9.29,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Natrel fine-filtered milk",
+  "normalized": "natrel fine filtered milk",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.98,
+  "max_price": 5.98,
+  "units": [],
+  "sale_stories": [
+   "Rollback"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Nature Fresh Farms Dramas Cherry Tomatoes Red On The Vine 340 g",
+  "normalized": "nature fresh farms dramas cherry tomatoes red on the vine",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $3.50"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "ORGANIC COCONUT MILK OR CREAM",
+  "normalized": "organic coconut milk or cream",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.33,
+  "max_price": 3.33,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [
+   "SAVE $1.36"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "ORGANIC SPROUTED BREAD",
+  "normalized": "organic sprouted bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [
+   "SAVE UP TO 70¢"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "ORGANIC TOMATOES ON THE VINE",
+  "normalized": "organic tomatoes on the vine",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Olive Oil Extra Virgin",
+  "normalized": "olive oil extra virgin",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.99,
+  "max_price": 7.99,
+  "units": [
+   "750ml"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Onions Yellow",
+  "normalized": "onions yellow",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "3lb bag"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Ontario Homegrown Greenhouse Tomatoes",
+  "normalized": "ontario homegrown greenhouse tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Organic Apero Tomatoes",
+  "normalized": "organic apero tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $1"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Organic Grape Tomato",
+  "normalized": "organic grape tomato",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PC FREE FROM™ CHICKEN BREASTS OR THIGHS",
+  "normalized": "pc free from chicken breasts or thighs",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 10.0,
+  "max_price": 10.0,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "PC® CHICKEN DRUMSTICKS, THIGHS OR BREAST FILLET, UP TO 870 G",
+  "normalized": "pc chicken drumsticks thighs or breast fillet up to",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 12.0,
+  "max_price": 12.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PC® CINNAMON RAISIN BREAD OR PC® HOT CROSS BUNS",
+  "normalized": "pc cinnamon raisin bread or pc hot cross buns",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.0,
+  "max_price": 4.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PC® HOT CROSS BUNS EXTRA RAISIN, 8'S OR EXTRA THICK CINNAMON RAISIN BREAD, 675 G",
+  "normalized": "pc hot cross buns extra raisin 8 s or extra thick cinnamon raisin bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 8.0,
+  "max_price": 8.0,
+  "units": [
+   "or $4.99 ea."
+  ],
+  "sale_stories": [
+   "Get 1,500 pts. When you buy 2 $1.50 back in points"
+  ],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PC® MIXIANY TOMATOES, 340 G",
+  "normalized": "pc mixiany tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.0,
+  "max_price": 7.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PC® OR BLUE MENU ENGLISH MUFFINS, 342 G, WONDER BREAD, 675 G OR BUNS, 8'S OR RUDOLPH'S BAVARIAN BREAD, 500 G",
+  "normalized": "pc or blue menu english muffins wonder bread or buns 8 s or rudolph s bavarian bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PC® OR BLUE MENU® ENGLISH MUFFINS 342 G, WONDER BREAD 675 G OR BUNS 8'S OR RUDOLPH'S BAVARIAN BREAD 500 G",
+  "normalized": "pc or blue menu english muffins wonder bread or buns 8 s or rudolph s bavarian bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PEANUT BUTTER, 750 G/1 KG",
+  "normalized": "peanut butter",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PRIME RAISED WITHOUT ANTIBIOTICSFRESH BONELESS SKINLESS CHICKEN BREAST OR THIGHS VALUE PACK OR MINA HALAL",
+  "normalized": "prime raised without antibioticsfresh boneless skinless chicken breast or thighs value pack or mina halal",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.99,
+  "max_price": 7.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": true
+ },
+ {
+  "product_name": "PROMISE GLUTEN FREE BREAD AND BUNS",
+  "normalized": "promise gluten free bread and buns",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.5,
+  "max_price": 7.5,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PROMISE GLUTEN FREE BREADS",
+  "normalized": "promise gluten free breads",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.99,
+  "max_price": 7.99,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [
+   "125 points value of $1"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "PROMISE GLUTEN- FREE BREAD, BUNS, ROLLS OR PITAS, 248-480 G",
+  "normalized": "promise gluten free bread buns rolls or pitas 248",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 6.0,
+  "max_price": 6.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Pasta Penne",
+  "normalized": "pasta penne",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.49,
+  "max_price": 1.49,
+  "units": [
+   "454g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Peanut Butter",
+  "normalized": "peanut butter",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Pita Bread",
+  "normalized": "pita bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.0,
+  "max_price": 3.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Pork Chops",
+  "normalized": "pork chops",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Pork Tenderloin",
+  "normalized": "pork tenderloin",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.99,
+  "max_price": 7.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Potatoes Russet",
+  "normalized": "potatoes russet",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "5lb bag"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Promise gluten free bread",
+  "normalized": "promise gluten free bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.98,
+  "max_price": 7.98,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Quinoa",
+  "normalized": "quinoa",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.49,
+  "max_price": 4.49,
+  "units": [
+   "500g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "RED VINE TOMATOES",
+  "normalized": "red vine tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.77,
+  "max_price": 1.77,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [
+   "56% SAVINGS"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "RUDOLPH'S BAVARIAN RYE BREADS",
+  "normalized": "rudolph s bavarian rye breads",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "RUDOLPH'S OR PREMIÈRE MOISSON BREAD",
+  "normalized": "rudolph s or premi re moisson bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Raspberries 170 g Product of USA or Mexico or Red Cherry Tomatoes 340 g Product of Ontario, Canada No. 1",
+  "normalized": "raspberries product of usa or mexico or red cherry tomatoes product of ontario canada no 1",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "only"
+  ],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Rice Basmati",
+  "normalized": "rice basmati",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [
+   "1kg"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Roma Tomatoes Product of Ontario, Canada No. 1 or Mexico No. 1 Grade or Green Peppers Product of Ontario 4.14/kg",
+  "normalized": "roma tomatoes product of ontario canada no 1 or mexico no 1 grade or green peppers product of ontario 4 14 kg",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.88,
+  "max_price": 1.88,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "only"
+  ],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "SELECTION OR LIFE SMART NATURALIA PEANUT BUTTER",
+  "normalized": "selection or life smart naturalia peanut butter",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.44,
+  "max_price": 4.44,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "SILVER HILLS SPROUTED POWER BREAD, 430 - 680 G",
+  "normalized": "silver hills sprouted power bread 430",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.75,
+  "max_price": 4.75,
+  "units": [],
+  "sale_stories": [
+   "SAVE 20%"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "SILVER HILLS SPROUTED POWER BREAD, 430-680 G",
+  "normalized": "silver hills sprouted power bread 430",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.75,
+  "max_price": 4.75,
+  "units": [],
+  "sale_stories": [
+   "PREPARED IN CANADA"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "SOURDOUGH LOAF OR EVERYTHING SOURDOUGH BREAD, 404/450 G",
+  "normalized": "sourdough loaf or everything sourdough bread 404",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.5,
+  "max_price": 3.5,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "SOURDOUGH OR PUMPERNICKEL BREAD, 383-574 G",
+  "normalized": "sourdough or pumpernickel bread 383",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.5,
+  "max_price": 3.5,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "ALWAYS LOW PRICE"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "SUN-MAID RAISIN BREAD, DEMPSTER'S RAISIN OR MALT BREADS",
+  "normalized": "sun maid raisin bread dempster s raisin or malt breads",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "SUNMAID CINNAMON RASIN OR CINNABON BREAD, 450 G",
+  "normalized": "sunmaid cinnamon rasin or cinnabon bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.5,
+  "max_price": 4.5,
+  "units": [],
+  "sale_stories": [
+   "Get PC Optimum 1,000 pts, $1 back in points"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "SUNRISE TOFU DESSERT, 150GX2",
+  "normalized": "sunrise tofu dessert 150gx2",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.5,
+  "max_price": 3.5,
+  "units": [
+   "or 1.87/ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "SUPERIOR NATURAL TOFU, 454G",
+  "normalized": "superior natural tofu",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.97,
+  "max_price": 1.97,
+  "units": [
+   "2.87 /ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Salmon Fillet Atlantic",
+  "normalized": "salmon fillet atlantic",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 9.99,
+  "max_price": 9.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Seafood"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Salted Egg Yolk Custard Puff Bread/Milk Bread",
+  "normalized": "salted egg yolk custard puff bread milk bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.7,
+  "max_price": 5.7,
+  "units": [
+   "or 3/ea"
+  ],
+  "sale_stories": [
+   "Mix & Match"
+  ],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Seasoned Breaded Cod",
+  "normalized": "seasoned breaded cod",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 17.99,
+  "max_price": 17.99,
+  "units": [],
+  "sale_stories": [
+   "save $2"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Silver Hills Sprouted Bread",
+  "normalized": "silver hills sprouted bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.99,
+  "max_price": 4.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $2"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Sour Cream",
+  "normalized": "sour cream",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "500ml"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Dairy & Eggs"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Spaghetti",
+  "normalized": "spaghetti",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 0.99,
+  "max_price": 0.99,
+  "units": [
+   "900g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Stonemill Bakehouse Honest Wellness Breads",
+  "normalized": "stonemill bakehouse honest wellness breads",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 4.79,
+  "max_price": 4.79,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [
+   "Save $1 ea"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Sun-Maid Raisin Bread 450 g",
+  "normalized": "sun maid raisin bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.69,
+  "max_price": 3.69,
+  "units": [],
+  "sale_stories": [
+   "SAVE 80¢"
+  ],
+  "pre_price_texts": [
+   "Scene+ Member Pricing"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Sun-Maid raisin bread",
+  "normalized": "sun maid raisin bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.58,
+  "max_price": 3.58,
+  "units": [],
+  "sale_stories": [
+   "Rollback"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Sunmaid raisin sliced bread",
+  "normalized": "sunmaid raisin sliced bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Sunrise Extra Firm Tofu (350 g)",
+  "normalized": "sunrise extra firm tofu",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.49,
+  "max_price": 3.49,
+  "units": [
+   "ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "from"
+  ],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Sweet Potatoes",
+  "normalized": "sweet potatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "TERRA GRANOLA SMALL BATCH NON-GMO GRANOLA, 340 g",
+  "normalized": "terra granola small batch non gmo granola",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 8.49,
+  "max_price": 8.49,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "TOMATOES ON THE VINE",
+  "normalized": "tomatoes on the vine",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.49,
+  "max_price": 1.49,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Tofu Firm",
+  "normalized": "tofu firm",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [
+   "350g"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Tomato Sauce",
+  "normalized": "tomato sauce",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "650ml"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Pantry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Tomato and Grilled Cheese",
+  "normalized": "tomato and grilled cheese",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "sale"
+  ],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Tomato and Grilled Cheese Soup",
+  "normalized": "tomato and grilled cheese soup",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "sale"
+  ],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Tomatoes Cherry",
+  "normalized": "tomatoes cherry",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "1lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Tomatoes Roma 4 Count",
+  "normalized": "tomatoes roma",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.99,
+  "max_price": 3.99,
+  "units": [],
+  "sale_stories": [
+   "SAVE $1.00"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Tomatoes on the Vine",
+  "normalized": "tomatoes on the vine",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.49,
+  "max_price": 1.49,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Turkey Breast",
+  "normalized": "turkey breast",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Meat & Poultry"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Ultimates Breaded or Battered Haddock or Cod",
+  "normalized": "ultimates breaded or battered haddock or cod",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 14.99,
+  "max_price": 14.99,
+  "units": [],
+  "sale_stories": [
+   "300 Scene+ PTS when you buy 1"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Ultimates Breaded or Battered Haddock or Cod Black Frid'Eh",
+  "normalized": "ultimates breaded or battered haddock or cod black frid eh",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 14.99,
+  "max_price": 14.99,
+  "units": [],
+  "sale_stories": [
+   "300 Scene+ PTS when you buy 1"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Unico Beans or Tomatoes 540-796 mL",
+  "normalized": "unico beans or tomatoes 540",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.79,
+  "max_price": 1.79,
+  "units": [],
+  "sale_stories": [
+   "SAVE UP TO 90¢"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Unico Tomatoes 796ml or Beans 540ml",
+  "normalized": "unico tomatoes or beans",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.0,
+  "max_price": 5.0,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "3/"
+  ],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "VACHON OR HOSTESS SNACK CAKES OR PASTRIES,250-336 G OR OR NATURAL BAKERY CANADIAN RYE BREAD, 500 G",
+  "normalized": "vachon or hostess snack cakes or pastries 250 or or natural bakery canadian rye bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.0,
+  "max_price": 7.0,
+  "units": [
+   "or $4.00 each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "VILLA DIMANNO BREAD OR ROLLS",
+  "normalized": "villa dimanno bread or rolls",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 3.79,
+  "max_price": 3.79,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [
+   "50 points"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "VILLAGGIO BREAD 550 - 675 G DEMPSTER'S WHOLE GRAIN BREAD 600 G BAGELS 450 - 510 G",
+  "normalized": "villaggio bread 550 dempster s whole grain bread bagels 450",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "VILLAGGIO BREAD 550-675 G, DEMPSTER'S WHOLE GRAIN BREAD 600 G BAGELS 450 - 510 G",
+  "normalized": "villaggio bread 550 dempster s whole grain bread bagels 450",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "VILLAGGIO BREAD 550 - 675 G DEMPSTER'S WHOLE GRAIN BREAD 600 G BAGELS 450 - 510 G",
+  "normalized": "villaggio bread 550 dempster s whole grain bread bagels 450",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "VILLAGGIO BREAD DEMPSTER'S WHOLE GRAIN BREAD",
+  "normalized": "villaggio bread dempster s whole grain bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "VILLAGGIO ITALIAN STYLE BREADS, BUNS OR COUNTRY HARVEST BREADS",
+  "normalized": "villaggio italian style breads buns or country harvest breads",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.0,
+  "max_price": 7.0,
+  "units": [
+   "or $3.99 ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2 for"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "WILD WONDERS OR SWEET CHERRY TOMATOES",
+  "normalized": "wild wonders or sweet cherry tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "WILD WONDERS TOMATOES",
+  "normalized": "wild wonders tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 5.99,
+  "max_price": 5.99,
+  "units": [
+   "ea."
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "WONDER BREAD, 675 g or BUNS, 8's",
+  "normalized": "wonder bread or buns 8 s",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.5,
+  "max_price": 2.5,
+  "units": [],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "WONDER WRAPS (10's), D'ITALIANO SAUSAGE BUNS (6's) or BREAD (675g)",
+  "normalized": "wonder wraps 10 s d italiano sausage buns 6 s or bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.0,
+  "max_price": 7.0,
+  "units": [
+   "or 3.99 each"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "White or Whole Wheat Bread",
+  "normalized": "white or whole wheat bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.49,
+  "max_price": 2.49,
+  "units": [],
+  "sale_stories": [
+   "200 Scene+ PTS when you buy 3"
+  ],
+  "pre_price_texts": [
+   "HOT PRICE"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "White or Whole Wheat, Texas Toast or Sandwich Bread",
+  "normalized": "white or whole wheat texas toast or sandwich bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.67,
+  "max_price": 2.67,
+  "units": [],
+  "sale_stories": [
+   "100 Scene+ PTS when you buy 3"
+  ],
+  "pre_price_texts": [],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "XIAOBAI SOFT CAKE/BREAD, 270G-360G",
+  "normalized": "xiaobai soft cake bread",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 7.77,
+  "max_price": 7.77,
+  "units": [
+   "or 4.29/ 4.77 ea"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [
+   "2/"
+  ],
+  "categories": [
+   "Bakery"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "Zucchini",
+  "normalized": "zucchini",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 1.99,
+  "max_price": 1.99,
+  "units": [
+   "lb"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": false,
+  "seen_before": true,
+  "has_junction_row": false
+ },
+ {
+  "product_name": "red vine tomatoes",
+  "normalized": "red vine tomatoes",
+  "deal_count": 1,
+  "store_count": 1,
+  "min_price": 2.99,
+  "max_price": 2.99,
+  "units": [
+   "lb $6.59 kg"
+  ],
+  "sale_stories": [],
+  "pre_price_texts": [],
+  "categories": [
+   "Produce"
+  ],
+  "new_this_run": true,
+  "seen_before": false,
+  "has_junction_row": false
+ }
+]
