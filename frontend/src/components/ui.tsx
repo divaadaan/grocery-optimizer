@@ -44,10 +44,11 @@ export function Badge({
 
 /**
  * Foregrounds the app's core value prop — money saved vs. regular prices.
- * Renders nothing when there's nothing to celebrate (savings ≤ 0). When a
+ * Renders nothing when savings is unknown (null) or ≤ 0. When a
  * `total` (the cost actually paid) is given, also shows the % off regular.
  */
-export function SavingsCallout({ savings, total }: { savings: Money; total?: Money }) {
+export function SavingsCallout({ savings, total }: { savings: Money | null | undefined; total?: Money }) {
+  if (savings === null || savings === undefined) return null; // unknown: hide, never "$0"
   const amount = moneyToNumber(savings);
   if (amount <= 0) return null;
 

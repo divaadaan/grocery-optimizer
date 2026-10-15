@@ -160,8 +160,8 @@ class DatabaseService:
         recipe_ids: List[int],
         items: List[Dict],
         total_cost: float,
-        estimated_savings: float,
-        regular_total: float
+        estimated_savings: Optional[float],
+        regular_total: Optional[float]
     ) -> int:
         """
         Save a consolidated shopping list to the database.

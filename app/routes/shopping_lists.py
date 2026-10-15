@@ -36,18 +36,21 @@ def _build_and_persist(user_id: int, user: dict) -> ShoppingListResponse:
             detail="No recipes found for this user. Generate a meal plan first."
         )
 
-    # DIETARY GATE (app/services/deal_gate.py). The optimizer only prices
-    # ingredients the user's recipes already name, but it matches them to
-    # deals loosely, so it could still put an unsafe product on the list.
-    # Same rule as recipe generation: a restricted user is priced only against
-    # deals whose confirmed products clear their restrictions.
+    # DIETARY GATE (app/services/deal_gate.py). The optimizer resolves each
+    # ingredient's deal citation against this deal set, so a restricted user
+    # is only ever priced against deals whose confirmed products clear their
+    # restrictions; a cited deal that was gated out becomes an unpriced line.
     deals = StoreService.get_current_deals_by_postal_code(
         user["postal_code"],
         dietary_restrictions=user.get("dietary_restrictions"),
     )
     result = optimize_shopping_list(recipes, deals)
 
-    regular_total = result.total_cost + result.estimated_savings
+    # No known regular prices -> no regular total either (NULL, not total).
+    regular_total = (
+        None if result.estimated_savings is None
+        else result.total_cost + result.estimated_savings
+    )
     recipe_ids = [recipe["recipe_id"] for recipe in recipes]
 
     list_id = db_service.save_shopping_list(

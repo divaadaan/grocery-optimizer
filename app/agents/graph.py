@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, END
 from langgraph.types import Send
-from typing import Literal, List, Union
+from typing import Literal, List, Optional, Union
 from .state import RecipeGenerationState
 from .chef_orchestrator import ChefOrchestrator
 from .costing import deals_by_id, price_recipe, sum_savings
@@ -79,20 +79,16 @@ def budget_remaining_after(state: RecipeGenerationState, total_cost: float) -> f
     return state["budget"] - spent - total_cost
 
 
-def _savings(state: RecipeGenerationState, recipes) -> float:
+def _savings(state: RecipeGenerationState, recipes) -> Optional[float]:
     """Savings across ``recipes`` from their cited deals' regular prices.
 
-    costing returns None when no cited deal carries a regular price, and that
-    is the honest answer. It is reported here as 0.0 only because the state
-    channel, the API response model and the MLflow metric are all typed as a
-    plain number today; making them Optional is the remaining step to let
-    savings be genuinely absent end to end. 0.0 understates rather than
-    fabricates: no regular price is ever invented.
+    ``None`` when no cited deal carries a regular price: unknown savings stay
+    absent end to end (state, API ``null``, MLflow metric skipped) rather than
+    becoming a fabricated 0.
     """
     lookup = deals_by_id(state.get("available_deals") or [])
-    total = sum_savings(price_recipe(r["ingredients"], lookup).estimated_savings
-                        for r in recipes)
-    return total if total is not None else 0.0
+    return sum_savings(price_recipe(r["ingredients"], lookup).estimated_savings
+                       for r in recipes)
 
 
 def fan_out_to_sous_chefs(

@@ -101,7 +101,8 @@ class RecipeGenerationState(TypedDict):
     # the whole period's money.
     total_cost: float
     cost_per_meal: float
-    estimated_savings: float
+    # None = no cited deal has a regular price (unknown, not zero)
+    estimated_savings: Optional[float]
     budget_remaining: float
 
     # MLflow tracking — appended to by many nodes; nodes return only new entries

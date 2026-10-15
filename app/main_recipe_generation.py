@@ -69,7 +69,7 @@ def run_recipe_generation(
         recipes_pending_retry={},
         total_cost=0.0,
         cost_per_meal=0.0,
-        estimated_savings=0.0,
+        estimated_savings=None,
         budget_remaining=budget - budget_spent_this_period,
         mlflow_run_id="",
         agent_call_log=[],

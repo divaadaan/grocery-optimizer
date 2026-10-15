@@ -1,6 +1,6 @@
 import functools
 import time
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 import mlflow
 
@@ -123,16 +123,18 @@ class MLflowLogger:
     @staticmethod
     @_best_effort()
     def log_final_metrics(total_cost: float, cost_per_meal: float,
-                          estimated_savings: float, iterations: int,
+                          estimated_savings: Optional[float], iterations: int,
                           recipe_count: int, success: bool):
-        """Log final workflow metrics."""
-        mlflow.log_metrics({
+        """Log final workflow metrics. Unknown savings (None) is not logged."""
+        metrics = {
             "total_cost": total_cost,
             "cost_per_meal": cost_per_meal,
-            "estimated_savings": estimated_savings,
             "iterations": iterations,
             "final_recipe_count": recipe_count
-        })
+        }
+        if estimated_savings is not None:
+            metrics["estimated_savings"] = estimated_savings
+        mlflow.log_metrics(metrics)
 
         mlflow.log_param("workflow_success", success)
 
