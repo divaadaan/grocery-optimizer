@@ -181,7 +181,8 @@ class RecipeGenerationResponse(BaseModel):
     recipes: List[RecipeInfo]
     total_cost: Decimal
     cost_per_meal: Decimal
-    estimated_savings: Decimal
+    # null when no cited deal carries a regular price (unknown, not zero)
+    estimated_savings: Optional[Decimal] = None
     generation_time: float
     status: str
     warnings: List[str] = Field(default_factory=list)
@@ -254,7 +255,8 @@ class ShoppingListResponse(BaseModel):
     recipe_ids: List[int]
     items: List[Dict[str, Any]]
     total_cost: Decimal
-    estimated_savings: Decimal
+    # null when no listed deal carries a regular price (unknown, not zero)
+    estimated_savings: Optional[Decimal] = None
     stores: List[str]
     created_at: datetime
     is_completed: bool

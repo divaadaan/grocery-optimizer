@@ -77,7 +77,7 @@ export interface RecipeIngredient {
   name?: string;
   quantity?: string | number;
   unit?: string;
-  price?: Money;
+  price?: Money | null;
   [key: string]: unknown;
 }
 
@@ -112,7 +112,7 @@ export interface RecipeGenerationResponse {
   recipes: RecipeInfo[];
   total_cost: Money;
   cost_per_meal: Money;
-  estimated_savings: Money;
+  estimated_savings: Money | null;
   generation_time: number;
   status: string;
   warnings: string[];
@@ -158,7 +158,7 @@ export interface ShoppingListItem {
   product?: string;
   quantity?: string;
   store?: string;
-  price?: Money;
+  price?: Money | null;
   category?: string | null;
   [key: string]: unknown;
 }
@@ -169,7 +169,7 @@ export interface ShoppingListResponse {
   recipe_ids: number[];
   items: ShoppingListItem[];
   total_cost: Money;
-  estimated_savings: Money;
+  estimated_savings: Money | null;
   stores: string[];
   created_at: string;
   is_completed: boolean;

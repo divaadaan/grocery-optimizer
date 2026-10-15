@@ -526,7 +526,7 @@ def test_graph_savings_come_from_cited_deals_and_never_invent_a_regular_price():
     from app.agents import graph
     state = {"available_deals": DEALS}
     no_regular = [_recipe({"name": "e", "deal_id": 1}, {"name": "s", "product_id": 101})]
-    assert graph._savings(state, no_regular) == 0.0
+    assert graph._savings(state, no_regular) is None
     with_regular = [_recipe({"name": "c", "deal_id": 2})]
     assert graph._savings(state, with_regular) == 0.5
 

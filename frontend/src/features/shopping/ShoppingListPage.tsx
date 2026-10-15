@@ -87,7 +87,7 @@ export function ShoppingListPage() {
 function groupByStore(items: ShoppingListItem[]): [string, ShoppingListItem[]][] {
   const groups = new Map<string, ShoppingListItem[]>();
   for (const item of items) {
-    const store = item.store ?? "Any store";
+    const store = item.store ?? "Store unknown";
     const group = groups.get(store) ?? [];
     group.push(item);
     groups.set(store, group);

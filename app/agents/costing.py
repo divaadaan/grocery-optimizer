@@ -97,25 +97,3 @@ def sum_savings(values: Iterable[Optional[float]]) -> Optional[float]:
     """Sum per-recipe savings, skipping unknowns; None if all are unknown."""
     known = [v for v in values if v is not None]
     return round(sum(known), 2) if known else None
-
-
-# --------------------------------------------------------------------------
-# Name-token helpers. Recipe costing no longer uses them; they remain because
-# app/services/shopping_optimizer.py imports them for shopping-list matching.
-# --------------------------------------------------------------------------
-
-#: Legacy always-free names for the shopping-list matcher only. Recipe
-#: costing reads staples from products.assumed_on_hand (migration 014).
-PANTRY_STAPLES = {"salt", "pepper", "water", "oil"}
-
-
-def _singularize(token: str) -> str:
-    if len(token) > 3 and token.endswith("es"):
-        return token[:-2]
-    if len(token) > 2 and token.endswith("s") and not token.endswith("ss"):
-        return token[:-1]
-    return token
-
-
-def _token_set(name: str) -> Set[str]:
-    return {_singularize(tok) for tok in name.casefold().split()}
