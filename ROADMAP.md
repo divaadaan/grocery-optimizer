@@ -384,14 +384,28 @@ aspirational.
   Still to do: the labelling format has to let one tile return several products
   (`product_aliases.normalized_name` is unique, so a tile string currently
   cannot map to more than one), and the decomposition itself.
-  **Price attribution** is in better shape than feared — `deals.unit` is
-  persisted and 11 of the 17 known tiles carry `each` / `ea.` / `lb`, which
-  means the price applies per item; `deal_products.price_is_per_item` records
-  that per row, NOT NULL with no default so nobody can leave it undecided. The
-  ambiguous minority (`2 for $5`) needs `sale_story` / `pre_price_text`, and
-  **those are not columns on `deals`** — ingestion read them and dropped them,
-  so persisting them is a prerequisite. **Snapshots gain** from decomposition
-  too: a mashed name is currently a one-observation series that never recurs.
+  **Price attribution — resolved as far as the data allows (2026-10-14).**
+  `deals.unit` decided 11 of 17 tiles (`each`/`ea.`/`lb` ⇒ per-item). Migration
+  011 then stopped discarding the two signals ingestion was already fetching:
+  `sale_story` ("2 FOR $5", "SAVE 30%", "Rollback") and `pre_price_text`
+  ("NOW", "from", "2/"). `infer_price_is_per_item` reads all three, and
+  `--reinfer-prices` backfills undecided aliases after an ingestion run.
+  Precedence matters and is tested: a multi-buy story beats a per-item unit,
+  because "2 FOR $5" with `unit='ea.'` means two for five, and reading the unit
+  first would halve the price everywhere downstream. A bare `2/` in the *prefix*
+  counts too — found live on a $7.00 tile that the story-only rule had left
+  undecided.
+  Of the 4 remaining undecided tiles, **1 resolved** (to bundle pricing) and
+  **3 stay undecided because the provider sends no unit, no story and no prefix
+  for them** — there is nothing to infer from, so they stay withheld. That is
+  the designed outcome, not a gap: `deal_products.price_is_per_item` is NOT NULL
+  so an undecided price blocks the link rather than defaulting, since a wrong
+  "per item" puts a bundle price on a shopping-list line and the user finds out
+  at the till.
+  **Snapshots still don't gain** from decomposition: they carry one price under
+  one name, so a decomposed tile has no single product to attribute the
+  observation to, and `link_deals` leaves them unlinked deliberately. Fixing
+  that needs a snapshot-level junction or a per-product snapshot at ingest.
 - **Restricted users currently get zero deals.** Measured against Neon on
   2026-10-14: an unrestricted user gets 49 valid deals (all `flipp`), a
   vegetarian user gets **0**. The diet gate is working correctly — no `flipp`

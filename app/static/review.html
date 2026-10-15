@@ -95,9 +95,21 @@
 
   ul.aliases { margin: .4rem 0 .7rem; padding: 0; list-style: none; max-height: 13rem; overflow-y: auto; }
   ul.aliases li {
-    display: flex; gap: .5rem; align-items: center;
     font-size: .85rem; padding: .18rem 0; border-bottom: 1px dashed var(--line);
   }
+  .aliasrow { display: flex; gap: .5rem; align-items: center; }
+  .tile {
+    margin: .2rem 0 .4rem 2.7rem; padding: .35rem .55rem;
+    background: var(--panel-2); border-radius: 6px;
+    font-size: .8rem; color: var(--ink-dim);
+  }
+  .tile b { color: var(--ink); font-weight: 600; }
+  .sib {
+    display: inline-block; background: var(--bg); border: 1px solid var(--line);
+    border-radius: 999px; padding: 0 .45rem; margin: .15rem .2rem 0 0;
+    color: var(--ink);
+  }
+  .sib.warn { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
   ul.aliases li:last-child { border-bottom: 0; }
   ul.aliases code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .82rem; }
   .seen { color: var(--ink-dim); font-variant-numeric: tabular-nums; min-width: 2.2rem; }
@@ -224,13 +236,36 @@ function groupCard(group, index) {
       ${esc(ATTR_LABEL[attr] || attr)}
     </label>`).join("");
 
-  const aliases = group.aliases.map((a) => `
+  const aliases = group.aliases.map((a) => {
+    // A multi-product tile: this one string is shared across several product
+    // groups. Without saying so, the reviewer sees the whole tile text under
+    // one product and reasonably concludes the split never happened.
+    const others = (a.tile_products || []).filter(
+      (n) => n !== group.canonical_name
+    );
+    const tile = others.length ? `
+      <div class="tile">
+        <b>Part of a ${a.tile_products.length}-product tile.</b>
+        The rest of this string is handled by:
+        ${others.map((n) => `<span class="sib">${esc(n)}</span>`).join("")}
+        ${a.price_is_per_item === false
+          ? '<span class="sib warn">bundle price &mdash; not this item&rsquo;s own price</span>'
+          : ""}
+        ${a.price_is_per_item === null
+          ? '<span class="sib warn">pricing undecided &mdash; stays withheld</span>'
+          : ""}
+      </div>` : "";
+    return `
     <li class="${group.dropped.has(a.alias_id) ? "dropped" : ""}">
-      <span class="seen">&times;${a.times_seen}</span>
-      <code>${esc(a.raw_example)}</code>
-      <button class="drop" data-drop="${a.alias_id}" data-i="${index}"
-              title="this string is not this product">&#10007;</button>
-    </li>`).join("");
+      <div class="aliasrow">
+        <span class="seen">&times;${a.times_seen}</span>
+        <code>${esc(a.raw_example)}</code>
+        <button class="drop" data-drop="${a.alias_id}" data-i="${index}"
+                title="this string is not this product">&#10007;</button>
+      </div>
+      ${tile}
+    </li>`;
+  }).join("");
 
   const alarm = (group.oracle_disagreement || []).length ? `
     <div class="alarm"><b>The substring oracle disagrees</b> for

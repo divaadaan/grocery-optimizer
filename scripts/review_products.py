@@ -172,6 +172,21 @@ def _show_group(group: dict) -> None:
         conf_s = f"{float(conf):.2f}" if conf is not None else " n/a"
         print(f"      x{alias['times_seen']:<2} conf {conf_s}  "
               f"{alias['raw_example'][:56]}")
+        # A multi-product tile: this one string is shared across several
+        # product groups. Saying so matters -- otherwise the whole tile text
+        # shows up under one product and looks like the split never happened.
+        siblings = [
+            n for n in (alias.get("tile_products") or [])
+            if n != group["canonical_name"]
+        ]
+        if siblings:
+            total = len(alias["tile_products"])
+            print(f"          part of a {total}-product tile; the rest is "
+                  f"handled by: {', '.join(siblings)}")
+            if alias["price_is_per_item"] is False:
+                print("          (bundle price - not this item's own price)")
+            elif alias["price_is_per_item"] is None:
+                print("          (pricing undecided - stays withheld)")
     if len(aliases) > ALIAS_PREVIEW:
         print(f"      ... and {len(aliases) - ALIAS_PREVIEW} more")
 
@@ -332,6 +347,21 @@ def cmd_link() -> int:
     return 0
 
 
+def cmd_reinfer() -> int:
+    """Fill undecided tile pricing from the deal text, after an ingestion run."""
+    stats = products.reinfer_alias_prices()
+    print(f"  aliases examined   {stats['examined']}")
+    print(f"  decided per-item   {stats['filled_true']}")
+    print(f"  decided bundle     {stats['filled_false']}")
+    print(f"  still undecided    {stats['still_null']}")
+    if stats["still_null"]:
+        print("\nStill-undecided aliases stay withheld: the provider sent no")
+        print("unit, no sale_story and no pre_price_text for those tiles, so")
+        print("there is nothing to infer from. Decide them by hand in review,")
+        print("or leave them withheld.")
+    return 0
+
+
 def cmd_unmapped() -> int:
     rows = products.unmapped_names()
     if not rows:
@@ -373,6 +403,8 @@ def main(argv: list[str] | None = None) -> int:
                        help="deal names with no product")
     group.add_argument("--audit", action="store_true",
                        help="attributes vs the substring oracle")
+    group.add_argument("--reinfer-prices", dest="reinfer", action="store_true",
+                       help="fill undecided tile pricing from the deal text")
     args = parser.parse_args(argv)
 
     if args.list:
@@ -383,6 +415,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_link()
     if args.unmapped:
         return cmd_unmapped()
+    if args.reinfer:
+        return cmd_reinfer()
     return cmd_audit()
 
 
