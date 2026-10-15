@@ -15,6 +15,7 @@ from app.models.schemas import (
     RecipeInfo,
     ErrorResponse
 )
+from app.services.budget import DEFAULT_PERIOD, budget_status
 from app.services.user_service import UserService
 from app.services.database import DatabaseService
 from app.services.recipe_jobs import (
@@ -109,11 +110,33 @@ def _run_generation_job(job_id: str, user: dict, request: RecipeGenerationReques
     job_registry.mark_running(job_id)
     start_time = time.time()
 
+    # Read the spend already committed in this budget period, at run time
+    # rather than at request time, so a list completed while the job queued is
+    # counted. `budget` is the period ceiling, not a per-generation allowance:
+    # without this the plan is costed against the whole week's or month's money
+    # however much of it is already gone.
+    try:
+        status_now = budget_status(user)
+        budget_period = status_now["budget_period"]
+        budget_spent = status_now["spent"]
+    except Exception as e:
+        # A budget read failure must not sink the generation. Falling back to
+        # 0.0 restores the old (over-generous) ceiling, and says so loudly
+        # instead of silently.
+        logger.error(
+            f"Could not read budget status for user {user['user_id']}: {e}. "
+            "Costing this plan against the full period budget.", exc_info=True
+        )
+        budget_period = DEFAULT_PERIOD
+        budget_spent = 0.0
+
     try:
         result = main_recipe_generation.run_recipe_generation(
             user_id=user["user_id"],
             postal_code=user["postal_code"],
             budget=float(user["budget"]),
+            budget_period=budget_period,
+            budget_spent_this_period=budget_spent,
             household_size=user["household_size"],
             dietary_restrictions=user["dietary_restrictions"],
             num_meals=request.num_meals,

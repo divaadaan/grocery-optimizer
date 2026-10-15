@@ -3,7 +3,7 @@ Pydantic models for API request/response validation
 """
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime, date
 from decimal import Decimal
 
@@ -12,11 +12,15 @@ from decimal import Decimal
 # User Schemas
 # ============================================================================
 
+BudgetPeriod = Literal["weekly", "monthly"]
+
+
 class UserCreate(BaseModel):
     """Request model for user registration."""
     email: EmailStr
     postal_code: str = Field(..., min_length=6, max_length=10)
     budget: Decimal = Field(default=100.00, ge=0, le=10000)
+    budget_period: BudgetPeriod = "monthly"
     household_size: int = Field(default=1, ge=1, le=20)
     dietary_restrictions: List[str] = Field(default_factory=list)
 
@@ -33,6 +37,7 @@ class UserResponse(BaseModel):
     email: str
     postal_code: str
     budget: Decimal
+    budget_period: BudgetPeriod = "monthly"
     household_size: int
     dietary_restrictions: List[str]
     created_at: datetime
@@ -43,8 +48,33 @@ class UserUpdate(BaseModel):
     """Request model for updating user preferences."""
     postal_code: Optional[str] = None
     budget: Optional[Decimal] = Field(None, ge=0, le=10000)
+    budget_period: Optional[BudgetPeriod] = None
     household_size: Optional[int] = Field(None, ge=1, le=20)
     dietary_restrictions: Optional[List[str]] = None
+
+
+class BudgetStatusResponse(BaseModel):
+    """How much of the user's spend limit is left in the current period.
+
+    ``budget`` is the limit for ONE period of length ``budget_period``, and
+    the period is calendar-anchored and half-open: ``period_start`` inclusive,
+    ``period_end`` exclusive. ``spent`` is the summed ``total_cost`` of the
+    shopping lists completed inside it — derived on read, never stored.
+
+    ``remaining`` goes negative when the user is over; ``available_for_plan``
+    is the same number floored at zero, and is what the generation path is
+    allowed to spend.
+    """
+    user_id: int
+    budget: Decimal
+    budget_period: BudgetPeriod
+    period_start: datetime
+    period_end: datetime
+    spent: Decimal
+    remaining: Decimal
+    available_for_plan: Decimal
+    is_over_budget: bool
+    completed_lists: int
 
 
 # ============================================================================
@@ -228,6 +258,10 @@ class ShoppingListResponse(BaseModel):
     stores: List[str]
     created_at: datetime
     is_completed: bool
+    # When the user marked it bought — the spend date for budget
+    # accumulation. None until then. Optional so existing clients that never
+    # sent or read it keep working.
+    completed_at: Optional[datetime] = None
 
 
 # ============================================================================

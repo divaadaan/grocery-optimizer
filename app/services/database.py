@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from typing import List, Dict, Optional
 import json
@@ -205,7 +206,8 @@ class DatabaseService:
         """
         query = """
         SELECT list_id, user_id, recipe_ids, items, total_cost,
-               estimated_savings, regular_total, created_at, is_completed
+               estimated_savings, regular_total, created_at, is_completed,
+               completed_at
         FROM shopping_lists
         WHERE user_id = %s
         ORDER BY created_at DESC
@@ -217,25 +219,100 @@ class DatabaseService:
             result = cursor.fetchone()
             return _jsonable(dict(result)) if result else None
 
-    def mark_shopping_list_complete(self, user_id: int) -> bool:
+    def mark_shopping_list_complete(
+        self,
+        user_id: int,
+        list_id: Optional[int] = None,
+    ) -> bool:
         """
-        Mark the user's most recent shopping list as completed.
+        Mark one of the user's shopping lists as completed — the spend event.
+
+        ``list_id`` names the list. Passing ``None`` keeps the original
+        behaviour (the user's most recent list) for callers that predate the
+        argument; it is the compatibility path, not the good one, because
+        "latest" moves under a client that regenerates between shopping and
+        reporting.
+
+        ``user_id`` is always part of the WHERE clause, so one user can never
+        complete another's list and distort their budget.
+
+        ``completed_at`` is stamped here and is what budget accumulation reads
+        (``app/services/budget.py``). COALESCE keeps the *first* completion
+        time if a list is marked twice — a re-mark is not a second purchase.
 
         Returns whether a row was updated.
         """
+        if list_id is not None:
+            query = """
+            UPDATE shopping_lists
+            SET is_completed = true,
+                completed_at = COALESCE(completed_at, NOW())
+            WHERE list_id = %s AND user_id = %s
+            RETURNING list_id;
+            """
+            params = (list_id, user_id)
+        else:
+            query = """
+            UPDATE shopping_lists
+            SET is_completed = true,
+                completed_at = COALESCE(completed_at, NOW())
+            WHERE list_id = (
+                SELECT list_id FROM shopping_lists
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                LIMIT 1
+            )
+            RETURNING list_id;
+            """
+            params = (user_id,)
+
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, params)
+            result = cursor.fetchone()
+            return result is not None
+
+    def db_now(self) -> datetime:
+        """The database's own wall clock, as a naive timestamp.
+
+        Budget periods must be anchored in the same clock that writes
+        ``completed_at``, and that is the database's: Neon runs UTC while the
+        app process here runs local time, so a window computed from
+        ``datetime.now()`` can be hours out of step with the timestamps it is
+        filtering. Being consistently in the DB's clock means every completed
+        list falls in exactly one period and the totals always reconcile.
+        """
+        with self.db.get_cursor() as cursor:
+            cursor.execute("SELECT NOW()::timestamp AS now;")
+            return cursor.fetchone()["now"]
+
+    def get_completed_shopping_lists_since(
+        self,
+        user_id: int,
+        since: datetime,
+    ) -> List[Dict]:
+        """
+        Fetch the user's completed shopping lists with ``completed_at >= since``.
+
+        Deliberately dumb: it narrows, it does not decide. The period
+        arithmetic and the "does this row count as spend" rule live in
+        ``app/services/budget.py`` so there is exactly one implementation of
+        them, reachable by tests without a database. ``since`` is the period
+        start, so this is a cheap pre-filter on the same bound the caller then
+        applies — it can over-fetch (harmless), never under-fetch.
+
+        No SUM here for the same reason: a total computed in SQL would be a
+        second implementation of the rule.
+        """
         query = """
-        UPDATE shopping_lists
-        SET is_completed = true
-        WHERE list_id = (
-            SELECT list_id FROM shopping_lists
-            WHERE user_id = %s
-            ORDER BY created_at DESC
-            LIMIT 1
-        )
-        RETURNING list_id;
+        SELECT list_id, total_cost, completed_at, is_completed
+        FROM shopping_lists
+        WHERE user_id = %s
+          AND is_completed = true
+          AND completed_at IS NOT NULL
+          AND completed_at >= %s
+        ORDER BY completed_at;
         """
 
         with self.db.get_cursor() as cursor:
-            cursor.execute(query, (user_id,))
-            result = cursor.fetchone()
-            return result is not None
+            cursor.execute(query, (user_id, since))
+            return [_jsonable(dict(row)) for row in cursor.fetchall()]

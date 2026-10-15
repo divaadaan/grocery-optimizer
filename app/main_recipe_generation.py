@@ -3,6 +3,7 @@ from typing import Callable, Optional
 
 from app.agents.graph import create_recipe_generation_graph
 from app.agents.state import RecipeGenerationState
+from app.services.budget import DEFAULT_PERIOD
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +20,20 @@ def run_recipe_generation(
     num_meals: int,
     preferences: dict = None,
     progress_callback: Optional[Callable[[str], None]] = None,
+    budget_period: str = DEFAULT_PERIOD,
+    budget_spent_this_period: float = 0.0,
 ):
     """
     Main entry point for recipe generation workflow.
+
+    `budget` is the user's limit for one budget period (a calendar week or
+    month — `app/services/budget.py`), not a per-generation allowance.
+    `budget_spent_this_period` is what their completed shopping lists have
+    already consumed of it; the caller supplies it (the route reads it from
+    `GET /users/{id}/budget`'s service) so this entry point stays free of
+    database access. It defaults to 0.0, which reproduces the old
+    "whole budget every time" behaviour — so callers must pass it, and the
+    route does.
 
     `progress_callback`, if given, is called with the name of each graph node
     as it finishes — including once per parallel SousChef task — so a caller
@@ -34,6 +46,8 @@ def run_recipe_generation(
         user_id=user_id,
         postal_code=postal_code,
         budget=budget,
+        budget_period=budget_period,
+        budget_spent_this_period=budget_spent_this_period,
         household_size=household_size,
         dietary_restrictions=dietary_restrictions,
         num_meals=num_meals,
@@ -56,7 +70,7 @@ def run_recipe_generation(
         total_cost=0.0,
         cost_per_meal=0.0,
         estimated_savings=0.0,
-        budget_remaining=budget,
+        budget_remaining=budget - budget_spent_this_period,
         mlflow_run_id="",
         agent_call_log=[],
         status="initializing",
