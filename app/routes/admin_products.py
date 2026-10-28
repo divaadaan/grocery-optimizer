@@ -34,7 +34,7 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from app.services import product_corrections, products
+from app.services import product_corrections, product_identity, products
 from app.services.cache_service import cache
 
 logger = logging.getLogger(__name__)
@@ -165,16 +165,19 @@ async def decide(decision: Decision) -> DecisionResult:
             applied = products.set_attributes(
                 decision.product_id, decision.attributes
             )
-        except products.AttributeConflict as exc:
+        except (products.AttributeConflict, products.ProductRetired) as exc:
             # Raised before any write, and before confirm_group below, so the
             # alias stays proposed and no attribute changed.
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    decided = products.confirm_group(
-        decision.product_id, decision.alias_ids, reviewer
-    )
+    try:
+        decided = products.confirm_group(
+            decision.product_id, decision.alias_ids, reviewer
+        )
+    except products.ProductRetired as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     logger.info(
         "Review: confirmed product %s and %d alias(es) as %r%s",
         decision.product_id, decided, reviewer,
@@ -229,6 +232,79 @@ async def correct_attributes(
         # Cached deal lists are keyed by gate scope and live for hours; a deal
         # this correction withholds must not keep being served from cache.
         # A no-op when Redis is disabled (the default).
+        cache.delete_pattern("deals:*")
+    return report
+
+
+def _correction_errors(call):
+    """Run a correction-service call, mapping its refusals to HTTP codes."""
+    try:
+        return call()
+    except product_corrections.CorrectionInvalid as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except product_corrections.ProductNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except product_corrections.CorrectionRefused as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+class IdentityCorrection(BaseModel):
+    """Rename and/or recategorise a product. Never touches an attribute.
+
+    Values are checked by the service (a non-string is a 400, not coerced).
+    """
+
+    canonical_name: Optional[Any] = None
+    category: Optional[Any] = None
+    reviewer: str
+    reason: str
+
+
+@router.post("/products/{product_id}/identity-corrections")
+async def correct_identity(
+    product_id: int, body: IdentityCorrection, dry_run: bool = False
+) -> dict[str, Any]:
+    """Change a product's canonical_name and/or category, with an audit row.
+
+    409 when the name is held by another live product (the detail suggests a
+    merge), when a named field would not change, or when the product is
+    merged or rejected. The response's ``attribute_review`` points at the
+    attribute-correction endpoint: a new identity may imply new attributes,
+    and that is a separate audited correction. ``?dry_run=true`` writes
+    nothing.
+    """
+    return _correction_errors(lambda: product_identity.rename_product(
+        product_id, body.canonical_name, body.category,
+        body.reviewer, body.reason, dry_run=dry_run))
+
+
+class Merge(BaseModel):
+    """Fold the path product (absorbed) into ``into`` (the survivor)."""
+
+    into: int
+    reviewer: str
+    reason: str
+
+
+@router.post("/products/{product_id}/merge")
+async def merge(product_id: int, body: Merge, dry_run: bool = False) -> dict[str, Any]:
+    """Merge a duplicate confirmed product into a surviving one.
+
+    Repoints the absorbed product's aliases, deal links, legacy
+    ``deals.product_id`` and price snapshots to the survivor, retires it as
+    ``status='merged'``, and records every moved row. 409 unless both are
+    confirmed and the survivor is at least as restrictive on every attribute
+    (true > undecided > false) -- a merge never makes a deal newly servable.
+    Returns the moves and an impact report; ``?dry_run=true`` writes nothing.
+    """
+    try:
+        report = _correction_errors(lambda: product_identity.merge_products(
+            product_id, body.into, body.reviewer, body.reason, dry_run=dry_run))
+    except product_identity.LooseningGuardTripped as exc:
+        logger.error("Merge guard tripped: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    if not dry_run:
+        # Deals that lost a link may now be withheld; drop cached lists.
         cache.delete_pattern("deals:*")
     return report
 

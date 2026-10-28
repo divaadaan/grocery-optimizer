@@ -559,6 +559,20 @@ class AttributeConflict(Exception):
         )
 
 
+class ProductRetired(Exception):
+    """The product was merged into another (migration 018) and is never
+    served again; review writes to it are refused rather than reviving it.
+    Act on ``merged_into`` instead."""
+
+    def __init__(self, product_id: int, merged_into: int | None = None):
+        self.product_id = product_id
+        self.merged_into = merged_into
+        target = f"product {merged_into}" if merged_into else "its survivor"
+        super().__init__(
+            f"product {product_id} was merged into {target} and is retired; "
+            f"nothing was written. Review {target} instead.")
+
+
 def set_attributes(
     product_id: int, updates: dict[str, bool], database=db
 ) -> dict[str, bool]:
@@ -596,6 +610,9 @@ def set_attributes(
             {"pid": product_id},
         )
         row = cursor.fetchone()
+        if row is not None and row["status"] == "merged":
+            # Not "freely editable like a proposal": it is retired.
+            raise ProductRetired(product_id)
         if row is not None and row["status"] == "confirmed":
             conflicts = {
                 attr: (row[attr], want) for attr, want in clean.items()
@@ -694,6 +711,9 @@ def fill_undecided_attributes(
             f"""
             UPDATE products SET {sets}
             WHERE product_id = %(pid)s
+              -- A merged product is retired (migration 018): reported as
+              -- "no such product" rather than edited.
+              AND status <> 'merged'
             RETURNING {_ATTR_SELECT}
             """,
             {**clean, "pid": product_id},
@@ -715,11 +735,20 @@ def confirm_group(
         return 0
     now = datetime.now(timezone.utc)
     with database.get_cursor() as cursor:
+        # A merged product must not be revived by confirming an alias that
+        # still points at it (migration 018's trigger refuses it too).
+        cursor.execute(
+            "SELECT status FROM products WHERE product_id = %(pid)s FOR UPDATE",
+            {"pid": product_id},
+        )
+        row = cursor.fetchone()
+        if row is not None and row["status"] == "merged":
+            raise ProductRetired(product_id)
         cursor.execute(
             """
             UPDATE products
             SET status = 'confirmed', reviewed_by = %(who)s, reviewed_at = %(now)s
-            WHERE product_id = %(pid)s AND status <> 'confirmed'
+            WHERE product_id = %(pid)s AND status NOT IN ('confirmed', 'merged')
             """,
             {"pid": product_id, "who": reviewer, "now": now},
         )
