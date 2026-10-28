@@ -30,6 +30,7 @@ def _group(**overrides):
         "contains_egg": False,
         "contains_nuts": False,
         "contains_animal_byproduct": False,
+        "contains_gluten": False,
         "times_seen": 8,
         "clears": ["vegetarian", "pescatarian", "no_nuts"],
         "aliases": [
@@ -442,3 +443,12 @@ async def test_link_runs_the_deterministic_step(client, stub):
     assert res.json()["link"]["linked_deals"] == 5
     assert res.json()["stats"] == STATS
     assert stub["link"] == 1
+
+
+@pytest.mark.asyncio
+async def test_review_page_knows_the_gluten_attribute_and_rule(client):
+    async with client as http:
+        page = (await http.get("/admin/review")).text
+    assert "contains_gluten" in page
+    assert 'gluten_free: ["contains_gluten"]' in page
+    assert "certified" in page

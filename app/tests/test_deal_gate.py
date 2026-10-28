@@ -22,20 +22,24 @@ from app.services import deal_gate, products
 # --------------------------------------------------------------------------
 
 #: (product_id, canonical_name, status, meat, fish, dairy, egg, nuts,
-#:  animal_byproduct). The last is nullable (migration 015); None is a product
-#:  confirmed before the column existed and never revisited.
+#:  animal_byproduct, gluten). The last two are nullable (migrations 015,
+#:  017); None is a product confirmed before the column existed and never
+#:  revisited.
 PRODUCTS = [
-    (1, "peanut butter", "confirmed", 0, 0, 0, 0, 1, 0),
-    (2, "beefsteak tomatoes", "confirmed", 0, 0, 0, 0, 0, 0),
-    (3, "butternut squash", "confirmed", 0, 0, 0, 0, 0, 0),
-    (4, "prosciutto", "confirmed", 1, 0, 0, 0, 0, None),
-    (5, "marzipan", "confirmed", 0, 0, 0, 0, 1, 0),
-    (6, "milk", "confirmed", 0, 0, 1, 0, 0, None),
-    (7, "tofu", "proposed", 0, 0, 0, 0, 0, 0),
-    (8, "lentils", "rejected", 0, 0, 0, 0, 0, 0),
-    (9, "chicken breast", "confirmed", 1, 0, 0, 0, 0, None),
-    (10, "honey", "confirmed", 0, 0, 0, 0, 0, 1),
-    (11, "strawberry jam", "confirmed", 0, 0, 0, 0, 0, None),
+    (1, "peanut butter", "confirmed", 0, 0, 0, 0, 1, 0, None),
+    (2, "beefsteak tomatoes", "confirmed", 0, 0, 0, 0, 0, 0, None),
+    (3, "butternut squash", "confirmed", 0, 0, 0, 0, 0, 0, None),
+    (4, "prosciutto", "confirmed", 1, 0, 0, 0, 0, None, None),
+    (5, "marzipan", "confirmed", 0, 0, 0, 0, 1, 0, None),
+    (6, "milk", "confirmed", 0, 0, 1, 0, 0, None, None),
+    (7, "tofu", "proposed", 0, 0, 0, 0, 0, 0, None),
+    (8, "lentils", "rejected", 0, 0, 0, 0, 0, 0, None),
+    (9, "chicken breast", "confirmed", 1, 0, 0, 0, 0, None, None),
+    (10, "honey", "confirmed", 0, 0, 0, 0, 0, 1, None),
+    (11, "strawberry jam", "confirmed", 0, 0, 0, 0, 0, None, None),
+    (12, "white bread", "confirmed", 0, 0, 0, 0, 0, 0, 1),
+    (13, "basmati rice", "confirmed", 0, 0, 0, 0, 0, 0, 0),
+    (14, "granola", "confirmed", 0, 0, 0, 0, 0, 0, None),  # gluten undecided
 ]
 
 #: (deal_id, product_name as printed, source, [linked product ids])
@@ -52,6 +56,10 @@ DEALS = [
     (110, "Chicken or Tomatoes", "flipp", [9, 2]),  # tile: one violating product
     (111, "BILLY BEE HONEY 500G", "flipp", [10]),
     (112, "Smucker's Strawberry Jam", "flipp", [11]),  # by-product undecided
+    (113, "Wonder White Bread", "flipp", [12]),         # contains gluten
+    (114, "Basmati Rice 2kg", "flipp", [13]),           # explicitly gluten-free
+    (115, "Granola Clusters", "flipp", [14]),           # gluten undecided
+    (116, "Bread or Rice", "flipp", [12, 13]),          # tile: one gluten product
 ]
 
 
@@ -64,13 +72,13 @@ def conn():
             product_id INTEGER PRIMARY KEY, canonical_name TEXT, status TEXT,
             contains_meat BOOLEAN, contains_fish BOOLEAN, contains_dairy BOOLEAN,
             contains_egg BOOLEAN, contains_nuts BOOLEAN,
-            contains_animal_byproduct BOOLEAN);
+            contains_animal_byproduct BOOLEAN, contains_gluten BOOLEAN);
         CREATE TABLE deals (deal_id INTEGER PRIMARY KEY, product_name TEXT,
                             source TEXT);
         CREATE TABLE deal_products (deal_id INTEGER, product_id INTEGER);
         """
     )
-    c.executemany("INSERT INTO products VALUES (?,?,?,?,?,?,?,?,?)", PRODUCTS)
+    c.executemany("INSERT INTO products VALUES (?,?,?,?,?,?,?,?,?,?)", PRODUCTS)
     for deal_id, name, source, pids in DEALS:
         c.execute("INSERT INTO deals VALUES (?,?,?)", (deal_id, name, source))
         for pid in pids:
@@ -127,7 +135,8 @@ def test_dairy_free_withholds_milk(conn):
 def test_vegan_sees_exactly_the_confirmed_plant_products(conn):
     assert served(conn, ["vegan"]) == [
         "KRAFT PEANUT BUTTER 1KG", "Beefsteak Tomatoes", "Butternut Squash",
-        "Marzipan Bar",
+        "Marzipan Bar", "Wonder White Bread", "Basmati Rice 2kg",
+        "Granola Clusters", "Bread or Rice",
     ]
 
 
@@ -162,6 +171,36 @@ def test_gate_scope_changes_for_vegans_only():
     assert "contains_animal_byproduct" in deal_gate.gate_scope(["vegan"])
     for label in ("vegetarian", "pescatarian", "no_nuts", "dairy_free"):
         assert "contains_animal_byproduct" not in deal_gate.gate_scope([label])
+
+
+# --- contains_gluten (migration 017) ----------------------------------------
+
+def test_gluten_free_user_is_served_only_explicit_false_gluten(conn):
+    """Everything else on the menu has NULL gluten, so it is withheld: NULL
+    fails closed, and the real fragment is run through SQLite's three-valued
+    logic to prove a bare NULL does not fail open."""
+    assert served(conn, ["gluten_free"]) == ["Basmati Rice 2kg"]
+
+
+def test_gluten_free_withholds_gluten_and_undecided_gluten(conn):
+    names = served(conn, ["gluten_free"])
+    assert "Wonder White Bread" not in names   # explicitly true
+    assert "Granola Clusters" not in names     # NULL
+    assert "Bread or Rice" not in names        # tile: one violating product
+    assert "Butternut Squash" not in names     # NULL on a confirmed product
+
+
+def test_gluten_does_not_affect_other_restrictions(conn):
+    for restriction in ("vegetarian", "pescatarian", "no_nuts", "dairy_free"):
+        names = served(conn, [restriction])
+        for bread in ("Wonder White Bread", "Granola Clusters", "Bread or Rice"):
+            assert bread in names, (restriction, bread)
+
+
+def test_gate_scope_names_gluten_for_gluten_free_only():
+    assert "contains_gluten" in deal_gate.gate_scope(["gluten_free"])
+    for label in ("vegan", "vegetarian", "pescatarian", "no_nuts", "dairy_free"):
+        assert "contains_gluten" not in deal_gate.gate_scope([label])
 
 
 # --- fail closed ------------------------------------------------------------

@@ -113,6 +113,13 @@ D3. Only vegans avoid these; vegetarians eat honey. LABELLING RULE: gelatin, \
 lard, tallow and animal rennet are contains_meat, NOT this attribute, because \
 vegetarians avoid them too. A product with honey is contains_animal_byproduct \
 true and contains_meat false.
+- contains_gluten: wheat (including spelt, kamut, durum, semolina, farro), \
+barley, rye, triticale, malt, brewer's yeast. Oats count as true unless the \
+product is labelled certified gluten-free (cross-contamination). "May contain \
+gluten" counts as true. Judge the product as typically sold in Canadian \
+flyers: bread, pasta, flour, crackers, cereal and beer are true; plain rice, \
+corn, potatoes, produce, meat and dairy are false. Decide it from what the \
+food is made of, never from the words in the string.
 - is_pantry_staple: shelf-stable basics bought by the bag/box (flour, rice, \
 sugar, oil, pasta, canned goods).
 
@@ -508,12 +515,14 @@ _PRODUCT_INSERT = """
 INSERT INTO products (
     canonical_name, category,
     contains_meat, contains_fish, contains_dairy,
-    contains_egg, contains_nuts, contains_animal_byproduct, is_pantry_staple,
+    contains_egg, contains_nuts, contains_animal_byproduct, contains_gluten,
+    is_pantry_staple,
     status, proposed_by, proposal_reason
 ) VALUES (
     %(name)s, %(category)s,
     %(contains_meat)s, %(contains_fish)s, %(contains_dairy)s,
-    %(contains_egg)s, %(contains_nuts)s, %(contains_animal_byproduct)s, %(staple)s,
+    %(contains_egg)s, %(contains_nuts)s, %(contains_animal_byproduct)s, %(contains_gluten)s,
+    %(staple)s,
     'proposed', %(by)s, %(reason)s
 )
 RETURNING product_id

@@ -184,6 +184,7 @@ const ATTR_LABEL = {
   contains_egg: "egg",
   contains_nuts: "nuts",
   contains_animal_byproduct: "animal by-product",
+  contains_gluten: "gluten",
 };
 
 // The split reviewers get backwards. Shown on every card.
@@ -192,6 +193,12 @@ const BYPRODUCT_RULE =
   "bone-char sugar, lanolin vitamin D3. Gelatin, lard, tallow and animal " +
   "rennet are MEAT, not by-product. Amber = undecided: it fails closed " +
   "until you click it.";
+
+const GLUTEN_RULE =
+  "Gluten = wheat (spelt, kamut, durum, semolina, farro), barley, rye, " +
+  "triticale, malt, brewer's yeast. Oats are yes unless labelled certified " +
+  "gluten-free; 'may contain gluten' is yes. Judge the product as sold in " +
+  "Canadian flyers.";
 
 // Mirrors app/services/products.RESTRICTION_ATTRIBUTES so the "clears" line
 // updates as you toggle, without a round trip. The server recomputes it from
@@ -202,6 +209,7 @@ const RESTRICTION_ATTRS = {
   vegetarian: ["contains_meat", "contains_fish"],
   pescatarian: ["contains_meat"],
   no_nuts: ["contains_nuts"],
+  gluten_free: ["contains_gluten"],
 };
 
 // An attribute clears only when it is explicitly false. null (undecided)
@@ -308,6 +316,7 @@ function groupCard(group, index) {
     ${group.error ? `<div class="reason" role="alert"
         style="color: var(--warn); font-weight: 600">${esc(group.error)}</div>` : ""}
     <div class="rule">${esc(BYPRODUCT_RULE)}</div>
+    <div class="rule">${esc(GLUTEN_RULE)}</div>
     <div class="clears">clears:
       ${clears.length
         ? clears.map((c) => `<span class="pill">${esc(c)}</span>`).join("")
@@ -376,6 +385,7 @@ function undecidedCard() {
     <h2>${state.undecided.length} confirmed product(s) with an undecided attribute</h2>
     <div class="meta">Withheld from the labels shown until you decide</div>
     <div class="rule">${esc(BYPRODUCT_RULE)}</div>
+    <div class="rule">${esc(GLUTEN_RULE)}</div>
     <ul class="aliases">${rows}</ul>
   </section>`;
 }
