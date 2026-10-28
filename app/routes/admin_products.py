@@ -18,6 +18,10 @@ is run locally against a dev database. **Do not expose this host publicly
 without putting auth in front of these routes first**, and note that a
 reviewer identity is accepted from the client rather than verified, so
 ``reviewed_by`` is a convenience field, not an audit trail.
+
+The same holds for the attribute-correction endpoint: its audit table
+(migration 016) records *what* changed, when and why durably, but *who* is the
+reviewer string the client sent.
 """
 from __future__ import annotations
 
@@ -30,7 +34,8 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from app.services import products
+from app.services import product_corrections, products
+from app.services.cache_service import cache
 
 logger = logging.getLogger(__name__)
 
@@ -178,6 +183,54 @@ async def decide(decision: Decision) -> DecisionResult:
     return DecisionResult(
         decided=decided, attributes=applied, stats=products.review_stats()
     )
+
+
+class AttributeCorrection(BaseModel):
+    """A deliberate change to a confirmed product's curated attributes.
+
+    ``changes`` values are checked by the service, not coerced here: a
+    ``"false"`` string or a ``0`` must not silently become a boolean on the
+    allergen authority.
+    """
+
+    changes: dict[str, Any]
+    # Required, unlike ``Decision.reviewer``: there is no env/"web" default,
+    # because this is the audit record of who changed an allergen label. Still
+    # client-asserted, not authenticated (see the module docstring).
+    reviewer: str
+    reason: str
+
+
+@router.post("/products/{product_id}/attribute-corrections")
+async def correct_attributes(
+    product_id: int, body: AttributeCorrection, dry_run: bool = False
+) -> dict[str, Any]:
+    """Correct a confirmed product's attributes, with an audit row.
+
+    The only way to change a decided attribute on a confirmed product; the
+    review flow (``/products/decide``) refuses with 409 by design. Returns an
+    impact report -- the deals linked to the product that become newly
+    withheld or newly servable per restriction label, and the users whose
+    served deals change. ``?dry_run=true`` returns the same report and writes
+    nothing.
+    """
+    try:
+        report = product_corrections.correct_attributes(
+            product_id, body.changes, body.reviewer, body.reason,
+            dry_run=dry_run,
+        )
+    except product_corrections.CorrectionInvalid as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except product_corrections.ProductNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except product_corrections.CorrectionRefused as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    if not dry_run:
+        # Cached deal lists are keyed by gate scope and live for hours; a deal
+        # this correction withholds must not keep being served from cache.
+        # A no-op when Redis is disabled (the default).
+        cache.delete_pattern("deals:*")
+    return report
 
 
 @router.post("/products/link")
