@@ -287,6 +287,28 @@ def compliant_product_filter(restrictions: Iterable[str] | None) -> tuple[str, d
 
 
 # --------------------------------------------------------------------------
+# Migration 019: links to a merged product are refused by the database
+# --------------------------------------------------------------------------
+
+#: SQLSTATE raised by ``refuse_link_to_merged_product()`` (migration 019).
+#: Matched on the code, never on message text.
+MERGED_LINK_SQLSTATE = "GO001"
+_MERGED_INTO_RE = re.compile(r"merged_into=(\d+)")
+
+
+def is_merged_link_error(exc: BaseException) -> bool:
+    """True when ``exc`` is the database refusing a link to a merged product."""
+    return getattr(exc, "sqlstate", None) == MERGED_LINK_SQLSTATE
+
+
+def merged_survivor_id(exc: BaseException) -> int | None:
+    """The survivor named in the refusal's DETAIL, or None if unreadable."""
+    detail = getattr(getattr(exc, "diag", None), "message_detail", None)
+    match = _MERGED_INTO_RE.search(detail or "")
+    return int(match.group(1)) if match else None
+
+
+# --------------------------------------------------------------------------
 # Linking: deterministic, no LLM, idempotent
 # --------------------------------------------------------------------------
 
@@ -312,6 +334,7 @@ def link_deals(database=db) -> dict[str, int]:
         "unmapped": 0,
         "tile_links": 0,
         "blocked_undecided_price": 0,
+        "skipped_merged": 0,
     }
 
     with database.get_cursor() as cursor:
@@ -366,24 +389,52 @@ def link_deals(database=db) -> dict[str, int]:
                 stats["unmapped"] += 1
                 continue
 
-            for target in usable:
-                cursor.execute(
-                    """
-                    INSERT INTO deal_products
-                        (deal_id, product_id, tile_position, price_is_per_item)
-                    SELECT d.deal_id, %(pid)s, %(pos)s, %(per_item)s
-                    FROM deals d
-                    WHERE d.product_name = %(raw)s
-                    ON CONFLICT (deal_id, product_id) DO NOTHING
-                    """,
-                    {
-                        "pid": target["product_id"],
-                        "pos": target["tile_position"],
-                        "per_item": target["price_is_per_item"],
-                        "raw": raw,
-                    },
+            # All-or-nothing per name, under a savepoint. A tile is gated on
+            # EVERY product linked to it, so a partly written tile (some
+            # products linked, one refused) would be judged on a subset and
+            # could clear a restricted user it should not -- and, once it has
+            # any junction row, it is no longer "unlinked" and would never be
+            # completed. Refused as a unit, the name is retried whole next run.
+            cursor.execute("SAVEPOINT link_name")
+            linked_here = 0
+            try:
+                for target in usable:
+                    cursor.execute(
+                        """
+                        INSERT INTO deal_products
+                            (deal_id, product_id, tile_position, price_is_per_item)
+                        SELECT d.deal_id, %(pid)s, %(pos)s, %(per_item)s
+                        FROM deals d
+                        WHERE d.product_name = %(raw)s
+                        ON CONFLICT (deal_id, product_id) DO NOTHING
+                        """,
+                        {
+                            "pid": target["product_id"],
+                            "pos": target["tile_position"],
+                            "per_item": target["price_is_per_item"],
+                            "raw": raw,
+                        },
+                    )
+                    linked_here += cursor.rowcount or 0
+            except Exception as exc:
+                if not is_merged_link_error(exc):
+                    raise
+                # Migration 019: a merge committed after the alias map was
+                # read, so this name's alias rows now point at the survivor
+                # with possibly different tile_position / price_is_per_item.
+                # Writing the stale map's values against the survivor would
+                # be a guess; the next run reads the repointed map instead.
+                cursor.execute("ROLLBACK TO SAVEPOINT link_name")
+                cursor.execute("RELEASE SAVEPOINT link_name")
+                stats["skipped_merged"] += 1
+                logger.warning(
+                    "Skipped %r: a product it maps to was merged into %s "
+                    "while linking; it stays unlinked and is retried on the "
+                    "next run.", raw, merged_survivor_id(exc),
                 )
-                stats["linked_deals"] += cursor.rowcount or 0
+                continue
+            cursor.execute("RELEASE SAVEPOINT link_name")
+            stats["linked_deals"] += linked_here
 
             if len(usable) == 1:
                 # Single-product name: keep the legacy column in step.

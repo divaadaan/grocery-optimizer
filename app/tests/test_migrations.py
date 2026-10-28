@@ -112,6 +112,27 @@ def test_does_not_edit_the_origin_schema(path):
     assert "DROP TABLE PRICE_SNAPSHOTS" not in body
 
 
+def test_019_refuses_links_to_merged_products_under_a_share_lock():
+    """Structure only (the SQL is validated against a throwaway postgres)."""
+    body = (MIGRATIONS_DIR / "019_refuse_links_to_merged_products.sql"
+            ).read_text(encoding="utf-8")
+    code = "\n".join(l for l in body.splitlines() if not l.strip().startswith("--"))
+    for table in ("deal_products", "product_aliases"):
+        assert re.search(
+            rf"CREATE TRIGGER \w+\s+BEFORE INSERT OR UPDATE OF product_id ON "
+            rf"{table}\s+FOR EACH ROW", code), table
+    assert re.search(r"FROM products\s+WHERE product_id = NEW\.product_id\s+"
+                     r"FOR SHARE", code)
+    assert "ERRCODE = 'GO001'" in code and "merged_into=" in code
+    # The Python side matches on this exact code.
+    from app.services.products import MERGED_LINK_SQLSTATE
+    assert MERGED_LINK_SQLSTATE == "GO001"
+    # Rollback drops what was added.
+    tail = body.split("-- Rollback:", 1)[1]
+    assert "DROP FUNCTION IF EXISTS refuse_link_to_merged_product" in tail
+    assert tail.count("DROP TRIGGER IF EXISTS") == 2
+
+
 def test_init_db_sql_still_declares_native_partitioning_not_timescale():
     """scripts/README.md and SETUP.md claim price_snapshots is a TimescaleDB
     hypertable with a retention policy and a price_snapshots_daily continuous

@@ -52,7 +52,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
-from app.services.products import ATTRIBUTES, normalize_name
+from app.services.products import (
+    ATTRIBUTES, is_merged_link_error, merged_survivor_id, normalize_name,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -531,6 +533,36 @@ RETURNING product_id
 SOURCE = "claude-session"
 
 
+def _upsert_placed_alias(cursor, params: dict, target_id: int) -> int:
+    """Run the placed-alias upsert; return the product id it landed on.
+
+    Migration 019 refuses an alias on a product merged since ``known`` was
+    read. A *proposed* alias gates nothing until a reviewer confirms it, so
+    re-pointing it at the survivor -- named by the database's refusal, never
+    looked up by name -- loosens nothing. Retried once: 018 forbids merge
+    chains, so the survivor is not itself merged. The caller reads the row with
+    ``fetchone()`` afterwards, so the savepoint is released here only on
+    success of the (possibly retried) upsert and the result row is untouched.
+    """
+    cursor.execute("SAVEPOINT place_alias")
+    try:
+        cursor.execute(_ALIAS_UPSERT_PLACED, params)
+    except Exception as exc:
+        survivor = merged_survivor_id(exc) if is_merged_link_error(exc) else None
+        if survivor is None:
+            raise
+        cursor.execute("ROLLBACK TO SAVEPOINT place_alias")
+        logger.warning(
+            "Product %s was merged into %s while proposing; placing the "
+            "alias on the survivor.", target_id, survivor)
+        params["pid"] = survivor
+        target_id = survivor
+        cursor.execute(_ALIAS_UPSERT_PLACED, params)
+    # RELEASE would clobber a real cursor's pending result set, so leave the
+    # savepoint to the enclosing transaction (it ends with the run).
+    return target_id
+
+
 def persist_proposals(proposals: Iterable[Proposal], *, database) -> dict[str, int]:
     """Write proposals as ``status='proposed'`` rows. Affects no user yet.
 
@@ -613,7 +645,7 @@ def persist_proposals(proposals: Iterable[Proposal], *, database) -> dict[str, i
                 params.pop("pid")
                 cursor.execute(_ALIAS_UPSERT_UNPLACED, params)
             else:
-                cursor.execute(_ALIAS_UPSERT_PLACED, params)
+                target_id = _upsert_placed_alias(cursor, params, target_id)
 
             row = cursor.fetchone()
             if row and row["times_seen"] > 1:
