@@ -27,7 +27,8 @@ A user with no restriction this app understands is approved without lookups:
 there is nothing for a product attribute to decide.
 
 An attribute must be explicitly ``False`` to comply. ``None`` -- an undecided
-``contains_animal_byproduct`` on a product confirmed before migration 015 --
+``contains_animal_byproduct`` / ``contains_gluten`` on a product confirmed
+before migration 015 / 017 --
 fails closed, so a vegan recipe citing it is rejected until a reviewer decides.
 
 The substring oracle this module used to be -- ``eggplant`` read as egg,

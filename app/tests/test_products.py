@@ -73,7 +73,7 @@ def test_restriction_attribute_map_covers_the_enforceable_labels():
     here enforces nothing beyond "linked and confirmed".
     """
     labels = {"vegan", "vegetarian", "pescatarian", "no_nuts", "nut_free",
-              "dairy_free"}
+              "dairy_free", "gluten_free"}
     assert labels <= set(products.RESTRICTION_ATTRIBUTES)
     assert set(products.REVIEW_LABELS) <= set(products.RESTRICTION_ATTRIBUTES)
 
@@ -88,6 +88,7 @@ def test_restriction_attribute_map_covers_the_enforceable_labels():
         (["no_nuts"], ("contains_nuts",)),
         (["nut_free"], ("contains_nuts",)),
         (["dairy_free"], ("contains_dairy",)),
+        (["gluten_free"], ("contains_gluten",)),
         (
             ["vegan"],
             ("contains_animal_byproduct", "contains_dairy", "contains_egg",
@@ -133,6 +134,7 @@ def _product(**overrides):
         "contains_egg": False,
         "contains_nuts": False,
         "contains_animal_byproduct": False,
+        "contains_gluten": False,
         "is_pantry_staple": False,
     }
     base.update(overrides)
@@ -226,6 +228,61 @@ def test_undecided_byproduct_fails_vegan_quietly(caplog):
     assert caplog.text == ""
 
 
+# --------------------------------------------------------------------------
+# contains_gluten (migration 017)
+# --------------------------------------------------------------------------
+
+def test_gluten_is_a_gluten_free_attribute_only():
+    assert "contains_gluten" in products.ATTRIBUTES
+    assert "contains_gluten" in products.NULLABLE_ATTRIBUTES
+    assert products.RESTRICTION_ATTRIBUTES["gluten_free"] == ("contains_gluten",)
+    for label, attrs in products.RESTRICTION_ATTRIBUTES.items():
+        assert ("contains_gluten" in attrs) == (label == "gluten_free"), label
+
+
+def test_gluten_free_is_enforced_not_just_logged(caplog):
+    with caplog.at_level("WARNING"):
+        assert products.restrictions_to_attributes(["gluten_free"]) == (
+            "contains_gluten",)
+    assert caplog.text == ""
+
+
+def test_gluten_free_allows_only_on_an_explicit_false(caplog):
+    with caplog.at_level("WARNING"):
+        assert products.product_allows(
+            _product(contains_gluten=False), ["gluten_free"]) is True
+        assert products.product_allows(
+            _product(contains_gluten=True), ["gluten_free"]) is False
+        # NULL = undecided: fails closed, quietly.
+        assert products.product_allows(
+            _product(contains_gluten=None), ["gluten_free"]) is False
+    assert caplog.text == ""
+
+
+def test_contains_gluten_does_not_affect_other_restrictions():
+    bread = _product(canonical_name="bread", contains_gluten=True)
+    undecided = _product(canonical_name="granola", contains_gluten=None)
+    for item in (bread, undecided):
+        for label in ("vegan", "vegetarian", "pescatarian", "no_nuts",
+                      "nut_free", "dairy_free"):
+            assert products.product_allows(item, [label]) is True, label
+
+
+def test_gluten_rule_states_the_labelling_decisions():
+    rule = products.ATTRIBUTE_RULES["contains_gluten"].lower()
+    for word in ("wheat", "spelt", "kamut", "durum", "semolina", "farro",
+                 "barley", "rye", "triticale", "malt", "brewer's yeast",
+                 "oats", "certified gluten-free", "may contain gluten"):
+        assert word in rule, word
+
+
+def test_gluten_null_decides_a_gluten_free_verdict():
+    undecided = _product(contains_gluten=None)
+    assert "gluten_free" in products._null_decides(undecided)
+    # ...but not for a user it cannot change anything for.
+    assert products._null_decides(_product(contains_gluten=True)) == []
+
+
 def test_attribute_rules_cover_every_attribute_and_state_the_split():
     assert set(products.ATTRIBUTE_RULES) == set(products.ATTRIBUTES)
     meat = products.ATTRIBUTE_RULES["contains_meat"]
@@ -239,10 +296,12 @@ def test_attribute_rules_cover_every_attribute_and_state_the_split():
 def test_review_clears_treat_undecided_as_failing():
     groups, _ = products.group_proposals(
         [_alias_row(contains_nuts=False, contains_animal_byproduct=None)])
-    assert groups[0]["clears"] == ["vegetarian", "pescatarian", "no_nuts"]
+    assert groups[0]["clears"] == ["vegetarian", "pescatarian", "no_nuts",
+                                   "gluten_free"]
     groups, _ = products.group_proposals(
         [_alias_row(contains_nuts=False, contains_animal_byproduct=True)])
-    assert groups[0]["clears"] == ["vegetarian", "pescatarian", "no_nuts"]
+    assert groups[0]["clears"] == ["vegetarian", "pescatarian", "no_nuts",
+                                   "gluten_free"]
 
 
 class _RecordingCursor:
@@ -399,10 +458,11 @@ def test_review_group_clears_follow_the_attributes_not_the_name():
     """Peanut butter, labelled plant-based with nuts, clears vegan in review."""
     groups, orphans = products.group_proposals([_alias_row()])
     assert orphans == []
-    assert groups[0]["clears"] == ["vegan", "vegetarian", "pescatarian"]
+    assert groups[0]["clears"] == ["vegan", "vegetarian", "pescatarian",
+                                   "gluten_free"]
     # The reviewer's labels decide, in both directions.
     groups, _ = products.group_proposals([_alias_row(contains_dairy=True)])
-    assert groups[0]["clears"] == ["vegetarian", "pescatarian"]
+    assert groups[0]["clears"] == ["vegetarian", "pescatarian", "gluten_free"]
 
 
 # --------------------------------------------------------------------------

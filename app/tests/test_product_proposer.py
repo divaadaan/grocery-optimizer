@@ -30,6 +30,7 @@ def _label(**overrides):
         "contains_egg": False,
         "contains_nuts": False,
         "contains_animal_byproduct": False,
+        "contains_gluten": False,
         "is_pantry_staple": False,
         "confidence": 0.95,
         "reason": "Chicken is poultry.",
@@ -502,16 +503,19 @@ def _tile(**overrides):
              "category": "pantry", "contains_meat": False, "contains_fish": False,
              "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
              "contains_animal_byproduct": False,
+             "contains_gluten": False,
              "is_pantry_staple": True, "price_is_per_item": True},
             {"match_existing_product": None, "canonical_name": "chocolate milk",
              "category": "dairy", "contains_meat": False, "contains_fish": False,
              "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
              "contains_animal_byproduct": False,
+             "contains_gluten": False,
              "is_pantry_staple": False, "price_is_per_item": True},
             {"match_existing_product": None, "canonical_name": "crackers",
              "category": "snacks", "contains_meat": False, "contains_fish": False,
              "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
              "contains_animal_byproduct": False,
+             "contains_gluten": False,
              "is_pantry_staple": True, "price_is_per_item": True},
         ],
     }
@@ -599,3 +603,19 @@ def test_persist_skips_a_name_that_normalises_to_nothing():
     stats = pp.persist_proposals([_proposal(normalized_name="")], database=FakeDB(cursor))
     assert stats["skipped"] == 1
     assert not [sql for sql, _ in cursor.calls if "INSERT" in sql]
+
+
+def test_instructions_carry_the_gluten_labelling_rule():
+    text = pp.LABELLING_INSTRUCTIONS.lower()
+    assert "contains_gluten" in text
+    for word in ("spelt", "kamut", "durum", "semolina", "farro", "barley", "rye",
+                 "triticale", "malt", "brewer's yeast", "certified gluten-free",
+                 "may contain gluten"):
+        assert word in text, word
+
+
+def test_a_label_missing_the_gluten_attribute_is_rejected():
+    payload = _label()
+    del payload["contains_gluten"]
+    problems = pp.validate_payload(payload)
+    assert any("contains_gluten" in p for p in problems)

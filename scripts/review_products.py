@@ -61,6 +61,7 @@ ATTR_LABEL = {
     "contains_egg": "egg",
     "contains_nuts": "nuts",
     "contains_animal_byproduct": "animal by-product",
+    "contains_gluten": "gluten",
 }
 
 #: Shown wherever a reviewer decides contains_animal_byproduct. The split is
@@ -69,6 +70,13 @@ BYPRODUCT_RULE = (
     "animal by-product = honey, beeswax, carmine/cochineal, shellac/glaze, "
     "bone-char sugar, lanolin vitamin D3.\n"
     "  Gelatin, lard, tallow and animal rennet are MEAT, not by-product.")
+
+#: Shown wherever a reviewer decides contains_gluten.
+GLUTEN_RULE = (
+    "gluten = wheat (spelt, kamut, durum, semolina, farro), barley, rye, "
+    "triticale, malt, brewer's yeast.\n"
+    "  Oats are YES unless labelled certified gluten-free; 'may contain "
+    "gluten' is YES. Judge the product as sold in Canadian flyers.")
 
 #: How many of a group's aliases to print before truncating.
 ALIAS_PREVIEW = 6
@@ -151,7 +159,7 @@ decision covers every flyer string that maps to that product.
   n = NO, wrong or unusable  -> rejects all its strings; they stay withheld
                                 and will not come back in next week's queue
   e = EDIT the attributes    -> flip meat/fish/dairy/egg/nuts/animal
-                                by-product, then decide
+                                by-product/gluten, then decide
   p = PICK strings one by one-> for a group where one string does not belong
   s = SKIP, decide later     -> no decision; stays in the queue
   q = QUIT                   -> stops here, keeps what you decided
@@ -159,7 +167,7 @@ decision covers every flyer string that maps to that product.
 Nothing reaches a user until you confirm it. When unsure, skip or reject --
 a withheld deal costs one offer, a wrong label costs more.
 
-""" + BYPRODUCT_RULE
+""" + BYPRODUCT_RULE + "\n  " + GLUTEN_RULE + "\n"
 
 _WORDS = {"yes": "y", "no": "n", "edit": "e", "pick": "p",
           "skip": "s", "quit": "q", "exit": "q"}
@@ -224,6 +232,7 @@ def _edit_attributes(group: dict) -> bool:
         "e": "contains_egg",
         "n": "contains_nuts",
         "a": "contains_animal_byproduct",
+        "g": "contains_gluten",
     }
     print("  Current labels:")
     for letter, attr in keys.items():
@@ -231,6 +240,7 @@ def _edit_attributes(group: dict) -> bool:
         state = "???" if value is None else ("YES" if value else "no ")
         print(f"    {letter} = contains {ATTR_LABEL[attr]:<18} {state}")
     print(f"  {BYPRODUCT_RULE}")
+    print(f"  {GLUTEN_RULE}")
     print("  Type the letters you want to FLIP, e.g. 'dn' flips dairy and nuts.")
     print("  An undecided (???) label is not flipped; you are asked for it.")
     print("  Press Enter alone to leave them as they are.")
@@ -365,8 +375,8 @@ def cmd_review() -> int:
 def cmd_fill_undecided() -> int:
     """Decide NULL attributes on products that are already confirmed.
 
-    Migration 015 added contains_animal_byproduct with no value for products
-    reviewed before it existed. NULL fails closed, so those products are
+    Migrations 015 and 017 added contains_animal_byproduct and contains_gluten
+    with no value for products reviewed before they existed. NULL fails closed, so those products are
     withheld from vegans -- and being confirmed, they never re-enter the
     proposal queue. This walks the ones whose NULL actually decides a verdict.
     Writes only fill NULLs (``products.fill_undecided_attributes``), so nothing
@@ -378,7 +388,8 @@ def cmd_fill_undecided() -> int:
         return 0
     print(f"{len(pending)} confirmed product(s) have an undecided attribute that "
           f"is withholding them from someone.\n")
-    print(f"  {BYPRODUCT_RULE}\n")
+    print(f"  {BYPRODUCT_RULE}")
+    print(f"  {GLUTEN_RULE}\n")
     print("  y = it contains this   n = it does not   s = skip   q = quit\n")
 
     filled = 0

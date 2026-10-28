@@ -20,6 +20,7 @@ def _product(pid, name, *, status="confirmed", **attrs):
         "contains_meat": False, "contains_fish": False, "contains_dairy": False,
         "contains_egg": False, "contains_nuts": False,
         "contains_animal_byproduct": False,
+        "contains_gluten": False,
     }
     row.update(attrs)
     return row
@@ -587,3 +588,36 @@ def test_fetch_pantry_staples_selects_confirmed_on_hand_products():
     assert recipe_catalog.fetch_pantry_staples(database=_DB(cursor)) == [SALT]
     sql = cursor.executed[0][0]
     assert "status = 'confirmed'" in sql and "assumed_on_hand" in sql
+
+
+# --------------------------------------------------------------------------
+# contains_gluten (migration 017)
+# --------------------------------------------------------------------------
+
+WHEAT_FLOUR = _product(110, "Wheat Flour", contains_gluten=True)
+UNDECIDED_OATS = _product(111, "Rolled Oats", contains_gluten=None)
+GLUTEN_CATALOG = CitationCatalog(
+    deal_products={"9": [UNDECIDED_OATS]},
+    staples={"101": SALT, "110": WHEAT_FLOUR},
+)
+
+
+def test_gluten_staple_is_rejected_for_a_gluten_free_recipe():
+    report = _rep(["gluten_free"], {"name": "flour", "product_id": 110},
+                  catalog=GLUTEN_CATALOG)
+    assert report["approved"] is False
+    assert report["details"][0]["attributes"] == ["contains_gluten"]
+
+
+def test_undecided_gluten_fails_closed_for_a_gluten_free_recipe():
+    report = _rep(["gluten_free"], {"name": "oats", "deal_id": 9},
+                  catalog=GLUTEN_CATALOG)
+    assert report["approved"] is False
+    assert "undecided" in report["violations"][0]
+
+
+@pytest.mark.parametrize("restrictions", [["vegan"], ["vegetarian"], ["no_nuts"]])
+def test_gluten_does_not_affect_other_restrictions_in_a_recipe(restrictions):
+    report = _rep(restrictions, {"name": "flour", "product_id": 110},
+                  {"name": "oats", "deal_id": 9}, catalog=GLUTEN_CATALOG)
+    assert report["approved"] is True, report["violations"]
