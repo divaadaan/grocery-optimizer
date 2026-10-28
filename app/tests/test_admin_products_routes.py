@@ -452,3 +452,51 @@ async def test_review_page_knows_the_gluten_attribute_and_rule(client):
     assert "contains_gluten" in page
     assert 'gluten_free: ["contains_gluten"]' in page
     assert "certified" in page
+
+
+# --------------------------------------------------------------------------
+# Correction forms on the review page
+# --------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_review_page_has_the_three_correction_forms(client):
+    async with client as http:
+        page = (await http.get("/admin/review")).text
+    assert "Correct a confirmed product" in page
+    for kind in ("attr", "rename", "merge"):
+        assert f'id="c-form-{kind}"' in page
+    # The three audited endpoints, by path.
+    assert "/attribute-corrections" in page
+    assert "/identity-corrections" in page
+    assert "/merge`" in page
+
+
+@pytest.mark.asyncio
+async def test_correction_forms_preview_with_dry_run_before_confirm(client):
+    async with client as http:
+        page = (await http.get("/admin/review")).text
+    # Preview hits ?dry_run=true; Confirm re-sends the previewed body without it.
+    assert 'r.url + "?dry_run=true"' in page
+    assert "callApi(p.url, p.bodyText)" in page
+    # Confirm starts disabled and is only unlocked by a matching preview.
+    assert 'data-cconfirm="${kind}" disabled' in page
+    assert "reqKey(r) === f.previewed.key" in page
+    # One preview authorises one confirm; edits after a preview re-lock it.
+    assert "f.previewed = null;" in page
+    assert "Inputs changed since the preview" in page
+
+
+@pytest.mark.asyncio
+async def test_correction_forms_flag_loosening_and_take_attributes_from_server(client):
+    async with client as http:
+        page = (await http.get("/admin/review")).text
+    assert "NEWLY SERVABLE" in page and "THIS LOOSENS" in page
+    assert "newly_servable_for" in page and "newly_withheld_for" in page
+    # Attribute rows iterate what the server sent, and null is not selectable.
+    assert "state.attributes.map((a)" in page
+    assert 'value="null"' not in page
+    # The merge rule's ordering, and the pointer from a rename to attributes.
+    assert "rank(s.attrs[k]) < rank(a.attrs[k])" in page
+    assert "attribute_review" in page and "data-cgoto" in page
+    # Must not collide with the queue cards' delegated handlers.
+    assert "data-cattr" in page

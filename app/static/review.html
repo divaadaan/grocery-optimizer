@@ -22,6 +22,9 @@
     --bad: #a3302a;
     --bad-bg: #fbe6e4;
     --active: #2563eb;
+    --hot: #c2410c;
+    --hot-ink: #ffffff;
+    --hot-bg: #ffedd5;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -40,6 +43,9 @@
       --bad: #ff9a92;
       --bad-bg: #351715;
       --active: #4b8bff;
+      --hot: #fb923c;
+      --hot-ink: #1a0a00;
+      --hot-bg: #3b1d08;
     }
   }
   * { box-sizing: border-box; }
@@ -137,7 +143,45 @@
     opacity: 0; pointer-events: none; transition: opacity .15s;
   }
   #toast.show { opacity: 1; }
-  @media (max-width: 34rem) { .stats { font-size: .8rem; } main { padding: .6rem; } }
+  /* Correction forms. */
+  #corrections { border-top: 2px solid var(--line); margin-top: 1.5rem; }
+  .tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0 .8rem; }
+  .tabs button.on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .field { display: flex; flex-direction: column; gap: .2rem; margin: 0 0 .6rem; font-size: .85rem; }
+  .field > span { color: var(--ink-dim); }
+  input[type=text], input[type=number], textarea, select {
+    font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 6px; padding: .3rem .5rem; max-width: 100%;
+  }
+  textarea { min-height: 3.5rem; resize: vertical; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: .75rem; }
+  table.t { border-collapse: collapse; font-size: .85rem; margin: .4rem 0 .7rem; width: 100%; }
+  table.t th, table.t td { text-align: left; padding: .2rem .5rem; border-bottom: 1px dashed var(--line); }
+  table.t tr.diff td { font-weight: 600; background: var(--warn-bg); }
+  table.t tr.looser td { background: var(--bad-bg); color: var(--bad); font-weight: 600; }
+  .val { font-family: ui-monospace, monospace; font-size: .8rem; }
+  .val.t { color: var(--bad); } .val.f { color: var(--ok); } .val.u { color: var(--warn); }
+  .attrrow { display: grid; grid-template-columns: 11rem 7rem 1fr; gap: .5rem; align-items: center; margin: .15rem 0; font-size: .85rem; }
+  .err { background: var(--bad-bg); color: var(--bad); border-radius: 8px; padding: .5rem .75rem; margin: .6rem 0; white-space: pre-wrap; }
+  .okbox { background: var(--ok-bg); color: var(--ok); border-radius: 8px; padding: .5rem .75rem; margin: .6rem 0; font-weight: 600; }
+  .stale { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: .4rem .75rem; margin: .6rem 0; }
+  .pill.bad { background: var(--bad-bg); color: var(--bad); }
+  /* Newly servable LOOSENS what a restricted user sees: louder than anything else here. */
+  .loosen-banner {
+    background: var(--hot); color: var(--hot-ink); border-radius: 8px;
+    padding: .6rem .8rem; margin: .6rem 0; font-weight: 700; font-size: 1rem;
+  }
+  .pill.hot { background: var(--hot); color: var(--hot-ink); font-weight: 700; }
+  .dealrow { padding: .35rem .6rem; margin: .3rem 0; border-radius: 6px; background: var(--panel-2); font-size: .85rem; }
+  .dealrow.hot { border: 3px solid var(--hot); background: var(--hot-bg); }
+  .dealrow.hot b.tag { color: var(--hot); }
+  .live { font-size: .75rem; padding: 0 .4rem; border-radius: 4px; background: var(--ok-bg); color: var(--ok); }
+  .live.expired { background: var(--panel); color: var(--ink-dim); border: 1px solid var(--line); }
+  .sumline { display: flex; flex-wrap: wrap; gap: .25rem 1rem; font-size: .85rem; color: var(--ink-dim); margin: .4rem 0; }
+  .sumline b { color: var(--ink); }
+  .corr-out h3 { font-size: .95rem; margin: .8rem 0 .2rem; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  @media (max-width: 34rem) { .stats { font-size: .8rem; } main { padding: .6rem; } .attrrow { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -150,6 +194,23 @@
 </header>
 
 <main id="main"><p class="empty">Loading&hellip;</p></main>
+<main id="corrections">
+  <h1>Correct a confirmed product</h1>
+  <p class="note">
+    Every change is previewed first (<code>?dry_run=true</code>, nothing is written),
+    then confirmed with the identical request. Changing any input after a preview
+    disables Confirm until you preview again.
+  </p>
+  <datalist id="c-products"></datalist>
+  <div class="tabs">
+    <button data-ctab="attr" class="on">Attributes</button>
+    <button data-ctab="rename">Rename / category</button>
+    <button data-ctab="merge">Merge duplicate</button>
+  </div>
+  <section class="card" id="c-form-attr" data-cform="attr"></section>
+  <section class="card" id="c-form-rename" data-cform="rename" hidden></section>
+  <section class="card" id="c-form-merge" data-cform="merge" hidden></section>
+</main>
 <div id="toast"></div>
 
 <script>
@@ -235,6 +296,7 @@ async function load() {
   state.stats = data.stats;
   state.active = 0;
   render();
+  corrAfterLoad();
 }
 
 function renderStats() {
@@ -585,7 +647,7 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.target.matches("input, textarea") || event.metaKey || event.ctrlKey) return;
+  if (event.target.matches("input, textarea, select") || event.metaKey || event.ctrlKey) return;
   const key = event.key.toLowerCase();
   if (key === "y") { event.preventDefault(); decide(state.active, "confirm"); }
   else if (key === "n") { event.preventDefault(); decide(state.active, "reject"); }
@@ -594,6 +656,513 @@ document.addEventListener("keydown", (event) => {
   else if (key === "k" || key === "arrowup") { event.preventDefault(); move(-1); }
 });
 
+// ---------------------------------------------------------------------------
+// Correct a confirmed product: attribute, rename and merge forms.
+//
+// All three follow one protocol. Preview POSTs the request with ?dry_run=true
+// (nothing is written). Confirm is enabled only while the form's current
+// request is byte-for-byte the one that was last previewed successfully, and
+// it re-sends that same body without dry_run. Errors are shown verbatim and
+// the inputs are never cleared. Attribute names and labels come from the
+// server (state.attributes / state.rules), never from a list here.
+// ---------------------------------------------------------------------------
+const CORR = { known: new Map(), forms: {}, lastPid: {} };
+
+const cval = (id) => (document.getElementById(id) || { value: "" }).value;
+const parsePid = (text) => {
+  const m = /^\s*#?(\d+)\b/.exec(text || "");
+  return m ? Number(m[1]) : null;
+};
+const attrName = (a) => ATTR_LABEL[a] || a;
+// True > undecided (null) > False: how restrictive a stored value is. The
+// server's merge rule is the authority; this only highlights what it will refuse.
+const rank = (v) => (v === null || v === undefined ? 1 : v ? 2 : 0);
+
+function fmtVal(v) {
+  if (v === null || v === undefined) return '<span class="val u">undecided</span>';
+  return v ? '<span class="val t">true</span>' : '<span class="val f">false</span>';
+}
+const pills = (list, cls = "") => (list && list.length)
+  ? list.map((x) => `<span class="pill ${cls}">${esc(x)}</span>`).join("") : '<span class="note">none</span>';
+
+function corrKnownRefresh() {
+  CORR.known = new Map();
+  const add = (p) => { if (p.product_id != null) CORR.known.set(p.product_id, p); };
+  state.groups.forEach((g) => { if (g.product_status === "confirmed") add(g); });
+  state.undecided.forEach(add);
+  $("#c-products").innerHTML = [...CORR.known.values()].map((p) =>
+    `<option value="${p.product_id} · ${esc(p.canonical_name)}"></option>`).join("");
+}
+
+function pickerHtml(id, label) {
+  return `
+    <label class="field"><span>${esc(label)}</span>
+      <input type="text" id="${id}" list="c-products" autocomplete="off"
+             placeholder="product id, or type to search the confirmed products loaded above"></label>
+    <div class="note" id="${id}-info"></div>`;
+}
+
+function pickerInfo(id) {
+  const pid = parsePid(cval(id));
+  const el = document.getElementById(id + "-info");
+  if (!el) return;
+  if (pid === null) { el.textContent = ""; return; }
+  const p = CORR.known.get(pid);
+  el.innerHTML = p
+    ? `<b>${esc(p.canonical_name)}</b> &middot; ${esc(p.category)} &middot; ` +
+      state.attributes.map((a) => `${esc(attrName(a))} ${fmtVal(p[a])}`).join(" &middot; ")
+    : `Product ${pid} is not in the queue loaded on this page, so its current values ` +
+      "are shown by the preview.";
+}
+
+function setPid(id, pid) {
+  const p = CORR.known.get(pid);
+  document.getElementById(id).value = p ? `${pid} · ${p.canonical_name}` : String(pid);
+  pickerInfo(id);
+}
+
+function commonFields(kind) {
+  let who = "";
+  try { who = localStorage.getItem("review.reviewer") || ""; } catch (_) { /* optional */ }
+  return `
+    <div class="cols">
+      <label class="field"><span>Reviewer (required)</span>
+        <input type="text" id="c-${kind}-reviewer" value="${esc(who)}" maxlength="80"></label>
+      <label class="field"><span>Reason (required, recorded in the audit log)</span>
+        <textarea id="c-${kind}-reason" maxlength="2000"></textarea></label>
+    </div>
+    <div class="row">
+      <button id="c-${kind}-preview" data-cpreview="${kind}">Preview</button>
+      <button id="c-${kind}-confirm" class="primary" data-cconfirm="${kind}" disabled>Confirm</button>
+      <span class="note">Confirm unlocks after a successful preview of exactly these inputs.</span>
+    </div>
+    <div id="c-${kind}-stale" class="stale" hidden>
+      Inputs changed since the preview. Preview again to enable Confirm.</div>
+    <div id="c-${kind}-err"></div>
+    <div id="c-${kind}-out" class="corr-out"></div>`;
+}
+
+function reqCommon(kind) {
+  return { reviewer: cval(`c-${kind}-reviewer`), reason: cval(`c-${kind}-reason`) };
+}
+
+// ---- impact report rendering ---------------------------------------------
+
+function renderImpact(impact) {
+  if (!impact) return "";
+  const pc = impact.product_clears || {};
+  const deals = impact.deals || [], users = impact.users || [], sum = impact.summary || {};
+  const servable = deals.filter((d) => (d.newly_servable_for || []).length);
+  const withheld = deals.filter((d) => (d.newly_withheld_for || []).length);
+  const loosenUsers = users.filter((u) => (u.newly_servable_deal_ids || []).length);
+  const loosens = (pc.newly_cleared || []).length || servable.length || loosenUsers.length;
+
+  const dealRow = (d) => {
+    const hot = (d.newly_servable_for || []).length;
+    return `
+    <div class="dealrow ${hot ? "hot" : ""}">
+      <b>Deal #${d.deal_id}</b> ${esc(d.product_name)} &middot; store ${esc(d.store_id)}
+      &middot; ${esc(d.valid_from)} &rarr; ${esc(d.valid_until)}
+      <span class="live ${d.live ? "" : "expired"}">${d.live ? "LIVE" : "expired"}</span>
+      ${(d.other_products || []).length ? `<span class="note">also linked: products ${esc(d.other_products.join(", "))}</span>` : ""}
+      <div>
+        ${hot ? `<b class="tag">NEWLY SERVABLE for</b> ${pills(d.newly_servable_for, "hot")}` : ""}
+        ${(d.newly_withheld_for || []).length ? `newly withheld for ${pills(d.newly_withheld_for, "bad")}` : ""}
+      </div>
+    </div>`;
+  };
+
+  const userRow = (u) => `
+    <tr class="${(u.newly_servable_deal_ids || []).length ? "diff" : ""}">
+      <td>user ${esc(u.user_id)}</td><td>${esc((u.dietary_restrictions || []).join(", "))}</td>
+      <td>${esc((u.newly_withheld_deal_ids || []).join(", ") || "-")}</td>
+      <td>${(u.newly_servable_deal_ids || []).length
+        ? `<b>${esc(u.newly_servable_deal_ids.join(", "))}</b>` : "-"}</td>
+    </tr>`;
+
+  const clearsRows = pc.before
+    ? [["clears before", pc.before], ["clears after", pc.after]]
+    : [["absorbed clears", pc.absorbed], ["survivor clears", pc.survivor]];
+
+  return `
+    ${loosens ? `<div class="loosen-banner" role="alert">
+      THIS LOOSENS WHAT RESTRICTED USERS SEE: ${servable.length} deal(s) become newly
+      servable, ${loosenUsers.length} user(s) would newly be served deals,
+      ${(pc.newly_cleared || []).length} label(s) newly cleared by the product.
+      Check each entry marked in orange below before confirming.</div>` : ""}
+    <h3>Summary</h3>
+    <div class="sumline">${Object.entries(sum).map(([k, v]) =>
+      `<span>${esc(k.replace(/_/g, " "))} <b>${esc(v)}</b></span>`).join("")}</div>
+    <h3>Labels the product itself clears</h3>
+    ${clearsRows.map(([l, v]) => `<div>${esc(l)}: ${pills(v)}</div>`).join("")}
+    <div>newly cleared: ${pills(pc.newly_cleared, "hot")}</div>
+    <div>newly failing: ${pills(pc.newly_failing, "bad")}</div>
+    <h3>Deals newly servable (${servable.length})</h3>
+    ${servable.length ? servable.map(dealRow).join("") : '<span class="note">none</span>'}
+    <h3>Deals newly withheld (${withheld.length})</h3>
+    ${withheld.length ? withheld.map(dealRow).join("") : '<span class="note">none</span>'}
+    <h3>Affected users (${users.length})</h3>
+    ${users.length ? `<table class="t"><tr><th>user</th><th>restrictions</th>
+      <th>newly withheld deal ids</th><th>NEWLY SERVABLE deal ids</th></tr>
+      ${users.map(userRow).join("")}</table>` : '<span class="note">none</span>'}
+    <div class="note">${deals.length} deal(s) are linked to this product;
+      only the ones whose verdict changes are listed.</div>`;
+}
+
+function renderChangesTable(report, keyName) {
+  return `<table class="t"><tr><th>${keyName === "field" ? "field" : "attribute"}</th>
+    <th>before</th><th>after</th></tr>
+    ${(report.changes || []).map((c) => `<tr class="diff"><td>${esc(attrName(c[keyName]))}</td>
+      <td>${keyName === "field" ? esc(c.old_value) : fmtVal(c.old_value)}</td>
+      <td>${keyName === "field" ? esc(c.new_value) : fmtVal(c.new_value)}</td></tr>`).join("")}
+    </table>`;
+}
+
+function renderWho(report) {
+  return `<div class="note">reviewer <b>${esc(report.reviewer)}</b> &middot; reason: ${esc(report.reason)}</div>`;
+}
+
+// ---- attribute form ------------------------------------------------------
+
+function attrRows() {
+  const pid = parsePid(cval("c-attr-pid"));
+  const p = pid === null ? null : CORR.known.get(pid);
+  return state.attributes.map((a) => {
+    const cur = p ? p[a] : undefined;
+    const known = p && cur !== undefined;
+    return `
+    <div class="attrrow" title="${esc(state.rules[a] || "")}">
+      <span>${esc(attrName(a))} <span class="note">(${esc(a)})</span></span>
+      <span>${known ? fmtVal(cur) : '<span class="note">current: see preview</span>'}</span>
+      <select data-cattr="${esc(a)}">
+        <option value="">unchanged</option>
+        <option value="true" ${known && cur === true ? "disabled" : ""}>set true (contains)</option>
+        <option value="false" ${known && cur === false ? "disabled" : ""}>set false (does not contain)</option>
+      </select>
+    </div>`;
+  }).join("");
+}
+
+function rebuildAttr() {
+  const el = $("#c-attr-rows");
+  if (el) el.innerHTML = attrRows();
+}
+
+CORR.forms.attr = {
+  html: () => `
+    <h2>Correct attributes</h2>
+    <div class="meta">The only way to change a decided attribute on a confirmed product.
+      NULL (undecided) cannot be chosen: the server refuses it. Only attributes you
+      change are sent.</div>
+    ${pickerHtml("c-attr-pid", "Product")}
+    <div id="c-attr-rows"></div>
+    ${commonFields("attr")}`,
+  request() {
+    const pid = parsePid(cval("c-attr-pid"));
+    if (pid === null) return { error: "Pick a product by id first." };
+    const changes = {};
+    document.querySelectorAll("#c-form-attr select[data-cattr]").forEach((s) => {
+      if (s.value) changes[s.dataset.cattr] = s.value === "true";
+    });
+    return { url: `/admin/products/${pid}/attribute-corrections`,
+             body: { changes, ...reqCommon("attr") } };
+  },
+  render(r) {
+    const p = r.product;
+    return `
+      <h3>${esc(p.canonical_name)} <span class="note">#${p.product_id} &middot;
+        ${esc(p.category)} &middot; ${esc(p.status)}${p.is_pantry_staple ? " &middot; pantry staple" : ""}</span></h3>
+      ${renderWho(r)}
+      ${renderChangesTable(r, "attribute")}
+      <h3>All attributes, before and after</h3>
+      <table class="t"><tr><th>attribute</th><th>before</th><th>after</th></tr>
+      ${Object.keys(p.before).map((a) => `<tr class="${p.before[a] !== p.after[a] ? "diff" : ""}">
+        <td>${esc(attrName(a))}</td><td>${fmtVal(p.before[a])}</td><td>${fmtVal(p.after[a])}</td></tr>`).join("")}
+      </table>
+      ${renderImpact(r.impact)}`;
+  },
+  applied(r) {
+    const known = CORR.known.get(r.product.product_id);
+    if (known) Object.assign(known, r.product.after);
+    rebuildAttr(); pickerInfo("c-attr-pid");
+  },
+};
+
+// ---- rename form ---------------------------------------------------------
+
+CORR.forms.rename = {
+  html: () => `
+    <h2>Rename / recategorise</h2>
+    <div class="meta">Changes identity only; it never touches an attribute. Fill in one or
+      both fields.</div>
+    ${pickerHtml("c-rename-pid", "Product")}
+    <div class="cols">
+      <label class="field"><span>New canonical name (blank = keep)</span>
+        <input type="text" id="c-rename-name" maxlength="120"></label>
+      <label class="field"><span>New category (blank = keep)</span>
+        <input type="text" id="c-rename-category" maxlength="50"></label>
+    </div>
+    ${commonFields("rename")}`,
+  request() {
+    const pid = parsePid(cval("c-rename-pid"));
+    if (pid === null) return { error: "Pick a product by id first." };
+    const body = {};
+    if (cval("c-rename-name").trim()) body.canonical_name = cval("c-rename-name");
+    if (cval("c-rename-category").trim()) body.category = cval("c-rename-category");
+    return { url: `/admin/products/${pid}/identity-corrections`,
+             body: { ...body, ...reqCommon("rename") } };
+  },
+  render(r) {
+    const p = r.product, ar = r.attribute_review || {};
+    const m = /\/products\/(\d+)\//.exec(ar.endpoint || "");
+    return `
+      <h3>Product #${p.product_id} <span class="note">${esc(p.status)}</span></h3>
+      ${renderWho(r)}
+      ${renderChangesTable(r, "field")}
+      <h3>Attributes (unchanged by a rename)</h3>
+      <table class="t"><tr><th>attribute</th><th>value</th></tr>
+      ${Object.entries(p.attributes).map(([a, v]) =>
+        `<tr><td>${esc(attrName(a))}</td><td>${fmtVal(v)}</td></tr>`).join("")}</table>
+      <div>clears: ${pills(p.clears)}</div>
+      <div class="stale"><b>Attributes are a separate audited correction.</b>
+        ${esc(ar.note || "")}<br>
+        <code>${esc(ar.endpoint || "")}</code>
+        ${m ? `<button data-cgoto="attr" data-pid="${m[1]}">Correct this product's attributes</button>` : ""}
+      </div>`;
+  },
+  applied(r) {
+    const known = CORR.known.get(r.product.product_id);
+    if (known) {
+      known.canonical_name = r.product.after.canonical_name;
+      known.category = r.product.after.category;
+      corrKnownRefresh();
+    }
+    pickerInfo("c-rename-pid");
+  },
+};
+
+// ---- merge form ----------------------------------------------------------
+
+function compareTable(a, s) {
+  // a = absorbed, s = survivor: {id, name, category, attrs}
+  const keys = state.attributes.length ? state.attributes : Object.keys(a.attrs);
+  const looser = keys.filter((k) => rank(s.attrs[k]) < rank(a.attrs[k]));
+  return `
+    <table class="t"><tr><th>attribute</th>
+      <th>absorb: #${a.id} ${esc(a.name)}</th><th>into: #${s.id} ${esc(s.name)}</th><th></th></tr>
+      <tr><td>category</td><td>${esc(a.category)}</td><td>${esc(s.category)}</td><td></td></tr>
+      ${keys.map((k) => `<tr class="${looser.includes(k) ? "looser" : ""}">
+        <td>${esc(attrName(k))}</td><td>${fmtVal(a.attrs[k])}</td><td>${fmtVal(s.attrs[k])}</td>
+        <td>${looser.includes(k) ? "survivor LESS restrictive" : ""}</td></tr>`).join("")}
+    </table>
+    ${looser.length ? `<div class="err" role="alert">The server will refuse this merge: on
+      ${esc(looser.map(attrName).join(", "))} the survivor (#${s.id}) is less restrictive than the
+      absorbed product (#${a.id}) (true &gt; undecided &gt; false), and a merge must never make a
+      deal newly servable. Fix: do an attribute correction first, on the survivor if it is
+      wrong or on the absorbed product if that one is, then merge.
+      <button data-cgoto="attr" data-pid="${s.id}">Correct #${s.id}</button>
+      <button data-cgoto="attr" data-pid="${a.id}">Correct #${a.id}</button></div>` : ""}`;
+}
+
+function mergeCompare() {
+  const el = $("#c-merge-cmp");
+  const ai = parsePid(cval("c-merge-pid")), si = parsePid(cval("c-merge-into"));
+  const a = ai === null ? null : CORR.known.get(ai), s = si === null ? null : CORR.known.get(si);
+  if (!a || !s) {
+    el.innerHTML = (ai !== null || si !== null)
+      ? '<div class="note">Side-by-side attributes need both products to be in the loaded queue; ' +
+        "otherwise the preview shows them (and the server refuses a loosening merge).</div>" : "";
+    return;
+  }
+  const wrap = (p) => ({ id: p.product_id, name: p.canonical_name, category: p.category,
+                         attrs: Object.fromEntries(state.attributes.map((k) => [k, p[k]])) });
+  el.innerHTML = compareTable(wrap(a), wrap(s));
+}
+
+CORR.forms.merge = {
+  html: () => `
+    <h2>Merge a duplicate</h2>
+    <div class="meta">Absorb product X into product Y. X is retired as merged; its aliases,
+      deal links and price snapshots move to Y. Y must be at least as restrictive as X on
+      every attribute.</div>
+    <div class="cols">
+      <div>${pickerHtml("c-merge-pid", "Absorb product X (retired)")}</div>
+      <div>${pickerHtml("c-merge-into", "Into product Y (survives)")}</div>
+    </div>
+    <div id="c-merge-cmp"></div>
+    ${commonFields("merge")}`,
+  request() {
+    const pid = parsePid(cval("c-merge-pid")), into = parsePid(cval("c-merge-into"));
+    if (pid === null || into === null) return { error: "Pick both products by id first." };
+    return { url: `/admin/products/${pid}/merge`, body: { into, ...reqCommon("merge") } };
+  },
+  render(r) {
+    const wrap = (p) => ({ id: p.product_id, name: p.canonical_name, category: p.category,
+                           attrs: p.attributes });
+    const mv = r.moves || {};
+    return `
+      <h3>Absorb #${r.absorbed.product_id} into #${r.survivor.product_id}</h3>
+      ${renderWho(r)}
+      ${compareTable(wrap(r.absorbed), wrap(r.survivor))}
+      <h3>Moves</h3>
+      <table class="t">${Object.entries(mv).map(([k, v]) => `<tr><td>${esc(k.replace(/_/g, " "))}</td>
+        <td>${Array.isArray(v) ? `<b>${v.length}</b> ${v.length ? "(" + esc(v.join(", ")) + ")" : ""}`
+                                 : `<b>${esc(v)}</b>`}</td></tr>`).join("")}</table>
+      ${(r.warnings || []).length ? `<h3>Warnings</h3>${r.warnings.map((w) =>
+        `<div class="stale">${esc(w)}</div>`).join("")}` : ""}
+      ${renderImpact(r.impact)}`;
+  },
+  applied(r) {
+    CORR.known.delete(r.absorbed.product_id);
+    corrKnownRefresh();
+    pickerInfo("c-merge-pid"); mergeCompare();
+  },
+};
+
+// ---- the preview -> confirm protocol -------------------------------------
+
+const reqKey = (r) => JSON.stringify([r.url, r.body]);
+
+async function callApi(url, bodyText) {
+  let res;
+  try {
+    res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
+                             body: bodyText });
+  } catch (err) {
+    return { ok: false, status: 0, detail: `network error: ${err.message}` };
+  }
+  let data = null;
+  try { data = await res.json(); } catch (_) { /* non-JSON body */ }
+  if (res.ok) return { ok: true, status: res.status, data };
+  const d = data && data.detail !== undefined ? data.detail : null;
+  // FastAPI's own 422 detail is a list of objects, not a string.
+  const detail = typeof d === "string" ? d : d === null ? `HTTP ${res.status}` : JSON.stringify(d, null, 2);
+  return { ok: false, status: res.status, detail };
+}
+
+function corrErr(kind, res) {
+  $(`#c-${kind}-err`).innerHTML = res
+    ? `<div class="err" role="alert"><b>${res.status ? "HTTP " + res.status : "Error"}${
+        res.status === 500 ? " (server guard tripped: a bug, nothing was written)" : ""}</b>\n${esc(res.detail)}</div>`
+    : "";
+}
+
+// The gate: Confirm is enabled iff the form's current request equals the one
+// last previewed successfully. Run after every input.
+function corrSync(kind) {
+  const f = CORR.forms[kind];
+  const r = f.request();
+  const matches = !!f.previewed && !r.error && reqKey(r) === f.previewed.key;
+  $(`#c-${kind}-confirm`).disabled = !matches || f.busy;
+  $(`#c-${kind}-preview`).disabled = !!f.busy;
+  $(`#c-${kind}-stale`).hidden = !(f.previewed && !matches);
+}
+
+function corrBusy(kind, busy) {
+  CORR.forms[kind].busy = busy;
+  corrSync(kind);
+}
+
+async function corrPreview(kind) {
+  const f = CORR.forms[kind];
+  const r = f.request();
+  corrErr(kind, null);
+  f.previewed = null;
+  if (r.error) { corrErr(kind, { status: 0, detail: r.error }); corrSync(kind); return; }
+  const sentKey = reqKey(r), bodyText = JSON.stringify(r.body);
+  $(`#c-${kind}-out`).innerHTML = "";
+  corrBusy(kind, true);
+  const res = await callApi(r.url + "?dry_run=true", bodyText);
+  f.busy = false;
+  if (!res.ok) { corrErr(kind, res); corrSync(kind); return; }
+  $(`#c-${kind}-out`).innerHTML =
+    `<div class="stale"><b>Preview only. Nothing has been written.</b></div>` + f.render(res.data);
+  const now = f.request();
+  // If the reviewer edited something while the request was in flight, this
+  // preview describes a different request: do not unlock Confirm for it.
+  if (!now.error && reqKey(now) === sentKey) f.previewed = { key: sentKey, url: r.url, bodyText };
+  corrSync(kind);
+}
+
+async function corrConfirm(kind) {
+  const f = CORR.forms[kind];
+  const p = f.previewed, r = f.request();
+  if (!p || r.error || reqKey(r) !== p.key) { f.previewed = null; corrSync(kind); return; }
+  corrErr(kind, null);
+  corrBusy(kind, true);
+  const res = await callApi(p.url, p.bodyText);   // the previewed body, verbatim, no dry_run
+  f.busy = false;
+  f.previewed = null;                              // one preview authorises one confirm
+  if (!res.ok) { corrErr(kind, res); corrSync(kind); return; }
+  $(`#c-${kind}-out`).innerHTML =
+    `<div class="okbox">Applied. Correction #${esc(res.data.correction_id)} recorded at
+     ${esc(res.data.corrected_at)}.</div>` + f.render(res.data);
+  f.applied(res.data);
+  toast(`correction #${res.data.correction_id} recorded`);
+  corrSync(kind);
+}
+
+function corrTab(name) {
+  document.querySelectorAll("[data-ctab]").forEach((b) => b.classList.toggle("on", b.dataset.ctab === name));
+  document.querySelectorAll("[data-cform]").forEach((s) => { s.hidden = s.dataset.cform !== name; });
+}
+
+function corrBuild() {
+  Object.entries(CORR.forms).forEach(([kind, f]) => {
+    $(`#c-form-${kind}`).innerHTML = f.html();
+  });
+  rebuildAttr();
+}
+
+function corrInput(event) {
+  const form = event.target.closest("[data-cform]");
+  if (!form) return;
+  const kind = form.dataset.cform;
+  const id = event.target.id || "";
+  if (id.endsWith("-pid") || id.endsWith("-into")) {
+    pickerInfo(id);
+    if (kind === "merge") mergeCompare();
+    if (kind === "attr" && CORR.lastPid.attr !== parsePid(event.target.value)) {
+      CORR.lastPid.attr = parsePid(event.target.value);
+      rebuildAttr();
+    }
+  }
+  if (id === "c-" + kind + "-reviewer") {
+    try { localStorage.setItem("review.reviewer", event.target.value); } catch (_) { /* optional */ }
+  }
+  corrSync(kind);
+}
+
+document.addEventListener("input", (e) => { if (e.target.closest("#corrections")) corrInput(e); });
+document.addEventListener("change", (e) => { if (e.target.closest("#corrections")) corrInput(e); });
+document.addEventListener("click", (event) => {
+  const tab = event.target.closest("[data-ctab]");
+  if (tab) { corrTab(tab.dataset.ctab); return; }
+  const prev = event.target.closest("[data-cpreview]");
+  if (prev) { corrPreview(prev.dataset.cpreview); return; }
+  const conf = event.target.closest("[data-cconfirm]");
+  if (conf) { corrConfirm(conf.dataset.cconfirm); return; }
+  const go = event.target.closest("[data-cgoto]");
+  if (go) {
+    setPid("c-attr-pid", Number(go.dataset.pid));
+    CORR.lastPid.attr = Number(go.dataset.pid);
+    rebuildAttr(); corrTab(go.dataset.cgoto); corrSync("attr");
+  }
+});
+
+// Refresh the picker's data whenever the queue (re)loads, without rebuilding
+// the forms: a half-typed form must survive a reload.
+function corrAfterLoad() {
+  corrKnownRefresh();
+  ["c-attr-pid", "c-rename-pid", "c-merge-pid", "c-merge-into"].forEach(pickerInfo);
+  mergeCompare();
+  // The attribute list arrives with the queue; do not wipe a choice in progress.
+  if (![...document.querySelectorAll("#c-form-attr select[data-cattr]")].some((s) => s.value)) {
+    rebuildAttr();
+  }
+}
+
+corrBuild();
 $("#link").addEventListener("click", runLink);
 load();
 </script>
