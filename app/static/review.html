@@ -685,13 +685,73 @@ function fmtVal(v) {
 const pills = (list, cls = "") => (list && list.length)
   ? list.map((x) => `<span class="pill ${cls}">${esc(x)}</span>`).join("") : '<span class="note">none</span>';
 
+// Products fetched from GET /admin/products/{id} (any status, current values)
+// and the picker's name list from GET /admin/products. The queue only shows
+// proposals and undecided products, so these are how a confirmed product with
+// every attribute decided becomes visible. Fetched details go in first and the
+// queue overrides them on reload: the queue is the fresher of the two.
+CORR.fetched = new Map();
+CORR.listed = [];
+CORR.missing = new Set();
+CORR.pending = new Set();
+
 function corrKnownRefresh() {
-  CORR.known = new Map();
+  CORR.known = new Map(CORR.fetched);
   const add = (p) => { if (p.product_id != null) CORR.known.set(p.product_id, p); };
   state.groups.forEach((g) => { if (g.product_status === "confirmed") add(g); });
   state.undecided.forEach(add);
-  $("#c-products").innerHTML = [...CORR.known.values()].map((p) =>
+  const names = new Map(CORR.listed.map((p) => [p.product_id, p]));
+  CORR.known.forEach((p, id) => names.set(id, p));
+  $("#c-products").innerHTML = [...names.values()].map((p) =>
     `<option value="${p.product_id} · ${esc(p.canonical_name)}"></option>`).join("");
+}
+
+// Lookup only: name search finds products for a human; it decides nothing.
+async function corrLoadList(q) {
+  const url = "/admin/products?status=confirmed&limit=500" + (q ? "&q=" + encodeURIComponent(q) : "");
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const data = await res.json();
+    CORR.listed = data.items || [];
+    corrKnownRefresh();
+  } catch (_) { /* the datalist is a convenience; typing an id still works */ }
+}
+
+let corrSearchTimer = null;
+function corrSearch(text) {
+  clearTimeout(corrSearchTimer);
+  corrSearchTimer = setTimeout(() => corrLoadList(text.trim()), 250);
+}
+
+// Fetch a product's details when an id is typed or picked and it is not known yet.
+async function corrEnsure(pid) {
+  if (pid === null || CORR.known.has(pid) || CORR.missing.has(pid) || CORR.pending.has(pid)) return;
+  CORR.pending.add(pid);
+  try {
+    const res = await fetch(`/admin/products/${pid}`);
+    if (res.status === 404) CORR.missing.add(pid);
+    else if (res.ok) {
+      const d = await res.json();
+      const flat = { ...d.attributes, product_id: d.product_id, canonical_name: d.canonical_name,
+                     category: d.category, status: d.status, merged_into: d.merged_into,
+                     is_pantry_staple: d.is_pantry_staple, clears: d.clears };
+      CORR.fetched.set(pid, flat);
+      CORR.known.set(pid, flat);
+    }
+  } catch (_) { /* leave unknown: the preview still shows current values */ }
+  CORR.pending.delete(pid);
+  corrAfterFetch();
+}
+
+function corrAfterFetch() {
+  corrKnownRefresh();
+  ["c-attr-pid", "c-rename-pid", "c-merge-pid", "c-merge-into"].forEach(pickerInfo);
+  mergeCompare();
+  // Show current values in the attribute form, but never wipe a choice in progress.
+  if (![...document.querySelectorAll("#c-form-attr select[data-cattr]")].some((s) => s.value)) {
+    rebuildAttr();
+  }
 }
 
 function pickerHtml(id, label) {
@@ -710,15 +770,19 @@ function pickerInfo(id) {
   const p = CORR.known.get(pid);
   el.innerHTML = p
     ? `<b>${esc(p.canonical_name)}</b> &middot; ${esc(p.category)} &middot; ` +
+      (p.status && p.status !== "confirmed"
+        ? `<b>${esc(p.status)}${p.merged_into ? " into #" + esc(p.merged_into) : ""}</b> &middot; ` : "") +
       state.attributes.map((a) => `${esc(attrName(a))} ${fmtVal(p[a])}`).join(" &middot; ")
-    : `Product ${pid} is not in the queue loaded on this page, so its current values ` +
-      "are shown by the preview.";
+    : CORR.missing.has(pid) ? `No product with id ${pid}.`
+    : CORR.pending.has(pid) ? `Loading product ${pid}...`
+    : `Product ${pid} could not be looked up, so its current values are shown by the preview.`;
 }
 
 function setPid(id, pid) {
   const p = CORR.known.get(pid);
   document.getElementById(id).value = p ? `${pid} · ${p.canonical_name}` : String(pid);
   pickerInfo(id);
+  corrEnsure(pid);
 }
 
 function commonFields(kind) {
@@ -970,8 +1034,8 @@ function mergeCompare() {
   const a = ai === null ? null : CORR.known.get(ai), s = si === null ? null : CORR.known.get(si);
   if (!a || !s) {
     el.innerHTML = (ai !== null || si !== null)
-      ? '<div class="note">Side-by-side attributes need both products to be in the loaded queue; ' +
-        "otherwise the preview shows them (and the server refuses a loosening merge).</div>" : "";
+      ? '<div class="note">Side-by-side attributes appear once both products are picked and ' +
+        "loaded; the preview shows them too (and the server refuses a loosening merge).</div>" : "";
     return;
   }
   const wrap = (p) => ({ id: p.product_id, name: p.canonical_name, category: p.category,
@@ -1014,6 +1078,8 @@ CORR.forms.merge = {
   },
   applied(r) {
     CORR.known.delete(r.absorbed.product_id);
+    CORR.fetched.delete(r.absorbed.product_id);
+    CORR.listed = CORR.listed.filter((p) => p.product_id !== r.absorbed.product_id);
     corrKnownRefresh();
     pickerInfo("c-merge-pid"); mergeCompare();
   },
@@ -1120,6 +1186,9 @@ function corrInput(event) {
   const kind = form.dataset.cform;
   const id = event.target.id || "";
   if (id.endsWith("-pid") || id.endsWith("-into")) {
+    const typed = parsePid(event.target.value);
+    if (typed === null) corrSearch(event.target.value || "");
+    else corrEnsure(typed);
     pickerInfo(id);
     if (kind === "merge") mergeCompare();
     if (kind === "attr" && CORR.lastPid.attr !== parsePid(event.target.value)) {
@@ -1163,6 +1232,7 @@ function corrAfterLoad() {
 }
 
 corrBuild();
+corrLoadList("");
 $("#link").addEventListener("click", runLink);
 load();
 </script>
