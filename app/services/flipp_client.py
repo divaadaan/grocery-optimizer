@@ -137,6 +137,10 @@ class FlippSearchClient:
         self._sleep = sleep
         self._lock = threading.Lock()
         self._last_request_at = 0.0
+        # Responses that had no 'items' list. search() returns [] for those, the
+        # same as a term with no hits, so the count is the only trace; ingestion
+        # reads it (collect_deals) to flag a payload-shape change.
+        self.missing_items_responses = 0
 
     # -- politeness ---------------------------------------------------------
 
@@ -175,6 +179,7 @@ class FlippSearchClient:
         )
         items = payload.get("items")
         if not isinstance(items, list):
+            self.missing_items_responses += 1
             logger.warning(
                 "Flipp response for %r had no 'items' list (keys=%s)",
                 term,

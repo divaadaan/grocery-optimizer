@@ -85,6 +85,15 @@ class Settings(BaseSettings):
         env="FLIPP_USER_AGENT",
     )
 
+    # Ingestion health (app/services/ingestion_runs.py::assess_health). A run
+    # is "unhealthy" when it normalised nothing, lost this many search terms or
+    # more, dropped more than this fraction of raw items, or saw a payload with
+    # no 'items' key. --health fails when the last ok run is older than the
+    # stale window (flyers turn over weekly; 8 days = one missed week + a day).
+    ingestion_max_failed_terms: int = Field(default=5, env="INGESTION_MAX_FAILED_TERMS")
+    ingestion_max_skip_rate: float = Field(default=0.5, env="INGESTION_MAX_SKIP_RATE")
+    ingestion_stale_days: int = Field(default=8, env="INGESTION_STALE_DAYS")
+
     # Cost Tracking
     enable_cost_tracking: bool = Field(default=True, env="ENABLE_COST_TRACKING")
     cost_smollm_1_7b: float = Field(default=0.001, env="COST_SMOLLM_1_7B")

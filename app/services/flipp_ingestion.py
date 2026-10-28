@@ -72,6 +72,13 @@ from typing import Any, Iterable, Sequence
 
 from app.db import db
 from app.services.flipp_client import DealProviderError
+from app.services.ingestion_runs import (
+    STATUS_FAILED,
+    STATUS_OK,
+    TRIGGERS,
+    assess_health,
+    record_run,
+)
 from app.services.flipp_staples import category_for_term, staple_terms
 
 logger = logging.getLogger(__name__)
@@ -140,6 +147,8 @@ class IngestionReport:
     skipped_no_price: int = 0
     skipped_non_food: int = 0
     skipped_bad_dates: int = 0
+    skipped_no_merchant: int = 0
+    skipped_no_item_id: int = 0
     # same provider item id returned by two different search terms
     duplicate_items: int = 0
     # same offer printed twice in one flyer under two different item ids
@@ -150,7 +159,31 @@ class IngestionReport:
     deals_updated: int = 0
     snapshots_inserted: int = 0
     snapshots_skipped: int = 0
+    # normalised deals with no unit (post_price_text absent or empty)
+    unit_null: int = 0
+    # provider responses that carried no 'items' list at all -- distinct from a
+    # term that legitimately has no hits (which is an empty list)
+    missing_items_responses: int = 0
+    # set by run_ingestion from assess_health (app/services/ingestion_runs.py)
+    status: str = "ok"
+    health_reasons: list[str] = field(default_factory=list)
     observed_on: datetime | None = None
+
+    @property
+    def skipped_total(self) -> int:
+        """Raw items dropped by normalisation. Dedupe drops are not skips."""
+        return (
+            self.skipped_no_name + self.skipped_no_price + self.skipped_non_food
+            + self.skipped_bad_dates + self.skipped_no_merchant
+            + self.skipped_no_item_id
+        )
+
+    @property
+    def unit_null_rate(self) -> float:
+        """Fraction of normalised deals with no unit; 0.0 on an empty run."""
+        if not self.normalized:
+            return 0.0
+        return round(self.unit_null / self.normalized, 3)
 
     @property
     def regular_price_coverage(self) -> float:
@@ -169,6 +202,8 @@ class IngestionReport:
         }
         out["observed_on"] = self.observed_on.isoformat() if self.observed_on else None
         out["regular_price_coverage"] = self.regular_price_coverage
+        out["skipped_total"] = self.skipped_total
+        out["unit_null_rate"] = self.unit_null_rate
         return out
 
 
@@ -290,8 +325,8 @@ def normalize_items(
         "no_price": "skipped_no_price",
         "non_food": "skipped_non_food",
         "bad_dates": "skipped_bad_dates",
-        "no_merchant": "skipped_no_name",
-        "no_item_id": "skipped_bad_dates",
+        "no_merchant": "skipped_no_merchant",
+        "no_item_id": "skipped_no_item_id",
     }
     for raw in raw_items:
         result = normalize_item(raw, search_term=search_term)
@@ -588,6 +623,9 @@ def collect_deals(
     """
     terms = list(terms) if terms is not None else staple_terms()
     report = report or IngestionReport(postal_code=postal_code, source=provider.source)
+    # Providers that can tell "no 'items' key" from "no hits" expose a running
+    # counter (FlippSearchClient does); the protocol stays search() only.
+    missing_before = getattr(provider, "missing_items_responses", 0)
 
     collected: list[NormalizedDeal] = []
     for term in terms:
@@ -606,45 +644,76 @@ def collect_deals(
     report.duplicate_offers = same_offer
     report.normalized = len(unique)
     report.sale_price_only = sum(1 for d in unique if d.regular_price is None)
+    report.unit_null = sum(1 for d in unique if d.unit is None)
+    report.missing_items_responses = (
+        getattr(provider, "missing_items_responses", 0) - missing_before
+    )
     return unique, report
 
 
 def run_ingestion(
     postal_code: str,
     *,
+    trigger: str,
     provider=None,
     terms: Sequence[str] | None = None,
     observed_on: datetime | None = None,
     database=db,
 ) -> IngestionReport:
-    """Full refresh for one postal code: search, normalise, persist.
+    """Full refresh for one postal code: search, normalise, persist, record.
+
+    ``trigger`` (``cli`` | ``refresh_route`` | ``cold_start``) is required, so a
+    new entry point cannot forget to say who it is. Every call writes one
+    ``ingestion_runs`` row via :func:`record_run` -- ok, unhealthy, or failed
+    (the exception is recorded and re-raised). The row is written after, and
+    outside, the ingestion's own transaction and can never fail it.
 
     Callers are responsible for checking ``settings.deal_ingestion_enabled``
-    first — see ``app/routes/stores.py`` and ``scripts/ingest_deals.py``.
+    first -- see ``app/routes/stores.py`` and ``scripts/ingest_deals.py``.
     """
+    if trigger not in TRIGGERS:
+        raise ValueError(f"trigger must be one of {TRIGGERS}, got {trigger!r}")
+
     if provider is None:  # pragma: no cover - needs network
         from app.services.flipp_client import FlippSearchClient
 
         provider = FlippSearchClient()
 
+    started_at = datetime.now(timezone.utc)
     report = IngestionReport(postal_code=postal_code, source=provider.source)
-    deals, report = collect_deals(provider, postal_code, terms=terms, report=report)
 
-    if not deals:
-        logger.warning(
-            "Ingestion for %s produced no usable deals (%d raw items, %d terms failed)",
-            postal_code, report.raw_items, len(report.terms_failed),
+    try:
+        deals, report = collect_deals(provider, postal_code, terms=terms, report=report)
+
+        if not deals:
+            logger.warning(
+                "Ingestion for %s produced no usable deals (%d raw items, %d terms failed)",
+                postal_code, report.raw_items, len(report.terms_failed),
+            )
+            report.observed_on = observed_on or _observation_day()
+        else:
+            persist_deals(
+                deals,
+                postal_code=postal_code,
+                source=report.source,
+                report=report,
+                observed_on=observed_on,
+                database=database,
+            )
+            logger.info("Ingestion for %s: %s", postal_code, report.as_dict())
+    except Exception as exc:
+        report.status = STATUS_FAILED
+        record_run(
+            report, trigger=trigger, started_at=started_at, status=STATUS_FAILED,
+            error=f"{type(exc).__name__}: {exc}", database=database,
         )
-        report.observed_on = observed_on or _observation_day()
-        return report
+        raise
 
-    persist_deals(
-        deals,
-        postal_code=postal_code,
-        source=report.source,
-        report=report,
-        observed_on=observed_on,
-        database=database,
+    report.status, report.health_reasons = assess_health(report)
+    if report.status != STATUS_OK:
+        logger.warning("Ingestion for %s unhealthy: %s", postal_code, report.health_reasons)
+    record_run(
+        report, trigger=trigger, started_at=started_at, status=report.status,
+        health_reasons=report.health_reasons, database=database,
     )
-    logger.info("Ingestion for %s: %s", postal_code, report.as_dict())
     return report

@@ -70,7 +70,8 @@ def fake_ingestion(monkeypatch):
     calls = []
 
     def _run(postal_code, terms=None, **kwargs):
-        calls.append({"postal_code": postal_code, "terms": terms})
+        calls.append({"postal_code": postal_code, "terms": terms,
+                      "trigger": kwargs.get("trigger")})
         report = IngestionReport(postal_code=postal_code, source="flipp")
         report.terms_searched = len(terms) if terms else 50
         report.normalized = 10
@@ -124,7 +125,9 @@ def test_refresh_runs_ingestion_when_enabled(client, ingestion_enabled, fake_ing
     body = response.json()
     # The request schema normalises the postal code.
     assert body["postal_code"] == "M5V3A8"
-    assert fake_ingestion == [{"postal_code": "M5V3A8", "terms": None}]
+    assert fake_ingestion == [
+        {"postal_code": "M5V3A8", "terms": None, "trigger": "refresh_route"}
+    ]
     assert body["deals_inserted"] == 8
     assert body["snapshots_inserted"] == 10
     assert body["source"] == "flipp"
@@ -220,6 +223,27 @@ def test_discover_ingests_on_a_genuine_cold_start(
     assert response.status_code == 200
     assert len(fake_ingestion) == 1
     assert "Refreshed from flipp" in response.json()["message"]
+
+
+def test_cold_start_is_recorded_as_cold_start_and_explicit_refresh_as_refresh_route(
+    client, ingestion_enabled, fake_ingestion, fake_store_reads
+):
+    fake_store_reads["deals"] = []
+    client.post("/postal-code/discover", json={"postal_code": "M5V3A8"})
+    client.post("/postal-code/discover?refresh=true", json={"postal_code": "M5V3A8"})
+    assert [c["trigger"] for c in fake_ingestion] == ["cold_start", "refresh_route"]
+
+
+def test_refresh_message_names_an_unhealthy_run(client, ingestion_enabled, monkeypatch):
+    def _run(postal_code, terms=None, **kwargs):
+        report = IngestionReport(postal_code=postal_code, source="flipp")
+        report.status = "unhealthy"
+        report.health_reasons = ["zero deals normalised"]
+        return report
+
+    monkeypatch.setattr(stores_route, "run_ingestion", _run)
+    body = client.post("/postal-code/refresh", json={"postal_code": "M5V3A8"}).json()
+    assert "flagged unhealthy: zero deals normalised" in body["message"]
 
 
 def test_cold_start_ingest_happens_at_most_once_per_cooldown(
