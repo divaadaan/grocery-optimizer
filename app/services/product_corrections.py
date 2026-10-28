@@ -44,8 +44,9 @@ from app.services import products
 
 logger = logging.getLogger(__name__)
 
-#: ``product_corrections.kind`` for this module. Siblings (rename,
-#: recategorise, merge) get their own kind and their own detail table.
+#: ``product_corrections.kind`` for this module. Siblings get their own kind
+#: and detail table: ``identity`` and ``merge`` (migration 018,
+#: ``app/services/product_identity.py``).
 KIND = "attribute"
 
 REVIEWER_MAX = 80     # products.reviewed_by / product_corrections.reviewer
@@ -174,6 +175,39 @@ def compute_impact(
 
     before_clears, after_clears = clears(product), clears({**product, **after})
 
+    # Only a restriction that reads a changed attribute can flip a verdict.
+    changed = set(after)
+    return {
+        "product_clears": {
+            "before": before_clears,
+            "after": after_clears,
+            "newly_cleared": [lab for lab in after_clears if lab not in before_clears],
+            "newly_failing": [lab for lab in before_clears if lab not in after_clears],
+        },
+        **verdict_changes(
+            pid, deal_rows, with_after, user_rows,
+            relevant=lambda key: bool(
+                changed & set(products.restrictions_to_attributes(key)))),
+    }
+
+
+def verdict_changes(
+    focus_id: int,
+    deal_rows: list[dict],
+    with_after,
+    user_rows: list[dict],
+    relevant=lambda key: True,
+) -> dict[str, Any]:
+    """Deal and user verdict changes when every linked-product list goes
+    through ``with_after``. Shared by attribute corrections and merges.
+
+    ``deal_rows`` are :func:`_load_deal_rows` rows for ``focus_id``;
+    ``with_after(linked)`` returns the linked products as they would be;
+    ``relevant(restriction_key)`` may skip restriction sets that cannot flip.
+    Returns ``deals``, ``users`` and ``summary`` as documented on
+    :func:`compute_impact`. Pure.
+    """
+    labels = sorted(products.RESTRICTION_ATTRIBUTES)
     deals = []
     for deal in _group_deals(deal_rows):
         linked_after = with_after(deal["linked"])
@@ -189,17 +223,15 @@ def compute_impact(
             **{k: deal[k] for k in ("deal_id", "product_name", "store_id",
                                     "valid_from", "valid_until", "live")},
             "other_products": [p["product_id"] for p in deal["linked"]
-                               if p["product_id"] != pid],
+                               if p["product_id"] != focus_id],
             "newly_withheld_for": withheld,
             "newly_servable_for": servable,
             "_linked": deal["linked"],
             "_linked_after": linked_after,
         })
 
-    # Users: only a restriction that reads a changed attribute can flip a
-    # verdict, and users sharing a restriction set share every verdict, so
-    # evaluate each distinct set once.
-    changed = set(after)
+    # Users sharing a restriction set share every verdict, so evaluate each
+    # distinct set once.
     live = [d for d in deals if d["live"]]
     verdicts: dict[tuple[str, ...], tuple[list[int], list[int]]] = {}
     users = []
@@ -210,7 +242,7 @@ def compute_impact(
         if key not in verdicts:
             withheld_ids: list[int] = []
             servable_ids: list[int] = []
-            if changed & set(products.restrictions_to_attributes(key)):
+            if relevant(key):
                 for d in live:
                     was = products.deal_allows(d["_linked"], key)
                     now = products.deal_allows(d["_linked_after"], key)
@@ -235,12 +267,6 @@ def compute_impact(
     changed_deals = [d for d in deals
                      if d["newly_withheld_for"] or d["newly_servable_for"]]
     return {
-        "product_clears": {
-            "before": before_clears,
-            "after": after_clears,
-            "newly_cleared": [lab for lab in after_clears if lab not in before_clears],
-            "newly_failing": [lab for lab in before_clears if lab not in after_clears],
-        },
         "deals": deals,
         "users": users,
         "summary": {
@@ -338,6 +364,11 @@ def correct_attributes(
         product = _load_product(cursor, product_id, lock=not dry_run)
         if product is None:
             raise ProductNotFound(f"no product {product_id}")
+        if product["status"] == "merged":
+            raise CorrectionRefused(
+                f"product {product_id} ({product['canonical_name']!r}) was "
+                "merged into another product and is never served; correct "
+                "the surviving product instead.")
         if product["status"] != "confirmed":
             raise CorrectionRefused(
                 f"product {product_id} ({product['canonical_name']!r}) is "

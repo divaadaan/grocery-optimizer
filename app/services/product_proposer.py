@@ -549,8 +549,21 @@ def persist_proposals(proposals: Iterable[Proposal], *, database) -> dict[str, i
              "unplaced_superseded": 0}
 
     with database.get_cursor() as cursor:
+        # A merged product (migration 018) answers for its survivor: its name
+        # is a known synonym, and an alias placed on the retired row would
+        # never serve anyone. Ordered so that, where several rows share a
+        # name, a live row wins over a merged one, and both over a rejected
+        # one (the dict keeps the last).
         cursor.execute(
-            "SELECT lower(canonical_name) AS name, product_id, status FROM products"
+            """
+            SELECT lower(canonical_name) AS name,
+                   COALESCE(merged_into, product_id) AS product_id, status
+            FROM products
+            ORDER BY CASE status WHEN 'rejected' THEN 0
+                                 WHEN 'merged' THEN 1
+                                 ELSE 2 END,
+                     product_id
+            """
         )
         known = {r["name"]: r for r in cursor.fetchall()}
 
