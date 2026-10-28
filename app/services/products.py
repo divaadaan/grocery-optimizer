@@ -37,7 +37,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 import re
-from typing import Any, Iterable
+from typing import Any, Iterable, Sequence
 
 from app.db.database import db
 
@@ -190,6 +190,31 @@ def restrictions_are_active(restrictions: Iterable[str] | None) -> bool:
     if not restrictions:
         return False
     return any((r or "").strip() for r in restrictions)
+
+
+def deal_allows(
+    linked_products: Sequence[dict[str, Any]], restrictions: Iterable[str] | None
+) -> bool:
+    """In-memory twin of :func:`compliant_product_filter` for one deal.
+
+    ``linked_products`` is every product the deal links through
+    ``deal_products`` (each with ``status`` and the full attribute set). Same
+    rule as the SQL gate, clause for clause: an unrestricted user is served
+    everything; otherwise the deal needs at least one linked product (no
+    junction rows withholds, it does not vacuously pass) and every linked
+    product must be confirmed and clear the restrictions via
+    :func:`product_allows`. Used where a verdict has to be computed for
+    attribute values that are not (yet) in the database -- the correction
+    preview -- so it cannot be answered by running the SQL fragment.
+    """
+    if not restrictions_are_active(restrictions):
+        return True
+    if not linked_products:
+        return False
+    return all(
+        p.get("status") == "confirmed" and product_allows(p, restrictions)
+        for p in linked_products
+    )
 
 
 def compliant_product_filter(restrictions: Iterable[str] | None) -> tuple[str, dict]:
@@ -528,7 +553,9 @@ class AttributeConflict(Exception):
             f"product {product_id} ({name!r}) is already confirmed and its "
             f"attributes cannot be changed here ({detail}). Nothing was "
             f"written. Changing a confirmed product's attributes needs a "
-            f"deliberate correction step, which does not exist yet."
+            f"deliberate correction step: POST "
+            f"/admin/products/{product_id}/attribute-corrections, with a "
+            f"reviewer and a reason (preview it with ?dry_run=true)."
         )
 
 
@@ -546,8 +573,9 @@ def set_attributes(
       writes nothing.
 
     Deliberately changing a confirmed product's attributes is a legitimate
-    need, but it requires a deliberate correction step that does not exist
-    yet; do not route it through here.
+    need, but it is a separate, audited act --
+    :func:`app.services.product_corrections.correct_attributes` -- and must
+    not be routed through here.
 
     Rejects anything outside ``ATTRIBUTES``: these names are interpolated into
     SQL, so the whitelist is load-bearing, not tidiness.
