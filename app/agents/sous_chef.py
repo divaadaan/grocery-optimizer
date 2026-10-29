@@ -3,7 +3,7 @@ import time
 import uuid
 from typing import Callable, Dict, List, Optional
 from .state import Recipe
-from .prompts import PromptTemplates
+from .prompts import PromptTemplates, combination_rule_hints, hint_lines, preferences_text
 from .llm_output import (
     GeneratedRecipe,
     LLMOutputError,
@@ -21,16 +21,16 @@ from ..services.mlflow_logger import MLflowLogger
 def offered_deals(
     ingredient_group: List[Dict],
     deal_lookup: Dict[str, Dict],
-    deal_index: Optional[Dict[str, Dict]] = None,
 ) -> List[Dict]:
     """The deals this SousChef may cite, resolved from the Chef's selections.
 
-    Each selection is resolved to a real deal row by its ``deal_id``, falling
-    back to an *exact* ``product_name`` hit in ``deal_index`` (the Chef's
-    ``deal_id`` is optional in its schema). The prompt shows the deal row's
-    own name, not the Chef's wording, because the citation -- not the name --
-    is what compliance and costing resolve. Unresolvable selections are
-    dropped: nothing un-citable is offered.
+    Each selection is resolved to a real deal row by its ``deal_id`` **only**
+    (``deal_lookup`` is keyed by ``str(deal_id)``). There is no
+    ``product_name`` fallback: names collide across stores and never decide
+    anything (CLAUDE.md). The prompt shows the deal row's own name, not the
+    Chef's wording, because the citation -- not the name -- is what compliance
+    and costing resolve. Unresolvable selections are dropped with a logged
+    reason: nothing un-citable is offered.
     """
     out: List[Dict] = []
     seen = set()
@@ -38,11 +38,11 @@ def offered_deals(
         deal = None
         if sel.get("deal_id") not in (None, ""):
             deal = deal_lookup.get(str(sel["deal_id"]).strip())
-        if deal is None and deal_index:
-            deal = deal_index.get(sel.get("product_name", ""))
         if deal is None:
+            reason = ("no deal_id" if sel.get("deal_id") in (None, "")
+                      else "no such deal")
             print(f"[SousChef] dropped selection {sel.get('product_name')!r} "
-                  f"(deal_id={sel.get('deal_id')!r}): no such deal")
+                  f"(deal_id={sel.get('deal_id')!r}): {reason}")
             continue
         deal_id = deal.get("deal_id", deal.get("id"))
         if str(deal_id) in seen:
@@ -144,9 +144,13 @@ class SousChef:
     @staticmethod
     def _offer(ingredient_group, available_deals, deal_index, pantry_staples,
                dietary_restrictions):
-        """(deal_lookup, deals offered, staples offered, validation context)."""
-        deal_lookup = deals_by_id(available_deals)
-        deals = offered_deals(ingredient_group, deal_lookup, deal_index)
+        """(deal_lookup, deals offered, staples offered, validation context).
+
+        ``deal_index`` is the state's deal_id-keyed index (the same rows as
+        ``available_deals``); it is rebuilt from ``available_deals`` when
+        absent."""
+        deal_lookup = deal_index or deals_by_id(available_deals)
+        deals = offered_deals(ingredient_group, deal_lookup)
         staples = offered_staples(pantry_staples, dietary_restrictions)
         context = citation_context(
             [d["deal_id"] for d in deals], [s["product_id"] for s in staples]
@@ -163,6 +167,7 @@ class SousChef:
         available_deals: List[Dict],
         pantry_staples: List[Dict],
         deal_index: Optional[Dict[str, Dict]] = None,
+        preferences: Optional[Dict] = None,
     ) -> List[Recipe]:
         """
         Generate recipes from assigned deals and on-hand staples.
@@ -187,7 +192,9 @@ class SousChef:
             pantry_json=json.dumps(staples, indent=2),
             target_recipe_count=target_recipe_count,
             servings=household_size,
-            dietary_restrictions=", ".join(dietary_restrictions)
+            dietary_restrictions=", ".join(dietary_restrictions),
+            combination_hints=hint_lines(combination_rule_hints(dietary_restrictions)),
+            preferences=preferences_text(preferences),
         )
 
         try:
@@ -228,6 +235,7 @@ class SousChef:
         available_deals: List[Dict],
         pantry_staples: List[Dict],
         deal_index: Optional[Dict[str, Dict]] = None,
+        preferences: Optional[Dict] = None,
     ) -> Recipe:
         """
         Regenerate a rejected recipe with Nutritionist feedback.
@@ -247,7 +255,10 @@ class SousChef:
             feedback=feedback,
             ingredients_json=json.dumps(deals, indent=2),
             pantry_json=json.dumps(staples, indent=2),
-            servings=household_size
+            servings=household_size,
+            dietary_restrictions=", ".join(dietary_restrictions),
+            combination_hints=hint_lines(combination_rule_hints(dietary_restrictions)),
+            preferences=preferences_text(preferences),
         )
 
         try:
@@ -296,6 +307,7 @@ def sous_chef_generate_node(task: dict, sous_chef: Optional[SousChef] = None) ->
         available_deals=task.get("available_deals", []),
         pantry_staples=task.get("pantry_staples", []),
         deal_index=task.get("deal_index", {}),
+        preferences=task.get("preferences") or {},
     )
 
     return {

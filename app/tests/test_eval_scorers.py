@@ -110,6 +110,7 @@ def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
     assert k["agreement"] == {"compared": 3, "agree": 3, "disagreements": []}
     assert k["served_deals_failing_gate"] == []
     assert score.budget["recorded_matches_per_recipe_sum"] is True
+    assert score.budget["recorded_matches_per_unique_deal"] is True  # no deal reused
     assert score.budget["lower_bound"] is True
     assert score.on_sale["regular_price_coverage"] == "regular price known for 6/6 deals used"
     assert score.on_sale["used_deal_ids"] == [3, 12, 15, 16, 21, 22]
@@ -492,8 +493,10 @@ def test_exhausted_schema_retries_count_as_failures():
     score = score_run(artifact)
     sous = score.structural["schema"]["sous_chef"]
     attempts = score.structural["max_attempts"]
-    assert sous["invocations"] == 3 and sous["failed_invocations"] == 3
-    assert sous["calls"] == 3 * attempts and sous["retries"] == 3 * (attempts - 1)
+    # 3 initial SousChefs, then each of the 2 retry iterations tops up the
+    # 3-recipe shortfall across the 3 groups (graph.retry_generation).
+    assert sous["invocations"] == 9 and sous["failed_invocations"] == 9
+    assert sous["calls"] == 9 * attempts and sous["retries"] == 9 * (attempts - 1)
     assert score.structural["completed"] is False
     assert score.verdict == FAIL
 
@@ -514,7 +517,7 @@ def test_citation_violation_on_last_attempt_is_a_failure():
         return ter.scripted_factory(role, spec)
 
     score = score_run(runner.record(ter.scenario(), llm_factory=factory))
-    assert score.structural["schema"]["sous_chef"]["failed_invocations"] == 3
+    assert score.structural["schema"]["sous_chef"]["failed_invocations"] == 9  # + 2 top-ups
     assert score.structural["schema"]["sous_chef"]["unverified_invocations"] == 0
 
 

@@ -85,10 +85,10 @@ def test_recipe_generation_response_carries_null_savings():
 def test_graph_savings_is_none_when_no_cited_deal_has_a_regular_price():
     state = {"available_deals": [DEAL_NO_REGULAR]}
     recipes = [{"ingredients": [{"name": "penne", "deal_id": 1}]}]
-    assert graph._savings(state, recipes) is None
+    assert graph._plan_pricing(state, recipes).estimated_savings is None
 
 
 def test_graph_savings_is_a_number_when_a_regular_price_exists():
     deal = dict(DEAL_NO_REGULAR, regular_price=2.99)
     recipes = [{"ingredients": [{"name": "penne", "deal_id": 1}]}]
-    assert graph._savings({"available_deals": [deal]}, recipes) == 1.5
+    assert graph._plan_pricing({"available_deals": [deal]}, recipes).estimated_savings == 1.5

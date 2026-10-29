@@ -34,8 +34,9 @@ Scorers
   or deal name is read.
 * :func:`score_budget` -- plan cost vs the scenario's spend limit. A **lower
   bound**: one deal unit per citation, no quantity, household size or
-  multi-buy semantics. Reported both as the per-recipe sum (what production's
-  ``total_cost`` does) and per unique deal across the plan.
+  multi-buy semantics. Reported both as the per-recipe sum and per unique
+  deal across the plan. Production's ``total_cost`` is per unique deal (owner
+  decision, Track C); recordings made before that summed per recipe.
 * :func:`score_on_sale` -- deal vs staple citations, deals used / offered,
   and savings vs regular price -- ``None`` (absent) when no used deal carries
   a regular price, never a fabricated 0.
@@ -530,6 +531,9 @@ def score_budget(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[str, A
         "recorded_matches_per_recipe_sum": (
             None if not isinstance(recorded, (int, float))
             else abs(float(recorded) - recipe_sum) <= _COST_EPS),
+        "recorded_matches_per_unique_deal": (
+            None if not isinstance(recorded, (int, float))
+            else abs(float(recorded) - unique_sum) <= _COST_EPS),
     }
 
 
