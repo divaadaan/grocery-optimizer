@@ -13,6 +13,8 @@ Idempotent: a second run finds nothing to change.
 
     python scripts/fix_deal_link_prices.py            # dry-run: list changes
     python scripts/fix_deal_link_prices.py --apply    # write them
+    python scripts/fix_deal_link_prices.py --deal 76 --deal 98 --apply
+                                                      # only these deals
 
 Rollback: set price_is_per_item = TRUE for the deal_id/product_id pairs the
 --apply run printed.
@@ -63,6 +65,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--apply", action="store_true",
                     help="write the changes (default is a read-only dry-run)")
+    ap.add_argument("--deal", type=int, action="append", default=[],
+                    help="limit to this deal_id (repeatable); default all")
     args = ap.parse_args(argv)
 
     conn = psycopg.connect(os.environ["DATABASE_URL"], autocommit=False,
@@ -72,6 +76,12 @@ def main(argv=None) -> int:
             cur.execute(SELECT_SQL)
             rows = cur.fetchall()
             changes = compute_changes(rows)
+            if args.deal:
+                wanted = set(args.deal)
+                missing = wanted - {c["deal_id"] for c in changes}
+                if missing:
+                    print(f"no change computed for deal(s) {sorted(missing)}")
+                changes = [c for c in changes if c["deal_id"] in wanted]
             print(f"{len(rows)} deal_products rows examined, "
                   f"{len(changes)} would change")
             for c in changes:
