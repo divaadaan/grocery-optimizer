@@ -398,24 +398,43 @@ def link_deals(database=db) -> dict[str, int]:
             cursor.execute("SAVEPOINT link_name")
             linked_here = 0
             try:
+                cursor.execute(
+                    """
+                    SELECT deal_id, unit, sale_story, pre_price_text
+                    FROM deals WHERE product_name = %(raw)s
+                    ORDER BY deal_id
+                    """,
+                    {"raw": raw},
+                )
+                deal_rows = [dict(r) for r in cursor.fetchall()]
                 for target in usable:
-                    cursor.execute(
-                        """
-                        INSERT INTO deal_products
-                            (deal_id, product_id, tile_position, price_is_per_item)
-                        SELECT d.deal_id, %(pid)s, %(pos)s, %(per_item)s
-                        FROM deals d
-                        WHERE d.product_name = %(raw)s
-                        ON CONFLICT (deal_id, product_id) DO NOTHING
-                        """,
-                        {
-                            "pid": target["product_id"],
-                            "pos": target["tile_position"],
-                            "per_item": target["price_is_per_item"],
-                            "raw": raw,
-                        },
-                    )
-                    linked_here += cursor.rowcount or 0
+                    for deal in deal_rows:
+                        # Decided per deal, not per alias: the alias is keyed
+                        # by name, but "2/$5" vs "$2.50 ea." is a property of
+                        # the deal's own text.
+                        per_item = resolve_link_price_is_per_item(
+                            target["price_is_per_item"], deal["unit"],
+                            deal["sale_story"], deal["pre_price_text"])
+                        cursor.execute(
+                            """
+                            INSERT INTO deal_products
+                                (deal_id, product_id, tile_position,
+                                 price_is_per_item)
+                            VALUES (%(deal_id)s, %(pid)s, %(pos)s, %(per_item)s)
+                            ON CONFLICT (deal_id, product_id) DO UPDATE
+                            SET price_is_per_item = EXCLUDED.price_is_per_item
+                            WHERE deal_products.price_is_per_item
+                                  IS DISTINCT FROM EXCLUDED.price_is_per_item
+                            """,
+                            {
+                                "deal_id": deal["deal_id"],
+                                "pid": target["product_id"],
+                                "pos": target["tile_position"],
+                                "per_item": per_item,
+                                "raw": raw,
+                            },
+                        )
+                        linked_here += cursor.rowcount or 0
             except Exception as exc:
                 if not is_merged_link_error(exc):
                     raise
@@ -1181,6 +1200,29 @@ def infer_price_is_per_item(
     # says nothing about per-item pricing, so it does not decide this either
     # way. Undecided.
     return None
+
+
+def resolve_link_price_is_per_item(
+    alias_value: bool | None,
+    unit: str | None,
+    sale_story: str | None = None,
+    pre_price_text: str | None = None,
+) -> bool | None:
+    """The ``deal_products.price_is_per_item`` for one deal under one alias.
+
+    The alias is keyed by product name, so its flag describes the typical
+    deal, not this one. A multi-buy in the deal's own text ("2/$5") overrides
+    an alias that says per item: ``False`` from either side wins. An alias
+    ``True`` with undecided deal text stays ``True``. An alias ``NULL`` stays
+    ``None`` (undecided never defaults; the caller refuses to link).
+    """
+    if alias_value is None:
+        return None
+    if alias_value is False:
+        return False
+    if infer_price_is_per_item(unit, sale_story, pre_price_text) is False:
+        return False
+    return True
 
 
 def reinfer_alias_prices(database=db) -> dict[str, int]:
