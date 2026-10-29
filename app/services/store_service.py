@@ -99,7 +99,7 @@ class StoreService:
         query += fragment
         params.update(extra)
 
-        query += " ORDER BY d.discount_percentage DESC, d.sale_price ASC;"
+        query += " ORDER BY d.discount_percentage DESC NULLS LAST, d.sale_price ASC;"
 
         with db.get_cursor() as cursor:
             cursor.execute(query, params)
@@ -145,7 +145,7 @@ class StoreService:
           AND d.category = ANY(%(categories)s)
           AND d.valid_until >= CURRENT_DATE
           AND s.is_active = true
-        ORDER BY d.category, d.discount_percentage DESC;
+        ORDER BY d.category, d.discount_percentage DESC NULLS LAST;
         """
 
         with db.get_cursor() as cursor:
@@ -184,7 +184,7 @@ class StoreService:
         WHERE s.postal_code = %(postal_code)s
           AND d.valid_until >= CURRENT_DATE
           AND s.is_active = true
-        ORDER BY d.discount_percentage DESC, d.sale_price ASC
+        ORDER BY d.discount_percentage DESC NULLS LAST, d.sale_price ASC
         LIMIT %(limit)s;
         """
 
@@ -220,7 +220,7 @@ class StoreService:
           )
           AND d.valid_until >= CURRENT_DATE
           AND s.is_active = true
-        ORDER BY d.discount_percentage DESC
+        ORDER BY d.discount_percentage DESC NULLS LAST
         LIMIT 50;
         """
 

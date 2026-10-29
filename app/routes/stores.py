@@ -100,15 +100,22 @@ class StaplesResponse(BaseModel):
     note: str
 
 
-async def _run_refresh(postal_code: str, terms: Optional[List[str]] = None):
-    """Acquire the refresh lock and run ingestion in the threadpool."""
+async def _run_refresh(postal_code: str, terms: Optional[List[str]] = None,
+                       trigger: str = "refresh_route"):
+    """Acquire the refresh lock and run ingestion in the threadpool.
+
+    ``trigger`` is recorded on the ``ingestion_runs`` row: ``refresh_route`` for
+    a human asking, ``cold_start`` for discover's auto-ingest.
+    """
     if not _refresh_lock.acquire(blocking=False):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="A deal refresh is already running. Try again when it finishes.",
         )
     try:
-        return await run_in_threadpool(run_ingestion, postal_code, terms=terms)
+        return await run_in_threadpool(
+            run_ingestion, postal_code, terms=terms, trigger=trigger
+        )
     finally:
         _refresh_lock.release()
 
@@ -170,7 +177,10 @@ async def discover_postal_code(
             if not refresh:
                 _last_auto_ingest[postal_code] = time.monotonic()
             try:
-                report = await _run_refresh(postal_code)
+                report = await _run_refresh(
+                    postal_code,
+                    trigger="refresh_route" if refresh else "cold_start",
+                )
             except HTTPException as exc:
                 # Lost the race for the lock between the check above and the
                 # acquire. Discover is a read: degrade to current data rather
@@ -298,6 +308,8 @@ async def refresh_deals(
     )
     if report.terms_failed:
         message += f" {len(report.terms_failed)} term(s) failed."
+    if report.status != "ok":
+        message += f" Run flagged {report.status}: {'; '.join(report.health_reasons)}."
     if report.normalized and report.regular_price_coverage < 0.5:
         message += (
             f" Only {report.regular_price_coverage:.0%} of deals carry a regular "

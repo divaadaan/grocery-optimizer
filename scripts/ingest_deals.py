@@ -12,8 +12,13 @@ this weekly, when flyers turn over.
     # one term, hit the provider, print the normalised rows, write nothing
     .venv/bin/python scripts/ingest_deals.py M5V3A8 --terms "chicken breast" --dry-run
 
-    # the real thing
+    # the real thing (records an ingestion_runs row; exits 1 if the run is
+    # unhealthy or failed -- see app/services/ingestion_runs.py::assess_health)
     .venv/bin/python scripts/ingest_deals.py M5V3A8
+
+    # read-only freshness check; exits 1 if the last ok run is >8 days old or
+    # there are 0 live deals
+    .venv/bin/python scripts/ingest_deals.py M5V3A8 --health
 
 Prerequisites:
   * ``DEAL_INGESTION_ENABLED=true`` in ``.env`` (off by default — the provider
@@ -33,6 +38,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.config import settings  # noqa: E402
 from app.services.flipp_ingestion import collect_deals, run_ingestion  # noqa: E402
 from app.services.flipp_staples import STAPLES, staple_terms  # noqa: E402
+from app.services.ingestion_runs import (  # noqa: E402
+    evaluate_freshness,
+    latest_run,
+    latest_successful_run,
+    live_deal_count,
+)
 
 
 def _list_staples() -> int:
@@ -52,6 +63,43 @@ def _list_staples() -> int:
     return 0
 
 
+def _fmt_run(run: dict | None) -> str:
+    if run is None:
+        return "none recorded"
+    return (
+        f"#{run['run_id']} {run['status']} via {run['trigger']} at "
+        f"{run['finished_at']:%Y-%m-%d %H:%M}Z  normalized={run['normalized']} "
+        f"inserted={run['deals_inserted']} updated={run['deals_updated']} "
+        f"terms_failed={run['terms_failed']}"
+    )
+
+
+def _health(postal_codes: list[str]) -> int:
+    """Read-only freshness report. Returns 1 if any postal code is stale/empty."""
+    exit_code = 0
+    for postal_code in postal_codes:
+        last = latest_run(postal_code)
+        last_ok = latest_successful_run(postal_code)
+        live = live_deal_count(postal_code)
+        healthy, problems, age = evaluate_freshness(last_ok, live)
+
+        print(f"\n=== {postal_code} ===")
+        print(f"  last run:      {_fmt_run(last)}")
+        if last and last.get("health_reasons"):
+            print(f"                 reasons: {'; '.join(last['health_reasons'])}")
+        if last and last.get("error"):
+            print(f"                 error: {last['error']}")
+        print(f"  last ok run:   {_fmt_run(last_ok)}")
+        print(f"  last ok age:   {('%.1f day(s)' % (age.total_seconds() / 86400)) if age else 'n/a'}")
+        print(f"  live deals:    {live}")
+        if not healthy:
+            print(f"  STALE/EMPTY: {'; '.join(problems)}", file=sys.stderr)
+            exit_code = 1
+        else:
+            print("  OK")
+    return exit_code
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -65,6 +113,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="fetch and normalise, print the result, write nothing")
     parser.add_argument("--list-staples", action="store_true",
                         help="print the staple list and exit; no network, no DB")
+    parser.add_argument("--health", action="store_true",
+                        help="read-only: print the last run, its age and the live-deal "
+                             "count per postal code; exit 1 if the last ok run is older "
+                             "than the stale window or there are 0 live deals. Never ingests.")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args(argv)
 
@@ -78,6 +130,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.postal_codes:
         parser.error("at least one POSTAL_CODE is required (or use --list-staples)")
+
+    if args.health:
+        return _health([pc.replace(" ", "").upper() for pc in args.postal_codes])
 
     if not settings.deal_ingestion_enabled:
         print(
@@ -117,11 +172,18 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(report.as_dict(), indent=2, default=str))
             continue
 
-        report = run_ingestion(postal_code, terms=terms)
+        try:
+            report = run_ingestion(postal_code, terms=terms, trigger="cli")
+        except Exception as exc:  # noqa: BLE001 - recorded as 'failed' by run_ingestion
+            print(f"  FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
+            exit_code = 1
+            continue
         print(json.dumps(report.as_dict(), indent=2, default=str))
         if report.terms_failed:
             print(f"  WARNING: {len(report.terms_failed)} term(s) failed: "
                   f"{', '.join(report.terms_failed)}")
+        if report.status != "ok":
+            print(f"  UNHEALTHY: {'; '.join(report.health_reasons)}", file=sys.stderr)
             exit_code = 1
         if report.normalized and report.regular_price_coverage < 0.5:
             print(
