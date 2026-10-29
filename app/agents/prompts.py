@@ -1,3 +1,56 @@
+import json
+from typing import Iterable, List
+
+from ..services import products
+
+
+def _attribute_noun(attribute: str) -> str:
+    """``contains_meat`` -> ``meat``, ``contains_animal_byproduct`` ->
+    ``animal byproduct``: the attribute's own name, for prompt text."""
+    return attribute.removeprefix("contains_").replace("_", " ")
+
+
+def _join(words: List[str]) -> str:
+    return words[0] if len(words) == 1 else ", ".join(words[:-1]) + " and " + words[-1]
+
+
+def combination_rule_hints(dietary_restrictions: Iterable[str] | None,
+                           unit: str = "recipe") -> List[str]:
+    """Prompt hints for the user's recipe-level combination rules.
+
+    Derived from :data:`app.services.products.RESTRICTION_COMBINATION_RULES`
+    (today: kosher's meat + dairy), so a future rule gets a hint with no prompt
+    edit. The hint only cuts retries: whether a recipe complies is still
+    decided in code from the cited products' curated attributes
+    (``app/agents/dietary.py``), never by the model. ``unit`` names what may
+    not mix -- "recipe" for a SousChef, "group" for the Chef.
+    """
+    hints: List[str] = []
+    seen = set()
+    for label in dietary_restrictions or []:
+        key = (label or "").strip().lower()
+        for rule in products.RESTRICTION_COMBINATION_RULES.get(key, ()):
+            if (key, rule) in seen:
+                continue
+            seen.add((key, rule))
+            nouns = _join([_attribute_noun(a) for a in rule])
+            hints.append(f"{key}: never combine {nouns} in the same {unit} "
+                         "(checked in code from product attributes)")
+    return hints
+
+
+def hint_lines(hints: List[str]) -> str:
+    """Hints as extra ``- `` bullet lines appended to a requirements bullet;
+    empty when there are none, so prompts without a rule are unchanged."""
+    return "".join(f"\n- {h}" for h in hints)
+
+
+def preferences_text(preferences) -> str:
+    """User preferences (cuisines, meal types, ingredients to avoid) as prompt
+    text. Soft guidance for the model only: they never decide compliance."""
+    return json.dumps(preferences, sort_keys=True) if preferences else "none"
+
+
 class PromptTemplates:
     """Centralized prompt templates for all agents."""
 
@@ -14,7 +67,7 @@ groups for your team of 3 SousChefs.
 - Budget: ${budget}
 - Household Size: {household_size} people
 - Number of Meals: {num_meals}
-- Dietary Restrictions: {dietary_restrictions}
+- Dietary Restrictions: {dietary_restrictions}{combination_hints}
 - Preferences: {preferences}
 
 **Optimization Strategy:**
@@ -24,12 +77,15 @@ multiple groups)
 3. Ensure each group has complementary ingredients (protein + starch + vegetables)
 4. Respect dietary restrictions strictly
 5. Each group should support 2-3 meal recipes
+6. Every selection MUST carry the "deal_id" of a deal listed above, copied \
+exactly. A selection without a valid deal_id is discarded -- names are never \
+matched.
 
 **Output Format (JSON):**
 {{
   "ingredient_groups": [
     [
-      {{"product_name": "...", "quantity_estimate": "...", "deal_id": "..."}},
+      {{"product_name": "...", "quantity_estimate": "...", "deal_id": 123}},
       ...
     ],
     [...],
@@ -53,7 +109,8 @@ practical, delicious recipes.
 **Recipe Requirements:**
 - Number of recipes to create: {target_recipe_count}
 - Servings per recipe: {servings}
-- Dietary restrictions: {dietary_restrictions}
+- Dietary restrictions: {dietary_restrictions}{combination_hints}
+- Preferences: {preferences}
 - Use ONLY the assigned deals and the pantry staples listed above. Nothing else.
 - EVERY ingredient must cite exactly one source: "deal_id" for an assigned deal,
   OR "product_id" for a pantry staple. Copy the id exactly from the lists above.
@@ -105,6 +162,8 @@ Generate {target_recipe_count} creative recipes now:"""
 **Task:**
 Create a NEW recipe using only these deals and staples that addresses the feedback.
 - Fix the specific issues mentioned: drop any ingredient the feedback names
+- Dietary restrictions: {dietary_restrictions}{combination_hints}
+- Preferences: {preferences}
 - Maintain dietary compliance
 - Ensure nutritional balance
 - EVERY ingredient must cite exactly one source: "deal_id" for an assigned deal,
@@ -180,39 +239,3 @@ decide anything, so do not try to judge restrictions.
 If you reject this recipe, provide specific, actionable feedback for improvement.
 
 Validate the recipe now:"""
-
-    CHEF_NEW_INGREDIENTS_SELECTION = """You are a Chef Orchestrator selecting \
-alternative ingredients.
-
-**Context:** Some recipes were rejected and need new ingredient combinations.
-
-**Rejected Recipe Feedback:**
-{rejection_feedback}
-
-**Remaining Available Deals:**
-{remaining_deals_json}
-
-**Requirements:**
-- Budget remaining: ${budget_remaining}
-- Dietary restrictions: {dietary_restrictions}
-- Number of recipes needed: {recipes_needed}
-
-**Task:**
-Select new ingredient combinations that:
-1. Address the specific issues from feedback
-2. Stay within budget
-3. Avoid previous problems
-4. Maintain nutritional balance
-
-**Output Format (JSON):**
-{{
-  "new_ingredient_groups": [
-    [
-      {{"product_name": "...", "quantity_estimate": "...", "deal_id": "..."}},
-      ...
-    ]
-  ],
-  "rationale": "Why these ingredients will work better"
-}}
-
-Generate the new ingredient selections now:"""

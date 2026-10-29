@@ -315,240 +315,28 @@
    }
   ],
   "budget": 80.0,
+  "budget_check": {
+   "available": 80.0,
+   "budget": 80.0,
+   "budget_period": "weekly",
+   "caveats": [
+    "lower bound: one deal unit per cited deal",
+    "ignores ingredient quantity and household size",
+    "ignores per-item vs multi-buy pricing",
+    "pantry staples cost 0 (assumed on hand)"
+   ],
+   "headroom": 72.86,
+   "lower_bound": true,
+   "plan_cost": 7.14,
+   "spent_this_period": 0.0,
+   "status": "within_lower_bound"
+  },
   "budget_period": "weekly",
   "budget_remaining": 72.86,
   "budget_spent_this_period": 0.0,
-  "cost_per_meal": 2.3800000000000003,
+  "cost_per_meal": 2.38,
   "deal_index": {
-   "Avocados": {
-    "chain": "Sobeys",
-    "deal_id": 24,
-    "discount_percentage": null,
-    "product_id": 86,
-    "product_name": "Avocados",
-    "regular_price": 2.49,
-    "sale_price": 1.49,
-    "source": "seed",
-    "store_id": 4,
-    "store_name": "Sobeys Wellesley"
-   },
-   "Baby Spinach": {
-    "chain": "Loblaws",
-    "deal_id": 8,
-    "discount_percentage": null,
-    "product_id": 62,
-    "product_name": "Baby Spinach",
-    "regular_price": 4.99,
-    "sale_price": 3.49,
-    "source": "seed",
-    "store_id": 1,
-    "store_name": "Loblaws King West"
-   },
-   "Bananas": {
-    "chain": "No Frills",
-    "deal_id": 15,
-    "discount_percentage": null,
-    "product_id": 153,
-    "product_name": "Bananas",
-    "regular_price": 0.99,
-    "sale_price": 0.69,
-    "source": "seed",
-    "store_id": 3,
-    "store_name": "No Frills Bathurst"
-   },
-   "Bell Peppers Red": {
-    "chain": "Metro",
-    "deal_id": 12,
-    "discount_percentage": null,
-    "product_id": 155,
-    "product_name": "Bell Peppers Red",
-    "regular_price": 2.49,
-    "sale_price": 1.49,
-    "source": "seed",
-    "store_id": 2,
-    "store_name": "Metro Front Street"
-   },
-   "Bread Whole Wheat": {
-    "chain": "No Frills",
-    "deal_id": 19,
-    "discount_percentage": null,
-    "product_id": 43,
-    "product_name": "Bread Whole Wheat",
-    "regular_price": 3.49,
-    "sale_price": 1.99,
-    "source": "seed",
-    "store_id": 3,
-    "store_name": "No Frills Bathurst"
-   },
-   "Broccoli Crowns": {
-    "chain": "Loblaws",
-    "deal_id": 2,
-    "discount_percentage": null,
-    "product_id": 61,
-    "product_name": "Broccoli Crowns",
-    "regular_price": 3.99,
-    "sale_price": 2.49,
-    "source": "seed",
-    "store_id": 1,
-    "store_name": "Loblaws King West"
-   },
-   "Canned Tomatoes": {
-    "chain": "No Frills",
-    "deal_id": 21,
-    "discount_percentage": null,
-    "product_id": 63,
-    "product_name": "Canned Tomatoes",
-    "regular_price": 1.99,
-    "sale_price": 0.99,
-    "source": "seed",
-    "store_id": 3,
-    "store_name": "No Frills Bathurst"
-   },
-   "Carrots": {
-    "chain": "No Frills",
-    "deal_id": 16,
-    "discount_percentage": null,
-    "product_id": 156,
-    "product_name": "Carrots",
-    "regular_price": 2.49,
-    "sale_price": 1.49,
-    "source": "seed",
-    "store_id": 3,
-    "store_name": "No Frills Bathurst"
-   },
-   "Cheese Cheddar": {
-    "chain": "Metro",
-    "deal_id": 14,
-    "discount_percentage": null,
-    "product_id": 157,
-    "product_name": "Cheese Cheddar",
-    "regular_price": 7.99,
-    "sale_price": 5.49,
-    "source": "seed",
-    "store_id": 2,
-    "store_name": "Metro Front Street"
-   },
-   "Eggs Large": {
-    "chain": "Loblaws",
-    "deal_id": 6,
-    "discount_percentage": null,
-    "product_id": 160,
-    "product_name": "Eggs Large",
-    "regular_price": 6.99,
-    "sale_price": 4.99,
-    "source": "seed",
-    "store_id": 1,
-    "store_name": "Loblaws King West"
-   },
-   "Greek Yogurt": {
-    "chain": "Metro",
-    "deal_id": 13,
-    "discount_percentage": null,
-    "product_id": 161,
-    "product_name": "Greek Yogurt",
-    "regular_price": 5.99,
-    "sale_price": 3.99,
-    "source": "seed",
-    "store_id": 2,
-    "store_name": "Metro Front Street"
-   },
-   "Milk 2%": {
-    "chain": "Loblaws",
-    "deal_id": 7,
-    "discount_percentage": null,
-    "product_id": 8,
-    "product_name": "Milk 2%",
-    "regular_price": 5.99,
-    "sale_price": 4.49,
-    "source": "seed",
-    "store_id": 1,
-    "store_name": "Loblaws King West"
-   },
-   "Olive Oil Extra Virgin": {
-    "chain": "Sobeys",
-    "deal_id": 26,
-    "discount_percentage": null,
-    "product_id": 146,
-    "product_name": "Olive Oil Extra Virgin",
-    "regular_price": 11.99,
-    "sale_price": 7.99,
-    "source": "seed",
-    "store_id": 4,
-    "store_name": "Sobeys Wellesley"
-   },
-   "Onions Yellow": {
-    "chain": "No Frills",
-    "deal_id": 18,
-    "discount_percentage": null,
-    "product_id": 133,
-    "product_name": "Onions Yellow",
-    "regular_price": 2.99,
-    "sale_price": 1.99,
-    "source": "seed",
-    "store_id": 3,
-    "store_name": "No Frills Bathurst"
-   },
-   "Pasta Penne": {
-    "chain": "Loblaws",
-    "deal_id": 3,
-    "discount_percentage": null,
-    "product_id": 166,
-    "product_name": "Pasta Penne",
-    "regular_price": 2.99,
-    "sale_price": 1.49,
-    "source": "seed",
-    "store_id": 1,
-    "store_name": "Loblaws King West"
-   },
-   "Potatoes Russet": {
-    "chain": "No Frills",
-    "deal_id": 17,
-    "discount_percentage": null,
-    "product_id": 169,
-    "product_name": "Potatoes Russet",
-    "regular_price": 4.99,
-    "sale_price": 2.99,
-    "source": "seed",
-    "store_id": 3,
-    "store_name": "No Frills Bathurst"
-   },
-   "Quinoa": {
-    "chain": "Sobeys",
-    "deal_id": 25,
-    "discount_percentage": null,
-    "product_id": 170,
-    "product_name": "Quinoa",
-    "regular_price": 6.99,
-    "sale_price": 4.49,
-    "source": "seed",
-    "store_id": 4,
-    "store_name": "Sobeys Wellesley"
-   },
-   "Rice Basmati": {
-    "chain": "Metro",
-    "deal_id": 11,
-    "discount_percentage": null,
-    "product_id": 171,
-    "product_name": "Rice Basmati",
-    "regular_price": 7.99,
-    "sale_price": 4.99,
-    "source": "seed",
-    "store_id": 2,
-    "store_name": "Metro Front Street"
-   },
-   "Spaghetti": {
-    "chain": "No Frills",
-    "deal_id": 22,
-    "discount_percentage": null,
-    "product_id": 174,
-    "product_name": "Spaghetti",
-    "regular_price": 1.99,
-    "sale_price": 0.99,
-    "source": "seed",
-    "store_id": 3,
-    "store_name": "No Frills Bathurst"
-   },
-   "Sweet Potatoes": {
+   "10": {
     "chain": "Metro",
     "deal_id": 10,
     "discount_percentage": null,
@@ -560,7 +348,187 @@
     "store_id": 2,
     "store_name": "Metro Front Street"
    },
-   "Tofu Firm": {
+   "11": {
+    "chain": "Metro",
+    "deal_id": 11,
+    "discount_percentage": null,
+    "product_id": 171,
+    "product_name": "Rice Basmati",
+    "regular_price": 7.99,
+    "sale_price": 4.99,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   "12": {
+    "chain": "Metro",
+    "deal_id": 12,
+    "discount_percentage": null,
+    "product_id": 155,
+    "product_name": "Bell Peppers Red",
+    "regular_price": 2.49,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   "13": {
+    "chain": "Metro",
+    "deal_id": 13,
+    "discount_percentage": null,
+    "product_id": 161,
+    "product_name": "Greek Yogurt",
+    "regular_price": 5.99,
+    "sale_price": 3.99,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   "14": {
+    "chain": "Metro",
+    "deal_id": 14,
+    "discount_percentage": null,
+    "product_id": 157,
+    "product_name": "Cheese Cheddar",
+    "regular_price": 7.99,
+    "sale_price": 5.49,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   "15": {
+    "chain": "No Frills",
+    "deal_id": 15,
+    "discount_percentage": null,
+    "product_id": 153,
+    "product_name": "Bananas",
+    "regular_price": 0.99,
+    "sale_price": 0.69,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "16": {
+    "chain": "No Frills",
+    "deal_id": 16,
+    "discount_percentage": null,
+    "product_id": 156,
+    "product_name": "Carrots",
+    "regular_price": 2.49,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "17": {
+    "chain": "No Frills",
+    "deal_id": 17,
+    "discount_percentage": null,
+    "product_id": 169,
+    "product_name": "Potatoes Russet",
+    "regular_price": 4.99,
+    "sale_price": 2.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "18": {
+    "chain": "No Frills",
+    "deal_id": 18,
+    "discount_percentage": null,
+    "product_id": 133,
+    "product_name": "Onions Yellow",
+    "regular_price": 2.99,
+    "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "19": {
+    "chain": "No Frills",
+    "deal_id": 19,
+    "discount_percentage": null,
+    "product_id": 43,
+    "product_name": "Bread Whole Wheat",
+    "regular_price": 3.49,
+    "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "2": {
+    "chain": "Loblaws",
+    "deal_id": 2,
+    "discount_percentage": null,
+    "product_id": 61,
+    "product_name": "Broccoli Crowns",
+    "regular_price": 3.99,
+    "sale_price": 2.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   "21": {
+    "chain": "No Frills",
+    "deal_id": 21,
+    "discount_percentage": null,
+    "product_id": 63,
+    "product_name": "Canned Tomatoes",
+    "regular_price": 1.99,
+    "sale_price": 0.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "22": {
+    "chain": "No Frills",
+    "deal_id": 22,
+    "discount_percentage": null,
+    "product_id": 174,
+    "product_name": "Spaghetti",
+    "regular_price": 1.99,
+    "sale_price": 0.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "24": {
+    "chain": "Sobeys",
+    "deal_id": 24,
+    "discount_percentage": null,
+    "product_id": 86,
+    "product_name": "Avocados",
+    "regular_price": 2.49,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   },
+   "25": {
+    "chain": "Sobeys",
+    "deal_id": 25,
+    "discount_percentage": null,
+    "product_id": 170,
+    "product_name": "Quinoa",
+    "regular_price": 6.99,
+    "sale_price": 4.49,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   },
+   "26": {
+    "chain": "Sobeys",
+    "deal_id": 26,
+    "discount_percentage": null,
+    "product_id": 146,
+    "product_name": "Olive Oil Extra Virgin",
+    "regular_price": 11.99,
+    "sale_price": 7.99,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   },
+   "27": {
     "chain": "Sobeys",
     "deal_id": 27,
     "discount_percentage": null,
@@ -572,7 +540,19 @@
     "store_id": 4,
     "store_name": "Sobeys Wellesley"
    },
-   "Tomato Sauce": {
+   "3": {
+    "chain": "Loblaws",
+    "deal_id": 3,
+    "discount_percentage": null,
+    "product_id": 166,
+    "product_name": "Pasta Penne",
+    "regular_price": 2.99,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   "4": {
     "chain": "Loblaws",
     "deal_id": 4,
     "discount_percentage": null,
@@ -580,6 +560,42 @@
     "product_name": "Tomato Sauce",
     "regular_price": 3.49,
     "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   "6": {
+    "chain": "Loblaws",
+    "deal_id": 6,
+    "discount_percentage": null,
+    "product_id": 160,
+    "product_name": "Eggs Large",
+    "regular_price": 6.99,
+    "sale_price": 4.99,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   "7": {
+    "chain": "Loblaws",
+    "deal_id": 7,
+    "discount_percentage": null,
+    "product_id": 8,
+    "product_name": "Milk 2%",
+    "regular_price": 5.99,
+    "sale_price": 4.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   "8": {
+    "chain": "Loblaws",
+    "deal_id": 8,
+    "discount_percentage": null,
+    "product_id": 62,
+    "product_name": "Baby Spinach",
+    "regular_price": 4.99,
+    "sale_price": 3.49,
     "source": "seed",
     "store_id": 1,
     "store_name": "Loblaws King West"
@@ -1523,8 +1539,9 @@
   "postal_code": "M5V3A8",
   "preferences": {},
   "recipes_pending_retry": {},
+  "recipes_shortfall": 0,
   "rejected_recipe_ids": [],
-  "retry_strategy": "reassign_chef",
+  "retry_strategy": "none",
   "saved_recipe_ids": [
    1,
    2,
@@ -1537,7 +1554,7 @@
   },
   "status": "completed",
   "target_ingredients_per_group": 0,
-  "total_cost": 7.140000000000001,
+  "total_cost": 7.14,
   "user_id": 1,
   "validation_results": {
    "3a34bbf0-96f6-5d16-9f1f-43ceaae657e1": {
@@ -1631,19 +1648,19 @@
    "request": {
     "messages": [
      {
-      "content": "You are a professional Chef Orchestrator managing a meal planning system.\n\nYour task: Analyze available grocery deals and create 3 optimized ingredient groups for your team of 3 SousChefs.\n\n**Available Deals:**\n[\n  {\n    \"deal_id\": 15,\n    \"product_name\": \"Bananas\",\n    \"sale_price\": 0.69,\n    \"regular_price\": 0.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 153,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 21,\n    \"product_name\": \"Canned Tomatoes\",\n    \"sale_price\": 0.99,\n    \"regular_price\": 1.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 63,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 22,\n    \"product_name\": \"Spaghetti\",\n    \"sale_price\": 0.99,\n    \"regular_price\": 1.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 174,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 3,\n    \"product_name\": \"Pasta Penne\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 166,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 12,\n    \"product_name\": \"Bell Peppers Red\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 155,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 16,\n    \"product_name\": \"Carrots\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 156,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 24,\n    \"product_name\": \"Avocados\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 86,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  },\n  {\n    \"deal_id\": 4,\n    \"product_name\": \"Tomato Sauce\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 3.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 176,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 10,\n    \"product_name\": \"Sweet Potatoes\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 2.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 175,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 18,\n    \"product_name\": \"Onions Yellow\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 2.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 133,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 19,\n    \"product_name\": \"Bread Whole Wheat\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 3.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 43,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 2,\n    \"product_name\": \"Broccoli Crowns\",\n    \"sale_price\": 2.49,\n    \"regular_price\": 3.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 61,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 27,\n    \"product_name\": \"Tofu Firm\",\n    \"sale_price\": 2.49,\n    \"regular_price\": 3.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 52,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  },\n  {\n    \"deal_id\": 17,\n    \"product_name\": \"Potatoes Russet\",\n    \"sale_price\": 2.99,\n    \"regular_price\": 4.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 169,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 8,\n    \"product_name\": \"Baby Spinach\",\n    \"sale_price\": 3.49,\n    \"regular_price\": 4.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 62,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 13,\n    \"product_name\": \"Greek Yogurt\",\n    \"sale_price\": 3.99,\n    \"regular_price\": 5.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 161,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 7,\n    \"product_name\": \"Milk 2%\",\n    \"sale_price\": 4.49,\n    \"regular_price\": 5.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 8,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 25,\n    \"product_name\": \"Quinoa\",\n    \"sale_price\": 4.49,\n    \"regular_price\": 6.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 170,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  },\n  {\n    \"deal_id\": 6,\n    \"product_name\": \"Eggs Large\",\n    \"sale_price\": 4.99,\n    \"regular_price\": 6.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 160,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 11,\n    \"product_name\": \"Rice Basmati\",\n    \"sale_price\": 4.99,\n    \"regular_price\": 7.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 171,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 14,\n    \"product_name\": \"Cheese Cheddar\",\n    \"sale_price\": 5.49,\n    \"regular_price\": 7.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 157,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 26,\n    \"product_name\": \"Olive Oil Extra Virgin\",\n    \"sale_price\": 7.99,\n    \"regular_price\": 11.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 146,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  }\n]\n\n**User Requirements:**\n- Budget: $80.0\n- Household Size: 2 people\n- Number of Meals: 3\n- Dietary Restrictions: vegetarian\n- Preferences: {}\n\n**Optimization Strategy:**\n1. Maximize ingredient reuse across groups (prefer ingredients that appear in multiple groups)\n2. Balance cost across all 3 groups\n3. Ensure each group has complementary ingredients (protein + starch + vegetables)\n4. Respect dietary restrictions strictly\n5. Each group should support 2-3 meal recipes\n\n**Output Format (JSON):**\n{\n  \"ingredient_groups\": [\n    [\n      {\"product_name\": \"...\", \"quantity_estimate\": \"...\", \"deal_id\": \"...\"},\n      ...\n    ],\n    [...],\n    [...]\n  ],\n  \"ingredient_reuse_map\": {\"ingredient_name\": reuse_count, ...},\n  \"rationale\": \"Explanation of grouping strategy\"\n}\n\nGenerate the 3 ingredient groups now:",
+      "content": "You are a professional Chef Orchestrator managing a meal planning system.\n\nYour task: Analyze available grocery deals and create 3 optimized ingredient groups for your team of 3 SousChefs.\n\n**Available Deals:**\n[\n  {\n    \"deal_id\": 15,\n    \"product_name\": \"Bananas\",\n    \"sale_price\": 0.69,\n    \"regular_price\": 0.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 153,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 21,\n    \"product_name\": \"Canned Tomatoes\",\n    \"sale_price\": 0.99,\n    \"regular_price\": 1.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 63,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 22,\n    \"product_name\": \"Spaghetti\",\n    \"sale_price\": 0.99,\n    \"regular_price\": 1.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 174,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 3,\n    \"product_name\": \"Pasta Penne\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 166,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 12,\n    \"product_name\": \"Bell Peppers Red\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 155,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 16,\n    \"product_name\": \"Carrots\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 156,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 24,\n    \"product_name\": \"Avocados\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 86,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  },\n  {\n    \"deal_id\": 4,\n    \"product_name\": \"Tomato Sauce\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 3.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 176,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 10,\n    \"product_name\": \"Sweet Potatoes\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 2.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 175,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 18,\n    \"product_name\": \"Onions Yellow\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 2.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 133,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 19,\n    \"product_name\": \"Bread Whole Wheat\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 3.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 43,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 2,\n    \"product_name\": \"Broccoli Crowns\",\n    \"sale_price\": 2.49,\n    \"regular_price\": 3.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 61,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 27,\n    \"product_name\": \"Tofu Firm\",\n    \"sale_price\": 2.49,\n    \"regular_price\": 3.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 52,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  },\n  {\n    \"deal_id\": 17,\n    \"product_name\": \"Potatoes Russet\",\n    \"sale_price\": 2.99,\n    \"regular_price\": 4.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 169,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 8,\n    \"product_name\": \"Baby Spinach\",\n    \"sale_price\": 3.49,\n    \"regular_price\": 4.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 62,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 13,\n    \"product_name\": \"Greek Yogurt\",\n    \"sale_price\": 3.99,\n    \"regular_price\": 5.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 161,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 7,\n    \"product_name\": \"Milk 2%\",\n    \"sale_price\": 4.49,\n    \"regular_price\": 5.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 8,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 25,\n    \"product_name\": \"Quinoa\",\n    \"sale_price\": 4.49,\n    \"regular_price\": 6.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 170,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  },\n  {\n    \"deal_id\": 6,\n    \"product_name\": \"Eggs Large\",\n    \"sale_price\": 4.99,\n    \"regular_price\": 6.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 160,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 11,\n    \"product_name\": \"Rice Basmati\",\n    \"sale_price\": 4.99,\n    \"regular_price\": 7.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 171,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 14,\n    \"product_name\": \"Cheese Cheddar\",\n    \"sale_price\": 5.49,\n    \"regular_price\": 7.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 157,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 26,\n    \"product_name\": \"Olive Oil Extra Virgin\",\n    \"sale_price\": 7.99,\n    \"regular_price\": 11.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 146,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  }\n]\n\n**User Requirements:**\n- Budget: $80.0\n- Household Size: 2 people\n- Number of Meals: 3\n- Dietary Restrictions: vegetarian\n- Preferences: {}\n\n**Optimization Strategy:**\n1. Maximize ingredient reuse across groups (prefer ingredients that appear in multiple groups)\n2. Balance cost across all 3 groups\n3. Ensure each group has complementary ingredients (protein + starch + vegetables)\n4. Respect dietary restrictions strictly\n5. Each group should support 2-3 meal recipes\n6. Every selection MUST carry the \"deal_id\" of a deal listed above, copied exactly. A selection without a valid deal_id is discarded -- names are never matched.\n\n**Output Format (JSON):**\n{\n  \"ingredient_groups\": [\n    [\n      {\"product_name\": \"...\", \"quantity_estimate\": \"...\", \"deal_id\": 123},\n      ...\n    ],\n    [...],\n    [...]\n  ],\n  \"ingredient_reuse_map\": {\"ingredient_name\": reuse_count, ...},\n  \"rationale\": \"Explanation of grouping strategy\"\n}\n\nGenerate the 3 ingredient groups now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "64af35e701049ef7f63585506c3bc1d4d3a2a8b4c58a4b46418d6b8af5f464e5",
+   "request_sha256": "9b677d42cc9d40a3247092416c216be7802eb7bdd86485fdca3eedb336de6a84",
    "response": {
     "content": "{\"ingredient_groups\": [[{\"product_name\": \"Bananas\", \"quantity_estimate\": \"1\", \"deal_id\": 15}, {\"product_name\": \"Pasta Penne\", \"quantity_estimate\": \"1\", \"deal_id\": 3}], [{\"product_name\": \"Canned Tomatoes\", \"quantity_estimate\": \"1\", \"deal_id\": 21}, {\"product_name\": \"Bell Peppers Red\", \"quantity_estimate\": \"1\", \"deal_id\": 12}], [{\"product_name\": \"Spaghetti\", \"quantity_estimate\": \"1\", \"deal_id\": 22}, {\"product_name\": \"Carrots\", \"quantity_estimate\": \"1\", \"deal_id\": 16}]], \"ingredient_reuse_map\": {}, \"rationale\": \"scripted\"}",
     "response_metadata": {},
     "usage": {
-     "input_tokens": 1760,
+     "input_tokens": 1800,
      "output_tokens": 131,
-     "total_tokens": 1891
+     "total_tokens": 1931
     }
    },
    "role": "chef",

@@ -23,7 +23,7 @@ None.
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | seed27-vegetarian | seed27 (2026-07-15) | chef=scripted/chef-script; sous_chef=scripted/sous-script; nutritionist=scripted/nutri-script | PASS | 3/3 | PASS | 100% | 6 steps, 0 invalid, 0 unreferenced | 67% | 0.00/0.00 | $7.14 | $7.14 | within_lower_bound (avail $80.00) | $5.80 | 0.002 | 6572 (known for 6/9 calls) |
 
-Budget columns are **lower bounds** (one deal unit per cited ingredient; ignores quantity, household size, multi-buy pricing; pantry staples cost 0). Both cost semantics are shown: *per-recipe-sum* charges a deal reused across recipes once per recipe (the plan total); *per-unique-deal* charges each deal once (the shopping list). `savings` is shown only where regular prices are known, otherwise n/a. Token totals sum only calls that reported usage.
+Budget columns are **lower bounds** (one deal unit per cited ingredient; ignores quantity, household size, multi-buy pricing; pantry staples cost 0). Both cost semantics are shown: *per-recipe-sum* charges a deal reused across recipes once per recipe; *per-unique-deal* charges each deal once (the shopping list, and the plan total since Track C). `savings` is shown only where regular prices are known, otherwise n/a. Token totals sum only calls that reported usage.
 
 ## Aggregates
 

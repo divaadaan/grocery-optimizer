@@ -409,10 +409,11 @@ def test_completed_job_carries_the_full_generation_response(client, monkeypatch)
     assert body["elapsed_seconds"] >= 0
 
     result = body["result"]
-    # The pre-job response contract, intact.
+    # The pre-job response contract, intact, plus Track C's additive fields.
     assert set(result) == {
         "recipes", "total_cost", "cost_per_meal", "estimated_savings",
         "generation_time", "status", "warnings",
+        "meals_requested", "partial", "budget_check",
     }
     assert result["status"] == "completed"
     assert result["warnings"] == ["Only 1/2 recipes approved"]
