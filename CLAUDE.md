@@ -2,22 +2,11 @@
 
 Project-level instructions for agents working in this repo.
 
-## Environment: the repo lives in WSL
+## Environment
 
-The checkout is at `/home/divad/projects/grocery-optimizer` inside WSL (Ubuntu).
-Agents are typically invoked from Windows with the working directory set to the
-UNC path `\\wsl.localhost\Ubuntu\home\divad\projects\grocery-optimizer`.
-
-**Windows `git` cannot operate on this repo.** It fails with `detected dubious
-ownership`. The same applies to Windows `node`/`npm`. Run all git, python,
-pytest, and npm commands inside WSL:
-
-```
-wsl.exe -d Ubuntu -- bash -lc "cd ~/projects/grocery-optimizer && <command>"
-```
-
-Reading and searching files over the UNC path works fine — only tooling that
-executes needs the wrapper.
+The checkout is at `/home/divad/projects/grocery-optimizer` in WSL (Ubuntu), and
+Claude Code runs as the native Linux build there. Run git, python, pytest and
+npm directly — no wrapper.
 
 - **Python** is the project venv: `.venv/bin/python` (3.11). Do not create a new
   one. There is no `pyproject.toml`/`setup.py`; nothing is installed as an
@@ -57,19 +46,6 @@ ln -s ~/projects/grocery-optimizer/frontend/node_modules frontend/node_modules
 Reusing the main `.venv` by absolute path is safe precisely because nothing is
 installed as a package: the worktree's code wins on `sys.path` and the main venv
 supplies site-packages. Untracked files do not propagate into a worktree.
-
-Worktrees created by the Claude Code harness (`.claude/worktrees/agent-*`) are
-made by Windows git, so their `.git` file holds a `//wsl.localhost/...` gitdir
-that WSL git cannot read. Run WSL git there with both set:
-
-```
-GIT_DIR=/home/divad/projects/grocery-optimizer/.git/worktrees/<worktree dir name>
-GIT_WORK_TREE=<the worktree's linux path>
-```
-
-Before committing from any Windows-side edit, compare `git diff --stat` with
-`git diff --ignore-cr-at-eol --stat`; if they differ, CRLF crept in — normalise
-with `sed -i 's/\r$//'`. Commit with WSL git.
 
 ### Worktrees isolate code, not state
 
