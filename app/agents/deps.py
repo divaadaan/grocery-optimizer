@@ -17,11 +17,15 @@ Interfaces (duck-typed, matching the production objects):
 * ``recipe_store`` -- ``save_recipes(user_id, recipes) -> [recipe_id, ...]``
                       (``DatabaseService``) -- the graph's only write
 * ``tracker``      -- ``MLflowLogger``'s static interface
+* ``recipe_ids``   -- ``(chef_id, generated recipe) -> recipe_id``
+                      (``sous_chef.RecipeIdFactory``); ``None`` is a fresh
+                      uuid4 per recipe. Evaluation replay injects a
+                      deterministic one.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from .llm_factory import make_llm
 from ..services import recipe_catalog
@@ -38,6 +42,7 @@ class GraphDeps:
     catalog: Any = field(default_factory=lambda: recipe_catalog)
     recipe_store: Any = field(default_factory=DatabaseService)
     tracker: Any = field(default_factory=lambda: MLflowLogger)
+    recipe_ids: Optional[Any] = None
 
 
 class InMemoryRecipeStore:

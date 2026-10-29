@@ -346,7 +346,8 @@ def create_recipe_generation_graph(deps: Optional[GraphDeps] = None):
         deps = GraphDeps()
 
     chef = ChefOrchestrator(llm=deps.chef_llm, db=deps.deals, tracker=deps.tracker)
-    sous_chef = SousChef(llm=deps.sous_chef_llm, tracker=deps.tracker)
+    sous_chef = SousChef(llm=deps.sous_chef_llm, tracker=deps.tracker,
+                         recipe_id=deps.recipe_ids)
     nutritionist = Nutritionist(llm=deps.nutritionist_llm, tracker=deps.tracker)
 
     workflow = StateGraph(RecipeGenerationState)

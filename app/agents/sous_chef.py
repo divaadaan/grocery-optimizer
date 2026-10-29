@@ -1,7 +1,7 @@
 import json
 import time
 import uuid
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 from .state import Recipe
 from .prompts import PromptTemplates
 from .llm_output import (
@@ -72,8 +72,23 @@ def offered_staples(
     ]
 
 
+#: ``(chef_id, validated model output) -> recipe_id``. The id is the state key
+#: for the recipe and is printed into the Nutritionist and retry prompts.
+RecipeIdFactory = Callable[[str, GeneratedRecipe], str]
+
+
+def random_recipe_id(chef_id: str, model: GeneratedRecipe) -> str:
+    """Production recipe ids: a fresh uuid4 (arguments unused).
+
+    The evaluation runner injects a content-derived factory instead
+    (``app.eval.recorder.ContentRecipeIds``) so a replayed run reproduces the
+    recorded prompts byte for byte."""
+    return str(uuid.uuid4())
+
+
 def _to_recipe(
-    chef_id: str, model: GeneratedRecipe, deal_lookup: Dict[str, Dict]
+    chef_id: str, model: GeneratedRecipe, deal_lookup: Dict[str, Dict],
+    recipe_id: RecipeIdFactory = random_recipe_id,
 ) -> Recipe:
     """Build a Recipe from validated model output.
 
@@ -96,7 +111,7 @@ def _to_recipe(
         print(f"[{chef_id}] Unresolved citations for {pricing.unpriced} — priced at 0")
 
     return Recipe(
-        recipe_id=str(uuid.uuid4()),
+        recipe_id=recipe_id(chef_id, model),
         name=model.name,
         ingredients=ingredients,
         instructions=model.instructions,
@@ -111,16 +126,20 @@ def _to_recipe(
 class SousChef:
     """SousChef agent for recipe generation.
 
-    ``llm`` (the "sous_chef" role) and ``tracker`` (MLflowLogger's
-    interface) are injectable; left ``None`` they are the production defaults.
+    ``llm`` (the "sous_chef" role), ``tracker`` (MLflowLogger's interface)
+    and ``recipe_id`` (a :data:`RecipeIdFactory`) are injectable; left
+    ``None`` they are the production defaults.
     """
 
     tracker = MLflowLogger
+    recipe_id: RecipeIdFactory = staticmethod(random_recipe_id)
 
-    def __init__(self, llm=None, tracker=None):
+    def __init__(self, llm=None, tracker=None, recipe_id: Optional[RecipeIdFactory] = None):
         self.llm = llm if llm is not None else make_llm("sous_chef")
         if tracker is not None:
             self.tracker = tracker
+        if recipe_id is not None:
+            self.recipe_id = recipe_id
 
     @staticmethod
     def _offer(ingredient_group, available_deals, deal_index, pantry_staples,
@@ -173,7 +192,8 @@ class SousChef:
 
         try:
             batch, raw = invoke_validated(self.llm, prompt, RecipeBatch, context=context)
-            recipes = [_to_recipe(chef_id, r, deal_lookup) for r in batch.recipes]
+            recipes = [_to_recipe(chef_id, r, deal_lookup, self.recipe_id)
+                       for r in batch.recipes]
 
             duration = time.time() - start_time
 
@@ -234,7 +254,7 @@ class SousChef:
             batch, _raw = invoke_validated(self.llm, prompt, RecipeBatch, context=context)
 
             # Create new recipe with new ID
-            recipe = _to_recipe(chef_id, batch.recipes[0], deal_lookup)
+            recipe = _to_recipe(chef_id, batch.recipes[0], deal_lookup, self.recipe_id)
 
             print(f"[{chef_id}] Regenerated: {recipe['name']}")
             return recipe
