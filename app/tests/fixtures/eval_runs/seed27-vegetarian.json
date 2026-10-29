@@ -1,0 +1,1903 @@
+{
+ "artifact": {
+  "created_at": "2026-10-29T20:54:59+00:00",
+  "format_version": 1,
+  "kind": "recipe-eval-run",
+  "mode": "record"
+ },
+ "code": {
+  "git_dirty": true,
+  "git_sha": "89a86ac86dbf280c705f718055a7c1cfa640878b"
+ },
+ "final_state": {
+  "agent_call_log": [
+   {
+    "action": "plan_ingredient_groups",
+    "agent": "Chef_Orchestrator",
+    "duration": 0.0006823539733886719,
+    "success": true,
+    "timestamp": 1793307299.327029
+   },
+   {
+    "action": "validate_recipe",
+    "agent": "Nutritionist",
+    "approved": true,
+    "duration": 0.0003364086151123047,
+    "recipe_id": "be54727c-c418-5a48-a572-28934d4c13b3",
+    "timestamp": 1793307299.3319564
+   },
+   {
+    "action": "validate_recipe",
+    "agent": "Nutritionist",
+    "approved": true,
+    "duration": 0.00024509429931640625,
+    "recipe_id": "d923f852-e710-5a65-a499-fda7813ef2a7",
+    "timestamp": 1793307299.3322024
+   },
+   {
+    "action": "validate_recipe",
+    "agent": "Nutritionist",
+    "approved": true,
+    "duration": 0.00019979476928710938,
+    "recipe_id": "98ccce74-7dd4-5e92-8506-0a52c6bc3142",
+    "timestamp": 1793307299.3324032
+   }
+  ],
+  "approved_recipe_ids": [
+   "be54727c-c418-5a48-a572-28934d4c13b3",
+   "d923f852-e710-5a65-a499-fda7813ef2a7",
+   "98ccce74-7dd4-5e92-8506-0a52c6bc3142"
+  ],
+  "available_deals": [
+   {
+    "chain": "No Frills",
+    "deal_id": 15,
+    "discount_percentage": null,
+    "product_id": 153,
+    "product_name": "Bananas",
+    "regular_price": 0.99,
+    "sale_price": 0.69,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   {
+    "chain": "No Frills",
+    "deal_id": 21,
+    "discount_percentage": null,
+    "product_id": 63,
+    "product_name": "Canned Tomatoes",
+    "regular_price": 1.99,
+    "sale_price": 0.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   {
+    "chain": "No Frills",
+    "deal_id": 22,
+    "discount_percentage": null,
+    "product_id": 174,
+    "product_name": "Spaghetti",
+    "regular_price": 1.99,
+    "sale_price": 0.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   {
+    "chain": "Loblaws",
+    "deal_id": 3,
+    "discount_percentage": null,
+    "product_id": 166,
+    "product_name": "Pasta Penne",
+    "regular_price": 2.99,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   {
+    "chain": "Metro",
+    "deal_id": 12,
+    "discount_percentage": null,
+    "product_id": 155,
+    "product_name": "Bell Peppers Red",
+    "regular_price": 2.49,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   {
+    "chain": "No Frills",
+    "deal_id": 16,
+    "discount_percentage": null,
+    "product_id": 156,
+    "product_name": "Carrots",
+    "regular_price": 2.49,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   {
+    "chain": "Sobeys",
+    "deal_id": 24,
+    "discount_percentage": null,
+    "product_id": 86,
+    "product_name": "Avocados",
+    "regular_price": 2.49,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   },
+   {
+    "chain": "Loblaws",
+    "deal_id": 4,
+    "discount_percentage": null,
+    "product_id": 176,
+    "product_name": "Tomato Sauce",
+    "regular_price": 3.49,
+    "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   {
+    "chain": "Metro",
+    "deal_id": 10,
+    "discount_percentage": null,
+    "product_id": 175,
+    "product_name": "Sweet Potatoes",
+    "regular_price": 2.99,
+    "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   {
+    "chain": "No Frills",
+    "deal_id": 18,
+    "discount_percentage": null,
+    "product_id": 133,
+    "product_name": "Onions Yellow",
+    "regular_price": 2.99,
+    "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   {
+    "chain": "No Frills",
+    "deal_id": 19,
+    "discount_percentage": null,
+    "product_id": 43,
+    "product_name": "Bread Whole Wheat",
+    "regular_price": 3.49,
+    "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   {
+    "chain": "Loblaws",
+    "deal_id": 2,
+    "discount_percentage": null,
+    "product_id": 61,
+    "product_name": "Broccoli Crowns",
+    "regular_price": 3.99,
+    "sale_price": 2.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   {
+    "chain": "Sobeys",
+    "deal_id": 27,
+    "discount_percentage": null,
+    "product_id": 52,
+    "product_name": "Tofu Firm",
+    "regular_price": 3.99,
+    "sale_price": 2.49,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   },
+   {
+    "chain": "No Frills",
+    "deal_id": 17,
+    "discount_percentage": null,
+    "product_id": 169,
+    "product_name": "Potatoes Russet",
+    "regular_price": 4.99,
+    "sale_price": 2.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   {
+    "chain": "Loblaws",
+    "deal_id": 8,
+    "discount_percentage": null,
+    "product_id": 62,
+    "product_name": "Baby Spinach",
+    "regular_price": 4.99,
+    "sale_price": 3.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   {
+    "chain": "Metro",
+    "deal_id": 13,
+    "discount_percentage": null,
+    "product_id": 161,
+    "product_name": "Greek Yogurt",
+    "regular_price": 5.99,
+    "sale_price": 3.99,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   {
+    "chain": "Loblaws",
+    "deal_id": 7,
+    "discount_percentage": null,
+    "product_id": 8,
+    "product_name": "Milk 2%",
+    "regular_price": 5.99,
+    "sale_price": 4.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   {
+    "chain": "Sobeys",
+    "deal_id": 25,
+    "discount_percentage": null,
+    "product_id": 170,
+    "product_name": "Quinoa",
+    "regular_price": 6.99,
+    "sale_price": 4.49,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   },
+   {
+    "chain": "Loblaws",
+    "deal_id": 6,
+    "discount_percentage": null,
+    "product_id": 160,
+    "product_name": "Eggs Large",
+    "regular_price": 6.99,
+    "sale_price": 4.99,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   {
+    "chain": "Metro",
+    "deal_id": 11,
+    "discount_percentage": null,
+    "product_id": 171,
+    "product_name": "Rice Basmati",
+    "regular_price": 7.99,
+    "sale_price": 4.99,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   {
+    "chain": "Metro",
+    "deal_id": 14,
+    "discount_percentage": null,
+    "product_id": 157,
+    "product_name": "Cheese Cheddar",
+    "regular_price": 7.99,
+    "sale_price": 5.49,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   {
+    "chain": "Sobeys",
+    "deal_id": 26,
+    "discount_percentage": null,
+    "product_id": 146,
+    "product_name": "Olive Oil Extra Virgin",
+    "regular_price": 11.99,
+    "sale_price": 7.99,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   }
+  ],
+  "budget": 80.0,
+  "budget_period": "weekly",
+  "budget_remaining": 72.86,
+  "budget_spent_this_period": 0.0,
+  "cost_per_meal": 2.3800000000000003,
+  "deal_index": {
+   "Avocados": {
+    "chain": "Sobeys",
+    "deal_id": 24,
+    "discount_percentage": null,
+    "product_id": 86,
+    "product_name": "Avocados",
+    "regular_price": 2.49,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   },
+   "Baby Spinach": {
+    "chain": "Loblaws",
+    "deal_id": 8,
+    "discount_percentage": null,
+    "product_id": 62,
+    "product_name": "Baby Spinach",
+    "regular_price": 4.99,
+    "sale_price": 3.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   "Bananas": {
+    "chain": "No Frills",
+    "deal_id": 15,
+    "discount_percentage": null,
+    "product_id": 153,
+    "product_name": "Bananas",
+    "regular_price": 0.99,
+    "sale_price": 0.69,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "Bell Peppers Red": {
+    "chain": "Metro",
+    "deal_id": 12,
+    "discount_percentage": null,
+    "product_id": 155,
+    "product_name": "Bell Peppers Red",
+    "regular_price": 2.49,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   "Bread Whole Wheat": {
+    "chain": "No Frills",
+    "deal_id": 19,
+    "discount_percentage": null,
+    "product_id": 43,
+    "product_name": "Bread Whole Wheat",
+    "regular_price": 3.49,
+    "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "Broccoli Crowns": {
+    "chain": "Loblaws",
+    "deal_id": 2,
+    "discount_percentage": null,
+    "product_id": 61,
+    "product_name": "Broccoli Crowns",
+    "regular_price": 3.99,
+    "sale_price": 2.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   "Canned Tomatoes": {
+    "chain": "No Frills",
+    "deal_id": 21,
+    "discount_percentage": null,
+    "product_id": 63,
+    "product_name": "Canned Tomatoes",
+    "regular_price": 1.99,
+    "sale_price": 0.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "Carrots": {
+    "chain": "No Frills",
+    "deal_id": 16,
+    "discount_percentage": null,
+    "product_id": 156,
+    "product_name": "Carrots",
+    "regular_price": 2.49,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "Cheese Cheddar": {
+    "chain": "Metro",
+    "deal_id": 14,
+    "discount_percentage": null,
+    "product_id": 157,
+    "product_name": "Cheese Cheddar",
+    "regular_price": 7.99,
+    "sale_price": 5.49,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   "Eggs Large": {
+    "chain": "Loblaws",
+    "deal_id": 6,
+    "discount_percentage": null,
+    "product_id": 160,
+    "product_name": "Eggs Large",
+    "regular_price": 6.99,
+    "sale_price": 4.99,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   "Greek Yogurt": {
+    "chain": "Metro",
+    "deal_id": 13,
+    "discount_percentage": null,
+    "product_id": 161,
+    "product_name": "Greek Yogurt",
+    "regular_price": 5.99,
+    "sale_price": 3.99,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   "Milk 2%": {
+    "chain": "Loblaws",
+    "deal_id": 7,
+    "discount_percentage": null,
+    "product_id": 8,
+    "product_name": "Milk 2%",
+    "regular_price": 5.99,
+    "sale_price": 4.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   "Olive Oil Extra Virgin": {
+    "chain": "Sobeys",
+    "deal_id": 26,
+    "discount_percentage": null,
+    "product_id": 146,
+    "product_name": "Olive Oil Extra Virgin",
+    "regular_price": 11.99,
+    "sale_price": 7.99,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   },
+   "Onions Yellow": {
+    "chain": "No Frills",
+    "deal_id": 18,
+    "discount_percentage": null,
+    "product_id": 133,
+    "product_name": "Onions Yellow",
+    "regular_price": 2.99,
+    "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "Pasta Penne": {
+    "chain": "Loblaws",
+    "deal_id": 3,
+    "discount_percentage": null,
+    "product_id": 166,
+    "product_name": "Pasta Penne",
+    "regular_price": 2.99,
+    "sale_price": 1.49,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   },
+   "Potatoes Russet": {
+    "chain": "No Frills",
+    "deal_id": 17,
+    "discount_percentage": null,
+    "product_id": 169,
+    "product_name": "Potatoes Russet",
+    "regular_price": 4.99,
+    "sale_price": 2.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "Quinoa": {
+    "chain": "Sobeys",
+    "deal_id": 25,
+    "discount_percentage": null,
+    "product_id": 170,
+    "product_name": "Quinoa",
+    "regular_price": 6.99,
+    "sale_price": 4.49,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   },
+   "Rice Basmati": {
+    "chain": "Metro",
+    "deal_id": 11,
+    "discount_percentage": null,
+    "product_id": 171,
+    "product_name": "Rice Basmati",
+    "regular_price": 7.99,
+    "sale_price": 4.99,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   "Spaghetti": {
+    "chain": "No Frills",
+    "deal_id": 22,
+    "discount_percentage": null,
+    "product_id": 174,
+    "product_name": "Spaghetti",
+    "regular_price": 1.99,
+    "sale_price": 0.99,
+    "source": "seed",
+    "store_id": 3,
+    "store_name": "No Frills Bathurst"
+   },
+   "Sweet Potatoes": {
+    "chain": "Metro",
+    "deal_id": 10,
+    "discount_percentage": null,
+    "product_id": 175,
+    "product_name": "Sweet Potatoes",
+    "regular_price": 2.99,
+    "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 2,
+    "store_name": "Metro Front Street"
+   },
+   "Tofu Firm": {
+    "chain": "Sobeys",
+    "deal_id": 27,
+    "discount_percentage": null,
+    "product_id": 52,
+    "product_name": "Tofu Firm",
+    "regular_price": 3.99,
+    "sale_price": 2.49,
+    "source": "seed",
+    "store_id": 4,
+    "store_name": "Sobeys Wellesley"
+   },
+   "Tomato Sauce": {
+    "chain": "Loblaws",
+    "deal_id": 4,
+    "discount_percentage": null,
+    "product_id": 176,
+    "product_name": "Tomato Sauce",
+    "regular_price": 3.49,
+    "sale_price": 1.99,
+    "source": "seed",
+    "store_id": 1,
+    "store_name": "Loblaws King West"
+   }
+  },
+  "deal_products": {
+   "10": [
+    {
+     "canonical_name": "sweet potatoes",
+     "category": "produce",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 175,
+     "status": "confirmed"
+    }
+   ],
+   "11": [
+    {
+     "canonical_name": "basmati rice",
+     "category": "pantry",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 171,
+     "status": "confirmed"
+    }
+   ],
+   "12": [
+    {
+     "canonical_name": "red bell peppers",
+     "category": "produce",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 155,
+     "status": "confirmed"
+    }
+   ],
+   "13": [
+    {
+     "canonical_name": "greek yogurt",
+     "category": "dairy",
+     "contains_animal_byproduct": false,
+     "contains_dairy": true,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 161,
+     "status": "confirmed"
+    }
+   ],
+   "14": [
+    {
+     "canonical_name": "cheddar cheese",
+     "category": "dairy",
+     "contains_animal_byproduct": false,
+     "contains_dairy": true,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 157,
+     "status": "confirmed"
+    }
+   ],
+   "15": [
+    {
+     "canonical_name": "bananas",
+     "category": "produce",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 153,
+     "status": "confirmed"
+    }
+   ],
+   "16": [
+    {
+     "canonical_name": "carrots",
+     "category": "produce",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 156,
+     "status": "confirmed"
+    }
+   ],
+   "17": [
+    {
+     "canonical_name": "russet potatoes",
+     "category": "produce",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 169,
+     "status": "confirmed"
+    }
+   ],
+   "18": [
+    {
+     "canonical_name": "Yellow Onion",
+     "category": "produce",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 133,
+     "status": "confirmed"
+    }
+   ],
+   "19": [
+    {
+     "canonical_name": "sliced bread",
+     "category": "bakery",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": true,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 43,
+     "status": "confirmed"
+    }
+   ],
+   "2": [
+    {
+     "canonical_name": "broccoli",
+     "category": "produce",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 61,
+     "status": "confirmed"
+    }
+   ],
+   "21": [
+    {
+     "canonical_name": "canned tomatoes",
+     "category": "pantry",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 63,
+     "status": "confirmed"
+    }
+   ],
+   "22": [
+    {
+     "canonical_name": "spaghetti",
+     "category": "pantry",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": true,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 174,
+     "status": "confirmed"
+    }
+   ],
+   "24": [
+    {
+     "canonical_name": "avocados",
+     "category": "produce",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 86,
+     "status": "confirmed"
+    }
+   ],
+   "25": [
+    {
+     "canonical_name": "quinoa",
+     "category": "pantry",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 170,
+     "status": "confirmed"
+    }
+   ],
+   "26": [
+    {
+     "canonical_name": "Olive Oil",
+     "category": "pantry",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 146,
+     "status": "confirmed"
+    }
+   ],
+   "27": [
+    {
+     "canonical_name": "tofu",
+     "category": "refrigerated",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 52,
+     "status": "confirmed"
+    }
+   ],
+   "3": [
+    {
+     "canonical_name": "penne",
+     "category": "pantry",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": true,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 166,
+     "status": "confirmed"
+    }
+   ],
+   "4": [
+    {
+     "canonical_name": "tomato sauce",
+     "category": "pantry",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 176,
+     "status": "confirmed"
+    }
+   ],
+   "6": [
+    {
+     "canonical_name": "eggs",
+     "category": "dairy",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": true,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 160,
+     "status": "confirmed"
+    }
+   ],
+   "7": [
+    {
+     "canonical_name": "milk",
+     "category": "dairy",
+     "contains_animal_byproduct": null,
+     "contains_dairy": true,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 8,
+     "status": "confirmed"
+    }
+   ],
+   "8": [
+    {
+     "canonical_name": "spinach",
+     "category": "produce",
+     "contains_animal_byproduct": false,
+     "contains_dairy": false,
+     "contains_egg": false,
+     "contains_fish": false,
+     "contains_gluten": false,
+     "contains_meat": false,
+     "contains_nuts": false,
+     "product_id": 62,
+     "status": "confirmed"
+    }
+   ]
+  },
+  "dietary_restrictions": [
+   "vegetarian"
+  ],
+  "errors": [],
+  "estimated_savings": 5.8,
+  "generated_recipes": {
+   "98ccce74-7dd4-5e92-8506-0a52c6bc3142": {
+    "cuisine_type": "Any",
+    "estimated_prep_time": 20,
+    "ingredients": [
+     {
+      "deal_id": 22,
+      "name": "Spaghetti",
+      "price": 0.99,
+      "quantity": "1",
+      "unit": "unit"
+     },
+     {
+      "deal_id": 16,
+      "name": "Carrots",
+      "price": 1.49,
+      "quantity": "1",
+      "unit": "unit"
+     },
+     {
+      "name": "All-Purpose Flour",
+      "price": 0.0,
+      "product_id": 139,
+      "quantity": "1",
+      "unit": "tsp"
+     }
+    ],
+    "instructions": [
+     "Cook it."
+    ],
+    "meal_type": "dinner",
+    "name": "Scripted 22+16",
+    "recipe_id": "98ccce74-7dd4-5e92-8506-0a52c6bc3142",
+    "servings": 2,
+    "total_cost": 2.48
+   },
+   "be54727c-c418-5a48-a572-28934d4c13b3": {
+    "cuisine_type": "Any",
+    "estimated_prep_time": 20,
+    "ingredients": [
+     {
+      "deal_id": 15,
+      "name": "Bananas",
+      "price": 0.69,
+      "quantity": "1",
+      "unit": "unit"
+     },
+     {
+      "deal_id": 3,
+      "name": "Pasta Penne",
+      "price": 1.49,
+      "quantity": "1",
+      "unit": "unit"
+     },
+     {
+      "name": "All-Purpose Flour",
+      "price": 0.0,
+      "product_id": 139,
+      "quantity": "1",
+      "unit": "tsp"
+     }
+    ],
+    "instructions": [
+     "Cook it."
+    ],
+    "meal_type": "dinner",
+    "name": "Scripted 15+3",
+    "recipe_id": "be54727c-c418-5a48-a572-28934d4c13b3",
+    "servings": 2,
+    "total_cost": 2.18
+   },
+   "d923f852-e710-5a65-a499-fda7813ef2a7": {
+    "cuisine_type": "Any",
+    "estimated_prep_time": 20,
+    "ingredients": [
+     {
+      "deal_id": 21,
+      "name": "Canned Tomatoes",
+      "price": 0.99,
+      "quantity": "1",
+      "unit": "unit"
+     },
+     {
+      "deal_id": 12,
+      "name": "Bell Peppers Red",
+      "price": 1.49,
+      "quantity": "1",
+      "unit": "unit"
+     },
+     {
+      "name": "All-Purpose Flour",
+      "price": 0.0,
+      "product_id": 139,
+      "quantity": "1",
+      "unit": "tsp"
+     }
+    ],
+    "instructions": [
+     "Cook it."
+    ],
+    "meal_type": "dinner",
+    "name": "Scripted 21+12",
+    "recipe_id": "d923f852-e710-5a65-a499-fda7813ef2a7",
+    "servings": 2,
+    "total_cost": 2.48
+   }
+  },
+  "household_size": 2,
+  "ingredient_groups": [
+   [
+    {
+     "deal_id": 15,
+     "product_name": "Bananas",
+     "quantity_estimate": "1"
+    },
+    {
+     "deal_id": 3,
+     "product_name": "Pasta Penne",
+     "quantity_estimate": "1"
+    }
+   ],
+   [
+    {
+     "deal_id": 21,
+     "product_name": "Canned Tomatoes",
+     "quantity_estimate": "1"
+    },
+    {
+     "deal_id": 12,
+     "product_name": "Bell Peppers Red",
+     "quantity_estimate": "1"
+    }
+   ],
+   [
+    {
+     "deal_id": 22,
+     "product_name": "Spaghetti",
+     "quantity_estimate": "1"
+    },
+    {
+     "deal_id": 16,
+     "product_name": "Carrots",
+     "quantity_estimate": "1"
+    }
+   ]
+  ],
+  "ingredient_reuse_map": {},
+  "iteration_count": 0,
+  "max_iterations": 2,
+  "mlflow_run_id": "",
+  "num_meals": 3,
+  "pantry_staples": [
+   {
+    "canonical_name": "All-Purpose Flour",
+    "category": "baking",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": true,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 139,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Baking Powder",
+    "category": "baking",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 134,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Baking Soda",
+    "category": "baking",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 132,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Black Pepper",
+    "category": "spices",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 144,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Brown Sugar",
+    "category": "baking",
+    "contains_animal_byproduct": true,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 124,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Butter",
+    "category": "dairy",
+    "contains_animal_byproduct": false,
+    "contains_dairy": true,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 142,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Chili Flakes",
+    "category": "spices",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 126,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Cornstarch",
+    "category": "baking",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 131,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Dijon Mustard",
+    "category": "condiments",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 141,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Dried Basil",
+    "category": "spices",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 125,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Dried Oregano",
+    "category": "spices",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 137,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Fish Sauce",
+    "category": "condiments",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": true,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 148,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Garlic",
+    "category": "produce",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 135,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Garlic Powder",
+    "category": "spices",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 136,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Granulated Sugar",
+    "category": "baking",
+    "contains_animal_byproduct": true,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 140,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Ground Cinnamon",
+    "category": "spices",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 147,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Ground Cumin",
+    "category": "spices",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 145,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Honey",
+    "category": "pantry",
+    "contains_animal_byproduct": true,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 150,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Olive Oil",
+    "category": "pantry",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 146,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Paprika",
+    "category": "spices",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 149,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Salt",
+    "category": "pantry",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 130,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Soy Sauce",
+    "category": "condiments",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": true,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 128,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Vegetable Oil",
+    "category": "pantry",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 127,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Water",
+    "category": "pantry",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 129,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "White Vinegar",
+    "category": "condiments",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 138,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Worcestershire Sauce",
+    "category": "condiments",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": true,
+    "contains_gluten": true,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 143,
+    "status": "confirmed"
+   },
+   {
+    "canonical_name": "Yellow Onion",
+    "category": "produce",
+    "contains_animal_byproduct": false,
+    "contains_dairy": false,
+    "contains_egg": false,
+    "contains_fish": false,
+    "contains_gluten": false,
+    "contains_meat": false,
+    "contains_nuts": false,
+    "product_id": 133,
+    "status": "confirmed"
+   }
+  ],
+  "postal_code": "M5V3A8",
+  "preferences": {},
+  "recipes_pending_retry": {},
+  "rejected_recipe_ids": [],
+  "retry_strategy": "reassign_chef",
+  "saved_recipe_ids": [
+   1,
+   2,
+   3
+  ],
+  "sous_chef_assignments": {
+   "98ccce74-7dd4-5e92-8506-0a52c6bc3142": "sous_chef_3",
+   "be54727c-c418-5a48-a572-28934d4c13b3": "sous_chef_1",
+   "d923f852-e710-5a65-a499-fda7813ef2a7": "sous_chef_2"
+  },
+  "status": "completed",
+  "target_ingredients_per_group": 0,
+  "total_cost": 7.140000000000001,
+  "user_id": 1,
+  "validation_results": {
+   "98ccce74-7dd4-5e92-8506-0a52c6bc3142": {
+    "approved": true,
+    "dietary_compliance": {
+     "allergen_free": true,
+     "meets_restrictions": true,
+     "violations": []
+    },
+    "feedback": "Approved: all ingredients comply with the vegetarian restriction.",
+    "health_score": 54.0,
+    "nutrition_facts": {
+     "calories_per_serving": 714
+    },
+    "recipe_id": "98ccce74-7dd4-5e92-8506-0a52c6bc3142"
+   },
+   "be54727c-c418-5a48-a572-28934d4c13b3": {
+    "approved": true,
+    "dietary_compliance": {
+     "allergen_free": true,
+     "meets_restrictions": true,
+     "violations": []
+    },
+    "feedback": "Approved: all ingredients comply with the vegetarian restriction.",
+    "health_score": 54.0,
+    "nutrition_facts": {
+     "calories_per_serving": 714
+    },
+    "recipe_id": "be54727c-c418-5a48-a572-28934d4c13b3"
+   },
+   "d923f852-e710-5a65-a499-fda7813ef2a7": {
+    "approved": true,
+    "dietary_compliance": {
+     "allergen_free": true,
+     "meets_restrictions": true,
+     "violations": []
+    },
+    "feedback": "Approved: all ingredients comply with the vegetarian restriction.",
+    "health_score": 69.0,
+    "nutrition_facts": {
+     "calories_per_serving": 729
+    },
+    "recipe_id": "d923f852-e710-5a65-a499-fda7813ef2a7"
+   }
+  },
+  "warnings": []
+ },
+ "llm": {
+  "chef": {
+   "class": "__main__.ConversationModel",
+   "model": "chef-script",
+   "params": {
+    "model": "scripted",
+    "usage": true
+   },
+   "provider": "scripted"
+  },
+  "nutritionist": {
+   "class": "__main__.ConversationModel",
+   "model": "nutri-script",
+   "params": {
+    "model": "scripted",
+    "usage": false
+   },
+   "provider": "scripted"
+  },
+  "sous_chef": {
+   "class": "__main__.ConversationModel",
+   "model": "sous-script",
+   "params": {
+    "model": "scripted",
+    "usage": true
+   },
+   "provider": "scripted"
+  }
+ },
+ "llm_calls": [
+  {
+   "error": null,
+   "latency_s": 0.00034669499973460915,
+   "model": {
+    "class": "__main__.ConversationModel",
+    "model": "chef-script",
+    "params": {
+     "model": "scripted",
+     "usage": true
+    },
+    "provider": "scripted"
+   },
+   "occurrence": 0,
+   "request": {
+    "messages": [
+     {
+      "content": "You are a professional Chef Orchestrator managing a meal planning system.\n\nYour task: Analyze available grocery deals and create 3 optimized ingredient groups for your team of 3 SousChefs.\n\n**Available Deals:**\n[\n  {\n    \"deal_id\": 15,\n    \"product_name\": \"Bananas\",\n    \"sale_price\": 0.69,\n    \"regular_price\": 0.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 153,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 21,\n    \"product_name\": \"Canned Tomatoes\",\n    \"sale_price\": 0.99,\n    \"regular_price\": 1.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 63,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 22,\n    \"product_name\": \"Spaghetti\",\n    \"sale_price\": 0.99,\n    \"regular_price\": 1.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 174,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 3,\n    \"product_name\": \"Pasta Penne\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 166,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 12,\n    \"product_name\": \"Bell Peppers Red\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 155,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 16,\n    \"product_name\": \"Carrots\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 156,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 24,\n    \"product_name\": \"Avocados\",\n    \"sale_price\": 1.49,\n    \"regular_price\": 2.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 86,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  },\n  {\n    \"deal_id\": 4,\n    \"product_name\": \"Tomato Sauce\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 3.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 176,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 10,\n    \"product_name\": \"Sweet Potatoes\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 2.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 175,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 18,\n    \"product_name\": \"Onions Yellow\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 2.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 133,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 19,\n    \"product_name\": \"Bread Whole Wheat\",\n    \"sale_price\": 1.99,\n    \"regular_price\": 3.49,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 43,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 2,\n    \"product_name\": \"Broccoli Crowns\",\n    \"sale_price\": 2.49,\n    \"regular_price\": 3.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 61,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 27,\n    \"product_name\": \"Tofu Firm\",\n    \"sale_price\": 2.49,\n    \"regular_price\": 3.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 52,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  },\n  {\n    \"deal_id\": 17,\n    \"product_name\": \"Potatoes Russet\",\n    \"sale_price\": 2.99,\n    \"regular_price\": 4.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 169,\n    \"store_name\": \"No Frills Bathurst\",\n    \"store_id\": 3,\n    \"chain\": \"No Frills\"\n  },\n  {\n    \"deal_id\": 8,\n    \"product_name\": \"Baby Spinach\",\n    \"sale_price\": 3.49,\n    \"regular_price\": 4.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 62,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 13,\n    \"product_name\": \"Greek Yogurt\",\n    \"sale_price\": 3.99,\n    \"regular_price\": 5.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 161,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 7,\n    \"product_name\": \"Milk 2%\",\n    \"sale_price\": 4.49,\n    \"regular_price\": 5.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 8,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 25,\n    \"product_name\": \"Quinoa\",\n    \"sale_price\": 4.49,\n    \"regular_price\": 6.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 170,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  },\n  {\n    \"deal_id\": 6,\n    \"product_name\": \"Eggs Large\",\n    \"sale_price\": 4.99,\n    \"regular_price\": 6.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 160,\n    \"store_name\": \"Loblaws King West\",\n    \"store_id\": 1,\n    \"chain\": \"Loblaws\"\n  },\n  {\n    \"deal_id\": 11,\n    \"product_name\": \"Rice Basmati\",\n    \"sale_price\": 4.99,\n    \"regular_price\": 7.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 171,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 14,\n    \"product_name\": \"Cheese Cheddar\",\n    \"sale_price\": 5.49,\n    \"regular_price\": 7.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 157,\n    \"store_name\": \"Metro Front Street\",\n    \"store_id\": 2,\n    \"chain\": \"Metro\"\n  },\n  {\n    \"deal_id\": 26,\n    \"product_name\": \"Olive Oil Extra Virgin\",\n    \"sale_price\": 7.99,\n    \"regular_price\": 11.99,\n    \"discount_percentage\": null,\n    \"source\": \"seed\",\n    \"product_id\": 146,\n    \"store_name\": \"Sobeys Wellesley\",\n    \"store_id\": 4,\n    \"chain\": \"Sobeys\"\n  }\n]\n\n**User Requirements:**\n- Budget: $80.0\n- Household Size: 2 people\n- Number of Meals: 3\n- Dietary Restrictions: vegetarian\n- Preferences: {}\n\n**Optimization Strategy:**\n1. Maximize ingredient reuse across groups (prefer ingredients that appear in multiple groups)\n2. Balance cost across all 3 groups\n3. Ensure each group has complementary ingredients (protein + starch + vegetables)\n4. Respect dietary restrictions strictly\n5. Each group should support 2-3 meal recipes\n\n**Output Format (JSON):**\n{\n  \"ingredient_groups\": [\n    [\n      {\"product_name\": \"...\", \"quantity_estimate\": \"...\", \"deal_id\": \"...\"},\n      ...\n    ],\n    [...],\n    [...]\n  ],\n  \"ingredient_reuse_map\": {\"ingredient_name\": reuse_count, ...},\n  \"rationale\": \"Explanation of grouping strategy\"\n}\n\nGenerate the 3 ingredient groups now:",
+      "type": "human"
+     }
+    ]
+   },
+   "request_sha256": "64af35e701049ef7f63585506c3bc1d4d3a2a8b4c58a4b46418d6b8af5f464e5",
+   "response": {
+    "content": "{\"ingredient_groups\": [[{\"product_name\": \"Bananas\", \"quantity_estimate\": \"1\", \"deal_id\": 15}, {\"product_name\": \"Pasta Penne\", \"quantity_estimate\": \"1\", \"deal_id\": 3}], [{\"product_name\": \"Canned Tomatoes\", \"quantity_estimate\": \"1\", \"deal_id\": 21}, {\"product_name\": \"Bell Peppers Red\", \"quantity_estimate\": \"1\", \"deal_id\": 12}], [{\"product_name\": \"Spaghetti\", \"quantity_estimate\": \"1\", \"deal_id\": 22}, {\"product_name\": \"Carrots\", \"quantity_estimate\": \"1\", \"deal_id\": 16}]], \"ingredient_reuse_map\": {}, \"rationale\": \"scripted\"}",
+    "response_metadata": {},
+    "usage": {
+     "input_tokens": 1760,
+     "output_tokens": 131,
+     "total_tokens": 1891
+    }
+   },
+   "role": "chef",
+   "seq": 0
+  },
+  {
+   "error": null,
+   "latency_s": 0.0004092839999429998,
+   "model": {
+    "class": "__main__.ConversationModel",
+    "model": "sous-script",
+    "params": {
+     "model": "scripted",
+     "usage": true
+    },
+    "provider": "scripted"
+   },
+   "occurrence": 0,
+   "request": {
+    "messages": [
+     {
+      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 15,\n    \"product_name\": \"Bananas\",\n    \"sale_price\": 0.69,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 3,\n    \"product_name\": \"Pasta Penne\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Step 1...\", \"Step 2...\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
+      "type": "human"
+     }
+    ]
+   },
+   "request_sha256": "d2982d1512f4bb1480c9cc9337ba76d75c759509ed3f84a48ea992586f4e558d",
+   "response": {
+    "content": "{\"recipes\": [{\"name\": \"Scripted 15+3\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Any\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"Bananas\", \"deal_id\": 15, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"Pasta Penne\", \"deal_id\": 3, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"All-Purpose Flour\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Cook it.\"]}]}",
+    "response_metadata": {},
+    "usage": {
+     "input_tokens": 718,
+     "output_tokens": 102,
+     "total_tokens": 820
+    }
+   },
+   "role": "sous_chef",
+   "seq": 1
+  },
+  {
+   "error": null,
+   "latency_s": 0.00017923799987329403,
+   "model": {
+    "class": "__main__.ConversationModel",
+    "model": "sous-script",
+    "params": {
+     "model": "scripted",
+     "usage": true
+    },
+    "provider": "scripted"
+   },
+   "occurrence": 0,
+   "request": {
+    "messages": [
+     {
+      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 21,\n    \"product_name\": \"Canned Tomatoes\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 12,\n    \"product_name\": \"Bell Peppers Red\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Step 1...\", \"Step 2...\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
+      "type": "human"
+     }
+    ]
+   },
+   "request_sha256": "027cb77c370e60982b4458830309af5b3da345508f5af72eb1dc3b0802588e56",
+   "response": {
+    "content": "Sure! Here is a recipe: (not JSON)",
+    "response_metadata": {},
+    "usage": {
+     "input_tokens": 721,
+     "output_tokens": 8,
+     "total_tokens": 729
+    }
+   },
+   "role": "sous_chef",
+   "seq": 2
+  },
+  {
+   "error": null,
+   "latency_s": 0.000171827000031044,
+   "model": {
+    "class": "__main__.ConversationModel",
+    "model": "sous-script",
+    "params": {
+     "model": "scripted",
+     "usage": true
+    },
+    "provider": "scripted"
+   },
+   "occurrence": 0,
+   "request": {
+    "messages": [
+     {
+      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 21,\n    \"product_name\": \"Canned Tomatoes\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 12,\n    \"product_name\": \"Bell Peppers Red\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Step 1...\", \"Step 2...\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
+      "type": "human"
+     },
+     {
+      "content": "Sure! Here is a recipe: (not JSON)",
+      "type": "ai"
+     },
+     {
+      "content": "Your previous response was invalid: not valid JSON (Expecting value: line 1 column 1 (char 0))\n\nRespond again with ONLY a valid JSON document matching the output format requested above. No prose, no markdown fences.",
+      "type": "human"
+     }
+    ]
+   },
+   "request_sha256": "67f9e3a075ec68ef0a862d9eea2729c82c3d3cbd33331429aaafdd4a67dd212e",
+   "response": {
+    "content": "{\"recipes\": [{\"name\": \"Scripted 21+12\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Any\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"Canned Tomatoes\", \"deal_id\": 21, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"Bell Peppers Red\", \"deal_id\": 12, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"All-Purpose Flour\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Cook it.\"]}]}",
+    "response_metadata": {},
+    "usage": {
+     "input_tokens": 783,
+     "output_tokens": 105,
+     "total_tokens": 888
+    }
+   },
+   "role": "sous_chef",
+   "seq": 3
+  },
+  {
+   "error": null,
+   "latency_s": 0.00015310800017687143,
+   "model": {
+    "class": "__main__.ConversationModel",
+    "model": "sous-script",
+    "params": {
+     "model": "scripted",
+     "usage": true
+    },
+    "provider": "scripted"
+   },
+   "occurrence": 0,
+   "request": {
+    "messages": [
+     {
+      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 22,\n    \"product_name\": \"Spaghetti\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 16,\n    \"product_name\": \"Carrots\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Step 1...\", \"Step 2...\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
+      "type": "human"
+     }
+    ]
+   },
+   "request_sha256": "96230685a301be35839ac9d8579862b5823991822f1ae892c4ca11cecf2b6213",
+   "response": {
+    "content": "Sure! Here is a recipe: (not JSON)",
+    "response_metadata": {},
+    "usage": {
+     "input_tokens": 717,
+     "output_tokens": 8,
+     "total_tokens": 725
+    }
+   },
+   "role": "sous_chef",
+   "seq": 4
+  },
+  {
+   "error": null,
+   "latency_s": 0.00015924799981803517,
+   "model": {
+    "class": "__main__.ConversationModel",
+    "model": "sous-script",
+    "params": {
+     "model": "scripted",
+     "usage": true
+    },
+    "provider": "scripted"
+   },
+   "occurrence": 0,
+   "request": {
+    "messages": [
+     {
+      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 22,\n    \"product_name\": \"Spaghetti\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 16,\n    \"product_name\": \"Carrots\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Step 1...\", \"Step 2...\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
+      "type": "human"
+     },
+     {
+      "content": "Sure! Here is a recipe: (not JSON)",
+      "type": "ai"
+     },
+     {
+      "content": "Your previous response was invalid: not valid JSON (Expecting value: line 1 column 1 (char 0))\n\nRespond again with ONLY a valid JSON document matching the output format requested above. No prose, no markdown fences.",
+      "type": "human"
+     }
+    ]
+   },
+   "request_sha256": "66024614f39138eccd660c82f5b02f715b1c9f21b74b46294baef3753ab77fff",
+   "response": {
+    "content": "{\"recipes\": [{\"name\": \"Scripted 22+16\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Any\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"Spaghetti\", \"deal_id\": 22, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"Carrots\", \"deal_id\": 16, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"All-Purpose Flour\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Cook it.\"]}]}",
+    "response_metadata": {},
+    "usage": {
+     "input_tokens": 780,
+     "output_tokens": 102,
+     "total_tokens": 882
+    }
+   },
+   "role": "sous_chef",
+   "seq": 5
+  },
+  {
+   "error": null,
+   "latency_s": 0.00022472700038633775,
+   "model": {
+    "class": "__main__.ConversationModel",
+    "model": "nutri-script",
+    "params": {
+     "model": "scripted",
+     "usage": false
+    },
+    "provider": "scripted"
+   },
+   "occurrence": 0,
+   "request": {
+    "messages": [
+     {
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"be54727c-c418-5a48-a572-28934d4c13b3\",\n  \"name\": \"Scripted 15+3\",\n  \"ingredients\": [\n    {\n      \"name\": \"Bananas\",\n      \"deal_id\": 15,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.69\n    },\n    {\n      \"name\": \"Pasta Penne\",\n      \"deal_id\": 3,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.18,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Validation Checklist:**\n1. **Allergen Safety:** Does this recipe contain any restricted allergens?\n2. **Dietary Compliance:** Does it meet all dietary restrictions (vegan, kosher, etc)?\n3. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n4. **Practical Cooking:** Are instructions clear and achievable?\n5. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "type": "human"
+     }
+    ]
+   },
+   "request_sha256": "e95c09e46e222d4fa4ba9b0c904103e77767f58228433d655c86e27d04b51a86",
+   "response": {
+    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 714}, \"health_score\": \"54\"}",
+    "response_metadata": {},
+    "usage": null
+   },
+   "role": "nutritionist",
+   "seq": 6
+  },
+  {
+   "error": null,
+   "latency_s": 0.0001333580003120005,
+   "model": {
+    "class": "__main__.ConversationModel",
+    "model": "nutri-script",
+    "params": {
+     "model": "scripted",
+     "usage": false
+    },
+    "provider": "scripted"
+   },
+   "occurrence": 0,
+   "request": {
+    "messages": [
+     {
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"d923f852-e710-5a65-a499-fda7813ef2a7\",\n  \"name\": \"Scripted 21+12\",\n  \"ingredients\": [\n    {\n      \"name\": \"Canned Tomatoes\",\n      \"deal_id\": 21,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Bell Peppers Red\",\n      \"deal_id\": 12,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Validation Checklist:**\n1. **Allergen Safety:** Does this recipe contain any restricted allergens?\n2. **Dietary Compliance:** Does it meet all dietary restrictions (vegan, kosher, etc)?\n3. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n4. **Practical Cooking:** Are instructions clear and achievable?\n5. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "type": "human"
+     }
+    ]
+   },
+   "request_sha256": "c6398680674f538e3c5208fde7cdb2cc66d9f817a952bdc76ddc7afb5b762a95",
+   "response": {
+    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 729}, \"health_score\": \"69\"}",
+    "response_metadata": {},
+    "usage": null
+   },
+   "role": "nutritionist",
+   "seq": 7
+  },
+  {
+   "error": null,
+   "latency_s": 0.00011258800032010186,
+   "model": {
+    "class": "__main__.ConversationModel",
+    "model": "nutri-script",
+    "params": {
+     "model": "scripted",
+     "usage": false
+    },
+    "provider": "scripted"
+   },
+   "occurrence": 0,
+   "request": {
+    "messages": [
+     {
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"98ccce74-7dd4-5e92-8506-0a52c6bc3142\",\n  \"name\": \"Scripted 22+16\",\n  \"ingredients\": [\n    {\n      \"name\": \"Spaghetti\",\n      \"deal_id\": 22,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Carrots\",\n      \"deal_id\": 16,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Validation Checklist:**\n1. **Allergen Safety:** Does this recipe contain any restricted allergens?\n2. **Dietary Compliance:** Does it meet all dietary restrictions (vegan, kosher, etc)?\n3. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n4. **Practical Cooking:** Are instructions clear and achievable?\n5. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "type": "human"
+     }
+    ]
+   },
+   "request_sha256": "8218e55882989f0d70284b0a880ed26f8c11b65b2edce40cd6113d0c5fea748f",
+   "response": {
+    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 714}, \"health_score\": \"54\"}",
+    "response_metadata": {},
+    "usage": null
+   },
+   "role": "nutritionist",
+   "seq": 8
+  }
+ ],
+ "progress": [
+  "initialize_chef",
+  "load_recipe_catalog",
+  "plan_ingredient_groups",
+  "sous_chef_generate",
+  "sous_chef_generate",
+  "sous_chef_generate",
+  "aggregate_recipes",
+  "nutritionist_validate",
+  "finalize_meal_plan"
+ ],
+ "replayed_from": null,
+ "scenario": {
+  "llm": {
+   "chef": {
+    "model": "chef-script",
+    "provider": "scripted"
+   },
+   "nutritionist": {
+    "model": "nutri-script",
+    "provider": "scripted"
+   },
+   "sous_chef": {
+    "model": "sous-script",
+    "provider": "scripted"
+   }
+  },
+  "name": "seed27-vegetarian",
+  "notes": "Replay fixture: recorded with the scripted models in app/tests/test_eval_runner.py, not a live LLM.",
+  "snapshot": "seed27",
+  "user": {
+   "budget": 80.0,
+   "budget_period": "weekly",
+   "budget_spent_this_period": 0.0,
+   "dietary_restrictions": [
+    "vegetarian"
+   ],
+   "household_size": 2,
+   "num_meals": 3,
+   "postal_code": "M5V3A8",
+   "preferences": {},
+   "user_id": 1
+  }
+ },
+ "snapshot": {
+  "as_of": "2026-07-15",
+  "captured_at": "2026-10-29T20:37:14.173828+00:00",
+  "content_sha256": "ca9c337e65cef25de7551a7a8090d27a269b454fcc74cf396e132e41d74ad2e9",
+  "format_version": 1,
+  "name": "seed27"
+ },
+ "state_notes": [],
+ "timing": {
+  "llm_seconds": 0.0018900730005952937,
+  "started_at": "2026-10-29T20:54:59+00:00",
+  "wall_seconds": 0.018211633000191796
+ },
+ "tracker_calls": [
+  "start_run",
+  "log_agent_call",
+  "log_ingredient_groups",
+  "log_agent_call",
+  "log_agent_call",
+  "log_agent_call",
+  "log_validation_results",
+  "log_final_metrics",
+  "finalize_run"
+ ]
+}
