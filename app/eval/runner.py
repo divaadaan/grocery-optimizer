@@ -125,6 +125,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 VOLATILE_STATE_PATHS: Tuple[Tuple[str, ...], ...] = (
     ("agent_call_log", "*", "timestamp"),
     ("agent_call_log", "*", "duration"),
+    # A fresh uuid4 per run_recipe_generation call, by design.
+    ("generation_id",),
+    # Provenance restates the artifact's own top-level ``llm`` / ``snapshot``
+    # (which replay already checks); artifacts recorded before it existed lack it.
+    ("provenance",),
 )
 
 
@@ -352,14 +357,20 @@ class _Execution:
     wall_seconds: float
 
 
-def _execute(scenario: Scenario, snapshot: Snapshot, llms: Dict[str, Any]) -> _Execution:
+def _execute(scenario: Scenario, snapshot: Snapshot, llms: Dict[str, Any],
+             models: Optional[Dict[str, Dict[str, Any]]] = None) -> _Execution:
     from app import main_recipe_generation
 
     tracker = NullTracker()
     deps = snapshot.graph_deps(
         chef_llm=llms["chef"], sous_chef_llm=llms["sous_chef"],
         nutritionist_llm=llms["nutritionist"], tracker=tracker,
-        recipe_ids=ContentRecipeIds())
+        recipe_ids=ContentRecipeIds(),
+        # Provenance a persisted plan would carry: the models actually used
+        # and this snapshot's identity (production has snapshot=None).
+        models={role: {"provider": (m or {}).get("provider"), "model": (m or {}).get("model")}
+                for role, m in (models or {}).items()},
+        snapshot=snapshot_identity(snapshot))
     progress: List[str] = []
     started_at = _utc_now()
     t0 = time.perf_counter()
@@ -459,8 +470,8 @@ def record(scenario: Scenario, llm_factory: LLMFactory = default_llm_factory,
         provider, model = _resolved_model(role, spec)
         wrapped[role] = RecordingLLM(llm_factory(role, spec), role, log,
                                      provider=provider, model=model)
-    run = _execute(scenario, snapshot, wrapped)
     llm = {role: wrapped[role].identity for role in ROLES}
+    run = _execute(scenario, snapshot, wrapped, models=llm)
     return validate_artifact(_artifact("record", scenario, snapshot, llm, log.calls, run))
 
 
@@ -497,7 +508,8 @@ def replay(artifact: Dict[str, Any] | Path | str, strict: bool = True) -> Replay
             f"{now['content_sha256'][:12]}... now); re-record rather than replay")
 
     log = ReplayLog(recorded["llm_calls"], strict=strict)
-    run = _execute(scenario, snapshot, {role: ReplayLLM(role, log) for role in ROLES})
+    run = _execute(scenario, snapshot, {role: ReplayLLM(role, log) for role in ROLES},
+                   models=recorded["llm"])
     log.check()
     served = [dict(copy.deepcopy(e), seq=i) for i, e in enumerate(log.served)]
     replayed = validate_artifact(_artifact(

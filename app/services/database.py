@@ -1,16 +1,41 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Dict, Optional
+from typing import Any, List, Dict, Optional
 import json
+import uuid
 
 # Import the connection pool from db module
 from app.db import db
 from app.services.deal_gate import deal_filter
 
 
+def _plain(value: Any) -> Any:
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, uuid.UUID):
+        return str(value)
+    return value
+
+
 def _jsonable(row: Dict) -> Dict:
-    """Convert DB row values json.dumps chokes on (Decimal) to plain floats."""
-    return {k: float(v) if isinstance(v, Decimal) else v for k, v in row.items()}
+    """Convert DB row values json.dumps chokes on to plain JSON types:
+    Decimal -> float, UUID (generation_id) -> str."""
+    return {k: _plain(v) for k, v in row.items()}
+
+
+# Columns every recipe read returns (RecipeInfo is built from these).
+_RECIPE_COLUMNS = """
+    recipe_id, user_id, name, ingredients, instructions,
+    total_cost, servings, prep_time, cook_time, cuisine_type,
+    meal_type, nutritional_info, allergen_info, health_score,
+    generation_id, created_at
+"""
+
+_SHOPPING_LIST_COLUMNS = """
+    list_id, user_id, recipe_ids, items, total_cost,
+    estimated_savings, regular_total, created_at, is_completed,
+    completed_at, generation_id
+"""
 
 
 class DatabaseService:
@@ -88,30 +113,92 @@ class DatabaseService:
             results = cursor.fetchall()
             return [_jsonable(dict(row)) for row in results]
 
-    def save_recipes(self, user_id: int, recipes: List[Dict]) -> List[int]:
+    def save_recipes(self, user_id: int, recipes: List[Dict],
+                     generation: Optional[Dict[str, Any]] = None) -> List[int]:
         """
-        Save generated recipes to database.
+        Save one generation's recipes, with its provenance, in one transaction.
 
-        Returns list of recipe_ids.
+        ``generation`` (``graph.finalize_meal_plan`` builds it) becomes the
+        ``recipe_generations`` row and its ``generation_id`` is stamped on
+        every recipe (migration 022). ``None`` saves the recipes unlinked, as
+        before 022 -- no production path does that.
+
+        Each recipe keeps everything the graph produced: ingredients with
+        their ``deal_id`` / ``product_id`` citations exactly as generated
+        (JSONB), meal_type, cuisine_type, prep time, and the Nutritionist's
+        advisory ``nutrition_facts`` / ``health_score`` and its
+        ``dietary_compliance`` verdict (stored in ``allergen_info``).
+
+        Returns list of recipe_ids, in input order.
         """
+        generation_id = (generation or {}).get("generation_id")
+
+        generation_query = """
+        INSERT INTO recipe_generations (
+            generation_id, user_id, status, num_meals_requested,
+            num_recipes_saved, dietary_restrictions, budget, budget_period,
+            budget_spent_this_period, household_size, postal_code,
+            preferences, models, snapshot, mlflow_run_id, total_cost,
+            estimated_savings, created_at
+        ) VALUES (
+            %(generation_id)s, %(user_id)s, %(status)s, %(num_meals_requested)s,
+            %(num_recipes_saved)s, %(dietary_restrictions)s, %(budget)s,
+            %(budget_period)s, %(budget_spent_this_period)s, %(household_size)s,
+            %(postal_code)s, %(preferences)s, %(models)s, %(snapshot)s,
+            %(mlflow_run_id)s, %(total_cost)s, %(estimated_savings)s, NOW()
+        );
+        """
+
         query = """
         INSERT INTO recipes (
             user_id, name, ingredients, instructions,
-            total_cost, servings, created_at
-        ) VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            total_cost, servings, prep_time, cuisine_type, meal_type,
+            nutritional_info, allergen_info, health_score, generation_id,
+            created_at
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
         RETURNING recipe_id;
         """
 
+        def _json_or_none(value):
+            return None if value is None else json.dumps(value)
+
         recipe_ids = []
         with self.db.get_cursor() as cursor:
+            if generation_id is not None:
+                cursor.execute(generation_query, {
+                    "generation_id": generation_id,
+                    "user_id": user_id,
+                    "status": generation.get("status") or "completed",
+                    "num_meals_requested": generation.get("num_meals_requested", len(recipes)),
+                    "num_recipes_saved": len(recipes),
+                    "dietary_restrictions": list(generation.get("dietary_restrictions") or []),
+                    "budget": generation.get("budget"),
+                    "budget_period": generation.get("budget_period"),
+                    "budget_spent_this_period": generation.get("budget_spent_this_period"),
+                    "household_size": generation.get("household_size"),
+                    "postal_code": generation.get("postal_code"),
+                    "preferences": json.dumps(generation.get("preferences") or {}),
+                    "models": json.dumps(generation.get("models") or {}),
+                    "snapshot": _json_or_none(generation.get("snapshot")),
+                    "mlflow_run_id": generation.get("mlflow_run_id") or None,
+                    "total_cost": generation.get("total_cost"),
+                    "estimated_savings": generation.get("estimated_savings"),
+                })
             for recipe in recipes:
                 cursor.execute(query, (
                     user_id,
                     recipe['name'],
-                    json.dumps(recipe['ingredients']),  # JSONB
+                    json.dumps(recipe['ingredients']),  # JSONB, citations intact
                     recipe['instructions'],  # TEXT[]
                     recipe['total_cost'],
-                    recipe['servings']
+                    recipe['servings'],
+                    recipe.get('estimated_prep_time'),
+                    recipe.get('cuisine_type'),
+                    recipe.get('meal_type'),
+                    _json_or_none(recipe.get('nutrition_facts')),
+                    _json_or_none(recipe.get('dietary_compliance')),
+                    recipe.get('health_score'),
+                    generation_id,
                 ))
                 recipe_id = cursor.fetchone()["recipe_id"]
                 recipe_ids.append(recipe_id)
@@ -122,10 +209,8 @@ class DatabaseService:
         """
         Fetch a single recipe by id.
         """
-        query = """
-        SELECT recipe_id, user_id, name, ingredients, instructions,
-               total_cost, servings, prep_time, cook_time, cuisine_type,
-               meal_type, nutritional_info, allergen_info, created_at
+        query = f"""
+        SELECT {_RECIPE_COLUMNS}
         FROM recipes
         WHERE recipe_id = %s;
         """
@@ -135,24 +220,59 @@ class DatabaseService:
             result = cursor.fetchone()
             return _jsonable(dict(result)) if result else None
 
-    def get_user_recipes(self, user_id: int, limit: int = 10) -> List[Dict]:
+    def get_user_recipes(self, user_id: int, limit: int = 10,
+                         generation_id: Optional[str] = None) -> List[Dict]:
         """
         Fetch a user's recipes, most-recent first.
+
+        ``generation_id`` narrows to that one generation (still scoped to the
+        user, so another user's generation returns nothing).
         """
-        query = """
-        SELECT recipe_id, user_id, name, ingredients, instructions,
-               total_cost, servings, prep_time, cook_time, cuisine_type,
-               meal_type, nutritional_info, allergen_info, created_at
+        params: List[Any] = [user_id]
+        where = "WHERE user_id = %s"
+        if generation_id is not None:
+            where += " AND generation_id = %s"
+            params.append(generation_id)
+        params.append(limit)
+        query = f"""
+        SELECT {_RECIPE_COLUMNS}
         FROM recipes
-        WHERE user_id = %s
-        ORDER BY created_at DESC
+        {where}
+        ORDER BY created_at DESC, recipe_id DESC
         LIMIT %s;
         """
 
         with self.db.get_cursor() as cursor:
-            cursor.execute(query, (user_id, limit))
+            cursor.execute(query, tuple(params))
             results = cursor.fetchall()
             return [_jsonable(dict(row)) for row in results]
+
+    def get_latest_generation_id(self, user_id: int) -> Optional[str]:
+        """The user's most recent persisted generation, or None if they have
+        none (no plan yet, or only recipes saved before migration 022)."""
+        query = """
+        SELECT generation_id
+        FROM recipe_generations
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+        LIMIT 1;
+        """
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, (user_id,))
+            row = cursor.fetchone()
+            return _plain(row["generation_id"]) if row else None
+
+    def get_generation_recipes(self, user_id: int, generation_id: str) -> List[Dict]:
+        """Every recipe of one of the user's generations, in save order."""
+        query = f"""
+        SELECT {_RECIPE_COLUMNS}
+        FROM recipes
+        WHERE user_id = %s AND generation_id = %s
+        ORDER BY recipe_id;
+        """
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, (user_id, generation_id))
+            return [_jsonable(dict(row)) for row in cursor.fetchall()]
 
     def save_shopping_list(
         self,
@@ -161,18 +281,21 @@ class DatabaseService:
         items: List[Dict],
         total_cost: float,
         estimated_savings: Optional[float],
-        regular_total: Optional[float]
+        regular_total: Optional[float],
+        generation_id: Optional[str] = None,
     ) -> int:
         """
         Save a consolidated shopping list to the database.
+
+        ``generation_id`` is the generation the list was built from.
 
         Returns the new list_id.
         """
         query = """
         INSERT INTO shopping_lists (
             user_id, recipe_ids, items, total_cost,
-            estimated_savings, regular_total, created_at
-        ) VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            estimated_savings, regular_total, generation_id, created_at
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
         RETURNING list_id;
         """
 
@@ -183,26 +306,32 @@ class DatabaseService:
                 json.dumps(items),  # JSONB
                 total_cost,
                 estimated_savings,
-                regular_total
+                regular_total,
+                generation_id,
             ))
             return cursor.fetchone()["list_id"]
 
-    def get_latest_shopping_list(self, user_id: int) -> Optional[Dict]:
+    def get_latest_shopping_list(self, user_id: int,
+                                 generation_id: Optional[str] = None) -> Optional[Dict]:
         """
-        Fetch the most recent shopping list for a user.
+        Fetch the most recent shopping list for a user -- of one generation
+        when ``generation_id`` is given.
         """
-        query = """
-        SELECT list_id, user_id, recipe_ids, items, total_cost,
-               estimated_savings, regular_total, created_at, is_completed,
-               completed_at
+        params: List[Any] = [user_id]
+        where = "WHERE user_id = %s"
+        if generation_id is not None:
+            where += " AND generation_id = %s"
+            params.append(generation_id)
+        query = f"""
+        SELECT {_SHOPPING_LIST_COLUMNS}
         FROM shopping_lists
-        WHERE user_id = %s
-        ORDER BY created_at DESC
+        {where}
+        ORDER BY created_at DESC, list_id DESC
         LIMIT 1;
         """
 
         with self.db.get_cursor() as cursor:
-            cursor.execute(query, (user_id,))
+            cursor.execute(query, tuple(params))
             result = cursor.fetchone()
             return _jsonable(dict(result)) if result else None
 

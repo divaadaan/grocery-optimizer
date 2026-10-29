@@ -160,6 +160,9 @@ class RecipeInfo(BaseModel):
     nutrition_facts: Optional[Dict[str, Any]]
     health_score: Optional[Decimal]
     created_at: datetime
+    # The generation (meal plan) this recipe belongs to; null for recipes
+    # saved before generations were recorded (migration 022).
+    generation_id: Optional[str] = None
 
 
 class RecipeGenerationRequest(BaseModel):
@@ -192,6 +195,9 @@ class RecipeGenerationResponse(BaseModel):
     generation_time: float
     status: str
     warnings: List[str] = Field(default_factory=list)
+    # Identifies this meal plan; pass it to the shopping-list endpoints to
+    # build the list from exactly these recipes.
+    generation_id: Optional[str] = None
 
 
 class RecipeGenerationJobCreated(BaseModel):
@@ -270,6 +276,9 @@ class ShoppingListResponse(BaseModel):
     # accumulation. None until then. Optional so existing clients that never
     # sent or read it keep working.
     completed_at: Optional[datetime] = None
+    # The generation the list was built from; null for lists built before
+    # generations were recorded (those spanned several meal plans).
+    generation_id: Optional[str] = None
 
 
 # ============================================================================

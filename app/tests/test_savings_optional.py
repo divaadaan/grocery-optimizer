@@ -31,7 +31,8 @@ async def test_shopping_list_without_regular_prices_has_null_savings(client, mon
 
     monkeypatch.setattr(route.UserService, "get_user_by_id",
                         staticmethod(lambda uid: {"postal_code": "M5V3A8"}))
-    monkeypatch.setattr(route.db_service, "get_user_recipes", lambda uid: [{
+    monkeypatch.setattr(route.db_service, "get_latest_generation_id", lambda uid: "gen-1")
+    monkeypatch.setattr(route.db_service, "get_generation_recipes", lambda uid, gid: [{
         "recipe_id": 5,
         "ingredients": [{"name": "penne", "deal_id": 1},
                         {"name": "salt", "product_id": 9},
@@ -61,7 +62,9 @@ async def test_shopping_list_without_regular_prices_has_null_savings(client, mon
 async def test_stored_list_with_null_savings_round_trips(client, monkeypatch):
     monkeypatch.setattr(route.UserService, "get_user_by_id",
                         staticmethod(lambda uid: {"postal_code": "M5V3A8"}))
-    monkeypatch.setattr(route.db_service, "get_latest_shopping_list", lambda uid: {
+    monkeypatch.setattr(route.db_service, "get_latest_generation_id", lambda uid: "gen-1")
+    monkeypatch.setattr(route.db_service, "get_latest_shopping_list",
+                        lambda uid, generation_id=None: {
         "list_id": 1, "user_id": 7, "recipe_ids": [5], "items": [],
         "total_cost": 0, "estimated_savings": None, "created_at": "2026-01-01T00:00:00",
         "is_completed": False,

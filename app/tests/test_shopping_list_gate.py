@@ -22,8 +22,8 @@ def test_build_passes_the_users_restrictions_to_the_deal_read(monkeypatch):
         return SimpleNamespace(items=[], total_cost=0.0, estimated_savings=0.0,
                                stores=[])
 
-    monkeypatch.setattr(route.db_service, "get_user_recipes",
-                        lambda user_id: [{"recipe_id": 5}])
+    monkeypatch.setattr(route.db_service, "get_generation_recipes",
+                        lambda user_id, generation_id: [{"recipe_id": 5}])
     monkeypatch.setattr(route.db_service, "save_shopping_list",
                         lambda **kw: 42)
     monkeypatch.setattr(route.StoreService, "get_current_deals_by_postal_code",
@@ -31,7 +31,7 @@ def test_build_passes_the_users_restrictions_to_the_deal_read(monkeypatch):
     monkeypatch.setattr(route, "optimize_shopping_list", fake_optimize)
 
     user = {"postal_code": "M5V3A8", "dietary_restrictions": ["vegan"]}
-    response = route._build_and_persist(7, user)
+    response = route._build_and_persist(7, user, "gen-1")
 
     assert reads == [("M5V3A8", ["vegan"])]
     # Whatever the gated read returned is used as-is: no second, name-based

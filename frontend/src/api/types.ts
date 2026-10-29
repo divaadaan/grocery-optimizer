@@ -100,6 +100,8 @@ export interface RecipeInfo {
   nutrition_facts: Record<string, unknown> | null;
   health_score: Money | null;
   created_at: string;
+  /** The meal plan (generation) this recipe belongs to; null for legacy rows. */
+  generation_id?: string | null;
 }
 
 export interface RecipeGenerationPreferences {
@@ -122,6 +124,8 @@ export interface RecipeGenerationResponse {
   generation_time: number;
   status: string;
   warnings: string[];
+  /** Identifies this meal plan; the shopping list is built per generation. */
+  generation_id?: string | null;
 }
 
 /** Generation is a background job: POST /recipes/generate returns this. */
@@ -179,6 +183,8 @@ export interface ShoppingListResponse {
   stores: string[];
   created_at: string;
   is_completed: boolean;
+  /** The generation the list was built from; null for legacy lists. */
+  generation_id?: string | null;
 }
 
 // ---------------------------------------------------------------------------

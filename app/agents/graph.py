@@ -251,6 +251,45 @@ def retry_generation(state: RecipeGenerationState,
     }
 
 
+def _persistable(state: RecipeGenerationState, recipe_id: str) -> dict:
+    """An approved recipe as the store persists it: the generated recipe
+    (citations untouched) plus the Nutritionist's advisory nutrition facts,
+    health score and compliance verdict, which live in validation_results.
+    A copy — state's recipe is not modified."""
+    validation = (state.get("validation_results") or {}).get(recipe_id) or {}
+    return {
+        **state["generated_recipes"][recipe_id],
+        "nutrition_facts": validation.get("nutrition_facts"),
+        "health_score": validation.get("health_score"),
+        "dietary_compliance": validation.get("dietary_compliance"),
+    }
+
+
+def _generation_record(state: RecipeGenerationState, num_saved: int,
+                       total_cost: float, estimated_savings: Optional[float]) -> dict:
+    """Provenance of this generation (the ``recipe_generations`` row): what
+    the plan was generated against and by what, enough to re-score it."""
+    provenance = state.get("provenance") or {}
+    return {
+        "generation_id": state.get("generation_id"),
+        "status": "completed" if num_saved >= state["num_meals"] else "partial",
+        "num_meals_requested": state["num_meals"],
+        "num_recipes_saved": num_saved,
+        "dietary_restrictions": list(state["dietary_restrictions"]),
+        "budget": state["budget"],
+        "budget_period": state.get("budget_period"),
+        "budget_spent_this_period": state.get("budget_spent_this_period"),
+        "household_size": state["household_size"],
+        "postal_code": state["postal_code"],
+        "preferences": state.get("preferences") or {},
+        "models": provenance.get("models") or {},
+        "snapshot": provenance.get("snapshot"),
+        "mlflow_run_id": state.get("mlflow_run_id") or None,
+        "total_cost": total_cost,
+        "estimated_savings": estimated_savings,
+    }
+
+
 def finalize_meal_plan(state: RecipeGenerationState, recipe_store=None,
                        tracker=MLflowLogger) -> dict:
     """
@@ -269,16 +308,22 @@ def finalize_meal_plan(state: RecipeGenerationState, recipe_store=None,
         for rid in state["approved_recipe_ids"]
     ]
 
-    # Save to database
-    recipe_ids = recipe_store.save_recipes(state["user_id"], approved_recipes)
-
-    print(f"[Orchestrator] Saved {len(recipe_ids)} recipes to database")
-
     # Final metrics cover the *approved* meal plan only — aggregate's interim
     # numbers include recipes that were later rejected or regenerated
     total_cost = sum(r["total_cost"] for r in approved_recipes)
     estimated_savings = _savings(state, approved_recipes)
     num_approved = len(approved_recipes)
+
+    # Save to database: the recipes plus their generation's provenance, so a
+    # persisted plan can be re-scored later (migration 022)
+    recipe_ids = recipe_store.save_recipes(
+        state["user_id"],
+        [_persistable(state, rid) for rid in state["approved_recipe_ids"]],
+        generation=_generation_record(state, num_approved, total_cost,
+                                      estimated_savings),
+    )
+
+    print(f"[Orchestrator] Saved {len(recipe_ids)} recipes to database")
 
     # Log final metrics to MLflow
     tracker.log_final_metrics(

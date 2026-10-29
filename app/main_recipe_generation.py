@@ -1,4 +1,5 @@
 import logging
+import uuid
 from typing import Callable, Optional
 
 from app.agents.deps import GraphDeps
@@ -6,6 +7,7 @@ from app.agents.graph import create_recipe_generation_graph
 from app.agents.state import RecipeGenerationState
 from app.services import products
 from app.services.budget import DEFAULT_PERIOD
+from app.services.mlflow_logger import generation_scope
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,7 @@ def run_recipe_generation(
     budget_period: str = DEFAULT_PERIOD,
     budget_spent_this_period: float = 0.0,
     graph_deps: Optional[GraphDeps] = None,
+    generation_id: Optional[str] = None,
 ):
     """
     Main entry point for recipe generation workflow.
@@ -47,12 +50,22 @@ def run_recipe_generation(
     `graph_deps` overrides the graph's external dependencies (LLMs, DB reads,
     the recipe store, MLflow — `app/agents/deps.py`); `None` is production.
 
+    `generation_id` identifies this one call: the persisted
+    `recipe_generations` row, its recipes, the MLflow run and the shopping
+    list built from it all carry it. `None` mints a fresh uuid4 (the normal
+    case); it is returned in the final state's `generation_id`.
+
     Raises `products.UnsupportedRestrictionError` before any work when a
     restriction label is not one the app enforces (e.g. a stored profile from
     before the API refused `halal`): generating "compliant" recipes for a
     restriction nothing checks would be a false promise.
     """
     products.require_supported_restrictions(dietary_restrictions)
+
+    if graph_deps is None:
+        graph_deps = GraphDeps()
+    if generation_id is None:
+        generation_id = str(uuid.uuid4())
 
     # Initialize state
     initial_state = RecipeGenerationState(
@@ -84,6 +97,8 @@ def run_recipe_generation(
         cost_per_meal=0.0,
         estimated_savings=None,
         budget_remaining=budget - budget_spent_this_period,
+        generation_id=generation_id,
+        provenance={"models": graph_deps.models, "snapshot": graph_deps.snapshot},
         mlflow_run_id="",
         agent_call_log=[],
         status="initializing",
@@ -102,16 +117,21 @@ def run_recipe_generation(
     # "values" yields the full state after each superstep (the last one is
     # what invoke() would have returned); "updates" yields {node: writes}
     # per finished task, which is where progress comes from.
+    #
+    # generation_scope binds this generation's MLflow run to the context the
+    # graph copies into every task, so the parallel SousChefs log into the
+    # same run instead of each starting an orphan (app/services/mlflow_logger.py).
     final_state = None
-    for mode, chunk in graph.stream(initial_state, stream_mode=["updates", "values"]):
-        if mode == "values":
-            final_state = chunk
-        elif progress_callback is not None:
-            for node_name in chunk:
-                try:
-                    progress_callback(node_name)
-                except Exception as exc:
-                    logger.warning("progress_callback failed for %s: %s", node_name, exc)
+    with generation_scope(generation_id):
+        for mode, chunk in graph.stream(initial_state, stream_mode=["updates", "values"]):
+            if mode == "values":
+                final_state = chunk
+            elif progress_callback is not None:
+                for node_name in chunk:
+                    try:
+                        progress_callback(node_name)
+                    except Exception as exc:
+                        logger.warning("progress_callback failed for %s: %s", node_name, exc)
 
     if final_state is None:
         raise RuntimeError("Recipe generation graph produced no state")

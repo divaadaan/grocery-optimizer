@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 import logging
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 from app.models.schemas import (
     ShoppingListResponse,
@@ -23,17 +24,50 @@ router = APIRouter(prefix="/shopping-list", tags=["shopping-lists"])
 db_service = DatabaseService()
 
 
-def _build_and_persist(user_id: int, user: dict) -> ShoppingListResponse:
-    """Build a fresh shopping list from the user's current recipes and persist it.
+def _resolve_generation(user_id: int, generation_id: Optional[UUID]) -> str:
+    """The generation a list is built from: the one asked for, else the
+    user's latest. 404 when the user has no generation at all."""
+    if generation_id is not None:
+        return str(generation_id)
+    latest = db_service.get_latest_generation_id(user_id)
+    if latest is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No meal plan found for this user. Generate a meal plan first."
+        )
+    return latest
 
-    Raises 404 if the user has no recipes yet. Shared by GET's lazy
-    first-time path and the explicit POST /generate action.
+
+def _stored_list_response(stored: dict) -> ShoppingListResponse:
+    return ShoppingListResponse(
+        list_id=stored["list_id"],
+        user_id=stored["user_id"],
+        recipe_ids=stored["recipe_ids"],
+        items=stored["items"],
+        total_cost=stored["total_cost"],
+        estimated_savings=stored["estimated_savings"],
+        stores=stores_from_items(stored["items"]),
+        created_at=stored["created_at"],
+        is_completed=stored["is_completed"],
+        completed_at=stored.get("completed_at"),
+        generation_id=stored.get("generation_id"),
+    )
+
+
+def _build_and_persist(user_id: int, user: dict, generation_id: str) -> ShoppingListResponse:
+    """Build a fresh shopping list from ONE generation's recipes and persist it.
+
+    A list is one meal plan: it used to be built from the user's last 10
+    recipes, which mixed plans whenever a generation was smaller than 10 or
+    the user had generated twice. Raises 404 if that generation has no
+    recipes for this user (unknown, or someone else's). Shared by GET's lazy
+    path and the explicit POST /generate action.
     """
-    recipes = db_service.get_user_recipes(user_id)
+    recipes = db_service.get_generation_recipes(user_id, generation_id)
     if not recipes:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No recipes found for this user. Generate a meal plan first."
+            detail=f"No recipes found for meal plan {generation_id} of this user."
         )
 
     # DIETARY GATE (app/services/deal_gate.py). The optimizer resolves each
@@ -59,7 +93,8 @@ def _build_and_persist(user_id: int, user: dict) -> ShoppingListResponse:
         items=result.items,
         total_cost=result.total_cost,
         estimated_savings=result.estimated_savings,
-        regular_total=regular_total
+        regular_total=regular_total,
+        generation_id=generation_id,
     )
 
     return ShoppingListResponse(
@@ -71,8 +106,17 @@ def _build_and_persist(user_id: int, user: dict) -> ShoppingListResponse:
         estimated_savings=result.estimated_savings,
         stores=result.stores,
         created_at=datetime.now(),
-        is_completed=False
+        is_completed=False,
+        generation_id=generation_id,
     )
+
+
+_GENERATION_QUERY = Query(
+    None,
+    description="The meal plan (generation) to build the list from, as "
+                "returned in the recipe-generation result. Omit for the "
+                "user's latest generation.",
+)
 
 
 @router.get("/{user_id}",
@@ -81,22 +125,26 @@ def _build_and_persist(user_id: int, user: dict) -> ShoppingListResponse:
                 404: {"model": ErrorResponse, "description": "Shopping list not found"},
                 500: {"model": ErrorResponse, "description": "Internal server error"}
             })
-async def get_shopping_list(user_id: int) -> ShoppingListResponse:
+async def get_shopping_list(
+    user_id: int,
+    generation_id: Optional[UUID] = _GENERATION_QUERY,
+) -> ShoppingListResponse:
     """
-    Get the most recent shopping list for a user.
+    Get the shopping list for one of the user's meal plans.
 
-    Returns the user's latest persisted shopping list, building one only
-    if they don't have one yet (lazy first-time generation). Does NOT
-    write a new row on repeat calls — use POST /{user_id}/generate to
+    The list belongs to one generation: `generation_id` if given, otherwise
+    the user's latest generation. Returns the latest persisted list for that
+    generation, building (and persisting) one only if it has none yet. Does
+    NOT write a new row on repeat calls — use POST /{user_id}/generate to
     explicitly regenerate.
 
     - **user_id**: User ID
+    - **generation_id** (query, optional): the meal plan
 
     **Includes:**
-    - Consolidated ingredients across all recipes
-    - Store assignments for each item (best price)
+    - Consolidated ingredients across that plan's recipes
+    - Store assignments for each item (the cited deal's store)
     - Total cost and estimated savings
-    - Shopping route optimization (future)
     """
     try:
         logger.info(f"Fetching shopping list for user {user_id}")
@@ -108,22 +156,27 @@ async def get_shopping_list(user_id: int) -> ShoppingListResponse:
                 detail=f"User with ID {user_id} not found"
             )
 
-        latest = db_service.get_latest_shopping_list(user_id)
-        if latest is not None:
-            return ShoppingListResponse(
-                list_id=latest["list_id"],
-                user_id=latest["user_id"],
-                recipe_ids=latest["recipe_ids"],
-                items=latest["items"],
-                total_cost=latest["total_cost"],
-                estimated_savings=latest["estimated_savings"],
-                stores=stores_from_items(latest["items"]),
-                created_at=latest["created_at"],
-                is_completed=latest["is_completed"],
-                completed_at=latest.get("completed_at"),
-            )
+        if generation_id is None:
+            latest_generation = db_service.get_latest_generation_id(user_id)
+            if latest_generation is None:
+                # Nothing generated since generations were recorded: serve the
+                # user's last stored list (legacy, cross-plan) if there is one.
+                legacy = db_service.get_latest_shopping_list(user_id)
+                if legacy is not None:
+                    return _stored_list_response(legacy)
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="No meal plan found for this user. Generate a meal plan first."
+                )
+            target = latest_generation
+        else:
+            target = str(generation_id)
 
-        return _build_and_persist(user_id, user)
+        stored = db_service.get_latest_shopping_list(user_id, generation_id=target)
+        if stored is not None:
+            return _stored_list_response(stored)
+
+        return _build_and_persist(user_id, user, target)
 
     except HTTPException:
         raise
@@ -142,15 +195,20 @@ async def get_shopping_list(user_id: int) -> ShoppingListResponse:
                  404: {"model": ErrorResponse, "description": "Shopping list not found"},
                  500: {"model": ErrorResponse, "description": "Internal server error"}
              })
-async def generate_shopping_list(user_id: int) -> ShoppingListResponse:
+async def generate_shopping_list(
+    user_id: int,
+    generation_id: Optional[UUID] = _GENERATION_QUERY,
+) -> ShoppingListResponse:
     """
-    Regenerate the shopping list for a user from their current recipes.
+    Regenerate the shopping list for one of the user's meal plans.
 
-    Always builds a brand-new consolidated list and persists it as a new
-    row, regardless of whether a list already exists. This is the explicit
-    "regenerate my list" action.
+    Always builds a brand-new consolidated list from that generation's
+    recipes (`generation_id`, else the user's latest generation) and persists
+    it as a new row, regardless of whether a list already exists. This is the
+    explicit "regenerate my list" action.
 
     - **user_id**: User ID
+    - **generation_id** (query, optional): the meal plan
     """
     try:
         logger.info(f"Generating a new shopping list for user {user_id}")
@@ -162,7 +220,7 @@ async def generate_shopping_list(user_id: int) -> ShoppingListResponse:
                 detail=f"User with ID {user_id} not found"
             )
 
-        return _build_and_persist(user_id, user)
+        return _build_and_persist(user_id, user, _resolve_generation(user_id, generation_id))
 
     except HTTPException:
         raise

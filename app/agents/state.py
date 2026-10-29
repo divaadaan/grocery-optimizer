@@ -105,6 +105,15 @@ class RecipeGenerationState(TypedDict):
     estimated_savings: Optional[float]
     budget_remaining: float
 
+    # Generation identity + provenance, set once by run_recipe_generation.
+    # generation_id: one uuid4 per run_recipe_generation call; the persisted
+    #   recipe_generations row, its recipes, the MLflow run tag and the
+    #   shopping list all carry it.
+    # provenance: {"models": role -> {provider, model},
+    #              "snapshot": eval snapshot identity | None (production)}
+    generation_id: str
+    provenance: Dict
+
     # MLflow tracking — appended to by many nodes; nodes return only new entries
     mlflow_run_id: str
     agent_call_log: Annotated[List[Dict], operator.add]
