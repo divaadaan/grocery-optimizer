@@ -15,6 +15,7 @@ from app.models.schemas import (
     RecipeInfo,
     ErrorResponse
 )
+from app.services import products
 from app.services.budget import DEFAULT_PERIOD, budget_status
 from app.services.user_service import UserService
 from app.services.database import DatabaseService
@@ -191,6 +192,7 @@ def _job_status(job: RecipeJob) -> RecipeGenerationJobStatus:
              status_code=status.HTTP_202_ACCEPTED,
              responses={
                  404: {"model": ErrorResponse, "description": "User not found"},
+                 422: {"model": ErrorResponse, "description": "Profile carries an unsupported dietary restriction"},
                  500: {"model": ErrorResponse, "description": "Internal server error"}
              })
 async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGenerationJobCreated:
@@ -221,6 +223,17 @@ async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGeneration
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID {request.user_id} not found"
+            )
+
+        # A stored profile can predate the user API refusing unsupported
+        # labels. Refuse here, before a job exists, rather than generate
+        # recipes "approved" for a restriction nothing checks.
+        unsupported = products.unsupported_restrictions(user.get("dietary_restrictions"))
+        if unsupported:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(products.UnsupportedRestrictionError(unsupported))
+                + " Update the profile to remove them, then generate again.",
             )
 
         job = job_registry.create(user_id=user["user_id"], num_meals=request.num_meals)

@@ -31,6 +31,12 @@ export interface UserResponse {
 
 export type UserUpdate = Partial<Omit<UserCreate, "email">>;
 
+/** GET /users/dietary-restrictions: the labels the backend enforces. Any
+ *  other label is refused with 422 by register / update. */
+export interface DietaryRestrictionsResponse {
+  supported: string[];
+}
+
 // ---------------------------------------------------------------------------
 // Stores & deals
 // ---------------------------------------------------------------------------

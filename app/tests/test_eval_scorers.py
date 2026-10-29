@@ -182,7 +182,31 @@ def test_unconfirmed_linked_product_fails_closed(art, snap_data):
     assert k["gate"] == FAIL and k["compliant_recipes"] == 2
 
 
-@pytest.mark.parametrize("labels", [["kosher"], ["halal"], ["Kosher", " "]])
+def test_kosher_is_scored_not_na(art, base_snapshot, snap_data):
+    """kosher is enforceable since migration 021: scored like any other label."""
+    set_restrictions(art, ["kosher"])
+    # seed27's not_kosher is null throughout (undecided): fails closed.
+    k = scorers.score_compliance(art, base_snapshot)
+    assert k["supported_restrictions"] == ["kosher"] and k["unsupported_restrictions"] == []
+    assert k["required_attributes"] == ["not_kosher"]
+    assert k["gate"] == FAIL and k["compliant_recipes"] == 0
+
+    for p in snap_data["products"]:
+        p["not_kosher"] = False
+    snap = rebind(art, snap_data)
+    assert scorers.score_compliance(art, snap)["gate"] == PASS
+
+    # Meat with dairy breaks kosher even when each product is kosher.
+    plan(art)[0]["ingredients"].append({"name": "x", "deal_id": 5})       # ground beef
+    plan(art)[0]["ingredients"].append({"name": "y", "product_id": 142})  # butter
+    k = scorers.score_compliance(art, snap)
+    assert k["gate"] == FAIL
+    bad = [r["violations"] for r in k["recipes"] if not r["compliant"]]
+    assert bad == [[{"citation": "deal 5; pantry product 142",
+                     "attributes": ["contains_meat", "contains_dairy"]}]]
+
+
+@pytest.mark.parametrize("labels", [["halal"], ["keto"], ["Halal", " "]])
 def test_unsupported_restriction_is_na_never_pass(art, base_snapshot, labels):
     set_restrictions(art, labels)
     score = score_run(art, base_snapshot)

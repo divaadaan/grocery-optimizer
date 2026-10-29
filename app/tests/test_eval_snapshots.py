@@ -138,12 +138,33 @@ def test_committed_snapshot_contents():
     assert len(sparse.data["deals"]) == 5
 
 
-@pytest.mark.parametrize("version", [0, 2, "1", None, True])
+@pytest.mark.parametrize("version", [0, 1, 3, "2", None, True])
 def test_unknown_format_version_is_refused(version):
     data = mini()
     data["meta"]["format_version"] = version
     with pytest.raises(SnapshotError, match="format_version"):
         Snapshot.from_dict(data)
+
+
+def test_a_v1_snapshot_is_refused_with_the_not_kosher_upgrade_path():
+    """v1 predates not_kosher. It is refused rather than read with a silent
+    default, and the error says how to upgrade it honestly (null)."""
+    data = mini()
+    data["meta"]["format_version"] = 1
+    for p in data["products"]:
+        p.pop("not_kosher", None)
+    with pytest.raises(SnapshotError, match="not_kosher"):
+        Snapshot.from_dict(data)
+
+
+def test_committed_snapshots_carry_not_kosher_as_undecided():
+    """Migrated v1 -> v2 with null: no product had a kosher decision when
+    they were captured, and null fails closed for kosher users."""
+    for name in ("seed27", "week-2026-10-16", "sparse5"):
+        snap = load_snapshot(name)
+        assert snap.meta["format_version"] == 2
+        assert {p["not_kosher"] for p in snap.data["products"]} == {None}
+        assert snap.deal_source().fetch_current_deals(snap.postal_codes[0], ["kosher"]) == []
 
 
 def test_missing_version_is_refused():
@@ -272,7 +293,7 @@ def test_deal_source_gates_on_attributes_orders_and_shapes_like_production():
     # products is ham -- every linked product must clear.
     assert veg == [1, 4]
     # Unknown label: still behind the gate (linked + confirmed), no attribute.
-    assert [d["deal_id"] for d in deals.fetch_current_deals(POSTAL, ["kosher"])] == [2, 1, 4, 5]
+    assert [d["deal_id"] for d in deals.fetch_current_deals(POSTAL, ["halal"])] == [2, 1, 4, 5]
     assert deals.calls[0] == (POSTAL, None)
 
 

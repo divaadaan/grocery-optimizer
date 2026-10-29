@@ -31,6 +31,7 @@ def _group(**overrides):
         "contains_nuts": False,
         "contains_animal_byproduct": False,
         "contains_gluten": False,
+        "not_kosher": False,
         "times_seen": 8,
         "clears": ["vegetarian", "pescatarian", "no_nuts"],
         "aliases": [
@@ -452,6 +453,18 @@ async def test_review_page_knows_the_gluten_attribute_and_rule(client):
     assert "contains_gluten" in page
     assert 'gluten_free: ["contains_gluten"]' in page
     assert "certified" in page
+
+
+@pytest.mark.asyncio
+async def test_review_page_knows_the_kosher_attribute_and_rule(client):
+    async with client as http:
+        page = (await http.get("/admin/review")).text
+    assert 'not_kosher: "not kosher"' in page
+    assert 'kosher: ["not_kosher"]' in page
+    assert "KOSHER_RULE" in page and "Kof-K" in page
+    # The client-side preview must mirror every restriction the server reviews.
+    for label in products.REVIEW_LABELS:
+        assert f"  {label}: [" in page, label
 
 
 # --------------------------------------------------------------------------

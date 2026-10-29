@@ -7,6 +7,7 @@ import { API_PREFIX, get, post, put, del } from "./client";
 import type {
   ApiInfo,
   DealInfo,
+  DietaryRestrictionsResponse,
   HealthCheckResponse,
   PostalCodeDiscoveryResponse,
   RecipeGenerationJobCreated,
@@ -32,6 +33,9 @@ export const updateUser = (userId: number, data: UserUpdate) =>
 
 export const deactivateUser = (userId: number) =>
   del<void>(`${API_PREFIX}/users/${userId}`);
+
+export const getSupportedRestrictions = () =>
+  get<DietaryRestrictionsResponse>(`${API_PREFIX}/users/dietary-restrictions`);
 
 // Stores & deals --------------------------------------------------------
 

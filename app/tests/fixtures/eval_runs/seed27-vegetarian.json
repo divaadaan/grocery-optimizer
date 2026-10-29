@@ -1,46 +1,46 @@
 {
  "artifact": {
-  "created_at": "2026-10-29T20:54:59+00:00",
+  "created_at": "2026-10-29T21:36:53+00:00",
   "format_version": 1,
   "kind": "recipe-eval-run",
   "mode": "record"
  },
  "code": {
   "git_dirty": true,
-  "git_sha": "89a86ac86dbf280c705f718055a7c1cfa640878b"
+  "git_sha": "e6b47dadd0ef12f42bb3986bef5ee41c07060db8"
  },
  "final_state": {
   "agent_call_log": [
    {
     "action": "plan_ingredient_groups",
     "agent": "Chef_Orchestrator",
-    "duration": 0.0006823539733886719,
+    "duration": 0.0006787776947021484,
     "success": true,
-    "timestamp": 1793307299.327029
+    "timestamp": 1793309813.7381015
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.0003364086151123047,
+    "duration": 0.0002906322479248047,
     "recipe_id": "be54727c-c418-5a48-a572-28934d4c13b3",
-    "timestamp": 1793307299.3319564
+    "timestamp": 1793309813.7430463
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.00024509429931640625,
+    "duration": 0.00022745132446289062,
     "recipe_id": "d923f852-e710-5a65-a499-fda7813ef2a7",
-    "timestamp": 1793307299.3322024
+    "timestamp": 1793309813.7432747
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.00019979476928710938,
+    "duration": 0.0002560615539550781,
     "recipe_id": "98ccce74-7dd4-5e92-8506-0a52c6bc3142",
-    "timestamp": 1793307299.3324032
+    "timestamp": 1793309813.7435322
    }
   ],
   "approved_recipe_ids": [
@@ -597,6 +597,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 175,
      "status": "confirmed"
     }
@@ -612,6 +613,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 171,
      "status": "confirmed"
     }
@@ -627,6 +629,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 155,
      "status": "confirmed"
     }
@@ -642,6 +645,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 161,
      "status": "confirmed"
     }
@@ -657,6 +661,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 157,
      "status": "confirmed"
     }
@@ -672,6 +677,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 153,
      "status": "confirmed"
     }
@@ -687,6 +693,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 156,
      "status": "confirmed"
     }
@@ -702,6 +709,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 169,
      "status": "confirmed"
     }
@@ -717,6 +725,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 133,
      "status": "confirmed"
     }
@@ -732,6 +741,7 @@
      "contains_gluten": true,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 43,
      "status": "confirmed"
     }
@@ -747,6 +757,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 61,
      "status": "confirmed"
     }
@@ -762,6 +773,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 63,
      "status": "confirmed"
     }
@@ -777,6 +789,7 @@
      "contains_gluten": true,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 174,
      "status": "confirmed"
     }
@@ -792,6 +805,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 86,
      "status": "confirmed"
     }
@@ -807,6 +821,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 170,
      "status": "confirmed"
     }
@@ -822,6 +837,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 146,
      "status": "confirmed"
     }
@@ -837,6 +853,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 52,
      "status": "confirmed"
     }
@@ -852,6 +869,7 @@
      "contains_gluten": true,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 166,
      "status": "confirmed"
     }
@@ -867,6 +885,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 176,
      "status": "confirmed"
     }
@@ -882,6 +901,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 160,
      "status": "confirmed"
     }
@@ -897,6 +917,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 8,
      "status": "confirmed"
     }
@@ -912,6 +933,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
+     "not_kosher": null,
      "product_id": 62,
      "status": "confirmed"
     }
@@ -1084,6 +1106,7 @@
     "contains_gluten": true,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 139,
     "status": "confirmed"
    },
@@ -1097,6 +1120,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 134,
     "status": "confirmed"
    },
@@ -1110,6 +1134,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 132,
     "status": "confirmed"
    },
@@ -1123,6 +1148,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 144,
     "status": "confirmed"
    },
@@ -1136,6 +1162,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 124,
     "status": "confirmed"
    },
@@ -1149,6 +1176,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 142,
     "status": "confirmed"
    },
@@ -1162,6 +1190,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 126,
     "status": "confirmed"
    },
@@ -1175,6 +1204,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 131,
     "status": "confirmed"
    },
@@ -1188,6 +1218,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 141,
     "status": "confirmed"
    },
@@ -1201,6 +1232,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 125,
     "status": "confirmed"
    },
@@ -1214,6 +1246,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 137,
     "status": "confirmed"
    },
@@ -1227,6 +1260,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 148,
     "status": "confirmed"
    },
@@ -1240,6 +1274,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 135,
     "status": "confirmed"
    },
@@ -1253,6 +1288,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 136,
     "status": "confirmed"
    },
@@ -1266,6 +1302,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 140,
     "status": "confirmed"
    },
@@ -1279,6 +1316,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 147,
     "status": "confirmed"
    },
@@ -1292,6 +1330,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 145,
     "status": "confirmed"
    },
@@ -1305,6 +1344,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 150,
     "status": "confirmed"
    },
@@ -1318,6 +1358,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 146,
     "status": "confirmed"
    },
@@ -1331,6 +1372,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 149,
     "status": "confirmed"
    },
@@ -1344,6 +1386,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 130,
     "status": "confirmed"
    },
@@ -1357,6 +1400,7 @@
     "contains_gluten": true,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 128,
     "status": "confirmed"
    },
@@ -1370,6 +1414,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 127,
     "status": "confirmed"
    },
@@ -1383,6 +1428,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 129,
     "status": "confirmed"
    },
@@ -1396,6 +1442,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 138,
     "status": "confirmed"
    },
@@ -1409,6 +1456,7 @@
     "contains_gluten": true,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 143,
     "status": "confirmed"
    },
@@ -1422,6 +1470,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
+    "not_kosher": null,
     "product_id": 133,
     "status": "confirmed"
    }
@@ -1454,9 +1503,9 @@
      "violations": []
     },
     "feedback": "Approved: all ingredients comply with the vegetarian restriction.",
-    "health_score": 54.0,
+    "health_score": 76.0,
     "nutrition_facts": {
-     "calories_per_serving": 714
+     "calories_per_serving": 836
     },
     "recipe_id": "98ccce74-7dd4-5e92-8506-0a52c6bc3142"
    },
@@ -1468,9 +1517,9 @@
      "violations": []
     },
     "feedback": "Approved: all ingredients comply with the vegetarian restriction.",
-    "health_score": 54.0,
+    "health_score": 76.0,
     "nutrition_facts": {
-     "calories_per_serving": 714
+     "calories_per_serving": 836
     },
     "recipe_id": "be54727c-c418-5a48-a572-28934d4c13b3"
    },
@@ -1482,9 +1531,9 @@
      "violations": []
     },
     "feedback": "Approved: all ingredients comply with the vegetarian restriction.",
-    "health_score": 69.0,
+    "health_score": 41.0,
     "nutrition_facts": {
-     "calories_per_serving": 729
+     "calories_per_serving": 851
     },
     "recipe_id": "d923f852-e710-5a65-a499-fda7813ef2a7"
    }
@@ -1523,7 +1572,7 @@
  "llm_calls": [
   {
    "error": null,
-   "latency_s": 0.00034669499973460915,
+   "latency_s": 0.00034032600069622276,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "chef-script",
@@ -1557,7 +1606,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.0004092839999429998,
+   "latency_s": 0.00037003499983256916,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1591,7 +1640,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00017923799987329403,
+   "latency_s": 0.00017141700027423212,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1625,7 +1674,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.000171827000031044,
+   "latency_s": 0.0002004469997700653,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1667,7 +1716,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00015310800017687143,
+   "latency_s": 0.00015713799984951038,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1701,7 +1750,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00015924799981803517,
+   "latency_s": 0.0001721379994705785,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1743,7 +1792,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00022472700038633775,
+   "latency_s": 0.00017783800012693973,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1757,14 +1806,14 @@
    "request": {
     "messages": [
      {
-      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"be54727c-c418-5a48-a572-28934d4c13b3\",\n  \"name\": \"Scripted 15+3\",\n  \"ingredients\": [\n    {\n      \"name\": \"Bananas\",\n      \"deal_id\": 15,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.69\n    },\n    {\n      \"name\": \"Pasta Penne\",\n      \"deal_id\": 3,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.18,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Validation Checklist:**\n1. **Allergen Safety:** Does this recipe contain any restricted allergens?\n2. **Dietary Compliance:** Does it meet all dietary restrictions (vegan, kosher, etc)?\n3. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n4. **Practical Cooking:** Are instructions clear and achievable?\n5. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"be54727c-c418-5a48-a572-28934d4c13b3\",\n  \"name\": \"Scripted 15+3\",\n  \"ingredients\": [\n    {\n      \"name\": \"Bananas\",\n      \"deal_id\": 15,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.69\n    },\n    {\n      \"name\": \"Pasta Penne\",\n      \"deal_id\": 3,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.18,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "e95c09e46e222d4fa4ba9b0c904103e77767f58228433d655c86e27d04b51a86",
+   "request_sha256": "3473d61300ab1642fb1708f00432c6c757c2c31263c9b187c0147abeb82422c6",
    "response": {
-    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 714}, \"health_score\": \"54\"}",
+    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 836}, \"health_score\": \"76\"}",
     "response_metadata": {},
     "usage": null
    },
@@ -1773,7 +1822,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.0001333580003120005,
+   "latency_s": 0.00012600799982465105,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1787,14 +1836,14 @@
    "request": {
     "messages": [
      {
-      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"d923f852-e710-5a65-a499-fda7813ef2a7\",\n  \"name\": \"Scripted 21+12\",\n  \"ingredients\": [\n    {\n      \"name\": \"Canned Tomatoes\",\n      \"deal_id\": 21,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Bell Peppers Red\",\n      \"deal_id\": 12,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Validation Checklist:**\n1. **Allergen Safety:** Does this recipe contain any restricted allergens?\n2. **Dietary Compliance:** Does it meet all dietary restrictions (vegan, kosher, etc)?\n3. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n4. **Practical Cooking:** Are instructions clear and achievable?\n5. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"d923f852-e710-5a65-a499-fda7813ef2a7\",\n  \"name\": \"Scripted 21+12\",\n  \"ingredients\": [\n    {\n      \"name\": \"Canned Tomatoes\",\n      \"deal_id\": 21,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Bell Peppers Red\",\n      \"deal_id\": 12,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "c6398680674f538e3c5208fde7cdb2cc66d9f817a952bdc76ddc7afb5b762a95",
+   "request_sha256": "f69fe5575132585f83150bf09c5f9f11f7219e8e115f2d92767c8a4b93a861bd",
    "response": {
-    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 729}, \"health_score\": \"69\"}",
+    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 851}, \"health_score\": \"41\"}",
     "response_metadata": {},
     "usage": null
    },
@@ -1803,7 +1852,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00011258800032010186,
+   "latency_s": 0.000130137999803992,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1817,14 +1866,14 @@
    "request": {
     "messages": [
      {
-      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"98ccce74-7dd4-5e92-8506-0a52c6bc3142\",\n  \"name\": \"Scripted 22+16\",\n  \"ingredients\": [\n    {\n      \"name\": \"Spaghetti\",\n      \"deal_id\": 22,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Carrots\",\n      \"deal_id\": 16,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Validation Checklist:**\n1. **Allergen Safety:** Does this recipe contain any restricted allergens?\n2. **Dietary Compliance:** Does it meet all dietary restrictions (vegan, kosher, etc)?\n3. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n4. **Practical Cooking:** Are instructions clear and achievable?\n5. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"98ccce74-7dd4-5e92-8506-0a52c6bc3142\",\n  \"name\": \"Scripted 22+16\",\n  \"ingredients\": [\n    {\n      \"name\": \"Spaghetti\",\n      \"deal_id\": 22,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Carrots\",\n      \"deal_id\": 16,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "8218e55882989f0d70284b0a880ed26f8c11b65b2edce40cd6113d0c5fea748f",
+   "request_sha256": "8988f08e6fbd1d213041a43ac6b53b2933370ea40f7a7bb069424b52888b6717",
    "response": {
-    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 714}, \"health_score\": \"54\"}",
+    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 836}, \"health_score\": \"76\"}",
     "response_metadata": {},
     "usage": null
    },
@@ -1879,15 +1928,15 @@
  "snapshot": {
   "as_of": "2026-07-15",
   "captured_at": "2026-10-29T20:37:14.173828+00:00",
-  "content_sha256": "ca9c337e65cef25de7551a7a8090d27a269b454fcc74cf396e132e41d74ad2e9",
-  "format_version": 1,
+  "content_sha256": "5dead25200b633d38e724aca86413670ccfd052993f7c533a3492b5682531fc9",
+  "format_version": 2,
   "name": "seed27"
  },
  "state_notes": [],
  "timing": {
-  "llm_seconds": 0.0018900730005952937,
-  "started_at": "2026-10-29T20:54:59+00:00",
-  "wall_seconds": 0.018211633000191796
+  "llm_seconds": 0.001845484999648761,
+  "started_at": "2026-10-29T21:36:53+00:00",
+  "wall_seconds": 0.018266645999574393
  },
  "tracker_calls": [
   "start_run",

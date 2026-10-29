@@ -7,11 +7,13 @@ import logging
 
 from app.models.schemas import (
     BudgetStatusResponse,
+    DietaryRestrictionsResponse,
     UserCreate,
     UserResponse,
     UserUpdate,
     ErrorResponse
 )
+from app.services import products
 from app.services.budget import budget_status
 from app.services.user_service import UserService
 
@@ -20,11 +22,40 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+def _refuse_unsupported(restrictions) -> None:
+    """422 for a restriction label no curated product attribute enforces.
+
+    Storing one would promise the user a check that never happens: the gate
+    would withhold everything unlinked and the recipe verdict would have
+    nothing to decide. Refused here, before it is stored."""
+    try:
+        products.require_supported_restrictions(restrictions)
+    except products.UnsupportedRestrictionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
+
+
+@router.get("/dietary-restrictions",
+            response_model=DietaryRestrictionsResponse)
+async def get_dietary_restrictions() -> DietaryRestrictionsResponse:
+    """
+    The dietary restriction labels this app supports.
+
+    Exactly the keys of `products.RESTRICTION_ATTRIBUTES`: each is enforced
+    from curated product attributes (deals served, recipes judged). Any other
+    label is refused with 422 by register / update.
+    """
+    return DietaryRestrictionsResponse(supported=products.supported_restrictions())
+
+
 @router.post("/register",
              response_model=UserResponse,
              status_code=status.HTTP_201_CREATED,
              responses={
                  400: {"model": ErrorResponse, "description": "Invalid input or user already exists"},
+                 422: {"model": ErrorResponse, "description": "Unsupported dietary restriction"},
                  500: {"model": ErrorResponse, "description": "Internal server error"}
              })
 async def register_user(user_data: UserCreate) -> UserResponse:
@@ -42,8 +73,11 @@ async def register_user(user_data: UserCreate) -> UserResponse:
       ISO week) or `"monthly"` (calendar month from the 1st). Default
       `"monthly"`. Calendar-anchored, not rolling.
     - **household_size**: Number of people in household (default: 1)
-    - **dietary_restrictions**: List of dietary restrictions (e.g., ["vegetarian", "gluten_free"])
+    - **dietary_restrictions**: List of dietary restrictions (e.g., ["vegetarian", "gluten_free"]).
+      Only labels from `GET /users/dietary-restrictions` are accepted; any
+      other label is refused with 422.
     """
+    _refuse_unsupported(user_data.dietary_restrictions)
     try:
         user = UserService.create_user(user_data)
 
@@ -150,7 +184,8 @@ async def get_budget_status(user_id: int) -> BudgetStatusResponse:
             response_model=UserResponse,
             responses={
                 404: {"model": ErrorResponse, "description": "User not found"},
-                400: {"model": ErrorResponse, "description": "Invalid input"}
+                400: {"model": ErrorResponse, "description": "Invalid input"},
+                422: {"model": ErrorResponse, "description": "Unsupported dietary restriction"}
             })
 async def update_user(user_id: int, user_data: UserUpdate) -> UserResponse:
     """
@@ -163,7 +198,12 @@ async def update_user(user_id: int, user_data: UserUpdate) -> UserResponse:
     of `GET /users/{user_id}/budget` reports spend for the *new* period
     containing now, which may differ sharply from the old one. Past spend is
     not re-dated; only the window over it changes.
+
+    `dietary_restrictions`, when given, accepts only labels from
+    `GET /users/dietary-restrictions`; any other label is refused with 422.
     """
+    if user_data.dietary_restrictions is not None:
+        _refuse_unsupported(user_data.dietary_restrictions)
     try:
         user = UserService.update_user(user_id, user_data)
 
@@ -185,6 +225,8 @@ async def update_user(user_id: int, user_data: UserUpdate) -> UserResponse:
             is_active=user["is_active"]
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating user {user_id}: {e}")
         raise HTTPException(
