@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import csv
 import io
+import json
 import os
 import subprocess
 import sys
@@ -269,6 +270,22 @@ def test_cli_directories_globs_dedup_and_exit_1_on_fail(tmp_path, base, monkeypa
     assert eval_report.main([str(runs), str(runs / "a.json"),
                              "--out-dir", str(tmp_path / "o3")]) == 1
     assert len(_rows((tmp_path / "o3" / "runs.csv").read_text())) == 2
+
+
+def test_cli_skips_non_artifact_json_found_by_directory(tmp_path, base, capsys):
+    from scripts import eval_report
+
+    runs = tmp_path / "runs"
+    runs.mkdir()
+    runner.write_artifact(base, runs / "a.json")
+    scenarios = runs / "scenarios.json"
+    scenarios.write_text(json.dumps({"scenarios": [base["scenario"]]}))
+
+    assert eval_report.main([str(runs), "--out-dir", str(tmp_path / "o1")]) == 0
+    assert "scenarios.json: not a run artifact, skipped" in capsys.readouterr().err
+    assert len(_rows((tmp_path / "o1" / "runs.csv").read_text())) == 1
+    # Named explicitly, a non-artifact is still an error, not a silent skip.
+    assert eval_report.main([str(scenarios), "--out-dir", str(tmp_path / "o2")]) == 2
 
 
 def test_cli_na_is_not_a_failure(tmp_path, base):

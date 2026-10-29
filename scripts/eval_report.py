@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import glob
+import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -35,15 +36,34 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _is_run_artifact(path: str) -> bool:
+    """Whether ``path`` is a run artifact (``artifact.kind``), cheaply. Unreadable
+    or non-JSON files count as artifacts so that loading them reports the error."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return True
+    header = data.get("artifact") if isinstance(data, dict) else None
+    return isinstance(header, dict) and header.get("kind") == runner.ARTIFACT_KIND
+
+
 def expand(inputs: List[str]) -> List[str]:
     """Files as given; directories -> their ``*.json`` (recursive); globs expanded.
+    JSON that a directory or glob turns up but that is not a run artifact (a
+    scenario file next to the runs) is skipped with a note; a file named
+    explicitly is always scored, so a wrong one still fails loudly.
     De-duplicated, sorted. Raises FileNotFoundError for an input matching nothing."""
     found = set()
     for item in inputs:
-        if os.path.isdir(item):
-            matches = [str(p) for p in Path(item).rglob("*.json")]
-        elif glob.has_magic(item):
-            matches = [p for p in glob.glob(item, recursive=True) if os.path.isfile(p)]
+        if os.path.isdir(item) or glob.has_magic(item):
+            if os.path.isdir(item):
+                candidates = [str(p) for p in Path(item).rglob("*.json")]
+            else:
+                candidates = [p for p in glob.glob(item, recursive=True) if os.path.isfile(p)]
+            matches = [p for p in candidates if _is_run_artifact(p)]
+            for p in sorted(set(candidates) - set(matches)):
+                print(f"{p}: not a run artifact, skipped", file=sys.stderr)
         else:
             matches = [item] if os.path.isfile(item) else []
         if not matches:
