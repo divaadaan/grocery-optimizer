@@ -418,7 +418,7 @@ def finalize_meal_plan(state: RecipeGenerationState, recipe_store=None,
         warnings.append(
             f"Over budget: this plan costs at least ${total_cost:.2f} (a lower "
             f"bound), more than the ${budget_check['available']:.2f} left of "
-            f"this {period}'s budget")
+            f"the {period} budget")
     if warnings:
         update["warnings"] = warnings
 
