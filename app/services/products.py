@@ -1076,7 +1076,17 @@ _MULTIBUY_RE = re.compile(
 #: wording. The quantity may be a word rather than a digit, so the gap between
 #: "buy" and "get" is matched by length rather than by shape, bounded tightly
 #: enough that unrelated text containing both words does not collide.
-_BOGO_RE = re.compile(r"\bbogo\b|\bbuy\b[^.!?]{0,12}\bget\b", re.IGNORECASE)
+#: A "get" followed by a points amount ("GET 500 pts", "get 1,500 Scene+ pts")
+#: is a loyalty reward for buying, not a free item, so it is not the "get" half
+#: of buy/get. Found live on deal 97: "GET 1,500 pts when you buy 2 OR GET 500
+#: pts when you pts buy 1" at $2.49 ea. -- the second "GET" sat within 12
+#: characters of "buy 2" and read as buy-2-get-1.
+_BOGO_RE = re.compile(
+    r"\bbogo\b"
+    r"|\bbuy\b[^.!?]{0,12}\bget\b"
+    r"(?!\s*[\d,.]+\s*(?:[^\s.!?]+\s+){0,2}?(?:pts?|points?)\b)",
+    re.IGNORECASE,
+)
 
 #: A bare quantity prefix printed to the left of the price: "2/", "3 /", and
 #: also the worded form "2 for" with the price rendered separately. Anchored at
@@ -1098,13 +1108,23 @@ _QTY_PREFIX_RE = re.compile(
 #: Treated as per item (no quantity is implied).
 _FLOOR_RE = re.compile(r"\b(?:from|starting\s+at)\b", re.IGNORECASE)
 
-#: A per-item price printed INSIDE the unit field: "or $2.89 each", "2.87 /ea",
-#: "or 4.29/ 4.77 ea". 13 rows in the 5-term probe did this. It means the
-#: headline sale_price is NOT the single-item price -- the single-item price is
-#: the number quoted here -- so the headline must not be read as per-item.
-#: Requires a digit, so a bare "ea"/"each" unit is unaffected.
-_PRICE_IN_UNIT_RE = re.compile(
-    r"\d+[.,]\d{2}.*\b(?:ea|each)\b|\bor\b.*\d+[.,]\d{2}", re.IGNORECASE
+#: An ALTERNATIVE per-item price printed inside the unit field, introduced by
+#: "or": "or $3.69 ea.", "or $2.89 each", "or 4.29/ 4.77 ea". 13 rows in the
+#: 5-term probe did this. It means the headline sale_price is NOT the
+#: single-item price -- the single-item price is the number quoted here -- so
+#: the headline must not be read as per-item. The "or" is the proof: it offers
+#: the single-item price as the other way to buy. A price in the unit field
+#: WITHOUT "or" is not that (see _UNIT_PRICE_ECHO_RE). Requires a digit, so a
+#: bare "ea"/"each" unit is unaffected.
+_PRICE_IN_UNIT_RE = re.compile(r"\bor\b.*\d+[.,]\d{2}", re.IGNORECASE)
+
+#: A bare price echo in the unit field, with no "or": "- $7.99 ea" (deal 451,
+#: the top of a price range across variants, sale $6.99) and "2.87 /ea" (deal
+#: 522, $1.97, no regular_price stored: reads as a regular/compare price).
+#: Neither offers a quantity, so neither proves a multi-buy; the headline stays
+#: the item's own price.
+_UNIT_PRICE_ECHO_RE = re.compile(
+    r"^\s*(?:-\s*)?\$?\s*\d+[.,]\d{2}\s*/?\s*(?:ea|each)\.?\s*$", re.IGNORECASE
 )
 
 #: Units that mean the price attaches to one item or to a measure of it, so it
@@ -1187,6 +1207,10 @@ def infer_price_is_per_item(
     unit_text = (unit or "").strip()
     normalized = unit_text.lower().lstrip("/")
     if normalized in _PER_ITEM_UNITS:
+        return True
+    # A price range or compare price echoed in the unit field ("- $7.99 ea",
+    # "2.87 /ea"); the "or" check above already ruled out a multi-buy.
+    if _UNIT_PRICE_ECHO_RE.match(unit_text):
         return True
     # Unit pricing: "ea/lb", "/lb", "per lb", "/kg".
     if _UNIT_PRICE_RE.search(unit_text):
