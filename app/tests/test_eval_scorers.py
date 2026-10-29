@@ -92,7 +92,7 @@ def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
         "budget_available": 80.0, "budget_status": "within_lower_bound",
         "deal_share": 0.6667, "deals_used": 6, "deals_offered": 22,
         "savings_vs_regular": 5.8, "mean_jaccard": 0.0, "max_jaccard": 0.0,
-        "llm_calls": 9, "llm_seconds": row["llm_seconds"], "total_tokens": 6572,
+        "llm_calls": 9, "llm_seconds": row["llm_seconds"], "total_tokens": 6637,
         "tokens_known_calls": 6,
     }
     assert row["llm_seconds"] == pytest.approx(base_artifact["timing"]["llm_seconds"], abs=1e-5)

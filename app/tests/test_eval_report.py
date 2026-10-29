@@ -133,7 +133,7 @@ def test_markdown_header_and_section_order(variants):
     md = report.render_markdown(variants, STAMP)
     assert "- Generated at: 2026-10-30T12:00:00Z" in md
     assert "- Runs: 4" in md and "- Verdicts: PASS 2 / FAIL 1 / N/A 1" in md
-    assert "d5c89255f9" in md
+    assert "3cacf6672c" in md
     assert md.index("# Recipe") < md.index("## Compliance") < md.index("## Runs") \
         < md.index("## Aggregates")
 
@@ -161,7 +161,7 @@ def test_budget_is_labelled_lower_bound_with_both_semantics(base, snap):
 
 def test_token_coverage_shown(base, snap):
     md = report.render_markdown([make_run(base, snap)], STAMP)
-    assert "6572 (known for 6/9 calls)" in md
+    assert "6637 (known for 6/9 calls)" in md
 
 
 # --------------------------------------------------------------------------

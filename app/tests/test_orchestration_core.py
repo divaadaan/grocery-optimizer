@@ -80,7 +80,9 @@ def recipe_citing(deals, tag=""):
             "meal_type": "dinner", "servings": 2,
             "ingredients": [{"name": d["product_name"], "deal_id": d["deal_id"],
                              "quantity": "1", "unit": "unit"} for d in deals],
-            "instructions": ["Cook it."]}
+            # Steps reference ingredients by index (app/agents/instruction_refs.py).
+            "instructions": ["Cook " + " with ".join(
+                "{%d}" % i for i in range(len(deals))) + "." if deals else "Cook it."]}
 
 
 def sous_reply(extra=0, short=0):
