@@ -527,6 +527,141 @@ def clears_labels(product: dict[str, Any]) -> list[str]:
     return [label for label in REVIEW_LABELS if product_allows(product, [label])]
 
 
+#: Statuses the admin lookup can filter on ("all" is handled separately).
+LOOKUP_STATUSES: tuple[str, ...] = ("confirmed", "proposed", "rejected", "merged")
+_DEAL_LIMIT = 200
+
+
+def _iso(value: Any) -> Any:
+    return value.isoformat() if hasattr(value, "isoformat") else value
+
+
+def _like_escape(text: str) -> str:
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def list_products(status: str = "confirmed", q: str | None = None,
+                  limit: int = 100, offset: int = 0, database=db) -> dict[str, Any]:
+    """Page through products for the admin picker. Read-only.
+
+    ``q`` is a case-insensitive substring filter on ``canonical_name`` and is
+    for FINDING products in an admin UI only. It must never feed a compliance
+    decision: dietary verdicts come from the curated attributes alone (see
+    the module docstring), and a name decides nothing.
+    """
+    if status != "all" and status not in LOOKUP_STATUSES:
+        raise ValueError(f"unknown status {status!r}")
+    where, params = [], {"limit": limit, "offset": offset}
+    if status != "all":
+        where.append("status = %(status)s")
+        params["status"] = status
+    text = (q or "").strip()
+    if text:
+        where.append("canonical_name ILIKE %(q)s ESCAPE '\\'")
+        params["q"] = f"%{_like_escape(text)}%"
+    clause = (" WHERE " + " AND ".join(where)) if where else ""
+    with database.get_cursor() as cursor:
+        cursor.execute(f"SELECT count(*) AS n FROM products{clause}", params)
+        total = int(cursor.fetchone()["n"])
+        cursor.execute(
+            f"""
+            SELECT product_id, canonical_name, category, status, merged_into,
+                   is_pantry_staple
+            FROM products{clause}
+            ORDER BY lower(canonical_name), product_id
+            LIMIT %(limit)s OFFSET %(offset)s
+            """, params)
+        items = [dict(r) for r in cursor.fetchall()]
+    return {"items": items, "total": total, "limit": limit, "offset": offset,
+            "status": status, "q": text or None}
+
+
+def product_detail(product_id: int, database=db) -> dict[str, Any] | None:
+    """Everything the admin page shows about one product, or None. Read-only.
+
+    Any status is returned, merged products included, so a reviewer can see
+    where one went. Attributes are iterated from ``ATTRIBUTES``.
+    """
+    with database.get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT product_id, canonical_name, category, status, merged_into,
+                   is_pantry_staple, assumed_on_hand, {_ATTR_SELECT}
+            FROM products WHERE product_id = %(pid)s
+            """, {"pid": product_id})
+        row = cursor.fetchone()
+        if not row:
+            return None
+        row = dict(row)
+        cursor.execute(
+            """
+            SELECT alias_id, normalized_name, raw_example, status
+            FROM product_aliases WHERE product_id = %(pid)s ORDER BY alias_id
+            """, {"pid": product_id})
+        aliases = [dict(r) for r in cursor.fetchall()]
+        cursor.execute(
+            """
+            SELECT d.deal_id, d.product_name, d.valid_until,
+                   (d.valid_until >= CURRENT_DATE) AS live
+            FROM deal_products dp JOIN deals d ON d.deal_id = dp.deal_id
+            WHERE dp.product_id = %(pid)s
+            ORDER BY d.valid_until DESC NULLS LAST, d.deal_id DESC
+            LIMIT %(lim)s
+            """, {"pid": product_id, "lim": _DEAL_LIMIT + 1})
+        deals = [dict(r) for r in cursor.fetchall()]
+        cursor.execute(
+            """
+            SELECT correction_id, corrected_at, reviewer, attribute,
+                   old_value, new_value, reason
+            FROM product_attribute_correction_log WHERE product_id = %(pid)s
+            ORDER BY corrected_at DESC, correction_id DESC, attribute
+            """, {"pid": product_id})
+        attr_log = [dict(r) for r in cursor.fetchall()]
+        cursor.execute(
+            """
+            SELECT correction_id, corrected_at, reviewer, field,
+                   old_value, new_value, reason
+            FROM product_identity_correction_log WHERE product_id = %(pid)s
+            ORDER BY corrected_at DESC, correction_id DESC, field
+            """, {"pid": product_id})
+        identity_log = [dict(r) for r in cursor.fetchall()]
+        cursor.execute(
+            """
+            SELECT correction_id, corrected_at, reviewer, absorbed_product_id,
+                   absorbed_name, survivor_product_id, survivor_name,
+                   snapshots_repointed, rows_moved, reason
+            FROM product_merge_log
+            WHERE absorbed_product_id = %(pid)s OR survivor_product_id = %(pid)s
+            ORDER BY corrected_at DESC, correction_id DESC
+            """, {"pid": product_id})
+        merge_log = [dict(r) for r in cursor.fetchall()]
+
+    truncated = len(deals) > _DEAL_LIMIT
+    for entry in attr_log + identity_log + merge_log:
+        entry["corrected_at"] = _iso(entry["corrected_at"])
+    for entry in merge_log:
+        entry["role"] = ("absorbed" if entry["absorbed_product_id"] == product_id
+                         else "survivor")
+    attributes = {a: row[a] for a in ATTRIBUTES}
+    return {
+        "product_id": row["product_id"],
+        "canonical_name": row["canonical_name"],
+        "category": row["category"],
+        "status": row["status"],
+        "merged_into": row["merged_into"],
+        "is_pantry_staple": row["is_pantry_staple"],
+        "assumed_on_hand": row["assumed_on_hand"],
+        "attributes": attributes,
+        "clears": clears_labels({"product_id": row["product_id"], **attributes}),
+        "aliases": aliases,
+        "deals": [{**d, "valid_until": _iso(d["valid_until"])}
+                  for d in deals[:_DEAL_LIMIT]],
+        "deals_truncated": truncated,
+        "history": {"attributes": attr_log, "identity": identity_log,
+                    "merges": merge_log},
+    }
+
+
 def pending_proposals(limit: int = 5000, database=db) -> list[dict]:
     """Proposed aliases with their product, most-seen first."""
     with database.get_cursor() as cursor:

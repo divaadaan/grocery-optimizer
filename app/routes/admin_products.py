@@ -30,7 +30,7 @@ import os
 from pathlib import Path
 from typing import Any, Literal, Optional
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
@@ -106,6 +106,35 @@ async def queue(limit: int = 5000) -> dict[str, Any]:
         "labels": list(products.REVIEW_LABELS),
         "stats": products.review_stats(),
     }
+
+
+@router.get("/products")
+async def list_products(
+    status_filter: str = Query("confirmed", alias="status"),
+    q: Optional[str] = None,
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+) -> dict[str, Any]:
+    """Paged product list for the picker. Read-only.
+
+    ``status`` is confirmed (default), merged, proposed, rejected or all.
+    ``q`` is a case-insensitive filter on canonical_name for FINDING products
+    in this admin UI only; it never feeds a compliance decision (those come
+    from curated attributes alone).
+    """
+    try:
+        return products.list_products(status_filter, q, limit, offset)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.get("/products/{product_id:int}")
+async def product_detail(product_id: int) -> dict[str, Any]:
+    """One product in full: attributes, aliases, deals and correction history."""
+    detail = products.product_detail(product_id)
+    if detail is None:
+        raise HTTPException(status_code=404, detail="no such product")
+    return detail
 
 
 @router.post("/products/fill")
