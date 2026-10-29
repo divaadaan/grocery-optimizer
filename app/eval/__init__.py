@@ -10,4 +10,7 @@ right, and tests import them like any other module.
   chat models, keyed by request content so parallel calls replay correctly.
 * :mod:`app.eval.runner` -- scenarios, record/replay runs of the real graph,
   and the run artifact (its format is documented there) that scorers read.
+* :mod:`app.eval.scorers` -- deterministic scorers over an artifact and its
+  snapshot, aggregated into a versioned ``RunScore`` with a PASS/FAIL/NA
+  verdict gated on recomputed dietary compliance.
 """
