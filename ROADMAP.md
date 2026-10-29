@@ -1,16 +1,17 @@
 # Development Roadmap
 
-Canonical plan, last revised 2026-10-28 (originally 2026-06-12). Dated
+Canonical plan, last revised 2026-10-29 (originally 2026-06-12). Dated
 `*Shipped:*` / `*Progress:*` entries below are historical records — the test
 counts inside them were true when written and are deliberately not rewritten.
-Current suite on `main`: **913 passed, 5 skipped, 4 deselected**
-(`pytest -m "not llm"`, after #29).
+Current suite on `main`: **1030 passed, 5 skipped, 4 deselected**
+(`pytest -m "not llm"`, after #36).
 
 **Where we are (2026-10-28):** the curated-product database work is finished
 (see *Direction (2026-10-28)*). The next stage is **evaluation**: recipe
 quality, substitution handling, and scraping/parsing fitness for go-live. The
 ordered plan is *Next stage: evaluation readiness*; parked work is in
-*Backlog (parked)*.
+*Backlog (parked)*. As of 2026-10-29, Track A items 1–2 and Track E item 1 are
+shipped (#33–#36), and E2 (frozen snapshots) is in progress.
 
 Supersedes `NEXT_STEPS.md` (see git history
 for the WSL-migration log and verification notes it contained).
@@ -120,7 +121,7 @@ Shipped:
   owner-approved, audited corrections 1–174. The rule for uncertain products
   was "least permissions": uncertain means true. P84 was renamed "cheese fish
   tofu" and moved to `frozen` (correction 28).
-- **In review at the time of writing:**
+- **Merged 2026-10-28** (in review when this section was written):
   - #30: migration 019, triggers that refuse `deal_products` or
     `product_aliases` rows pointing at a merged product. Tested against
     postgres:17, including the merge/link race in both orders.
@@ -174,10 +175,30 @@ was spot-checked against code or Neon by the coordinator.
    - Make deal-list sorts on `discount_percentage` use `NULLS LAST`
      (`store_service.py`). 78% of discounts are NULL, and today they sort
      first.
+
+   *Shipped (2026-10-28, #33):* migration 020 adds `ingestion_runs` (one row
+   per run, key columns + JSONB counters); every entry point (CLI, refresh
+   route, cold start) records its run in a separate transaction, and a failed
+   write is logged, never fatal. `assess_health` marks a run unhealthy on zero
+   normalised deals, ≥5 failed terms, a skip rate >50%, or a payload with no
+   `items`; the CLI then exits 1. `no_merchant`/`no_item_id` have their own
+   counters, sorts use `NULLS LAST`, and `ingest_deals.py --health` is a
+   read-only freshness report. 020 is applied to Neon.
 2. **Per-deal `price_is_per_item`.** Decide it from each deal's own text at
    link time; if either the alias or the deal says multi-buy, the answer is
    false. Correct the 6 existing rows. Depends on #30, which also touches
    `link_deals`.
+
+   *Shipped (2026-10-29, #34, #36):* #34 makes a multi-buy in the deal's own
+   text override an alias marked per-item, and adds
+   `scripts/fix_deal_link_prices.py` (dry run by default, `--deal` filter).
+   On Neon, only the six confirmed multi-buys (76, 98, 111, 136, 389, 515) were
+   corrected to `price_is_per_item=false` (owner decision). #36 then fixed three
+   `infer_price_is_per_item` misreads that were left per-item on purpose: a
+   points "get" (97), a price range in the unit field (451) and a compare price
+   (522). A price in the unit field now proves multi-buy only when it is
+   introduced by "or". Across all 333 Neon deals, only those three change
+   verdict, and the fix script's dry run finds 0 rows to change.
 3. **Recorded fixtures and golden tests.** Record about 15 terms, including
    multi-buy, per-weight and junk-`unit` cases. Recording needs one owner-OK'd
    live capture; after that, CI runs offline.
@@ -201,9 +222,21 @@ was spot-checked against code or Neon by the coordinator.
    compiled graph* end to end with scripted LLMs and a fake DB, which closes
    the `stream_mode` caveat under Next §2. Also stop `test_graph.py` writing
    to Neon.
+
+   *Shipped (2026-10-29, #35):* `make_llm(role)` in `app/agents/llm_factory.py`
+   is the only place a chat model is built; roles carry their temperature and
+   JSON mode, and the provider comes from the new `LLM_PROVIDER` setting
+   (default `ollama`, with byte-identical `ChatOllama` arguments). `GraphDeps`
+   (`app/agents/deps.py`) injects the three LLMs, the deal source, the recipe
+   catalog, the recipe store and the tracker, replacing graph.py's import-time
+   singletons. `test_graph_offline.py` runs the real compiled graph through
+   `run_recipe_generation` (the route's `stream_mode` path) with scripted LLMs
+   and in-memory fakes. `test_graph.py` now injects `InMemoryRecipeStore` and
+   can no longer write to Neon.
 2. **Frozen snapshots.** A read-only capture script plus a loader. Snapshots:
    `seed27` (from the existing fixture), `week-2026-10-16` (real), and
-   `sparse5` (today's reality).
+   `sparse5` (today's reality). *In progress (2026-10-29),* on
+   `feat/eval-snapshots`.
 3. **Runner with record/replay.** The artifact is the final state plus a call
    log. Replay is deterministic and runs in CI.
 4. **Deterministic scorers.**
@@ -318,6 +351,11 @@ Parked by the owner or deferred until the evaluation stage needs them:
    *Caveat:* no non-`llm` test drives the real compiled graph, so the
    `stream_mode` contract rests on a stub graph plus a standalone langgraph
    experiment. The first live generation is the real check on stage ordering.
+   *Caveat closed for the graph side (2026-10-29, #35):*
+   `test_graph_offline.py` now drives the real compiled graph through
+   `graph.stream(stream_mode=["updates","values"])` and the route worker, so
+   real progress stages are asserted offline. Stage timing under a live Ollama
+   is still unobserved.
 
 3. **Shopping Optimizer agent + endpoints.** Consolidate approved-recipe
    ingredients, assign items to stores by best price, persist to
