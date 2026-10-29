@@ -21,7 +21,7 @@ VALID_RECIPE = {
     "ingredients": [
         {"name": "Pasta Penne", "deal_id": 3, "quantity": "16 oz", "unit": "oz"},
     ],
-    "instructions": ["Boil pasta.", "Add sauce."],
+    "instructions": ["Boil {0}.", "Add sauce."],
     "servings": 2,
 }
 
@@ -77,12 +77,12 @@ def test_recipe_batch_rejects_empty_and_garbage():
 def test_recipe_lenient_fields():
     recipe = GeneratedRecipe.model_validate({
         **VALID_RECIPE,
-        "instructions": "Boil pasta, add sauce.",   # bare string
+        "instructions": "Boil {0}, add sauce.",     # bare string
         "servings": "4",                            # numeric string
         "estimated_prep_time": "45 minutes",        # units in string
         "total_cost": "$12.75",                     # currency string
     })
-    assert recipe.instructions == ["Boil pasta, add sauce."]
+    assert recipe.instructions == ["Boil {0}, add sauce."]
     assert recipe.servings == 4
     assert recipe.estimated_prep_time == 45
     assert recipe.total_cost == 12.75

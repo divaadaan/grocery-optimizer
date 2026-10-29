@@ -21,6 +21,8 @@ from pydantic import (
     model_validator,
 )
 
+from .instruction_refs import step_problems, unreferenced
+
 # NB: langchain_core is imported lazily inside invoke_validated (the only place
 # it's used) so the schemas below can be imported with just pydantic installed —
 # the training/ dataset builder reuses them as the build-time validation gate
@@ -144,7 +146,18 @@ class RecipeIngredient(BaseModel):
 
 
 class GeneratedRecipe(BaseModel):
-    """Output schema for one recipe from SOUS_CHEF_RECIPE_GENERATION / retry."""
+    """Output schema for one recipe from SOUS_CHEF_RECIPE_GENERATION / retry.
+
+    ``instructions`` are *templates* that write every ingredient as a
+    placeholder ``{N}``, its 0-based index in ``ingredients``
+    (``app/agents/instruction_refs.py``). A malformed placeholder, an index
+    out of range, or steps that reference no ingredient at all are
+    validation errors, so they go back to the model through
+    ``invoke_validated``'s retry. An ingredient no step references is only
+    reported (:meth:`unreferenced_ingredients`): it is cited and
+    compliance-checked like the rest, and rejecting the whole batch over it
+    would cost small models retries for no compliance gain.
+    """
     model_config = ConfigDict(extra="ignore")
 
     name: str
@@ -162,6 +175,18 @@ class GeneratedRecipe(BaseModel):
         if isinstance(v, str):
             return [v]
         return v
+
+    @model_validator(mode="after")
+    def _instruction_refs(self):
+        problems = step_problems(self.instructions, len(self.ingredients))
+        if problems:
+            raise ValueError(
+                f"recipe {self.name!r} instructions: " + "; ".join(problems))
+        return self
+
+    def unreferenced_ingredients(self) -> List[int]:
+        """Indices of ingredients that no instruction step references."""
+        return unreferenced(self.instructions, len(self.ingredients))
 
     @field_validator("servings", mode="before")
     @classmethod

@@ -84,7 +84,8 @@ def sort_runs(runs: Iterable[ReportRun]) -> List[ReportRun]:
 # summary_row keys other than scenario/snapshot, in the scorer's order.
 _SUMMARY_REST = [
     "verdict", "status", "recipes_approved", "recipes_requested", "schema_retries",
-    "schema_failures", "compliance_gate", "compliance_rate", "verdict_disagreements",
+    "schema_failures", "instruction_steps", "instruction_invalid_refs",
+    "unreferenced_ingredients", "unstructured_instructions", "compliance_gate", "compliance_rate", "verdict_disagreements",
     "unsupported_restrictions", "citation_validity", "invalid_citations",
     "cost_per_recipe_sum_lb", "cost_per_unique_deal_lb", "budget_available",
     "budget_status", "deal_share", "deals_used", "deals_offered", "savings_vs_regular",
@@ -214,6 +215,18 @@ def _table(header: Sequence[str], rows: Sequence[Sequence[Any]]) -> List[str]:
     return out
 
 
+def _instruction_refs(s: Mapping[str, Any]) -> str:
+    """Instruction-step references: steps, invalid refs, unreferenced
+    ingredients; n/a for a run whose recipes predate placeholder steps."""
+    if s["instruction_steps"] is None:
+        return NA_TEXT
+    text = (f"{s['instruction_steps']} steps, {s['instruction_invalid_refs']} invalid, "
+            f"{s['unreferenced_ingredients']} unreferenced")
+    if s["unstructured_instructions"]:
+        text += f" ({s['unstructured_instructions']} unstructured)"
+    return text
+
+
 def _label(run: ReportRun) -> str:
     return f"{run.scenario} [{run.snapshot}] {run.config}"
 
@@ -258,7 +271,7 @@ def _compliance_section(runs: Sequence[ReportRun]) -> List[str]:
 
 def _runs_table(runs: Sequence[ReportRun]) -> List[str]:
     header = ["scenario", "snapshot", "config", "verdict", "approved", "compliance",
-              "citation validity", "deal share", "jaccard mean/max",
+              "citation validity", "instruction refs", "deal share", "jaccard mean/max",
               "budget LB per-recipe-sum", "budget LB per-unique-deal", "budget status",
               "savings", "llm s", "tokens"]
     rows = []
@@ -267,7 +280,8 @@ def _runs_table(runs: Sequence[ReportRun]) -> List[str]:
         rows.append([
             s["scenario"], f"{s['snapshot']} ({r.snapshot_as_of or NA_TEXT})", r.config,
             s["verdict"], f"{s['recipes_approved']}/{s['recipes_requested']}",
-            s["compliance_gate"], _pct(s["citation_validity"]), _pct(s["deal_share"]),
+            s["compliance_gate"], _pct(s["citation_validity"]), _instruction_refs(s),
+            _pct(s["deal_share"]),
             f"{_num(s['mean_jaccard'])}/{_num(s['max_jaccard'])}",
             _money(s["cost_per_recipe_sum_lb"]), _money(s["cost_per_unique_deal_lb"]),
             f"{s['budget_status']} (avail {_money(s['budget_available'])})",

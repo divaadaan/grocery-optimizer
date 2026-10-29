@@ -60,6 +60,15 @@ practical, delicious recipes.
 - If an ingredient is not in either list, leave it out of the recipe.
 - "name" is how the ingredient reads in the recipe; costs are computed for you.
 
+**Instruction Format:**
+- Write EVERY ingredient in "instructions" as a placeholder {{N}}, where N is
+  that ingredient's 0-based position in this recipe's "ingredients" list
+  ({{0}} is the first ingredient, {{1}} the second, ...).
+- Never type an ingredient or food name in a step; use its placeholder. The
+  placeholder is replaced with the ingredient's name for you.
+- Use no other curly braces in the steps.
+- Every ingredient should appear in at least one step.
+
 **Output Format (JSON array):**
 [
   {{
@@ -70,7 +79,7 @@ practical, delicious recipes.
       {{"name": "...", "deal_id": 123, "quantity": "...", "unit": "..."}},
       {{"name": "...", "product_id": 45, "quantity": "...", "unit": "..."}}
     ],
-    "instructions": ["Step 1...", "Step 2...", ...],
+    "instructions": ["Heat {{1}} in a pan.", "Add {{0}} and cook for 5 minutes.", ...],
     "estimated_prep_time": 30,
     "servings": {servings}
   }},
@@ -101,6 +110,15 @@ Create a NEW recipe using only these deals and staples that addresses the feedba
 - EVERY ingredient must cite exactly one source: "deal_id" for an assigned deal,
   OR "product_id" for a pantry staple, copied exactly from the lists above
 
+**Instruction Format:**
+- Write EVERY ingredient in "instructions" as a placeholder {{N}}, where N is
+  that ingredient's 0-based position in your NEW recipe's "ingredients" list
+  ({{0}} is the first ingredient, {{1}} the second, ...).
+- Never type an ingredient or food name in a step; use its placeholder. The
+  placeholder is replaced with the ingredient's name for you.
+- Use no other curly braces in the steps.
+- Every ingredient should appear in at least one step.
+
 **Output Format (JSON):**
 {{
   "name": "Revised Recipe Name",
@@ -109,7 +127,7 @@ Create a NEW recipe using only these deals and staples that addresses the feedba
     {{"name": "...", "deal_id": 123, "quantity": "...", "unit": "..."}},
     {{"name": "...", "product_id": 45, "quantity": "...", "unit": "..."}}
   ],
-  "instructions": [...],
+  "instructions": ["Heat {{1}} in a pan.", "Add {{0}} and cook for 5 minutes.", ...],
   "servings": {servings}
 }}
 

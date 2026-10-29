@@ -13,6 +13,7 @@ from .llm_output import (
     raw_output_report,
 )
 from .costing import deals_by_id, ingredient_price, price_recipe
+from .instruction_refs import render_step, structured_steps
 from .llm_factory import make_llm, model_name
 from ..services import products
 from ..services.mlflow_logger import MLflowLogger
@@ -86,9 +87,37 @@ def random_recipe_id(chef_id: str, model: GeneratedRecipe) -> str:
     return str(uuid.uuid4())
 
 
+def cited_name(ingredient: Dict, deal_lookup: Dict[str, Dict],
+               staple_names: Dict[str, str]) -> str:
+    """The name of what an ingredient *cites*: the deal row's
+    ``product_name`` or the offered staple's name. Falls back to the model's
+    display ``name`` only if the citation does not resolve here (validation
+    has already required the citation to be one this SousChef was offered)."""
+    if ingredient.get("deal_id") is not None:
+        deal = deal_lookup.get(str(ingredient["deal_id"])) or {}
+        name = deal.get("product_name")
+    else:
+        name = staple_names.get(str(ingredient.get("product_id")))
+    return name or ingredient.get("name", "")
+
+
+def render_instructions(ingredients: List[Dict], templates: List[str],
+                        deal_lookup: Dict[str, Dict],
+                        staples: Optional[List[Dict]] = None) -> List[str]:
+    """Render placeholder steps (``app/agents/instruction_refs.py``) to the
+    text a user reads, substituting each ``{N}`` with the cited name of
+    ``ingredients[N]``. The ingredient words come from cited,
+    compliance-checked items; words the model typed literally do not (see
+    the residual-risk note in ``instruction_refs``)."""
+    staple_names = {str(s.get("product_id")): s.get("name", "") for s in staples or []}
+    names = [cited_name(ing, deal_lookup, staple_names) for ing in ingredients]
+    return [render_step(t, names.__getitem__) for t in templates]
+
+
 def _to_recipe(
     chef_id: str, model: GeneratedRecipe, deal_lookup: Dict[str, Dict],
     recipe_id: RecipeIdFactory = random_recipe_id,
+    staples: Optional[List[Dict]] = None,
 ) -> Recipe:
     """Build a Recipe from validated model output.
 
@@ -96,6 +125,11 @@ def _to_recipe(
     overwritten from that citation (deal sale price, 0 for an on-hand staple)
     because model arithmetic is not trusted. total_cost is filled in by the
     caller from costing.price_recipe.
+
+    ``instructions`` is the rendered text (what every string consumer reads);
+    ``instruction_steps`` keeps the model's placeholder templates and their
+    ingredient indices. ``staples`` are the staples offered to this call
+    (``offered_staples``), for their names.
     """
     ingredients = []
     for ing in model.ingredients:
@@ -114,13 +148,27 @@ def _to_recipe(
         recipe_id=recipe_id(chef_id, model),
         name=model.name,
         ingredients=ingredients,
-        instructions=model.instructions,
+        instructions=render_instructions(ingredients, model.instructions,
+                                         deal_lookup, staples),
+        instruction_steps=structured_steps(model.instructions),
         servings=model.servings,
         total_cost=pricing.total_cost,
         estimated_prep_time=model.estimated_prep_time,
         meal_type=model.meal_type,
         cuisine_type=model.cuisine_type,
     )
+
+
+def retry_view(recipe: Recipe) -> Dict:
+    """The rejected recipe as the retry prompt shows it: instructions as the
+    placeholder templates the model wrote, not the rendered text, so a
+    revision reuses ``{N}`` references instead of copying ingredient names
+    into the steps. Recipes without ``instruction_steps`` pass through."""
+    steps = recipe.get("instruction_steps")
+    view = {k: v for k, v in recipe.items() if k != "instruction_steps"}
+    if steps:
+        view["instructions"] = [s["template"] for s in steps]
+    return view
 
 
 class SousChef:
@@ -192,7 +240,7 @@ class SousChef:
 
         try:
             batch, raw = invoke_validated(self.llm, prompt, RecipeBatch, context=context)
-            recipes = [_to_recipe(chef_id, r, deal_lookup, self.recipe_id)
+            recipes = [_to_recipe(chef_id, r, deal_lookup, self.recipe_id, staples)
                        for r in batch.recipes]
 
             duration = time.time() - start_time
@@ -243,7 +291,7 @@ class SousChef:
             return None
 
         prompt = PromptTemplates.SOUS_CHEF_RETRY_WITH_FEEDBACK.format(
-            original_recipe_json=json.dumps(original_recipe, indent=2),
+            original_recipe_json=json.dumps(retry_view(original_recipe), indent=2),
             feedback=feedback,
             ingredients_json=json.dumps(deals, indent=2),
             pantry_json=json.dumps(staples, indent=2),
@@ -254,7 +302,8 @@ class SousChef:
             batch, _raw = invoke_validated(self.llm, prompt, RecipeBatch, context=context)
 
             # Create new recipe with new ID
-            recipe = _to_recipe(chef_id, batch.recipes[0], deal_lookup, self.recipe_id)
+            recipe = _to_recipe(chef_id, batch.recipes[0], deal_lookup, self.recipe_id,
+                                staples)
 
             print(f"[{chef_id}] Regenerated: {recipe['name']}")
             return recipe

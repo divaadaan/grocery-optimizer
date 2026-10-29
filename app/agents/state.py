@@ -19,7 +19,12 @@ class Recipe(TypedDict):
     # deal_id (an assigned deal) / product_id (a pantry staple) is set; name
     # is display-only. price is computed by costing.py from the citation.
     ingredients: List[Dict]
+    # Rendered step text: each {N} placeholder replaced by the cited name of
+    # ingredients[N] (sous_chef.render_instructions). What string consumers read.
     instructions: List[str]
+    # [{template, ingredient_refs}]: the model's placeholder steps and the
+    # ingredient indices each references (agents/instruction_refs.py).
+    instruction_steps: List[Dict]
     servings: int
     total_cost: float
     estimated_prep_time: int

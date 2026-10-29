@@ -1,52 +1,52 @@
 {
  "artifact": {
-  "created_at": "2026-10-29T21:36:53+00:00",
+  "created_at": "2026-10-29T23:33:43+00:00",
   "format_version": 1,
   "kind": "recipe-eval-run",
   "mode": "record"
  },
  "code": {
   "git_dirty": true,
-  "git_sha": "e6b47dadd0ef12f42bb3986bef5ee41c07060db8"
+  "git_sha": "d5c89255f923faeab09c7ca63c04a8b093028705"
  },
  "final_state": {
   "agent_call_log": [
    {
     "action": "plan_ingredient_groups",
     "agent": "Chef_Orchestrator",
-    "duration": 0.0006787776947021484,
+    "duration": 0.0006961822509765625,
     "success": true,
-    "timestamp": 1793309813.7381015
+    "timestamp": 1793316823.7191992
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.0002906322479248047,
-    "recipe_id": "be54727c-c418-5a48-a572-28934d4c13b3",
-    "timestamp": 1793309813.7430463
+    "duration": 0.00033974647521972656,
+    "recipe_id": "99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e",
+    "timestamp": 1793316823.7243135
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.00022745132446289062,
-    "recipe_id": "d923f852-e710-5a65-a499-fda7813ef2a7",
-    "timestamp": 1793309813.7432747
+    "duration": 0.00025463104248046875,
+    "recipe_id": "becb1037-60cb-5a45-9441-da7e49f3cc01",
+    "timestamp": 1793316823.7245696
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.0002560615539550781,
-    "recipe_id": "98ccce74-7dd4-5e92-8506-0a52c6bc3142",
-    "timestamp": 1793309813.7435322
+    "duration": 0.0002117156982421875,
+    "recipe_id": "3a34bbf0-96f6-5d16-9f1f-43ceaae657e1",
+    "timestamp": 1793316823.7247822
    }
   ],
   "approved_recipe_ids": [
-   "be54727c-c418-5a48-a572-28934d4c13b3",
-   "d923f852-e710-5a65-a499-fda7813ef2a7",
-   "98ccce74-7dd4-5e92-8506-0a52c6bc3142"
+   "99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e",
+   "becb1037-60cb-5a45-9441-da7e49f3cc01",
+   "3a34bbf0-96f6-5d16-9f1f-43ceaae657e1"
   ],
   "available_deals": [
    {
@@ -945,7 +945,7 @@
   "errors": [],
   "estimated_savings": 5.8,
   "generated_recipes": {
-   "98ccce74-7dd4-5e92-8506-0a52c6bc3142": {
+   "3a34bbf0-96f6-5d16-9f1f-43ceaae657e1": {
     "cuisine_type": "Any",
     "estimated_prep_time": 20,
     "ingredients": [
@@ -971,16 +971,31 @@
       "unit": "tsp"
      }
     ],
+    "instruction_steps": [
+     {
+      "ingredient_refs": [
+       0,
+       1,
+       2
+      ],
+      "template": "Combine {0}, {1}, {2}."
+     },
+     {
+      "ingredient_refs": [],
+      "template": "Cook it."
+     }
+    ],
     "instructions": [
+     "Combine Spaghetti, Carrots, All-Purpose Flour.",
      "Cook it."
     ],
     "meal_type": "dinner",
     "name": "Scripted 22+16",
-    "recipe_id": "98ccce74-7dd4-5e92-8506-0a52c6bc3142",
+    "recipe_id": "3a34bbf0-96f6-5d16-9f1f-43ceaae657e1",
     "servings": 2,
     "total_cost": 2.48
    },
-   "be54727c-c418-5a48-a572-28934d4c13b3": {
+   "99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e": {
     "cuisine_type": "Any",
     "estimated_prep_time": 20,
     "ingredients": [
@@ -1006,16 +1021,31 @@
       "unit": "tsp"
      }
     ],
+    "instruction_steps": [
+     {
+      "ingredient_refs": [
+       0,
+       1,
+       2
+      ],
+      "template": "Combine {0}, {1}, {2}."
+     },
+     {
+      "ingredient_refs": [],
+      "template": "Cook it."
+     }
+    ],
     "instructions": [
+     "Combine Bananas, Pasta Penne, All-Purpose Flour.",
      "Cook it."
     ],
     "meal_type": "dinner",
     "name": "Scripted 15+3",
-    "recipe_id": "be54727c-c418-5a48-a572-28934d4c13b3",
+    "recipe_id": "99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e",
     "servings": 2,
     "total_cost": 2.18
    },
-   "d923f852-e710-5a65-a499-fda7813ef2a7": {
+   "becb1037-60cb-5a45-9441-da7e49f3cc01": {
     "cuisine_type": "Any",
     "estimated_prep_time": 20,
     "ingredients": [
@@ -1041,12 +1071,27 @@
       "unit": "tsp"
      }
     ],
+    "instruction_steps": [
+     {
+      "ingredient_refs": [
+       0,
+       1,
+       2
+      ],
+      "template": "Combine {0}, {1}, {2}."
+     },
+     {
+      "ingredient_refs": [],
+      "template": "Cook it."
+     }
+    ],
     "instructions": [
+     "Combine Canned Tomatoes, Bell Peppers Red, All-Purpose Flour.",
      "Cook it."
     ],
     "meal_type": "dinner",
     "name": "Scripted 21+12",
-    "recipe_id": "d923f852-e710-5a65-a499-fda7813ef2a7",
+    "recipe_id": "becb1037-60cb-5a45-9441-da7e49f3cc01",
     "servings": 2,
     "total_cost": 2.48
    }
@@ -1486,16 +1531,16 @@
    3
   ],
   "sous_chef_assignments": {
-   "98ccce74-7dd4-5e92-8506-0a52c6bc3142": "sous_chef_3",
-   "be54727c-c418-5a48-a572-28934d4c13b3": "sous_chef_1",
-   "d923f852-e710-5a65-a499-fda7813ef2a7": "sous_chef_2"
+   "3a34bbf0-96f6-5d16-9f1f-43ceaae657e1": "sous_chef_3",
+   "99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e": "sous_chef_1",
+   "becb1037-60cb-5a45-9441-da7e49f3cc01": "sous_chef_2"
   },
   "status": "completed",
   "target_ingredients_per_group": 0,
   "total_cost": 7.140000000000001,
   "user_id": 1,
   "validation_results": {
-   "98ccce74-7dd4-5e92-8506-0a52c6bc3142": {
+   "3a34bbf0-96f6-5d16-9f1f-43ceaae657e1": {
     "approved": true,
     "dietary_compliance": {
      "allergen_free": true,
@@ -1503,13 +1548,13 @@
      "violations": []
     },
     "feedback": "Approved: all ingredients comply with the vegetarian restriction.",
-    "health_score": 76.0,
+    "health_score": 80.0,
     "nutrition_facts": {
-     "calories_per_serving": 836
+     "calories_per_serving": 890
     },
-    "recipe_id": "98ccce74-7dd4-5e92-8506-0a52c6bc3142"
+    "recipe_id": "3a34bbf0-96f6-5d16-9f1f-43ceaae657e1"
    },
-   "be54727c-c418-5a48-a572-28934d4c13b3": {
+   "99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e": {
     "approved": true,
     "dietary_compliance": {
      "allergen_free": true,
@@ -1517,13 +1562,13 @@
      "violations": []
     },
     "feedback": "Approved: all ingredients comply with the vegetarian restriction.",
-    "health_score": 76.0,
+    "health_score": 82.0,
     "nutrition_facts": {
-     "calories_per_serving": 836
+     "calories_per_serving": 892
     },
-    "recipe_id": "be54727c-c418-5a48-a572-28934d4c13b3"
+    "recipe_id": "99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e"
    },
-   "d923f852-e710-5a65-a499-fda7813ef2a7": {
+   "becb1037-60cb-5a45-9441-da7e49f3cc01": {
     "approved": true,
     "dietary_compliance": {
      "allergen_free": true,
@@ -1531,11 +1576,11 @@
      "violations": []
     },
     "feedback": "Approved: all ingredients comply with the vegetarian restriction.",
-    "health_score": 41.0,
+    "health_score": 60.0,
     "nutrition_facts": {
-     "calories_per_serving": 851
+     "calories_per_serving": 220
     },
-    "recipe_id": "d923f852-e710-5a65-a499-fda7813ef2a7"
+    "recipe_id": "becb1037-60cb-5a45-9441-da7e49f3cc01"
    }
   },
   "warnings": []
@@ -1572,7 +1617,7 @@
  "llm_calls": [
   {
    "error": null,
-   "latency_s": 0.00034032600069622276,
+   "latency_s": 0.0003501249993860256,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "chef-script",
@@ -1606,7 +1651,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00037003499983256916,
+   "latency_s": 0.0003716749997693114,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1620,19 +1665,19 @@
    "request": {
     "messages": [
      {
-      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 15,\n    \"product_name\": \"Bananas\",\n    \"sale_price\": 0.69,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 3,\n    \"product_name\": \"Pasta Penne\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Step 1...\", \"Step 2...\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
+      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 15,\n    \"product_name\": \"Bananas\",\n    \"sale_price\": 0.69,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 3,\n    \"product_name\": \"Pasta Penne\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Instruction Format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is\n  that ingredient's 0-based position in this recipe's \"ingredients\" list\n  ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder. The\n  placeholder is replaced with the ingredient's name for you.\n- Use no other curly braces in the steps.\n- Every ingredient should appear in at least one step.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Heat {1} in a pan.\", \"Add {0} and cook for 5 minutes.\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "d2982d1512f4bb1480c9cc9337ba76d75c759509ed3f84a48ea992586f4e558d",
+   "request_sha256": "bd7fe92b789bb2eda428b9923061bfcd2b7971d74e508236490ea7171dd3946a",
    "response": {
-    "content": "{\"recipes\": [{\"name\": \"Scripted 15+3\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Any\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"Bananas\", \"deal_id\": 15, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"Pasta Penne\", \"deal_id\": 3, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"All-Purpose Flour\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Cook it.\"]}]}",
+    "content": "{\"recipes\": [{\"name\": \"Scripted 15+3\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Any\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"Bananas\", \"deal_id\": 15, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"Pasta Penne\", \"deal_id\": 3, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"All-Purpose Flour\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Combine {0}, {1}, {2}.\", \"Cook it.\"]}]}",
     "response_metadata": {},
     "usage": {
-     "input_tokens": 718,
-     "output_tokens": 102,
-     "total_tokens": 820
+     "input_tokens": 841,
+     "output_tokens": 108,
+     "total_tokens": 949
     }
    },
    "role": "sous_chef",
@@ -1640,7 +1685,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00017141700027423212,
+   "latency_s": 0.00017530700097267982,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1654,19 +1699,19 @@
    "request": {
     "messages": [
      {
-      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 21,\n    \"product_name\": \"Canned Tomatoes\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 12,\n    \"product_name\": \"Bell Peppers Red\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Step 1...\", \"Step 2...\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
+      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 21,\n    \"product_name\": \"Canned Tomatoes\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 12,\n    \"product_name\": \"Bell Peppers Red\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Instruction Format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is\n  that ingredient's 0-based position in this recipe's \"ingredients\" list\n  ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder. The\n  placeholder is replaced with the ingredient's name for you.\n- Use no other curly braces in the steps.\n- Every ingredient should appear in at least one step.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Heat {1} in a pan.\", \"Add {0} and cook for 5 minutes.\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "027cb77c370e60982b4458830309af5b3da345508f5af72eb1dc3b0802588e56",
+   "request_sha256": "1730393eedb4b26c4f961159f71928d19f669b7079abd80b826e189441dceb06",
    "response": {
     "content": "Sure! Here is a recipe: (not JSON)",
     "response_metadata": {},
     "usage": {
-     "input_tokens": 721,
+     "input_tokens": 845,
      "output_tokens": 8,
-     "total_tokens": 729
+     "total_tokens": 853
     }
    },
    "role": "sous_chef",
@@ -1674,7 +1719,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.0002004469997700653,
+   "latency_s": 0.00017922699953487609,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1688,7 +1733,7 @@
    "request": {
     "messages": [
      {
-      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 21,\n    \"product_name\": \"Canned Tomatoes\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 12,\n    \"product_name\": \"Bell Peppers Red\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Step 1...\", \"Step 2...\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
+      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 21,\n    \"product_name\": \"Canned Tomatoes\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 12,\n    \"product_name\": \"Bell Peppers Red\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Instruction Format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is\n  that ingredient's 0-based position in this recipe's \"ingredients\" list\n  ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder. The\n  placeholder is replaced with the ingredient's name for you.\n- Use no other curly braces in the steps.\n- Every ingredient should appear in at least one step.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Heat {1} in a pan.\", \"Add {0} and cook for 5 minutes.\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
       "type": "human"
      },
      {
@@ -1701,14 +1746,14 @@
      }
     ]
    },
-   "request_sha256": "67f9e3a075ec68ef0a862d9eea2729c82c3d3cbd33331429aaafdd4a67dd212e",
+   "request_sha256": "8dcc72900d09e92ecbdf0601d6518dc52eeba2462612ecbfd0e3ac360b653c5d",
    "response": {
-    "content": "{\"recipes\": [{\"name\": \"Scripted 21+12\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Any\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"Canned Tomatoes\", \"deal_id\": 21, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"Bell Peppers Red\", \"deal_id\": 12, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"All-Purpose Flour\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Cook it.\"]}]}",
+    "content": "{\"recipes\": [{\"name\": \"Scripted 21+12\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Any\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"Canned Tomatoes\", \"deal_id\": 21, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"Bell Peppers Red\", \"deal_id\": 12, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"All-Purpose Flour\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Combine {0}, {1}, {2}.\", \"Cook it.\"]}]}",
     "response_metadata": {},
     "usage": {
-     "input_tokens": 783,
-     "output_tokens": 105,
-     "total_tokens": 888
+     "input_tokens": 907,
+     "output_tokens": 112,
+     "total_tokens": 1019
     }
    },
    "role": "sous_chef",
@@ -1716,7 +1761,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00015713799984951038,
+   "latency_s": 0.0001609270002518315,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1730,19 +1775,19 @@
    "request": {
     "messages": [
      {
-      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 22,\n    \"product_name\": \"Spaghetti\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 16,\n    \"product_name\": \"Carrots\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Step 1...\", \"Step 2...\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
+      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 22,\n    \"product_name\": \"Spaghetti\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 16,\n    \"product_name\": \"Carrots\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Instruction Format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is\n  that ingredient's 0-based position in this recipe's \"ingredients\" list\n  ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder. The\n  placeholder is replaced with the ingredient's name for you.\n- Use no other curly braces in the steps.\n- Every ingredient should appear in at least one step.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Heat {1} in a pan.\", \"Add {0} and cook for 5 minutes.\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "96230685a301be35839ac9d8579862b5823991822f1ae892c4ca11cecf2b6213",
+   "request_sha256": "2739fd2c8b91e1cddb7394c45a718aa99a08493860ad083b0be05722a59b0812",
    "response": {
     "content": "Sure! Here is a recipe: (not JSON)",
     "response_metadata": {},
     "usage": {
-     "input_tokens": 717,
+     "input_tokens": 841,
      "output_tokens": 8,
-     "total_tokens": 725
+     "total_tokens": 849
     }
    },
    "role": "sous_chef",
@@ -1750,7 +1795,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.0001721379994705785,
+   "latency_s": 0.00016941800095082726,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1764,7 +1809,7 @@
    "request": {
     "messages": [
      {
-      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 22,\n    \"product_name\": \"Spaghetti\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 16,\n    \"product_name\": \"Carrots\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Step 1...\", \"Step 2...\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
+      "content": "You are a creative SousChef specializing in practical, delicious recipes.\n\n**Your Assigned Deals (cite each by its deal_id):**\n[\n  {\n    \"deal_id\": 22,\n    \"product_name\": \"Spaghetti\",\n    \"sale_price\": 0.99,\n    \"quantity_estimate\": \"1\"\n  },\n  {\n    \"deal_id\": 16,\n    \"product_name\": \"Carrots\",\n    \"sale_price\": 1.49,\n    \"quantity_estimate\": \"1\"\n  }\n]\n\n**Pantry Staples Already On Hand (cite each by its product_id):**\n[\n  {\n    \"product_id\": 139,\n    \"name\": \"All-Purpose Flour\"\n  },\n  {\n    \"product_id\": 134,\n    \"name\": \"Baking Powder\"\n  },\n  {\n    \"product_id\": 132,\n    \"name\": \"Baking Soda\"\n  },\n  {\n    \"product_id\": 144,\n    \"name\": \"Black Pepper\"\n  },\n  {\n    \"product_id\": 124,\n    \"name\": \"Brown Sugar\"\n  },\n  {\n    \"product_id\": 142,\n    \"name\": \"Butter\"\n  },\n  {\n    \"product_id\": 126,\n    \"name\": \"Chili Flakes\"\n  },\n  {\n    \"product_id\": 131,\n    \"name\": \"Cornstarch\"\n  },\n  {\n    \"product_id\": 141,\n    \"name\": \"Dijon Mustard\"\n  },\n  {\n    \"product_id\": 125,\n    \"name\": \"Dried Basil\"\n  },\n  {\n    \"product_id\": 137,\n    \"name\": \"Dried Oregano\"\n  },\n  {\n    \"product_id\": 135,\n    \"name\": \"Garlic\"\n  },\n  {\n    \"product_id\": 136,\n    \"name\": \"Garlic Powder\"\n  },\n  {\n    \"product_id\": 140,\n    \"name\": \"Granulated Sugar\"\n  },\n  {\n    \"product_id\": 147,\n    \"name\": \"Ground Cinnamon\"\n  },\n  {\n    \"product_id\": 145,\n    \"name\": \"Ground Cumin\"\n  },\n  {\n    \"product_id\": 150,\n    \"name\": \"Honey\"\n  },\n  {\n    \"product_id\": 146,\n    \"name\": \"Olive Oil\"\n  },\n  {\n    \"product_id\": 149,\n    \"name\": \"Paprika\"\n  },\n  {\n    \"product_id\": 130,\n    \"name\": \"Salt\"\n  },\n  {\n    \"product_id\": 128,\n    \"name\": \"Soy Sauce\"\n  },\n  {\n    \"product_id\": 127,\n    \"name\": \"Vegetable Oil\"\n  },\n  {\n    \"product_id\": 129,\n    \"name\": \"Water\"\n  },\n  {\n    \"product_id\": 138,\n    \"name\": \"White Vinegar\"\n  },\n  {\n    \"product_id\": 133,\n    \"name\": \"Yellow Onion\"\n  }\n]\n\n**Recipe Requirements:**\n- Number of recipes to create: 1\n- Servings per recipe: 2\n- Dietary restrictions: vegetarian\n- Use ONLY the assigned deals and the pantry staples listed above. Nothing else.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for an assigned deal,\n  OR \"product_id\" for a pantry staple. Copy the id exactly from the lists above.\n- If an ingredient is not in either list, leave it out of the recipe.\n- \"name\" is how the ingredient reads in the recipe; costs are computed for you.\n\n**Instruction Format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is\n  that ingredient's 0-based position in this recipe's \"ingredients\" list\n  ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder. The\n  placeholder is replaced with the ingredient's name for you.\n- Use no other curly braces in the steps.\n- Every ingredient should appear in at least one step.\n\n**Output Format (JSON array):**\n[\n  {\n    \"name\": \"Recipe Name\",\n    \"meal_type\": \"breakfast|lunch|dinner\",\n    \"cuisine_type\": \"Italian|Mexican|Asian|American|etc\",\n    \"ingredients\": [\n      {\"name\": \"...\", \"deal_id\": 123, \"quantity\": \"...\", \"unit\": \"...\"},\n      {\"name\": \"...\", \"product_id\": 45, \"quantity\": \"...\", \"unit\": \"...\"}\n    ],\n    \"instructions\": [\"Heat {1} in a pan.\", \"Add {0} and cook for 5 minutes.\", ...],\n    \"estimated_prep_time\": 30,\n    \"servings\": 2\n  },\n  ...\n]\n\nGenerate 1 creative recipes now:",
       "type": "human"
      },
      {
@@ -1777,14 +1822,14 @@
      }
     ]
    },
-   "request_sha256": "66024614f39138eccd660c82f5b02f715b1c9f21b74b46294baef3753ab77fff",
+   "request_sha256": "e5ee8b9e43533c02de6c941ea28ec2aa2a2efc82f683f2c10e76ea00e4b5db92",
    "response": {
-    "content": "{\"recipes\": [{\"name\": \"Scripted 22+16\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Any\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"Spaghetti\", \"deal_id\": 22, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"Carrots\", \"deal_id\": 16, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"All-Purpose Flour\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Cook it.\"]}]}",
+    "content": "{\"recipes\": [{\"name\": \"Scripted 22+16\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Any\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"Spaghetti\", \"deal_id\": 22, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"Carrots\", \"deal_id\": 16, \"quantity\": \"1\", \"unit\": \"unit\"}, {\"name\": \"All-Purpose Flour\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Combine {0}, {1}, {2}.\", \"Cook it.\"]}]}",
     "response_metadata": {},
     "usage": {
-     "input_tokens": 780,
-     "output_tokens": 102,
-     "total_tokens": 882
+     "input_tokens": 903,
+     "output_tokens": 108,
+     "total_tokens": 1011
     }
    },
    "role": "sous_chef",
@@ -1792,7 +1837,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00017783800012693973,
+   "latency_s": 0.0001993469995795749,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1806,14 +1851,14 @@
    "request": {
     "messages": [
      {
-      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"be54727c-c418-5a48-a572-28934d4c13b3\",\n  \"name\": \"Scripted 15+3\",\n  \"ingredients\": [\n    {\n      \"name\": \"Bananas\",\n      \"deal_id\": 15,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.69\n    },\n    {\n      \"name\": \"Pasta Penne\",\n      \"deal_id\": 3,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.18,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e\",\n  \"name\": \"Scripted 15+3\",\n  \"ingredients\": [\n    {\n      \"name\": \"Bananas\",\n      \"deal_id\": 15,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.69\n    },\n    {\n      \"name\": \"Pasta Penne\",\n      \"deal_id\": 3,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Combine Bananas, Pasta Penne, All-Purpose Flour.\",\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.18,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "3473d61300ab1642fb1708f00432c6c757c2c31263c9b187c0147abeb82422c6",
+   "request_sha256": "a9098d7c4f1d2110bb4036fec3abf9f9eea1c0770a48cea99a8bc5a27e1d820a",
    "response": {
-    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 836}, \"health_score\": \"76\"}",
+    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 892}, \"health_score\": \"82\"}",
     "response_metadata": {},
     "usage": null
    },
@@ -1822,7 +1867,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00012600799982465105,
+   "latency_s": 0.00013709899940295145,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1836,14 +1881,14 @@
    "request": {
     "messages": [
      {
-      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"d923f852-e710-5a65-a499-fda7813ef2a7\",\n  \"name\": \"Scripted 21+12\",\n  \"ingredients\": [\n    {\n      \"name\": \"Canned Tomatoes\",\n      \"deal_id\": 21,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Bell Peppers Red\",\n      \"deal_id\": 12,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"becb1037-60cb-5a45-9441-da7e49f3cc01\",\n  \"name\": \"Scripted 21+12\",\n  \"ingredients\": [\n    {\n      \"name\": \"Canned Tomatoes\",\n      \"deal_id\": 21,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Bell Peppers Red\",\n      \"deal_id\": 12,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Combine Canned Tomatoes, Bell Peppers Red, All-Purpose Flour.\",\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "f69fe5575132585f83150bf09c5f9f11f7219e8e115f2d92767c8a4b93a861bd",
+   "request_sha256": "460197e9bca5b048cbdf45773ce1470539074d9ed974f1e65352e1dab6a2aeb9",
    "response": {
-    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 851}, \"health_score\": \"41\"}",
+    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 220}, \"health_score\": \"60\"}",
     "response_metadata": {},
     "usage": null
    },
@@ -1852,7 +1897,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.000130137999803992,
+   "latency_s": 0.00011651900058495812,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1866,14 +1911,14 @@
    "request": {
     "messages": [
      {
-      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"98ccce74-7dd4-5e92-8506-0a52c6bc3142\",\n  \"name\": \"Scripted 22+16\",\n  \"ingredients\": [\n    {\n      \"name\": \"Spaghetti\",\n      \"deal_id\": 22,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Carrots\",\n      \"deal_id\": 16,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"3a34bbf0-96f6-5d16-9f1f-43ceaae657e1\",\n  \"name\": \"Scripted 22+16\",\n  \"ingredients\": [\n    {\n      \"name\": \"Spaghetti\",\n      \"deal_id\": 22,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Carrots\",\n      \"deal_id\": 16,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Combine Spaghetti, Carrots, All-Purpose Flour.\",\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "8988f08e6fbd1d213041a43ac6b53b2933370ea40f7a7bb069424b52888b6717",
+   "request_sha256": "271dde67ae7c23556ab7e5010a7cfe46a3db117896f0976817db15d23b513dc4",
    "response": {
-    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 836}, \"health_score\": \"76\"}",
+    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 890}, \"health_score\": \"80\"}",
     "response_metadata": {},
     "usage": null
    },
@@ -1934,9 +1979,9 @@
  },
  "state_notes": [],
  "timing": {
-  "llm_seconds": 0.001845484999648761,
-  "started_at": "2026-10-29T21:36:53+00:00",
-  "wall_seconds": 0.018266645999574393
+  "llm_seconds": 0.0018596440004330361,
+  "started_at": "2026-10-29T23:33:43+00:00",
+  "wall_seconds": 0.018912871999418712
  },
  "tracker_calls": [
   "start_run",

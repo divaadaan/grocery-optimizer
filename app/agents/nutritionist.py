@@ -72,7 +72,11 @@ class Nutritionist:
             # health estimate. Best-effort — a schema/parse failure must not
             # affect the (already-decided) compliance verdict.
             prompt = PromptTemplates.NUTRITIONIST_VALIDATION.format(
-                recipe_json=json.dumps(recipe, indent=2),
+                # Rendered instructions only; the placeholder templates
+                # (instruction_steps) would just duplicate them.
+                recipe_json=json.dumps(
+                    {k: v for k, v in recipe.items() if k != "instruction_steps"},
+                    indent=2),
                 dietary_restrictions=", ".join(state["dietary_restrictions"])
             )
             nutrition_facts: Dict = {}

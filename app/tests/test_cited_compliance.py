@@ -423,8 +423,9 @@ def test_staples_offered_are_filtered_by_restriction():
 
 
 def _batch(*ingredients):
+    steps = ["Cook " + " and ".join(f"{{{i}}}" for i in range(len(ingredients))) + "."]
     return json.dumps([{"name": "Ratatouille", "ingredients": list(ingredients),
-                        "instructions": ["Cook."], "servings": 2}])
+                        "instructions": steps, "servings": 2}])
 
 
 def test_generate_recipes_retries_on_unoffered_citation_and_prices_from_citations():
@@ -482,7 +483,7 @@ def test_generate_recipes_skips_a_group_with_nothing_citable():
 def test_regenerate_with_feedback_uses_the_same_citation_rules():
     chef = _sous_chef([
         json.dumps({"name": "Fixed", "ingredients": [{"name": "Eggplant", "deal_id": 1}],
-                    "instructions": ["Cook."]}),
+                    "instructions": ["Cook {0}."]}),
     ])
     recipe = chef.regenerate_with_feedback(
         chef_id="sous_chef_2", original_recipe={"name": "Old", "ingredients": []},
