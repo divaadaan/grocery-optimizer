@@ -329,9 +329,9 @@ def render_markdown(runs: Sequence[ReportRun], generated_at: str) -> str:
     out += ["", "Budget columns are **lower bounds** (one deal unit per cited ingredient; "
             "ignores quantity, household size, multi-buy pricing; pantry staples cost 0). "
             "Both cost semantics are shown: *per-recipe-sum* charges a deal reused across "
-            "recipes once per recipe (the plan total); *per-unique-deal* charges each deal "
-            "once (the shopping list). `savings` is shown only where regular prices are "
-            "known, otherwise n/a. Token totals sum only calls that reported usage.", ""]
+            "recipes once per recipe; *per-unique-deal* charges each deal once (the "
+            "shopping list, and the plan total since Track C). `savings` is shown only "
+            "where regular prices are known, otherwise n/a. Token totals sum only calls that reported usage.", ""]
     out += ["## Aggregates", ""]
     out += _agg_table("By model configuration", "model configuration",
                       _group(runs, lambda r: r.config))

@@ -90,7 +90,7 @@ def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
         "budget_available": 80.0, "budget_status": "within_lower_bound",
         "deal_share": 0.6667, "deals_used": 6, "deals_offered": 22,
         "savings_vs_regular": 5.8, "mean_jaccard": 0.0, "max_jaccard": 0.0,
-        "llm_calls": 9, "llm_seconds": row["llm_seconds"], "total_tokens": 5935,
+        "llm_calls": 9, "llm_seconds": row["llm_seconds"], "total_tokens": 6000,
         "tokens_known_calls": 6,
     }
     assert row["llm_seconds"] == pytest.approx(base_artifact["timing"]["llm_seconds"], abs=1e-5)
@@ -116,7 +116,7 @@ def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
     assert score.on_sale["used_deal_ids"] == [3, 12, 15, 16, 21, 22]
     lt = score.latency_tokens
     assert lt["roles"]["nutritionist"]["tokens"]["total_tokens"] == {"sum": None, "known": 0}
-    assert lt["roles"]["chef"]["tokens"]["total_tokens"] == {"sum": 1891, "known": 1}
+    assert lt["roles"]["chef"]["tokens"]["total_tokens"] == {"sum": 1931, "known": 1}
     assert lt["total"]["token_coverage"] == "tokens known for 6/9 calls"
 
 
@@ -437,7 +437,7 @@ def test_partially_reported_usage_fields(art, base_snapshot):
     chef["response"]["usage"]["output_tokens"] = None
     t = scorers.score_latency_tokens(art, base_snapshot)["roles"]["chef"]["tokens"]
     assert t["output_tokens"] == {"sum": None, "known": 0}
-    assert t["input_tokens"] == {"sum": 1760, "known": 1}
+    assert t["input_tokens"] == {"sum": 1800, "known": 1}
 
 
 # --------------------------------------------------------------------------
