@@ -1,0 +1,118 @@
+{
+  "_comment": "Hand-written scripted run for test_graph_offline.py: a vegetarian user, num_meals=3. 'deals' is what DatabaseService.fetch_current_deals returns AFTER the dietary gate; 'deal_products' / 'pantry_staples' are what recipe_catalog returns. LLM outputs are shaped to satisfy the real llm_output parsers. 'deal_products_rereviewed' is the retry scenario: the catalog snapshot says deal 15's product contains meat although its name says VEGGIE -- names never decide, the attributes do.",
+  "user": {
+    "user_id": 4242,
+    "postal_code": "M5V3A8",
+    "budget": 60.0,
+    "household_size": 2,
+    "dietary_restrictions": ["vegetarian"]
+  },
+  "deals": [
+    {"deal_id": 11, "product_name": "FIRM TOFU 350G", "sale_price": 2.49, "regular_price": 3.29, "discount_percentage": 24.3, "source": "flipp", "product_id": 501, "store_name": "FreshCo", "store_id": 1, "chain": "freshco"},
+    {"deal_id": 12, "product_name": "BROCCOLI CROWNS", "sale_price": 1.99, "regular_price": null, "discount_percentage": null, "source": "flipp", "product_id": 502, "store_name": "FreshCo", "store_id": 1, "chain": "freshco"},
+    {"deal_id": 13, "product_name": "BASMATI RICE 2KG", "sale_price": 6.99, "regular_price": 8.99, "discount_percentage": 22.2, "source": "flipp", "product_id": 503, "store_name": "No Frills", "store_id": 2, "chain": "nofrills"},
+    {"deal_id": 14, "product_name": "CHICKPEAS 540ML", "sale_price": 0.99, "regular_price": null, "discount_percentage": null, "source": "flipp", "product_id": 504, "store_name": "No Frills", "store_id": 2, "chain": "nofrills"},
+    {"deal_id": 15, "product_name": "VEGGIE DUMPLINGS 800G", "sale_price": 4.99, "regular_price": null, "discount_percentage": null, "source": "flipp", "product_id": 505, "store_name": "No Frills", "store_id": 2, "chain": "nofrills"},
+    {"deal_id": 16, "product_name": "DICED TOMATOES 796ML", "sale_price": 1.29, "regular_price": null, "discount_percentage": null, "source": "flipp", "product_id": 506, "store_name": "FreshCo", "store_id": 1, "chain": "freshco"}
+  ],
+  "deal_products": {
+    "11": [{"product_id": 501, "canonical_name": "Firm Tofu", "category": "protein", "status": "confirmed", "contains_meat": false, "contains_fish": false, "contains_dairy": false, "contains_egg": false, "contains_nuts": false, "contains_animal_byproduct": false, "contains_gluten": false}],
+    "12": [{"product_id": 502, "canonical_name": "Broccoli", "category": "produce", "status": "confirmed", "contains_meat": false, "contains_fish": false, "contains_dairy": false, "contains_egg": false, "contains_nuts": false, "contains_animal_byproduct": false, "contains_gluten": false}],
+    "13": [{"product_id": 503, "canonical_name": "Basmati Rice", "category": "grains", "status": "confirmed", "contains_meat": false, "contains_fish": false, "contains_dairy": false, "contains_egg": false, "contains_nuts": false, "contains_animal_byproduct": false, "contains_gluten": false}],
+    "14": [{"product_id": 504, "canonical_name": "Chickpeas", "category": "pantry", "status": "confirmed", "contains_meat": false, "contains_fish": false, "contains_dairy": false, "contains_egg": false, "contains_nuts": false, "contains_animal_byproduct": false, "contains_gluten": false}],
+    "15": [{"product_id": 505, "canonical_name": "Vegetable Dumplings", "category": "frozen", "status": "confirmed", "contains_meat": false, "contains_fish": false, "contains_dairy": false, "contains_egg": false, "contains_nuts": false, "contains_animal_byproduct": false, "contains_gluten": true}],
+    "16": [{"product_id": 506, "canonical_name": "Diced Tomatoes", "category": "pantry", "status": "confirmed", "contains_meat": false, "contains_fish": false, "contains_dairy": false, "contains_egg": false, "contains_nuts": false, "contains_animal_byproduct": false, "contains_gluten": false}]
+  },
+  "deal_products_rereviewed": {
+    "15": [{"product_id": 505, "canonical_name": "Pork & Chive Dumplings", "category": "frozen", "status": "confirmed", "contains_meat": true, "contains_fish": false, "contains_dairy": false, "contains_egg": false, "contains_nuts": false, "contains_animal_byproduct": false, "contains_gluten": true}]
+  },
+  "pantry_staples": [
+    {"product_id": 101, "canonical_name": "Salt", "category": "pantry", "status": "confirmed", "contains_meat": false, "contains_fish": false, "contains_dairy": false, "contains_egg": false, "contains_nuts": false, "contains_animal_byproduct": false, "contains_gluten": false},
+    {"product_id": 102, "canonical_name": "Olive Oil", "category": "pantry", "status": "confirmed", "contains_meat": false, "contains_fish": false, "contains_dairy": false, "contains_egg": false, "contains_nuts": false, "contains_animal_byproduct": false, "contains_gluten": false},
+    {"product_id": 103, "canonical_name": "Fish Sauce", "category": "pantry", "status": "confirmed", "contains_meat": false, "contains_fish": true, "contains_dairy": false, "contains_egg": false, "contains_nuts": false, "contains_animal_byproduct": false, "contains_gluten": false}
+  ],
+  "llm": {
+    "chef": {
+      "ingredient_groups": [
+        [{"product_name": "FIRM TOFU 350G", "quantity_estimate": "1 pkg", "deal_id": 11},
+         {"product_name": "BROCCOLI CROWNS", "quantity_estimate": "2 heads", "deal_id": 12}],
+        [{"product_name": "CHICKPEAS 540ML", "quantity_estimate": "2 cans", "deal_id": 14},
+         {"product_name": "VEGGIE DUMPLINGS 800G", "quantity_estimate": "1 bag", "deal_id": 15}],
+        [{"product_name": "BASMATI RICE 2KG", "quantity_estimate": "1 bag", "deal_id": 13},
+         {"product_name": "DICED TOMATOES 796ML", "quantity_estimate": "1 can", "deal_id": 16}]
+      ],
+      "ingredient_reuse_map": {"FIRM TOFU 350G": 1, "BROCCOLI CROWNS": 1, "CHICKPEAS 540ML": 1, "VEGGIE DUMPLINGS 800G": 1, "BASMATI RICE 2KG": 1, "DICED TOMATOES 796ML": 1},
+      "rationale": "Three groups with no shared perishables."
+    },
+    "sous_chef": [
+      {
+        "when_offered": [11, 12],
+        "response": {"recipes": [{
+          "name": "Tofu and Broccoli Stir-Fry",
+          "meal_type": "dinner",
+          "cuisine_type": "Asian",
+          "servings": 2,
+          "estimated_prep_time": "25 minutes",
+          "ingredients": [
+            {"name": "firm tofu", "deal_id": 11, "quantity": "350", "unit": "g"},
+            {"name": "broccoli", "deal_id": 12, "quantity": "2", "unit": "heads"},
+            {"name": "olive oil", "product_id": 102, "quantity": "2", "unit": "tbsp"}
+          ],
+          "instructions": ["Press and cube the tofu.", "Stir-fry tofu and broccoli in olive oil."]
+        }]}
+      },
+      {
+        "when_offered": [14, 15],
+        "response": [{
+          "name": "Chickpea Dumpling Bowl",
+          "meal_type": "dinner",
+          "servings": "2",
+          "estimated_prep_time": 30,
+          "ingredients": [
+            {"name": "chickpeas", "deal_id": "14", "quantity": "2", "unit": "cans"},
+            {"name": "veggie dumplings", "deal_id": 15, "quantity": "1", "unit": "bag"},
+            {"name": "salt", "product_id": 101, "quantity": "1", "unit": "tsp"}
+          ],
+          "instructions": "Pan-fry the dumplings; warm the chickpeas with salt; serve together."
+        }]
+      },
+      {
+        "when_offered": [13, 16],
+        "response": {"recipes": [{
+          "name": "Tomato Rice Pilaf",
+          "meal_type": "dinner",
+          "cuisine_type": "Indian",
+          "servings": 2,
+          "estimated_prep_time": 35,
+          "ingredients": [
+            {"name": "basmati rice", "deal_id": 13, "quantity": "1.5", "unit": "cups"},
+            {"name": "diced tomatoes", "deal_id": 16, "quantity": "1", "unit": "can"},
+            {"name": "salt", "product_id": 101, "quantity": "1", "unit": "tsp"}
+          ],
+          "instructions": ["Rinse the rice.", "Simmer rice with tomatoes and salt until tender."]
+        }]}
+      }
+    ],
+    "sous_chef_retry": {
+      "when_offered": [14, 15],
+      "response": {
+        "name": "Spiced Chickpea Skillet",
+        "meal_type": "dinner",
+        "servings": 2,
+        "estimated_prep_time": 20,
+        "ingredients": [
+          {"name": "chickpeas", "deal_id": 14, "quantity": "2", "unit": "cans"},
+          {"name": "olive oil", "product_id": 102, "quantity": "1", "unit": "tbsp"},
+          {"name": "salt", "product_id": 101, "quantity": "1", "unit": "tsp"}
+        ],
+        "instructions": ["Crisp the chickpeas in olive oil.", "Season with salt."]
+      }
+    },
+    "nutritionist": {
+      "approved": false,
+      "feedback": "Advisory only; this verdict must be ignored.",
+      "nutrition_facts": {"calories_per_serving": 520, "protein_g": 24},
+      "health_score": "72"
+    }
+  }
+}

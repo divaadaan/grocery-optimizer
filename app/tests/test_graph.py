@@ -1,9 +1,27 @@
 import pytest
+from app.agents.deps import GraphDeps, InMemoryRecipeStore
 from app.agents.graph import create_recipe_generation_graph
 from app.agents.state import RecipeGenerationState
 
-# Full end-to-end run: needs live Ollama models and the real database
+# Full end-to-end run: needs live Ollama models and the real database.
+#
+# It READS the real database (deals, pantry staples, deal links) but must
+# never WRITE it: finalize_meal_plan used to save user 999's recipes straight
+# into production. The graph's only write goes through GraphDeps.recipe_store,
+# which this test replaces with a store that persists nothing.
 pytestmark = [pytest.mark.llm, pytest.mark.db]
+
+
+@pytest.fixture(autouse=True)
+def no_database_writes(monkeypatch):
+    """Belt and braces: fail loudly if anything still reaches the real
+    DatabaseService.save_recipes during this test."""
+    from app.services.database import DatabaseService
+
+    def refuse(*args, **kwargs):
+        raise AssertionError("test_graph must not write recipes to the database")
+
+    monkeypatch.setattr(DatabaseService, "save_recipes", refuse)
 
 def test_basic_workflow():
     """Test basic recipe generation workflow."""
@@ -43,10 +61,13 @@ def test_basic_workflow():
         warnings=[]
     )
 
-    graph = create_recipe_generation_graph()
+    store = InMemoryRecipeStore()
+    graph = create_recipe_generation_graph(GraphDeps(recipe_store=store))
 
     # Run workflow
     final_state = graph.invoke(initial_state)
+    if final_state["status"] == "completed":
+        assert final_state["saved_recipe_ids"] == [s["id"] for s in store.saved]
 
     # Assertions
     assert final_state["status"] in ["completed", "failed"]
