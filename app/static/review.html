@@ -246,7 +246,13 @@ const ATTR_LABEL = {
   contains_nuts: "nuts",
   contains_animal_byproduct: "animal by-product",
   contains_gluten: "gluten",
+  not_kosher: "not kosher",
 };
+
+// "contains meat?" but "not kosher?": not_kosher is not a "contains" fact.
+const attrQuestion = (attr) =>
+  attr.startsWith("contains_") ? `contains ${ATTR_LABEL[attr] || attr}?`
+                               : `${ATTR_LABEL[attr] || attr}?`;
 
 // The split reviewers get backwards. Shown on every card.
 const BYPRODUCT_RULE =
@@ -261,6 +267,14 @@ const GLUTEN_RULE =
   "gluten-free; 'may contain gluten' is yes. Judge the product as sold in " +
   "Canadian flyers.";
 
+// Kosher: the polarity is the trap. Checked = NOT kosher.
+const KOSHER_RULE =
+  "Not kosher = checked unless certified (OU, COR, MK, Kof-K, Star-K, etc.) " +
+  "or inherently kosher (raw produce, eggs in shell, plain dry grains and " +
+  "legumes, water, salt). Uncertified meat/poultry or cheese, pork and " +
+  "shellfish are not kosher; uncertain certification is not kosher. " +
+  "Meat-with-dairy is a recipe rule, not this box.";
+
 // Mirrors app/services/products.RESTRICTION_ATTRIBUTES so the "clears" line
 // updates as you toggle, without a round trip. The server recomputes it from
 // the same table on save, so this is a preview and never the authority.
@@ -271,6 +285,7 @@ const RESTRICTION_ATTRS = {
   pescatarian: ["contains_meat"],
   no_nuts: ["contains_nuts"],
   gluten_free: ["contains_gluten"],
+  kosher: ["not_kosher"],
 };
 
 // An attribute clears only when it is explicitly false. null (undecided)
@@ -379,6 +394,7 @@ function groupCard(group, index) {
         style="color: var(--warn); font-weight: 600">${esc(group.error)}</div>` : ""}
     <div class="rule">${esc(BYPRODUCT_RULE)}</div>
     <div class="rule">${esc(GLUTEN_RULE)}</div>
+    <div class="rule">${esc(KOSHER_RULE)}</div>
     <div class="clears">clears:
       ${clears.length
         ? clears.map((c) => `<span class="pill">${esc(c)}</span>`).join("")
@@ -428,7 +444,7 @@ function undecidedCard() {
   if (!state.undecided.length) return "";
   const rows = state.undecided.map((p, i) => {
     const asks = p.undecided.map((attr) => `
-      <span class="note">contains ${esc(ATTR_LABEL[attr] || attr)}?</span>
+      <span class="note">${esc(attrQuestion(attr))}</span>
       <button data-fill="${attr}" data-v="true" data-u="${i}"
               title="${esc(state.rules[attr] || "")}">Yes</button>
       <button data-fill="${attr}" data-v="false" data-u="${i}">No</button>`).join("");
@@ -448,6 +464,7 @@ function undecidedCard() {
     <div class="meta">Withheld from the labels shown until you decide</div>
     <div class="rule">${esc(BYPRODUCT_RULE)}</div>
     <div class="rule">${esc(GLUTEN_RULE)}</div>
+    <div class="rule">${esc(KOSHER_RULE)}</div>
     <ul class="aliases">${rows}</ul>
   </section>`;
 }

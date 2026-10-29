@@ -350,3 +350,114 @@ def test_store_service_gates_and_keys_the_cache_by_scope(monkeypatch):
     assert "deal_products" not in open_query
     assert keys[0] != keys[1]
     assert keys[1].endswith(":open")
+
+
+# --------------------------------------------------------------------------
+# not_kosher (migration 021): the gate is per product
+# --------------------------------------------------------------------------
+
+#: (product_id, canonical_name, status, meat, dairy, fish, not_kosher)
+KOSHER_PRODUCTS = [
+    (201, "kosher beef", "confirmed", 1, 0, 0, 0),
+    (202, "kosher cheddar", "confirmed", 0, 1, 0, 0),
+    (203, "uncertified brie", "confirmed", 0, 1, 0, 1),
+    (204, "pasta", "confirmed", 0, 0, 0, None),          # undecided
+    (205, "salmon", "confirmed", 0, 0, 1, 0),
+    (206, "shrimp", "confirmed", 0, 0, 1, 1),
+    (207, "kosher tofu", "proposed", 0, 0, 0, 0),         # not confirmed
+]
+
+#: (deal_id, product_name, [linked product ids])
+KOSHER_DEALS = [
+    (301, "KOSHER GROUND BEEF", [201]),
+    (302, "KOSHER CHEDDAR", [202]),
+    (303, "BRIE", [203]),
+    (304, "PASTA", [204]),
+    (305, "SALMON", [205]),
+    (306, "SHRIMP", [206]),
+    (307, "TOFU", [207]),
+    (308, "UNLINKED", []),
+    # A tile linking a kosher meat and a kosher dairy product. Serving it is
+    # fine -- each product clears; "no meat with dairy" is a recipe rule.
+    (309, "BEEF OR CHEDDAR", [201, 202]),
+    (310, "CHEDDAR OR BRIE", [202, 203]),
+]
+
+
+def _kosher_rows():
+    out = []
+    for pid, name, status, meat, dairy, fish, nk in KOSHER_PRODUCTS:
+        out.append({"product_id": pid, "canonical_name": name, "status": status,
+                    "contains_meat": bool(meat), "contains_fish": bool(fish),
+                    "contains_dairy": bool(dairy), "contains_egg": False,
+                    "contains_nuts": False, "contains_animal_byproduct": False,
+                    "contains_gluten": False,
+                    "not_kosher": None if nk is None else bool(nk)})
+    return {r["product_id"]: r for r in out}
+
+
+@pytest.fixture
+def kconn():
+    c = sqlite3.connect(":memory:")
+    cols = ", ".join(f"{a} BOOLEAN" for a in products.ATTRIBUTES)
+    c.executescript(
+        f"""
+        CREATE TABLE products (product_id INTEGER PRIMARY KEY,
+                               canonical_name TEXT, status TEXT, {cols});
+        CREATE TABLE deals (deal_id INTEGER PRIMARY KEY, product_name TEXT,
+                            source TEXT);
+        CREATE TABLE deal_products (deal_id INTEGER, product_id INTEGER);
+        """
+    )
+    for row in _kosher_rows().values():
+        keys = ["product_id", "canonical_name", "status", *products.ATTRIBUTES]
+        c.execute(f"INSERT INTO products ({', '.join(keys)}) VALUES "
+                  f"({', '.join('?' for _ in keys)})", [row[k] for k in keys])
+    for deal_id, name, pids in KOSHER_DEALS:
+        c.execute("INSERT INTO deals VALUES (?,?,?)", (deal_id, name, "flipp"))
+        for pid in pids:
+            c.execute("INSERT INTO deal_products VALUES (?,?)", (deal_id, pid))
+    yield c
+    c.close()
+
+
+def test_kosher_user_is_served_only_explicit_false_not_kosher(kconn):
+    assert served(kconn, ["kosher"]) == [
+        "KOSHER GROUND BEEF", "KOSHER CHEDDAR", "SALMON", "BEEF OR CHEDDAR"]
+
+
+@pytest.mark.parametrize("name", ["BRIE", "SHRIMP", "PASTA", "TOFU", "UNLINKED",
+                                  "CHEDDAR OR BRIE"])
+def test_kosher_withholds_true_undecided_unconfirmed_and_unlinked(kconn, name):
+    assert name not in served(kconn, ["kosher"])
+
+
+def test_not_kosher_does_not_affect_other_restrictions(kconn):
+    assert "PASTA" in served(kconn, ["vegan"])
+    assert "BRIE" in served(kconn, ["vegetarian"])
+    assert "SHRIMP" in served(kconn, ["no_nuts"])
+
+
+def test_null_not_kosher_does_not_fail_open_in_sql(kconn):
+    """``p.not_kosher`` bare would read NULL as clean; IS NOT FALSE does not."""
+    fragment, _ = deal_gate.deal_filter(["kosher"])
+    assert "p.not_kosher IS NOT FALSE" in fragment
+    assert "PASTA" not in served(kconn, ["kosher"])
+
+
+def test_gate_scope_names_not_kosher_for_kosher_only():
+    assert "not_kosher" in deal_gate.gate_scope(["kosher"])
+    for label in ("vegan", "vegetarian", "pescatarian", "no_nuts", "dairy_free",
+                  "gluten_free"):
+        assert "not_kosher" not in deal_gate.gate_scope([label])
+
+
+@pytest.mark.parametrize("restrictions", [
+    ["kosher"], ["kosher", "vegetarian"], ["kosher", "dairy_free"], ["vegan"],
+    ["pescatarian"], ["halal"], [],
+])
+def test_sql_gate_and_deal_allows_agree_on_every_kosher_deal(kconn, restrictions):
+    rows = _kosher_rows()
+    expected = [name for _, name, pids in KOSHER_DEALS
+                if products.deal_allows([rows[p] for p in pids], restrictions)]
+    assert served(kconn, restrictions) == expected

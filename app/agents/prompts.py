@@ -124,12 +124,15 @@ recipe quality and safety.
 **User's Dietary Restrictions:**
 {dietary_restrictions}
 
-**Validation Checklist:**
-1. **Allergen Safety:** Does this recipe contain any restricted allergens?
-2. **Dietary Compliance:** Does it meet all dietary restrictions (vegan, kosher, etc)?
-3. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)
-4. **Practical Cooking:** Are instructions clear and achievable?
-5. **Ingredient Coherence:** Do ingredients work well together?
+**Not your call:** dietary compliance and allergen safety are decided in code \
+from the curated attributes of the deals and pantry products each ingredient \
+cites. Your `approved` and `dietary_compliance` fields are recorded but never \
+decide anything, so do not try to judge restrictions.
+
+**Review Checklist:**
+1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)
+2. **Practical Cooking:** Are instructions clear and achievable?
+3. **Ingredient Coherence:** Do ingredients work well together?
 
 **Calculate Nutrition Facts:**
 - Estimate calories per serving

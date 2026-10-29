@@ -532,6 +532,29 @@ def test_merge_refuses_survivor_null_where_absorbed_is_true():
         _merge(fake)
 
 
+@pytest.mark.parametrize("absorbed, survivor, loosens", [
+    (True, None, True), (True, False, True), (None, False, True),
+    (None, True, False), (False, None, False), (False, True, False),
+    (True, True, False), (None, None, False), (False, False, False),
+])
+def test_not_kosher_ranks_true_over_null_over_false(absorbed, survivor, loosens):
+    a = {**_attrs(), "not_kosher": absorbed}
+    s = {**_attrs(), "not_kosher": survivor}
+    assert product_identity.loosening_attributes(a, s) == (
+        ["not_kosher"] if loosens else [])
+
+
+def test_merge_refuses_a_survivor_less_kosher_restrictive_than_the_absorbed():
+    fake = FakeDB(_state(absorbed={"not_kosher": True},
+                         survivor={"not_kosher": None}))
+    with pytest.raises(product_identity.CorrectionRefused, match="not_kosher"):
+        _merge(fake)
+    fake = FakeDB(_state(absorbed={"not_kosher": None},
+                         survivor={"not_kosher": False}))
+    with pytest.raises(product_identity.CorrectionRefused, match="not_kosher"):
+        _merge(fake)
+
+
 def test_equal_attribute_merge_has_zero_newly_servable_and_zero_withheld():
     out = _merge(FakeDB())
     impact = out["impact"]

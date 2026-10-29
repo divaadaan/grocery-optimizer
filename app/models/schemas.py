@@ -44,6 +44,12 @@ class UserResponse(BaseModel):
     is_active: bool
 
 
+class DietaryRestrictionsResponse(BaseModel):
+    """The restriction labels the app enforces from curated product
+    attributes (``products.RESTRICTION_ATTRIBUTES``), sorted."""
+    supported: List[str]
+
+
 class UserUpdate(BaseModel):
     """Request model for updating user preferences."""
     postal_code: Optional[str] = None

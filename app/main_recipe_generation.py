@@ -4,6 +4,7 @@ from typing import Callable, Optional
 from app.agents.deps import GraphDeps
 from app.agents.graph import create_recipe_generation_graph
 from app.agents.state import RecipeGenerationState
+from app.services import products
 from app.services.budget import DEFAULT_PERIOD
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,14 @@ def run_recipe_generation(
 
     `graph_deps` overrides the graph's external dependencies (LLMs, DB reads,
     the recipe store, MLflow — `app/agents/deps.py`); `None` is production.
+
+    Raises `products.UnsupportedRestrictionError` before any work when a
+    restriction label is not one the app enforces (e.g. a stored profile from
+    before the API refused `halal`): generating "compliant" recipes for a
+    restriction nothing checks would be a false promise.
     """
+    products.require_supported_restrictions(dietary_restrictions)
+
     # Initialize state
     initial_state = RecipeGenerationState(
         user_id=user_id,

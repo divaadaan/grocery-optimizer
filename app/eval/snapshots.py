@@ -49,7 +49,14 @@ from typing import Any, Iterable, Mapping, Optional, Sequence
 from app.services.products import ATTRIBUTES, deal_allows
 
 #: Bump on any change to the file layout; the loader refuses other versions.
-FORMAT_VERSION = 1
+#:
+#: 2 -- products carry ``not_kosher`` (migration 021). Version 1 files lack it
+#: and are refused, not read with a silent default: the committed v1 files
+#: were migrated in place with ``"not_kosher": null`` (undecided -- truthful,
+#: since no product had a kosher decision when they were captured, and it
+#: fails closed). Any other v1 file must be re-captured or migrated the same
+#: way.
+FORMAT_VERSION = 2
 
 #: Where the committed snapshots live.
 SNAPSHOT_DIR = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "snapshots"
@@ -202,8 +209,14 @@ def validate(data: Any) -> dict:
         raise SnapshotError("meta: expected an object")
     version = meta.get("format_version")
     if version != FORMAT_VERSION or isinstance(version, bool):
+        hint = ""
+        if version == 1 and not isinstance(version, bool):
+            hint = (" -- v1 predates products.not_kosher (migration 021): add "
+                    "\"not_kosher\": null to every product and set format_version "
+                    "2, or re-capture")
         raise SnapshotError(
-            f"meta.format_version: unsupported {version!r} (this loader reads {FORMAT_VERSION})")
+            f"meta.format_version: unsupported {version!r} (this loader reads "
+            f"{FORMAT_VERSION}){hint}")
     _check_record("meta", meta, META_FIELDS)
     as_of = _parse_date("meta.as_of", meta["as_of"])
     try:

@@ -2,17 +2,18 @@
 
 A ``products`` row carries explicit boolean attributes (``contains_meat``,
 ``contains_fish``, ``contains_dairy``, ``contains_egg``, ``contains_nuts``,
-``contains_animal_byproduct``, ``contains_gluten``) that a human confirmed in
-review. Those
+``contains_animal_byproduct``, ``contains_gluten``, ``not_kosher``) that a
+human confirmed in review. Those
 attributes are the **only** authority on whether a deal may be served to a
 user with dietary restrictions.
 
 An attribute must be explicitly ``False`` to clear a restriction. ``NULL``
 means "nobody has decided" and fails closed, exactly like ``True``. Only
-``contains_animal_byproduct`` and ``contains_gluten`` can be NULL (migrations
-015 and 017 added them to a catalogue that already had confirmed rows, and
-inventing a value for them would be a guess); the other five are NOT NULL. Products whose NULL decides a
-verdict are listed by :func:`undecided_products` so a reviewer can settle them.
+``contains_animal_byproduct``, ``contains_gluten`` and ``not_kosher`` can be
+NULL (migrations 015, 017 and 021 added them to a catalogue that already had
+confirmed rows, and inventing a value for them would be a guess); the other
+five are NOT NULL. Products whose NULL decides a verdict are listed by
+:func:`undecided_products` so a reviewer can settle them.
 
 ``contains_animal_byproduct`` is an animal-derived ingredient that is not meat,
 fish, dairy or egg: honey, beeswax, carmine/cochineal, shellac/confectioner's
@@ -25,6 +26,19 @@ vegetarian and pescatarian. See :data:`ATTRIBUTE_RULES`.
 semolina, farro), barley, rye, triticale, malt, brewer's yeast; oats count as
 true unless labelled certified gluten-free; "may contain gluten" counts as
 true. Judged on the product as typically sold in Canadian flyers.
+
+``not_kosher`` drives ``kosher`` (migration 021). It has the same polarity as
+the ``contains_*`` attributes: ``kosher`` requires it to be explicitly False.
+False means "certified or inherent" -- a recognised hechsher, or a product
+that needs none (raw produce, eggs in shell, plain dry grains and legumes,
+water, salt). When certification is uncertain it is True. Kosher also has a
+recipe-level rule no single product can express -- no meat with dairy -- which
+lives in :data:`RESTRICTION_COMBINATION_RULES` and is applied to a recipe's
+cited products by ``app/agents/dietary.py``, never to one deal.
+
+A restriction label not in :data:`RESTRICTION_ATTRIBUTES` is **unsupported**:
+the user API refuses to store it (:func:`unsupported_restrictions`) and recipe
+generation refuses to run for it, so it is never silently "approved".
 
 Product names are never matched against a vocabulary. Name matching fails in
 both directions on real flyer text -- "Beefsteak Tomatoes" reads as beef while
@@ -66,6 +80,26 @@ RESTRICTION_ATTRIBUTES: dict[str, tuple[str, ...]] = {
     # Decided only from the curated contains_gluten attribute, never from a
     # product or deal name (migration 017).
     "gluten_free": ("contains_gluten",),
+    # Per product: certified or inherently kosher (migration 021). The
+    # cross-ingredient "no meat with dairy" rule is in
+    # RESTRICTION_COMBINATION_RULES and applies to recipes only.
+    "kosher": ("not_kosher",),
+}
+
+#: Restriction label -> recipe-level combination rules. Each rule is a tuple
+#: of attributes that must not ALL be present among a recipe's cited products
+#: (every cited deal's linked products plus every cited staple). An attribute
+#: is "present" when any cited product has it True -- or NULL / missing, which
+#: fails closed here exactly as it does per product.
+#:
+#: Applied to a recipe as a whole, never to one deal: the deal gate serves a
+#: deal when each linked product clears per product, even a tile that links
+#: both meat and dairy -- serving a deal is not cooking them together.
+#:
+#: Kosher: no meat with dairy. Fish is pareve, so fish + dairy is fine, and
+#: there is no meat + fish rule.
+RESTRICTION_COMBINATION_RULES: dict[str, tuple[tuple[str, ...], ...]] = {
+    "kosher": (("contains_meat", "contains_dairy"),),
 }
 
 #: Attribute columns, in a stable order, for SQL generation and review display.
@@ -77,6 +111,7 @@ ATTRIBUTES: tuple[str, ...] = (
     "contains_nuts",
     "contains_animal_byproduct",
     "contains_gluten",
+    "not_kosher",
 )
 
 #: The attribute columns as SQL select lists. Built from our own constant,
@@ -86,7 +121,7 @@ _P_ATTR_SELECT = ", ".join(f"p.{a}" for a in ATTRIBUTES)
 
 #: Attributes whose column is nullable (NULL = undecided, fails closed).
 NULLABLE_ATTRIBUTES: frozenset[str] = frozenset(
-    {"contains_animal_byproduct", "contains_gluten"})
+    {"contains_animal_byproduct", "contains_gluten", "not_kosher"})
 
 #: What each attribute means, for labellers and reviewers. The proposer's
 #: LLM instructions and both review surfaces show these, so the rule a
@@ -111,6 +146,15 @@ ATTRIBUTE_RULES: dict[str, str] = {
         "certified gluten-free (cross-contamination). \"May contain gluten\" "
         "counts as true. Judge the product as typically sold in Canadian "
         "flyers"),
+    "not_kosher": (
+        "false only if the product is kosher, certified or inherent: it "
+        "carries a recognised hechsher (OU, COR, MK, Kof-K, Star-K, etc.) OR "
+        "needs none (raw/fresh produce, eggs in shell, plain dry grains and "
+        "legumes, plain water, salt and similar). Uncertified meat and "
+        "poultry, uncertified cheese, pork, shellfish and other forbidden "
+        "species are true. When the brand's certification is uncertain, it "
+        "is true (least permissions). Meat-with-dairy is a recipe rule, not "
+        "this attribute"),
 }
 
 # Size/pack tokens a flyer appends to a name. Stripped so that
@@ -150,6 +194,50 @@ def normalize_name(raw: str | None) -> str:
     return " ".join(s.split())
 
 
+def supported_restrictions() -> list[str]:
+    """Restriction labels the app enforces, sorted. Exactly the keys of
+    :data:`RESTRICTION_ATTRIBUTES`: a label is supported only when a curated
+    product attribute decides it."""
+    return sorted(RESTRICTION_ATTRIBUTES)
+
+
+def unsupported_restrictions(restrictions: Iterable[str] | None) -> list[str]:
+    """Labels in ``restrictions`` that no product attribute enforces.
+
+    Labels are compared stripped and lower-cased, as everywhere else; blanks
+    are ignored. Returned normalised, de-duplicated, in input order. Callers
+    refuse a non-empty result: storing (or generating recipes for) a label
+    nothing enforces is how "Approved: complies with halal" happens.
+    """
+    out: list[str] = []
+    for label in restrictions or []:
+        key = (label or "").strip().lower()
+        if key and key not in RESTRICTION_ATTRIBUTES and key not in out:
+            out.append(key)
+    return out
+
+
+class UnsupportedRestrictionError(ValueError):
+    """A restriction label no curated attribute enforces. Raised rather than
+    ignored: an unenforced label silently "passing" is a false promise to the
+    user who set it."""
+
+    def __init__(self, labels: Sequence[str]):
+        self.labels = list(labels)
+        super().__init__(
+            f"Unsupported dietary restriction(s): {', '.join(self.labels)}. "
+            f"Supported: {', '.join(supported_restrictions())}. These are the "
+            "restrictions the app can check from curated product attributes; "
+            "anything else would be approved without being checked.")
+
+
+def require_supported_restrictions(restrictions: Iterable[str] | None) -> None:
+    """Raise :class:`UnsupportedRestrictionError` if any label is unsupported."""
+    unsupported = unsupported_restrictions(restrictions)
+    if unsupported:
+        raise UnsupportedRestrictionError(unsupported)
+
+
 def restrictions_to_attributes(restrictions: Iterable[str] | None) -> tuple[str, ...]:
     """Attributes that must be False for a product to clear ``restrictions``.
 
@@ -183,7 +271,7 @@ def product_allows(product: dict[str, Any], restrictions: Iterable[str] | None) 
 
     Every required attribute must be explicitly ``False``. ``None`` is an
     undecided ``contains_animal_byproduct`` / ``contains_gluten`` (migrations
-    015, 017) and fails closed. A **missing key** means the caller selected a partial row, which is a bug
+    015, 017) or ``not_kosher`` (021) and fails closed. A **missing key** means the caller selected a partial row, which is a bug
     worth a warning -- and it fails closed too, because assuming False is how
     an unknown becomes "safe".
     """
@@ -266,7 +354,7 @@ def compliant_product_filter(restrictions: Iterable[str] | None) -> tuple[str, d
     #   NOT EXISTS -> no linked product is unconfirmed or violating.
     #
     # "IS NOT FALSE", not a bare column: contains_animal_byproduct and
-    # contains_gluten are nullable (migrations 015, 017), and a bare NULL makes the OR chain NULL rather than
+    # contains_gluten and not_kosher are nullable (migrations 015, 017, 021), and a bare NULL makes the OR chain NULL rather than
     # true, so NOT EXISTS would read an undecided product as clean -- fail
     # OPEN. IS NOT FALSE is true for both true and NULL.
     violates = " OR ".join(
@@ -531,7 +619,7 @@ def confirmed_products(database=db) -> list[dict]:
 #: Restriction labels the app understands, in the order a reviewer thinks
 #: about them.
 REVIEW_LABELS: tuple[str, ...] = (
-    "vegan", "vegetarian", "pescatarian", "no_nuts", "gluten_free")
+    "vegan", "vegetarian", "pescatarian", "no_nuts", "gluten_free", "kosher")
 
 
 def clears_labels(product: dict[str, Any]) -> list[str]:
@@ -859,7 +947,7 @@ def set_attributes(
 # Undecided attributes on already-confirmed products
 # --------------------------------------------------------------------------
 #
-# Migrations 015 and 017 added contains_animal_byproduct and contains_gluten as
+# Migrations 015, 017 and 021 added contains_animal_byproduct, contains_gluten and not_kosher as
 # nullable columns, so every product confirmed before them carries NULL there -- and NULL fails closed, so
 # those products are withheld from vegans. They are already confirmed, so the
 # proposal queue never shows them again. These two functions are the way back:
@@ -917,7 +1005,7 @@ def fill_undecided_attributes(
     """Set attributes that are currently NULL; never overwrite a decision.
 
     For confirmed products whose attribute was added after they were reviewed
-    (migrations 015, 017). ``COALESCE(column, value)`` makes the write a no-op on any
+    (migrations 015, 017, 021). ``COALESCE(column, value)`` makes the write a no-op on any
     column that already holds a value, so a stale browser tab or a second
     reviewer cannot flip a decided attribute through this path. Returns the
     row's attribute values after the write.

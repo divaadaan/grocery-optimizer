@@ -41,7 +41,15 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
     try {
       const body = await res.json();
       detail = body.detail ?? body.error;
-      if (typeof detail === "string") message = detail;
+      if (typeof detail === "string") {
+        message = detail;
+      } else if (Array.isArray(detail)) {
+        // FastAPI request-validation 422: [{loc, msg, type}, ...]
+        const msgs = detail
+          .map((d) => (d && typeof d === "object" && "msg" in d ? String(d.msg) : ""))
+          .filter(Boolean);
+        if (msgs.length) message = msgs.join("; ");
+      }
     } catch {
       // non-JSON error body; keep the generic message
     }

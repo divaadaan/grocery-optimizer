@@ -135,6 +135,7 @@ def _product(**overrides):
         "contains_nuts": False,
         "contains_animal_byproduct": False,
         "contains_gluten": False,
+        "not_kosher": False,
         "is_pantry_staple": False,
     }
     base.update(overrides)
@@ -297,11 +298,11 @@ def test_review_clears_treat_undecided_as_failing():
     groups, _ = products.group_proposals(
         [_alias_row(contains_nuts=False, contains_animal_byproduct=None)])
     assert groups[0]["clears"] == ["vegetarian", "pescatarian", "no_nuts",
-                                   "gluten_free"]
+                                   "gluten_free", "kosher"]
     groups, _ = products.group_proposals(
         [_alias_row(contains_nuts=False, contains_animal_byproduct=True)])
     assert groups[0]["clears"] == ["vegetarian", "pescatarian", "no_nuts",
-                                   "gluten_free"]
+                                   "gluten_free", "kosher"]
 
 
 class _RecordingCursor:
@@ -459,10 +460,11 @@ def test_review_group_clears_follow_the_attributes_not_the_name():
     groups, orphans = products.group_proposals([_alias_row()])
     assert orphans == []
     assert groups[0]["clears"] == ["vegan", "vegetarian", "pescatarian",
-                                   "gluten_free"]
+                                   "gluten_free", "kosher"]
     # The reviewer's labels decide, in both directions.
     groups, _ = products.group_proposals([_alias_row(contains_dairy=True)])
-    assert groups[0]["clears"] == ["vegetarian", "pescatarian", "gluten_free"]
+    assert groups[0]["clears"] == ["vegetarian", "pescatarian", "gluten_free",
+                                   "kosher"]
 
 
 # --------------------------------------------------------------------------
@@ -556,3 +558,84 @@ def test_filter_rejects_an_attribute_outside_the_constant(monkeypatch):
     )
     with pytest.raises(AssertionError):
         products.compliant_product_filter(["bogus"])
+
+
+# --------------------------------------------------------------------------
+# not_kosher (migration 021) and unsupported labels
+# --------------------------------------------------------------------------
+
+def test_not_kosher_is_a_kosher_attribute_only():
+    assert "not_kosher" in products.ATTRIBUTES
+    assert "not_kosher" in products.NULLABLE_ATTRIBUTES
+    assert products.RESTRICTION_ATTRIBUTES["kosher"] == ("not_kosher",)
+    for label, attrs in products.RESTRICTION_ATTRIBUTES.items():
+        assert ("not_kosher" in attrs) == (label == "kosher"), label
+
+
+def test_kosher_allows_only_on_an_explicit_false(caplog):
+    assert products.product_allows(_product(not_kosher=False), ["kosher"]) is True
+    assert products.product_allows(_product(not_kosher=True), ["kosher"]) is False
+    assert products.product_allows(_product(not_kosher=None), ["kosher"]) is False
+    missing = _product()
+    del missing["not_kosher"]
+    assert products.product_allows(missing, ["kosher"]) is False
+
+
+def test_not_kosher_does_not_affect_other_restrictions():
+    shrimp = _product(canonical_name="xx", contains_fish=True, not_kosher=True)
+    undecided = _product(canonical_name="yy", not_kosher=None)
+    for label in ("vegan", "vegetarian", "no_nuts", "dairy_free", "gluten_free"):
+        assert products.product_allows(undecided, [label]) is True, label
+    assert products.product_allows(shrimp, ["no_nuts"]) is True
+
+
+def test_kosher_rule_states_the_labelling_decisions():
+    rule = products.ATTRIBUTE_RULES["not_kosher"]
+    for word in ("hechsher", "OU", "COR", "MK", "Kof-K", "Star-K",
+                 "raw/fresh produce", "eggs in shell", "dry grains",
+                 "Uncertified meat and poultry", "uncertified cheese", "pork",
+                 "shellfish", "uncertain", "least permissions"):
+        assert word in rule, word
+
+
+def test_kosher_null_decides_a_kosher_verdict():
+    assert "kosher" in products._null_decides(_product(not_kosher=None))
+    assert "kosher" in products.REVIEW_LABELS
+    assert products._null_decides(_product(not_kosher=True)) == []
+
+
+def test_kosher_combination_rule_is_meat_with_dairy_only():
+    assert products.RESTRICTION_COMBINATION_RULES == {
+        "kosher": (("contains_meat", "contains_dairy"),)}
+    for rules in products.RESTRICTION_COMBINATION_RULES.values():
+        for rule in rules:
+            assert set(rule) <= set(products.ATTRIBUTES)
+    assert set(products.RESTRICTION_COMBINATION_RULES) <= set(
+        products.RESTRICTION_ATTRIBUTES)
+
+
+def test_supported_restrictions_are_exactly_the_enforced_labels():
+    assert products.supported_restrictions() == sorted(products.RESTRICTION_ATTRIBUTES)
+    assert "kosher" in products.supported_restrictions()
+    assert "halal" not in products.supported_restrictions()
+
+
+@pytest.mark.parametrize("labels, unsupported", [
+    (["halal"], ["halal"]),
+    (["vegan", "Halal ", "halal", "keto"], ["halal", "keto"]),
+    (["kosher", "Vegan", "", "  "], []),
+    (None, []),
+])
+def test_unsupported_restrictions(labels, unsupported):
+    assert products.unsupported_restrictions(labels) == unsupported
+
+
+def test_require_supported_restrictions_names_the_supported_list():
+    products.require_supported_restrictions(["kosher", "vegan"])
+    with pytest.raises(products.UnsupportedRestrictionError) as err:
+        products.require_supported_restrictions(["vegan", "halal"])
+    assert err.value.labels == ["halal"]
+    msg = str(err.value)
+    assert "halal" in msg
+    for label in products.supported_restrictions():
+        assert label in msg

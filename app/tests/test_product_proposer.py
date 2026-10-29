@@ -31,6 +31,7 @@ def _label(**overrides):
         "contains_nuts": False,
         "contains_animal_byproduct": False,
         "contains_gluten": False,
+        "not_kosher": False,
         "is_pantry_staple": False,
         "confidence": 0.95,
         "reason": "Chicken is poultry.",
@@ -504,18 +505,21 @@ def _tile(**overrides):
              "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
              "contains_animal_byproduct": False,
              "contains_gluten": False,
+             "not_kosher": False,
              "is_pantry_staple": True, "price_is_per_item": True},
             {"match_existing_product": None, "canonical_name": "chocolate milk",
              "category": "dairy", "contains_meat": False, "contains_fish": False,
              "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
              "contains_animal_byproduct": False,
              "contains_gluten": False,
+             "not_kosher": False,
              "is_pantry_staple": False, "price_is_per_item": True},
             {"match_existing_product": None, "canonical_name": "crackers",
              "category": "snacks", "contains_meat": False, "contains_fish": False,
              "contains_dairy": True, "contains_egg": False, "contains_nuts": False,
              "contains_animal_byproduct": False,
              "contains_gluten": False,
+             "not_kosher": False,
              "is_pantry_staple": True, "price_is_per_item": True},
         ],
     }
@@ -612,6 +616,24 @@ def test_instructions_carry_the_gluten_labelling_rule():
                  "triticale", "malt", "brewer's yeast", "certified gluten-free",
                  "may contain gluten"):
         assert word in text, word
+
+
+def test_instructions_carry_the_kosher_labelling_rule_verbatim():
+    from app.services.products import ATTRIBUTE_RULES
+    assert ATTRIBUTE_RULES["not_kosher"] in pp.LABELLING_INSTRUCTIONS
+    assert "- not_kosher:" in pp.LABELLING_INSTRUCTIONS
+
+
+def test_a_label_missing_not_kosher_is_rejected_and_null_is_not_a_label():
+    payload = _label()
+    del payload["not_kosher"]
+    assert any("not_kosher" in p for p in pp.validate_payload(payload))
+    assert pp.validate_payload(_label(not_kosher=None))
+
+
+def test_product_insert_writes_not_kosher():
+    assert "not_kosher" in pp._PRODUCT_INSERT
+    assert "%(not_kosher)s" in pp._PRODUCT_INSERT
 
 
 def test_a_label_missing_the_gluten_attribute_is_rejected():

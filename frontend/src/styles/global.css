@@ -428,6 +428,43 @@ input[type="checkbox"] {
   color: var(--color-success);
 }
 
+.banner-warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.banner-warning p {
+  margin: 0 0 var(--space-1);
+}
+
+/* Dietary restriction picker (UserForm) --------------------------------- */
+
+.restriction-picker {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.restriction-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+}
+
+.restriction-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  cursor: pointer;
+}
+
+.chip-unsupported {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  border: 1px solid currentColor;
+}
+
 .empty-state {
   text-align: center;
   padding: var(--space-6);

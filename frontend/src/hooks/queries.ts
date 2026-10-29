@@ -20,6 +20,7 @@ export const queryKeys = {
   health: ["health"] as const,
   apiInfo: ["api-info"] as const,
   user: (id: number) => ["user", id] as const,
+  supportedRestrictions: ["supported-restrictions"] as const,
   deals: (postal: string, mode: string, param?: string) =>
     ["deals", postal, mode, param ?? ""] as const,
   userRecipes: (userId: number) => ["recipes", "user", userId] as const,
@@ -48,6 +49,15 @@ export const useApiInfo = () =>
   useQuery({ queryKey: queryKeys.apiInfo, queryFn: api.getApiInfo, staleTime: Infinity });
 
 // Users -----------------------------------------------------------------
+
+/** The restriction labels the backend enforces (static per deployment). */
+export const useSupportedRestrictions = () =>
+  useQuery({
+    queryKey: queryKeys.supportedRestrictions,
+    queryFn: api.getSupportedRestrictions,
+    staleTime: Infinity,
+    select: (data) => data.supported,
+  });
 
 export const useRegisterUser = () =>
   useMutation({ mutationFn: (data: UserCreate) => api.registerUser(data) });

@@ -21,6 +21,7 @@ def _product(pid, name, *, status="confirmed", **attrs):
         "contains_egg": False, "contains_nuts": False,
         "contains_animal_byproduct": False,
         "contains_gluten": False,
+        "not_kosher": False,
     }
     row.update(attrs)
     return row
@@ -145,9 +146,15 @@ def test_unrestricted_user_is_trivially_approved_even_for_unresolvable_citations
     assert report["approved"] is True
 
 
-def test_unknown_restriction_label_is_not_enforced(caplog):
-    report = _rep(["kosher"], {"name": "chicken", "deal_id": 4})
-    assert report["approved"] is True
+@pytest.mark.parametrize("labels", [["halal"], ["vegetarian", "halal"], ["Halal "]])
+def test_unsupported_restriction_label_is_never_approved(labels):
+    """A label no attribute enforces cannot be shown to be met: it is a
+    violation of its own, never a vacuous "Approved: complies with halal"."""
+    report = _rep(labels, {"name": "lentils", "product_id": 2})
+    assert report["approved"] is False
+    assert report["meets_restrictions"] is False
+    assert any("'halal' is not a supported restriction" in v
+               for v in report["violations"])
 
 
 def test_deal_with_no_linked_product_fails_closed():
@@ -345,6 +352,27 @@ def test_nutritionist_verdict_ignores_the_advisory_llm_and_reads_citations():
     assert "Vegetable stock" in feedback and "contains_fish" in feedback
     compliance = update["validation_results"]["b"]["dietary_compliance"]
     assert set(compliance) == {"allergen_free", "meets_restrictions", "violations"}
+
+
+@pytest.mark.parametrize("restrictions", [["halal"], ["vegetarian", "halal"]])
+def test_nutritionist_never_approves_an_unsupported_restriction(restrictions):
+    recipe = {"recipe_id": "a", **_recipe({"name": "eggplant", "deal_id": 1},
+                                          {"name": "salt", "product_id": 101})}
+    update = _nutritionist().validate_recipes(_nutritionist_state([recipe], restrictions))
+    assert update["approved_recipe_ids"] == []
+    feedback = update["validation_results"]["a"]["feedback"]
+    assert not feedback.startswith("Approved")
+    assert "'halal' is not a supported restriction" in feedback
+
+
+def test_nutritionist_rejects_meat_with_dairy_for_kosher():
+    # deal 4 = chicken (meat), staple 103 = butter (dairy); both not_kosher=False.
+    recipe = {"recipe_id": "a", **_recipe({"name": "chicken", "deal_id": 4},
+                                          {"name": "butter", "product_id": 103})}
+    update = _nutritionist().validate_recipes(_nutritionist_state([recipe], ["kosher"]))
+    assert update["rejected_recipe_ids"] == ["a"]
+    assert "contains_meat with contains_dairy" in \
+        update["validation_results"]["a"]["feedback"]
 
 
 # --------------------------------------------------------------------------
@@ -621,3 +649,139 @@ def test_gluten_does_not_affect_other_restrictions_in_a_recipe(restrictions):
     report = _rep(restrictions, {"name": "flour", "product_id": 110},
                   {"name": "oats", "deal_id": 9}, catalog=GLUTEN_CATALOG)
     assert report["approved"] is True, report["violations"]
+
+
+# --------------------------------------------------------------------------
+# kosher: not_kosher per product (migration 021) + "no meat with dairy"
+# --------------------------------------------------------------------------
+
+KOSHER_BEEF = _product(120, "Kosher Ground Beef", contains_meat=True)
+KOSHER_CHEESE = _product(121, "Kosher Cheddar", contains_dairy=True)
+KOSHER_SALMON = _product(122, "Salmon Fillet", contains_fish=True)
+KOSHER_RICE = _product(123, "Rice")
+UNCERTIFIED_CHEESE = _product(124, "Brie", contains_dairy=True, not_kosher=True)
+UNDECIDED_PASTA = _product(125, "Pasta", not_kosher=None)
+KOSHER_CATALOG = CitationCatalog(
+    deal_products={
+        "20": [KOSHER_BEEF], "21": [KOSHER_SALMON], "22": [UNCERTIFIED_CHEESE],
+        "23": [UNDECIDED_PASTA], "24": [KOSHER_RICE],
+        # One flyer tile linking both a meat and a dairy product.
+        "25": [KOSHER_BEEF, KOSHER_CHEESE],
+    },
+    staples={"101": SALT, "121": KOSHER_CHEESE},
+)
+
+
+def _krep(restrictions, *ingredients):
+    return compliance_report(_recipe(*ingredients), restrictions, KOSHER_CATALOG)
+
+
+def test_kosher_requires_explicit_false_not_kosher():
+    assert _krep(["kosher"], {"name": "rice", "deal_id": 24})["approved"] is True
+    report = _krep(["kosher"], {"name": "brie", "deal_id": 22})
+    assert report["approved"] is False
+    assert report["details"][0]["attributes"] == ["not_kosher"]
+
+
+def test_undecided_not_kosher_fails_closed():
+    report = _krep(["kosher"], {"name": "pasta", "deal_id": 23})
+    assert report["approved"] is False
+    assert "not_kosher undecided" in report["violations"][0]
+
+
+def test_meat_deal_with_dairy_staple_violates_kosher():
+    report = _krep(["kosher"], {"name": "beef", "deal_id": 20},
+                   {"name": "cheese", "product_id": 121})
+    assert report["approved"] is False
+    assert report["meets_restrictions"] is False
+    [detail] = report["details"]
+    assert detail["attributes"] == ["contains_meat", "contains_dairy"]
+    assert detail["citation"] == "deal 20; pantry product 121"
+    assert "kosher forbids combining contains_meat with contains_dairy" in detail["reason"]
+
+
+def test_combination_violation_never_names_the_ingredient():
+    report = _krep(["kosher"], {"name": "SECRET-INGREDIENT-NAME", "deal_id": 20},
+                   {"name": "OTHER-SECRET", "product_id": 121})
+    assert report["approved"] is False
+    text = json.dumps(report)
+    assert "SECRET-INGREDIENT-NAME" not in text and "OTHER-SECRET" not in text
+
+
+def test_fish_with_dairy_is_kosher():
+    report = _krep(["kosher"], {"name": "salmon", "deal_id": 21},
+                   {"name": "cheese", "product_id": 121})
+    assert report["approved"] is True, report["violations"]
+
+
+def test_meat_with_pareve_is_kosher():
+    report = _krep(["kosher"], {"name": "beef", "deal_id": 20},
+                   {"name": "rice", "deal_id": 24}, {"name": "salt", "product_id": 101})
+    assert report["approved"] is True, report["violations"]
+
+
+def test_meat_with_fish_is_kosher():
+    report = _krep(["kosher"], {"name": "beef", "deal_id": 20},
+                   {"name": "salmon", "deal_id": 21})
+    assert report["approved"] is True, report["violations"]
+
+
+def test_a_tile_linking_meat_and_dairy_violates_kosher_when_cited_in_a_recipe():
+    report = _krep(["kosher"], {"name": "tile", "deal_id": 25})
+    assert report["approved"] is False
+    assert report["details"][0]["citation"] == "deal 25"
+
+
+@pytest.mark.parametrize("restrictions", [[], ["vegetarian"], ["no_nuts"], ["gluten_free"]])
+def test_non_kosher_users_are_unaffected_by_the_combination_rule(restrictions):
+    """No combination rule fires for anyone who is not kosher. (The full
+    verdict is checked on meat + dairy except for vegetarian, where meat fails
+    per product, so pareve rice + dairy stands in.)"""
+    meat_and_dairy = _recipe({"name": "beef", "deal_id": 20},
+                             {"name": "cheese", "product_id": 121})
+    assert dietary.combination_violations(meat_and_dairy, restrictions, KOSHER_CATALOG) == []
+    first = {"name": "m", "deal_id": 24 if restrictions == ["vegetarian"] else 20}
+    report = _krep(restrictions, first, {"name": "cheese", "product_id": 121})
+    assert report["approved"] is True, report["violations"]
+
+
+def test_null_meat_or_dairy_fails_closed_in_the_combination_rule():
+    odd_meat = _product(126, "Mystery", contains_meat=None)
+    catalog = CitationCatalog(deal_products={"30": [odd_meat]},
+                              staples={"121": KOSHER_CHEESE})
+    report = compliance_report(
+        _recipe({"name": "x", "deal_id": 30}, {"name": "y", "product_id": 121}),
+        ["kosher"], catalog)
+    assert report["approved"] is False
+    assert "contains_meat undecided" in report["violations"][0]
+
+
+def test_kosher_compliance_is_unchanged_when_every_name_is_nonsense():
+    """Rename everything -- products and ingredients -- and every verdict,
+    attribute and citation stands."""
+    def scramble(p):
+        return {**p, "canonical_name": "zzqx " + str(p["product_id"])}
+
+    scrambled = CitationCatalog(
+        deal_products={k: [scramble(p) for p in v]
+                       for k, v in KOSHER_CATALOG.deal_products.items()},
+        staples={k: scramble(p) for k, p in KOSHER_CATALOG.staples.items()},
+    )
+    cases = [
+        [{"deal_id": 20}, {"product_id": 121}],
+        [{"deal_id": 21}, {"product_id": 121}],
+        [{"deal_id": 20}, {"deal_id": 24}],
+        [{"deal_id": 22}],
+        [{"deal_id": 23}],
+        [{"deal_id": 25}],
+    ]
+    for case in cases:
+        real = [{"name": "beef", **c} for c in case]
+        nonsense = [{"name": f"qwerty{i}", **c} for i, c in enumerate(case)]
+        a = compliance_report(_recipe(*real), ["kosher"], KOSHER_CATALOG)
+        b = compliance_report(_recipe(*nonsense), ["kosher"], scrambled)
+        assert a["approved"] == b["approved"], case
+        assert [d["attributes"] for d in a["details"]] == \
+               [d["attributes"] for d in b["details"]], case
+        assert [d["citation"] for d in a["details"]] == \
+               [d["citation"] for d in b["details"]], case

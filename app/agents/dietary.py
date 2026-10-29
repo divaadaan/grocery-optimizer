@@ -23,12 +23,24 @@ it is carried into violation messages for humans and never decides anything.
 * no citation -> fails closed. Output validation already rejects uncited
   ingredients (``llm_output``), so reaching here means something bypassed it.
 
-A user with no restriction this app understands is approved without lookups:
-there is nothing for a product attribute to decide.
+A user with no restriction is approved without lookups: there is nothing for
+a product attribute to decide. A label this app does not enforce (not in
+``RESTRICTION_ATTRIBUTES``, e.g. ``halal``) is never approved: it is a
+violation of its own, because nothing can show a recipe meets it.
+
+Recipe-level rules
+------------------
+Some restrictions forbid a *combination* no single product can break:
+kosher's "no meat with dairy" (``RESTRICTION_COMBINATION_RULES``). After the
+per-ingredient checks, :func:`combination_violations` looks at every cited
+product together -- each cited deal's linked products plus each cited staple
+-- and fails the recipe when every attribute of a rule is present (True, or
+NULL failing closed) somewhere among them. Fish is pareve: fish with dairy is
+fine. This is a recipe rule only; the deal gate serves per product.
 
 An attribute must be explicitly ``False`` to comply. ``None`` -- an undecided
-``contains_animal_byproduct`` / ``contains_gluten`` on a product confirmed
-before migration 015 / 017 --
+``contains_animal_byproduct`` / ``contains_gluten`` / ``not_kosher`` on a
+product confirmed before migration 015 / 017 / 021 --
 fails closed, so a vegan recipe citing it is rejected until a reviewer decides.
 
 The substring oracle this module used to be -- ``eggplant`` read as egg,
@@ -167,12 +179,100 @@ def ingredient_violations(
                       "be checked")]
 
 
+def _cited_products(
+    recipe: dict, catalog: CitationCatalog
+) -> list[tuple[str, dict]]:
+    """``(citation, product)`` for every product the recipe's citations
+    resolve to: each cited deal's linked products, and each cited staple.
+    Unresolvable citations contribute nothing here -- they already fail per
+    ingredient. Reads ``deal_id`` / ``product_id``; never ``name``."""
+    out: list[tuple[str, dict]] = []
+    seen: set[tuple[str, Any]] = set()
+    for ingredient in recipe.get("ingredients", []):
+        if not isinstance(ingredient, dict):
+            continue
+        deal_key = _key(ingredient.get("deal_id"))
+        product_key = _key(ingredient.get("product_id"))
+        if deal_key is not None:
+            citation, linked = f"deal {deal_key}", catalog.deal_products.get(deal_key) or []
+        elif product_key is not None:
+            staple = catalog.staples.get(product_key)
+            citation, linked = f"pantry product {product_key}", [staple] if staple else []
+        else:
+            continue
+        for product in linked:
+            key = (citation, product.get("product_id"))
+            if key not in seen:
+                seen.add(key)
+                out.append((citation, product))
+    return out
+
+
+def _present(product: dict, attr: str) -> bool:
+    """True, NULL and a missing key all count as present: fail closed, the
+    same reading ``product_allows`` gives a value."""
+    value = product.get(attr)
+    return value is None or bool(value)
+
+
+def combination_violations(
+    recipe: dict, restrictions: Sequence[str], catalog: CitationCatalog
+) -> list[Violation]:
+    """Recipe-level rules no single product can break
+    (:data:`app.services.products.RESTRICTION_COMBINATION_RULES`), e.g.
+    kosher's "no meat with dairy".
+
+    A rule is broken when every one of its attributes is present on at least
+    one cited product. The violation names the citations and products holding
+    each attribute -- never an ingredient name. Labels without a rule (and
+    users without such a label) are untouched.
+    """
+    rules: list[tuple[str, tuple[str, ...]]] = []
+    for label in restrictions or []:
+        key = (label or "").strip().lower()
+        for rule in _products.RESTRICTION_COMBINATION_RULES.get(key, ()):
+            if (key, rule) not in rules:
+                rules.append((key, rule))
+    if not rules:
+        return []
+    cited = _cited_products(recipe, catalog)
+    out: list[Violation] = []
+    for label, rule in rules:
+        holders = {a: [(c, p) for c, p in cited if _present(p, a)] for a in rule}
+        if not all(holders.values()):
+            continue
+        citations = sorted({c for a in rule for c, _ in holders[a]})
+        parts = []
+        for attr in rule:
+            who = ", ".join(
+                f"{c} {_product_label(p)}"
+                + ("" if p.get(attr) else f" ({attr} undecided)")
+                for c, p in holders[attr])
+            parts.append(f"{attr} from {who}")
+        out.append(Violation(
+            "recipe", "; ".join(citations), rule,
+            f"{label} forbids combining {' with '.join(rule)}: "
+            + "; ".join(parts)))
+    return out
+
+
 def recipe_violations(
     recipe: dict, restrictions: Sequence[str], catalog: CitationCatalog
 ) -> list[Violation]:
-    """Every violation in ``recipe`` (empty == compliant). Reads
+    """Every violation in ``recipe`` (empty == compliant): each ingredient's
+    per-product check, then the recipe-level combination rules. Reads
     ``ingredients[*].deal_id`` / ``product_id``; never ``name``."""
-    out: list[Violation] = []
+    # A label no attribute enforces cannot be shown to be met, so it can never
+    # be approved. Recipe generation refuses such a profile up front
+    # (graph.run_recipe_generation); this is the defence in depth that keeps
+    # "Approved: ... complies with halal" impossible however we got here.
+    out: list[Violation] = [
+        Violation("recipe", f"restriction {label}", (),
+                  f"'{label}' is not a supported restriction (supported: "
+                  f"{', '.join(_products.supported_restrictions())}); no product "
+                  "attribute can show a recipe complies with it")
+        for label in _products.unsupported_restrictions(restrictions)
+    ]
     for ingredient in recipe.get("ingredients", []):
         if isinstance(ingredient, dict):
             out.extend(ingredient_violations(ingredient, restrictions, catalog))
@@ -181,6 +281,7 @@ def recipe_violations(
             if required:
                 out.append(Violation(str(ingredient), "no citation", required,
                                      "is not a structured, cited ingredient"))
+    out.extend(combination_violations(recipe, restrictions, catalog))
     return out
 
 
@@ -196,7 +297,9 @@ def compliance_report(
     """
     violations = recipe_violations(recipe, restrictions, catalog)
     allergen = [v for v in violations if ALLERGEN_ATTRIBUTES & set(v.attributes)]
-    diet = [v for v in violations if set(v.attributes) - ALLERGEN_ATTRIBUTES]
+    # A violation naming no attribute (an unsupported label) is a diet failure.
+    diet = [v for v in violations
+            if not v.attributes or set(v.attributes) - ALLERGEN_ATTRIBUTES]
     return {
         "approved": not violations,
         "violations": [v.describe() for v in violations],

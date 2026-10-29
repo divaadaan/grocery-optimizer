@@ -53,7 +53,8 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 from app.services.products import (
-    ATTRIBUTES, is_merged_link_error, merged_survivor_id, normalize_name,
+    ATTRIBUTE_RULES, ATTRIBUTES, is_merged_link_error, merged_survivor_id,
+    normalize_name,
 )
 
 logger = logging.getLogger(__name__)
@@ -122,6 +123,9 @@ gluten" counts as true. Judge the product as typically sold in Canadian \
 flyers: bread, pasta, flour, crackers, cereal and beer are true; plain rice, \
 corn, potatoes, produce, meat and dairy are false. Decide it from what the \
 food is made of, never from the words in the string.
+- not_kosher: """ + ATTRIBUTE_RULES["not_kosher"] + """. Note the polarity: \
+true is the restrictive answer, like every contains_* attribute, so when you \
+cannot tell whether a brand is certified, set it true and say so in `reason`.
 - is_pantry_staple: shelf-stable basics bought by the bag/box (flour, rice, \
 sugar, oil, pasta, canned goods).
 
@@ -518,12 +522,14 @@ INSERT INTO products (
     canonical_name, category,
     contains_meat, contains_fish, contains_dairy,
     contains_egg, contains_nuts, contains_animal_byproduct, contains_gluten,
+    not_kosher,
     is_pantry_staple,
     status, proposed_by, proposal_reason
 ) VALUES (
     %(name)s, %(category)s,
     %(contains_meat)s, %(contains_fish)s, %(contains_dairy)s,
     %(contains_egg)s, %(contains_nuts)s, %(contains_animal_byproduct)s, %(contains_gluten)s,
+    %(not_kosher)s,
     %(staple)s,
     'proposed', %(by)s, %(reason)s
 )
