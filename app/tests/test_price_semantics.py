@@ -289,7 +289,7 @@ def test_starting_at_is_per_item_like_from(prefix):
 
 @pytest.mark.parametrize(
     "unit",
-    ["or $2.89 each", "2.87 /ea", "or 4.29/ 4.77 ea", "or $4.00 each"],
+    ["or $2.89 each", "or 4.29/ 4.77 ea", "or $4.00 each"],
 )
 def test_a_price_inside_the_unit_field_means_the_headline_is_not_per_item(unit):
     """13 probe rows put the per-item price INTO the unit field.
@@ -413,3 +413,49 @@ def test_bare_price_with_no_markers_stays_undecided():
     assert infer("", "", "") is None
     assert infer(None, "", "20/20") is None
     assert infer(None, None, "Online Price") is None
+
+
+# --------------------------------------------------------------------------
+# Misreads found by the Neon dry-run of fix_deal_link_prices.py (real rows)
+# --------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "deal_id, unit, story, prefix",
+    [
+        # Points threshold, not a price multi-buy: $2.49 each.
+        (97, "ea.", "GET 1,500 pts when you buy 2 OR GET 500 pts when you pts buy 1",
+         None),
+        # Price range across variants, per item.
+        (451, "- $7.99 ea", "Save $1 ea", None),
+        # "2.87 /ea" with sale $1.97 and no regular_price: a compare price.
+        (522, "2.87 /ea", None, None),
+    ],
+)
+def test_neon_misreads_stay_per_item(deal_id, unit, story, prefix):
+    assert infer(unit, story, prefix) is True
+
+
+@pytest.mark.parametrize(
+    "deal_id, unit, story, prefix",
+    [
+        (76, None, "34% OFF", "2/"),
+        # Points story plus a real "2/" prefix: the prefix decides.
+        (98, None, "100 Scene+ PTS when you buy 4", "2/"),
+        (111, None, None, "2/"),
+        # "or $X ea" is the per-item alternative to a multi-buy price.
+        (136, "or $3.69 ea.", None, "2 for"),
+        (389, None, None, "2/"),
+        (515, "or 4.29/ 4.77 ea", None, "2/"),
+    ],
+)
+def test_neon_real_multibuys_stay_false(deal_id, unit, story, prefix):
+    assert infer(unit, story, prefix) is False
+
+
+def test_or_price_in_unit_alone_is_still_multibuy_evidence():
+    assert infer("or $3.69 ea.") is False
+
+
+def test_points_get_does_not_hide_a_real_buy_get():
+    assert infer("ea.", "Buy 1 Get 1 FREE") is False
+    assert infer("ea.", "buy 2 get 500 pts") is True
