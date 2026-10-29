@@ -3,15 +3,16 @@
 Canonical plan, last revised 2026-10-29 (originally 2026-06-12). Dated
 `*Shipped:*` / `*Progress:*` entries below are historical records — the test
 counts inside them were true when written and are deliberately not rewritten.
-Current suite on `main`: **1030 passed, 5 skipped, 4 deselected**
-(`pytest -m "not llm"`, after #36).
+Current suite on `main`: **1294 passed, 5 skipped, 4 deselected**
+(`pytest -m "not llm"`, after #41).
 
 **Where we are (2026-10-28):** the curated-product database work is finished
 (see *Direction (2026-10-28)*). The next stage is **evaluation**: recipe
 quality, substitution handling, and scraping/parsing fitness for go-live. The
 ordered plan is *Next stage: evaluation readiness*; parked work is in
-*Backlog (parked)*. As of 2026-10-29, Track A items 1–2 and Track E item 1 are
-shipped (#33–#36), and E2 (frozen snapshots) is in progress.
+*Backlog (parked)*. As of 2026-10-29, Track A items 1–2 and Track E items 1–4 are
+shipped (#33–#36, #38–#40), and `kosher` is enforced (#41). E5 (report) is
+next.
 
 Supersedes `NEXT_STEPS.md` (see git history
 for the WSL-migration log and verification notes it contained).
@@ -126,7 +127,8 @@ Shipped:
     `product_aliases` rows pointing at a merged product. Tested against
     postgres:17, including the merge/link race in both orders.
   - #31: read-only product lookup and list endpoints for the review page.
-- **Dropped for now:** halal and kosher (see Backlog).
+- **Dropped for now:** halal (see Backlog). Kosher was un-deferred and shipped
+  on 2026-10-29 (#41; see Track E §4).
 
 ## Next stage: evaluation readiness (2026-10-28)
 
@@ -235,16 +237,64 @@ was spot-checked against code or Neon by the coordinator.
    can no longer write to Neon.
 2. **Frozen snapshots.** A read-only capture script plus a loader. Snapshots:
    `seed27` (from the existing fixture), `week-2026-10-16` (real), and
-   `sparse5` (today's reality). *In progress (2026-10-29),* on
-   `feat/eval-snapshots`.
+   `sparse5` (today's reality).
+
+   *Shipped (2026-10-29, #38):* `scripts/capture_snapshot.py` reads Neon
+   read-only three ways: a read-only session, a REPEATABLE READ READ ONLY
+   transaction checked via `SHOW transaction_read_only`, and a guard that
+   refuses anything but SELECT/SHOW. `app/eval/snapshots.py` validates
+   strictly, keeps NULL attributes NULL, and round-trips byte for byte.
+   `SnapshotDeals`/`SnapshotCatalog` plug into `GraphDeps`, gating with
+   production's own `deal_allows`. Snapshots, all for M5V3A8: `seed27` (27 deals,
+   as of 2026-07-15, from `scripts/seed_sample_data.sql` rows still in Neon),
+   `week-2026-10-16` (181 deals) and `sparse5` (5 deals). Past-dated snapshots
+   carry *capture-time* product attributes, because attributes have no history.
+   Format v2 (#41) adds `not_kosher`, which is null in the committed files.
 3. **Runner with record/replay.** The artifact is the final state plus a call
    log. Replay is deterministic and runs in CI.
+
+   *Shipped (2026-10-29, #39):* `app/eval/recorder.py` and `runner.py`, plus
+   `scripts/run_eval.py record|replay`. Calls are matched by (role, sha256 of
+   the request, occurrence), not by order, because the three SousChefs run in
+   parallel. Replay keeps every request mismatch and re-raises it after the
+   graph returns, since the agents swallow model errors. Strict mode fails on
+   unused calls. Recipe ids are content-derived in eval runs (a new
+   `GraphDeps.recipe_ids` hook; production still uses uuid4). Token counts
+   come only from the provider's `usage_metadata`; null means unknown. Fixture:
+   `app/tests/fixtures/eval_runs/seed27-vegetarian.json`, recorded with
+   scripted models. *Open:* the first live recording, which should confirm that
+   Ollama fills in `usage_metadata`.
 4. **Deterministic scorers.**
    - Structural reliability and citation validity.
    - Compliance must be 100%, or the run fails. Kosher and halal score N/A,
      never pass.
    - Budget, measured as a lower bound until Track C settles cost semantics.
    - On-sale use, diversity (Jaccard of cited deals), latency and tokens.
+
+   *Shipped (2026-10-29, #40):* `app/eval/scorers.py` and
+   `scripts/score_eval.py`. The scorer checks the snapshot hash first, and
+   compliance is re-derived from the snapshot's attributes through
+   `dietary.recipe_violations`, never taken from the run's own verdict.
+   Verdict: FAIL on a compliance violation, a run that didn't complete, or
+   fewer approved recipes than requested. Otherwise N/A if any label is
+   unsupported (halal), else PASS. Budget, citations and diversity are
+   reported but don't decide the verdict. Budget is labelled a lower bound and
+   reported both per recipe sum and per unique deal. Savings are null when
+   no regular price is known. *Open owner questions:* should a partial plan be
+   a FAIL (it is today), and should a budget that's over even as a lower
+   bound gate the verdict?
+
+   *Kosher (2026-10-29, #41; owner decisions):* `not_kosher` (migration 021,
+   applied to Neon) means certified-or-inherent; uncertain certification counts
+   as not kosher. A kosher recipe may not cite both meat and dairy
+   (`RESTRICTION_COMBINATION_RULES`; fish is pareve). Unsupported labels are
+   refused: a 422 on the user API and on generation, and the profile form
+   offers only supported labels via `GET /api/v1/users/dietary-restrictions`.
+   Kosher is now scored, and halal stays N/A. Neon: audited corrections
+   205–377 labelled all 173 confirmed products, 47 kosher and 126 not.
+   Canonical products are generic, so packaged goods are mostly not kosher.
+   Kosher reach grows by linking deals to brand-specific products whose
+   hechsher can be confirmed.
 5. **Report.** Markdown/CSV, with optional MLflow.
 6. **Scenario set v1.** About 18 scenarios covering restrictions × budget ×
    household × snapshot. *Owner review.*
@@ -289,9 +339,8 @@ was spot-checked against code or Neon by the coordinator.
 
 Parked by the owner or deferred until the evaluation stage needs them:
 
-- `halal` and `kosher` attributes. Dropped for now on 2026-10-28; one Neon user
-  (a mockup) carries `kosher`, which is unenforced and must score N/A, never
-  pass.
+- A `halal` attribute. Dropped on 2026-10-28; the label is refused (422) until it
+  exists. Kosher shipped on 2026-10-29 (#41).
 - Flattening merge chains. 018 refuses chains, so a product that has absorbed
   others cannot itself be merged.
 - `training/` is out of step with the citation schema. Do not reuse its
@@ -727,10 +776,9 @@ Parked by the owner or deferred until the evaluation stage needs them:
   product for one item of a tile. P84 "cheese tofu" is really a fish-paste
   product (attributes correct, name misleading); alias a394 (a Villaggio /
   Dempster's tile) waits on a product the API can't create.
-- **Diets without attributes.** `halal`, `kosher` and `gluten_free` have no
-  product attribute: the deal gate restricts these users to confirmed products,
-  but nothing checks the diet itself, and the recipe verdict approves them
-  without a lookup.
+- ~~**Diets without attributes.**~~ Closed: `gluten_free` (#25) and `kosher`
+  (#41) have attributes, and unsupported labels such as `halal` are refused
+  rather than approved (#41).
 - `training/` no longer matches the citation schema (no `pantry_json` in
   `training/data_app/sous_chef.py`; SFT completions lack citations). Left as the
   historical SFT record.

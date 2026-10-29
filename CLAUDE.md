@@ -104,8 +104,14 @@ authority:
 **No name, keyword or substring matching anywhere downstream of product review**
 — not as a filter, a veto, a review alarm or a backfill heuristic. An ingredient
 or deal *name* never decides anything. NULL attributes fail closed. A diet the
-attributes can't express (halal, kosher, gluten-free) needs a new attribute, not
-a word list.
+attributes can't express (halal, today) needs a new attribute, not a word list.
+Until it has one, its label is unsupported: the user API refuses it with a 422
+and generation refuses to run for it, so it can never be "approved".
+
+A rule that no single product can break — kosher's "no meat with dairy" — lives
+in `RESTRICTION_COMBINATION_RULES` next to `RESTRICTION_ATTRIBUTES` and is
+decided over the recipe's cited products in `app/agents/dietary.py`, still from
+attributes only. The deal gate stays per product.
 
 ## Conventions
 
