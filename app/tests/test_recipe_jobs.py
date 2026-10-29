@@ -220,7 +220,8 @@ def _run_streamed(monkeypatch, events, **kwargs):
     from app import main_recipe_generation
 
     stub = StubGraph(events)
-    monkeypatch.setattr(main_recipe_generation, "create_recipe_generation_graph", lambda: stub)
+    monkeypatch.setattr(main_recipe_generation, "create_recipe_generation_graph",
+                        lambda deps=None: stub)
     result = main_recipe_generation.run_recipe_generation(
         user_id=1,
         postal_code="M5V3A8",

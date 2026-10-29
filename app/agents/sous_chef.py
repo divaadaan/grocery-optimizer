@@ -1,4 +1,3 @@
-from langchain_ollama import ChatOllama
 import json
 import time
 import uuid
@@ -14,7 +13,7 @@ from .llm_output import (
     raw_output_report,
 )
 from .costing import deals_by_id, ingredient_price, price_recipe
-from ..config import settings
+from .llm_factory import make_llm, model_name
 from ..services import products
 from ..services.mlflow_logger import MLflowLogger
 
@@ -110,15 +109,18 @@ def _to_recipe(
 
 
 class SousChef:
-    """SousChef agent for recipe generation."""
+    """SousChef agent for recipe generation.
 
-    def __init__(self):
-        self.llm = ChatOllama(
-            model=settings.ollama_sous_chef_model,
-            base_url=settings.ollama_base_url,
-            temperature=0.8,  # Higher creativity for recipes
-            format="json"
-        )
+    ``llm`` (the "sous_chef" role) and ``tracker`` (MLflowLogger's
+    interface) are injectable; left ``None`` they are the production defaults.
+    """
+
+    tracker = MLflowLogger
+
+    def __init__(self, llm=None, tracker=None):
+        self.llm = llm if llm is not None else make_llm("sous_chef")
+        if tracker is not None:
+            self.tracker = tracker
 
     @staticmethod
     def _offer(ingredient_group, available_deals, deal_index, pantry_staples,
@@ -176,11 +178,11 @@ class SousChef:
             duration = time.time() - start_time
 
             # Log to MLflow
-            MLflowLogger.log_agent_call(
+            self.tracker.log_agent_call(
                 agent_name=chef_id,
                 tokens=len(raw),
                 duration=duration,
-                model=settings.ollama_sous_chef_model,
+                model=model_name("sous_chef"),
                 success=True
             )
 
@@ -245,7 +247,7 @@ class SousChef:
             return None
 
 
-def sous_chef_generate_node(task: dict) -> dict:
+def sous_chef_generate_node(task: dict, sous_chef: Optional[SousChef] = None) -> dict:
     """
     Node 4: Individual SousChef worker node for parallel execution.
 
@@ -254,12 +256,16 @@ def sous_chef_generate_node(task: dict) -> dict:
     shared input fields. Returns only this worker's recipes — the merge_dicts
     reducers on generated_recipes/sous_chef_assignments combine the three
     parallel workers' outputs.
+
+    The graph builder binds ``sous_chef`` (one instance shared by the three
+    parallel tasks; it holds no per-call state). ``None`` builds a default.
     """
     chef_id = task.get("chef_id", "sous_chef_unknown")
     ingredient_group = task.get("ingredient_group", [])
     target_recipe_count = task.get("target_recipe_count", 2)
 
-    sous_chef = SousChef()
+    if sous_chef is None:
+        sous_chef = SousChef()
 
     recipes = sous_chef.generate_recipes(
         chef_id=chef_id,

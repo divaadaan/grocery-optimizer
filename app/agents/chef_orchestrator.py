@@ -1,10 +1,9 @@
-from langchain_ollama import ChatOllama
 import json
 import time
 from .state import RecipeGenerationState
 from .prompts import PromptTemplates
+from .llm_factory import make_llm, model_name
 from .llm_output import ChefPlan, LLMOutputError, invoke_validated, raw_output_report
-from ..config import settings
 from ..services.budget import available_for_plan
 from ..services.database import DatabaseService
 from ..services.mlflow_logger import MLflowLogger
@@ -65,16 +64,20 @@ def _restrict_to_served_deals(groups, served_deals):
 
 
 class ChefOrchestrator:
-    """Chef agent for high-level planning (largest configured model)."""
+    """Chef agent for high-level planning (largest configured model).
 
-    def __init__(self):
-        self.llm = ChatOllama(
-            model=settings.ollama_chef_model,
-            base_url=settings.ollama_base_url,
-            temperature=0.7,
-            format="json"
-        )
-        self.db = DatabaseService()
+    ``llm`` (the "chef" role), ``db`` (anything with ``fetch_current_deals``)
+    and ``tracker`` (MLflowLogger's interface) are injectable; left ``None``
+    they are the production defaults.
+    """
+
+    tracker = MLflowLogger
+
+    def __init__(self, llm=None, db=None, tracker=None):
+        self.llm = llm if llm is not None else make_llm("chef")
+        self.db = db if db is not None else DatabaseService()
+        if tracker is not None:
+            self.tracker = tracker
 
     def initialize(self, state: RecipeGenerationState) -> dict:
         """
@@ -83,7 +86,7 @@ class ChefOrchestrator:
         print(f"[Chef] Initializing for user {state['user_id']}...")
 
         # Start MLflow run
-        mlflow_run_id = MLflowLogger.start_run(
+        mlflow_run_id = self.tracker.start_run(
             user_id=state["user_id"],
             num_meals=state["num_meals"],
             budget=state["budget"],
@@ -181,14 +184,14 @@ class ChefOrchestrator:
 
             # Log to MLflow
             duration = time.time() - start_time
-            MLflowLogger.log_agent_call(
+            self.tracker.log_agent_call(
                 agent_name="Chef_Orchestrator",
                 tokens=len(raw),  # Approximate
                 duration=duration,
-                model=settings.ollama_chef_model,
+                model=model_name("chef"),
                 success=True
             )
-            MLflowLogger.log_ingredient_groups(ingredient_groups, ingredient_reuse_map)
+            self.tracker.log_ingredient_groups(ingredient_groups, ingredient_reuse_map)
 
             print(f"[Chef] Created 3 ingredient groups with {len(ingredient_reuse_map)} unique ingredients")
             print(f"[Chef] Ingredient reuse: {ingredient_reuse_map}")

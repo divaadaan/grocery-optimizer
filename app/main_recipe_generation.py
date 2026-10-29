@@ -1,6 +1,7 @@
 import logging
 from typing import Callable, Optional
 
+from app.agents.deps import GraphDeps
 from app.agents.graph import create_recipe_generation_graph
 from app.agents.state import RecipeGenerationState
 from app.services.budget import DEFAULT_PERIOD
@@ -22,6 +23,7 @@ def run_recipe_generation(
     progress_callback: Optional[Callable[[str], None]] = None,
     budget_period: str = DEFAULT_PERIOD,
     budget_spent_this_period: float = 0.0,
+    graph_deps: Optional[GraphDeps] = None,
 ):
     """
     Main entry point for recipe generation workflow.
@@ -40,6 +42,9 @@ def run_recipe_generation(
     (the job registry) can report real progress stages. It must not raise;
     exceptions from it are logged and swallowed rather than failing a
     generation that is otherwise fine.
+
+    `graph_deps` overrides the graph's external dependencies (LLMs, DB reads,
+    the recipe store, MLflow — `app/agents/deps.py`); `None` is production.
     """
     # Initialize state
     initial_state = RecipeGenerationState(
@@ -79,7 +84,7 @@ def run_recipe_generation(
     )
 
     # Create and run graph
-    graph = create_recipe_generation_graph()
+    graph = create_recipe_generation_graph(graph_deps)
 
     print("=" * 60)
     print("STARTING RECIPE GENERATION WORKFLOW")

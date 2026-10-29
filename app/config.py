@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     cache_ttl_recipes: int = Field(default=86400, env="CACHE_TTL_RECIPES")  # 24 hours
     cache_ttl_stores: int = Field(default=604800, env="CACHE_TTL_STORES")  # 7 days
 
+    # LLM provider. Chat models are built only by app/agents/llm_factory.py,
+    # which dispatches on this. "ollama" is the only provider implemented.
+    llm_provider: str = Field(default="ollama", env="LLM_PROVIDER")
+
     # Ollama
     ollama_base_url: str = Field(default="http://localhost:11434", env="OLLAMA_BASE_URL")
     ollama_chef_model: str = Field(default="smollm:1.7b", env="OLLAMA_CHEF_MODEL")

@@ -1,22 +1,24 @@
+from functools import partial
 from langgraph.graph import StateGraph, END
 from langgraph.types import Send
 from typing import Literal, List, Optional, Union
 from .state import RecipeGenerationState
 from .chef_orchestrator import ChefOrchestrator
 from .costing import deals_by_id, price_recipe, sum_savings
+from .deps import GraphDeps
 from .sous_chef import SousChef, sous_chef_generate_node
 from .nutritionist import Nutritionist
 from ..services import products, recipe_catalog
 from ..services.database import DatabaseService
 from ..services.mlflow_logger import MLflowLogger
 
-# Initialize agents
-chef = ChefOrchestrator()
-nutritionist = Nutritionist()
-db_service = DatabaseService()
+# No module-level agents or DB service: everything external is built from a
+# GraphDeps by create_recipe_generation_graph (app/agents/deps.py). Node
+# functions take their dependency as an optional argument that defaults to
+# production, so they remain callable with just a state.
 
 
-def load_recipe_catalog(state: RecipeGenerationState) -> dict:
+def load_recipe_catalog(state: RecipeGenerationState, catalog=None) -> dict:
     """
     Node 1b: Load the curated products recipes cite, once per run.
 
@@ -33,10 +35,12 @@ def load_recipe_catalog(state: RecipeGenerationState) -> dict:
     can only cite deals; no deal links means a restricted user's recipes are
     all rejected (an unresolvable citation is a violation).
     """
+    if catalog is None:
+        catalog = recipe_catalog
     update: dict = {"pantry_staples": [], "deal_products": {}}
     warnings = []
     try:
-        update["pantry_staples"] = recipe_catalog.fetch_pantry_staples()
+        update["pantry_staples"] = catalog.fetch_pantry_staples()
     except Exception as e:
         print(f"[Catalog] pantry staples unavailable: {e}")
         warnings.append(f"Pantry staples unavailable ({type(e).__name__}); "
@@ -45,7 +49,7 @@ def load_recipe_catalog(state: RecipeGenerationState) -> dict:
     if products.restrictions_to_attributes(state["dietary_restrictions"]):
         deal_ids = [d.get("deal_id") for d in state.get("available_deals") or []]
         try:
-            update["deal_products"] = recipe_catalog.fetch_deal_products(deal_ids)
+            update["deal_products"] = catalog.fetch_deal_products(deal_ids)
         except Exception as e:
             print(f"[Catalog] deal product links unavailable: {e}")
             warnings.append(f"Deal product links unavailable ({type(e).__name__}); "
@@ -195,13 +199,15 @@ def route_after_validation(
     return "retry"
 
 
-def retry_generation(state: RecipeGenerationState) -> dict:
+def retry_generation(state: RecipeGenerationState,
+                     sous_chef: Optional[SousChef] = None) -> dict:
     """
     Node 8: Regenerate rejected recipes with feedback.
     """
     print(f"[Orchestrator] Retrying {len(state['recipes_pending_retry'])} recipes...")
 
-    sous_chef = SousChef()
+    if sous_chef is None:
+        sous_chef = SousChef()
 
     new_recipes = {}
     new_assignments = {}
@@ -245,11 +251,18 @@ def retry_generation(state: RecipeGenerationState) -> dict:
     }
 
 
-def finalize_meal_plan(state: RecipeGenerationState) -> dict:
+def finalize_meal_plan(state: RecipeGenerationState, recipe_store=None,
+                       tracker=MLflowLogger) -> dict:
     """
     Node 9: Finalize and save approved recipes.
+
+    ``recipe_store`` is the graph's only write (``GraphDeps.recipe_store``);
+    ``None`` means the production database.
     """
     print("[Orchestrator] Finalizing meal plan...")
+
+    if recipe_store is None:
+        recipe_store = DatabaseService()
 
     approved_recipes = [
         state["generated_recipes"][rid]
@@ -257,7 +270,7 @@ def finalize_meal_plan(state: RecipeGenerationState) -> dict:
     ]
 
     # Save to database
-    recipe_ids = db_service.save_recipes(state["user_id"], approved_recipes)
+    recipe_ids = recipe_store.save_recipes(state["user_id"], approved_recipes)
 
     print(f"[Orchestrator] Saved {len(recipe_ids)} recipes to database")
 
@@ -268,7 +281,7 @@ def finalize_meal_plan(state: RecipeGenerationState) -> dict:
     num_approved = len(approved_recipes)
 
     # Log final metrics to MLflow
-    MLflowLogger.log_final_metrics(
+    tracker.log_final_metrics(
         total_cost=total_cost,
         cost_per_meal=total_cost / num_approved if num_approved else 0,
         estimated_savings=estimated_savings,
@@ -290,21 +303,21 @@ def finalize_meal_plan(state: RecipeGenerationState) -> dict:
         update["warnings"] = [f"Only {num_approved}/{state['num_meals']} recipes approved"]
 
     # Finalize MLflow run
-    MLflowLogger.finalize_run({**state, **update})
+    tracker.finalize_run({**state, **update})
 
     print(f"[Orchestrator] ✓ Meal plan complete! {len(approved_recipes)} recipes ready.")
 
     return update
 
 
-def handle_failure(state: RecipeGenerationState) -> dict:
+def handle_failure(state: RecipeGenerationState, tracker=MLflowLogger) -> dict:
     """
     Node 10: Handle workflow failure gracefully.
     """
     print("[Orchestrator] ✗ Workflow failed - graceful degradation")
 
     # Log failure to MLflow
-    MLflowLogger.log_final_metrics(
+    tracker.log_final_metrics(
         total_cost=state["total_cost"],
         cost_per_meal=state["cost_per_meal"],
         estimated_savings=state["estimated_savings"],
@@ -313,7 +326,7 @@ def handle_failure(state: RecipeGenerationState) -> dict:
         success=False
     )
 
-    MLflowLogger.finalize_run(state)
+    tracker.finalize_run(state)
 
     return {
         "status": "failed",
@@ -322,23 +335,37 @@ def handle_failure(state: RecipeGenerationState) -> dict:
 
 
 # Build the graph
-def create_recipe_generation_graph():
+def create_recipe_generation_graph(deps: Optional[GraphDeps] = None):
     """
     Construct the complete LangGraph workflow.
+
+    ``deps`` supplies the LLMs, the deal/catalog reads, the recipe store and
+    the tracker; ``None`` is ``GraphDeps()``, i.e. production.
     """
+    if deps is None:
+        deps = GraphDeps()
+
+    chef = ChefOrchestrator(llm=deps.chef_llm, db=deps.deals, tracker=deps.tracker)
+    sous_chef = SousChef(llm=deps.sous_chef_llm, tracker=deps.tracker)
+    nutritionist = Nutritionist(llm=deps.nutritionist_llm, tracker=deps.tracker)
+
     workflow = StateGraph(RecipeGenerationState)
 
     # Add nodes
     workflow.add_node("initialize_chef", chef.initialize)
-    workflow.add_node("load_recipe_catalog", load_recipe_catalog)
+    workflow.add_node("load_recipe_catalog",
+                      partial(load_recipe_catalog, catalog=deps.catalog))
     workflow.add_node("plan_ingredient_groups", chef.plan_ingredient_groups)
-    workflow.add_node("sous_chef_generate", sous_chef_generate_node)
+    workflow.add_node("sous_chef_generate",
+                      partial(sous_chef_generate_node, sous_chef=sous_chef))
     workflow.add_node("aggregate_recipes", aggregate_recipes)
     workflow.add_node("nutritionist_validate", nutritionist.validate_recipes)
     workflow.add_node("handle_rejections", chef.handle_rejections)
-    workflow.add_node("retry_generation", retry_generation)
-    workflow.add_node("finalize_meal_plan", finalize_meal_plan)
-    workflow.add_node("handle_failure", handle_failure)
+    workflow.add_node("retry_generation", partial(retry_generation, sous_chef=sous_chef))
+    workflow.add_node("finalize_meal_plan",
+                      partial(finalize_meal_plan, recipe_store=deps.recipe_store,
+                              tracker=deps.tracker))
+    workflow.add_node("handle_failure", partial(handle_failure, tracker=deps.tracker))
 
     # Define edges
     workflow.set_entry_point("initialize_chef")

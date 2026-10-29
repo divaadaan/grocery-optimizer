@@ -1,25 +1,28 @@
-from langchain_ollama import ChatOllama
 import json
 import time
 from typing import Dict
 from .state import RecipeGenerationState, ValidationResult
 from .prompts import PromptTemplates
+from .llm_factory import make_llm
 from .llm_output import NutritionistVerdict, invoke_validated
 from .dietary import CitationCatalog, compliance_report
-from ..config import settings
 from ..services.mlflow_logger import MLflowLogger
 
 
 class Nutritionist:
-    """Nutritionist agent for recipe validation."""
+    """Nutritionist agent for recipe validation.
 
-    def __init__(self):
-        self.llm = ChatOllama(
-            model=settings.ollama_nutritionist_model,
-            base_url=settings.ollama_base_url,
-            temperature=0.3,  # Lower temperature for consistent validation
-            format="json"
-        )
+    ``llm`` (the "nutritionist" role, advisory only) and ``tracker``
+    (MLflowLogger's interface) are injectable; left ``None`` they are the
+    production defaults.
+    """
+
+    tracker = MLflowLogger
+
+    def __init__(self, llm=None, tracker=None):
+        self.llm = llm if llm is not None else make_llm("nutritionist")
+        if tracker is not None:
+            self.tracker = tracker
 
     def validate_recipes(self, state: RecipeGenerationState) -> dict:
         """
@@ -118,7 +121,7 @@ class Nutritionist:
             })
 
         # Log aggregate metrics
-        MLflowLogger.log_validation_results(validation_results)
+        self.tracker.log_validation_results(validation_results)
 
         print(f"[Nutritionist] Summary: {len(approved_ids)} approved, "
               f"{len(rejected_ids)} rejected")
