@@ -1,10 +1,16 @@
 # Development Roadmap
 
-Canonical plan, last revised 2026-10-15 (originally 2026-06-12). Dated
+Canonical plan, last revised 2026-10-28 (originally 2026-06-12). Dated
 `*Shipped:*` / `*Progress:*` entries below are historical records — the test
 counts inside them were true when written and are deliberately not rewritten.
-Current suite on `main`: **666 passed, 5 skipped, 4 deselected**
-(`pytest -m "not llm"`, after #19).
+Current suite on `main`: **913 passed, 5 skipped, 4 deselected**
+(`pytest -m "not llm"`, after #29).
+
+**Where we are (2026-10-28):** the curated-product database work is finished
+(see *Direction (2026-10-28)*). The next stage is **evaluation**: recipe
+quality, substitution handling, and scraping/parsing fitness for go-live. The
+ordered plan is *Next stage: evaluation readiness*; parked work is in
+*Backlog (parked)*.
 
 Supersedes `NEXT_STEPS.md` (see git history
 for the WSL-migration log and verification notes it contained).
@@ -79,6 +85,191 @@ period (migration 012), spend accumulates from completed lists only,
   whole-grain/sprouted/protein/gluten-free breads, granola and PB bars but not
   plain sliced bread; bone-char sugar is not extended to sugar-containing
   products. Migrations 014 and 015 applied to Neon the same day.
+
+## Direction (2026-10-28)
+
+The curated-product database is finished as far as this stage needs it.
+Shipped:
+
+- **#25: `contains_gluten`.** `gluten_free` is now enforced. Before this it
+  only logged a warning, so gluten-free users were served everything.
+  Migration 017 added the column as nullable, and NULL fails closed.
+- **#26: audited attribute corrections.**
+  `POST /admin/products/{id}/attribute-corrections[?dry_run=true]`.
+  - It is the only way to change a confirmed product's attributes; the review
+    confirm path still returns 409.
+  - Every correction records reviewer, reason and old → new values.
+  - Each request returns an impact report on deals and users.
+  - Migration 016 adds `product_corrections` (an event table with a `kind`
+    column) plus per-kind detail tables, append-only by trigger.
+- **#27/#28: audited rename/recategorise and merge.**
+  - Merge refuses to make anything less restrictive. The survivor must rank at
+    least as high as the absorbed product on every attribute, ordered
+    True > NULL > False.
+  - A guard also asserts that the impact report shows zero newly servable
+    deals.
+  - Absorbed products are retired with `status='merged'` and `merged_into`;
+    they are never deleted.
+  - Migration 018. #27 merged into its stacked base after that base had already
+    landed, so it was re-landed as #28. **Retarget stacked PRs to `main` before
+    merging them.**
+- **#29: review-page forms** for corrections, renames and merges. Every action
+  is previewed first and then confirmed.
+- **Neon (2026-10-28):** 016–018 applied and recorded. Every confirmed product
+  now has a decided `contains_gluten` (101 false, 72 true, 0 NULL), set by
+  owner-approved, audited corrections 1–174. The rule for uncertain products
+  was "least permissions": uncertain means true. P84 was renamed "cheese fish
+  tofu" and moved to `frozen` (correction 28).
+- **In review at the time of writing:**
+  - #30: migration 019, triggers that refuse `deal_products` or
+    `product_aliases` rows pointing at a merged product. Tested against
+    postgres:17, including the merge/link race in both orders.
+  - #31: read-only product lookup and list endpoints for the review page.
+- **Dropped for now:** halal and kosher (see Backlog).
+
+## Next stage: evaluation readiness (2026-10-28)
+
+Two read-only scoping passes on 2026-10-28 (recipe quality and substitution;
+scraping/parsing go-live) found the following. Each finding the plan depends on
+was spot-checked against code or Neon by the coordinator.
+
+- **There is nothing to evaluate against yet.**
+  - Only 5 of 292 ingested deals are live. There have been only two ingestion
+    runs (2026-10-14/15), and nothing schedules ingestion.
+  - Neon holds 6 recipes, all from before the citation schema, so none can be
+    re-scored.
+  - There is no harness, no frozen snapshot, and no way to swap the LLM: the
+    agents construct `ChatOllama` directly.
+- **Compliance and costing are deterministic and well tested.** What is
+  unmeasured is everything an LLM decides: menu planning, recipe coherence, and
+  culinary choices made under constraints.
+- **"Substitution" does not exist as a feature.**
+  - It only happens implicitly: the retry feedback asks the SousChef to replace
+    an ingredient, and the Chef's menu repair backfills empty groups with
+    arbitrary deals.
+  - The retry path is practically unreachable for restricted users, because
+    SousChefs only ever see gated items.
+  - The planned Phase 4b substitution table in `training/data_app/NEXT_STEPS.md`
+    is name-keyed and gated by the deleted name oracle. It must be re-specified
+    as **product_id → product_id**, with every target gated by `product_allows`.
+- **Ingestion multi-buy bug (verified).** `link_deals` copies
+  `price_is_per_item` from the name-keyed alias instead of deciding it per
+  deal. Deals 76, 98, 111, 136, 389 and 515 are "2/$X" deals linked as
+  per-item, so their shopping-list price is wrong by 2×.
+  `infer_price_is_per_item` already returns False for all six.
+- **Cost semantics disagree (verified).** The plan total sums per-recipe costs,
+  so a deal reused across recipes is charged once per recipe
+  (`graph.py:138-141`). The shopping list charges each deal once. The Chef is
+  told to maximise reuse, which maximises the gap.
+- **`pytest -m llm` writes to production (verified).** `test_graph.py` runs the
+  real graph, and `finalize_meal_plan` saves recipes for user 999 to Neon.
+
+### Track A: ingestion go-live (data freshness blocks every live evaluation)
+
+1. **Observability.**
+   - Add an `ingestion_runs` table and persist each `IngestionReport` to it.
+   - Fix the mislabelled skip counters: `no_merchant` and `no_item_id` are
+     counted under the wrong buckets (`flipp_ingestion.py:293-294`).
+   - Make the CLI exit non-zero on an empty or unhealthy run.
+   - Make deal-list sorts on `discount_percentage` use `NULLS LAST`
+     (`store_service.py`). 78% of discounts are NULL, and today they sort
+     first.
+2. **Per-deal `price_is_per_item`.** Decide it from each deal's own text at
+   link time; if either the alias or the deal says multi-buy, the answer is
+   false. Correct the 6 existing rows. Depends on #30, which also touches
+   `link_deals`.
+3. **Recorded fixtures and golden tests.** Record about 15 terms, including
+   multi-buy, per-weight and junk-`unit` cases. Recording needs one owner-OK'd
+   live capture; after that, CI runs offline.
+4. **Multi-buy quantity and unit price.** New `deals` columns, canonical
+   `ea`/`each` units, and parsing of "or $X ea" text. *Owner:* the schema
+   shape.
+5. **Weekly scheduler and freshness alert.** *Owner:* the host, the alert
+   channel, and **sign-off on the ToS position of the unsanctioned Flipp
+   endpoint**.
+6. Later:
+   - Relocate the DEFAULT partition and create monthly partitions (never
+     schedule `cleanup_old_price_partitions`).
+   - Derive category from the linked product instead of the search term.
+   - Fix the coverage gaps: Frozen and Beverages have no deals.
+   - Detect payload schema drift.
+
+### Track E: recipe evaluation harness
+
+1. **LLM seam and a real-graph test.** Add `make_llm(role)` and make the graph
+   singletons injectable. The first non-`llm` test then runs the *real
+   compiled graph* end to end with scripted LLMs and a fake DB, which closes
+   the `stream_mode` caveat under Next §2. Also stop `test_graph.py` writing
+   to Neon.
+2. **Frozen snapshots.** A read-only capture script plus a loader. Snapshots:
+   `seed27` (from the existing fixture), `week-2026-10-16` (real), and
+   `sparse5` (today's reality).
+3. **Runner with record/replay.** The artifact is the final state plus a call
+   log. Replay is deterministic and runs in CI.
+4. **Deterministic scorers.**
+   - Structural reliability and citation validity.
+   - Compliance must be 100%, or the run fails. Kosher and halal score N/A,
+     never pass.
+   - Budget, measured as a lower bound until Track C settles cost semantics.
+   - On-sale use, diversity (Jaccard of cited deals), latency and tokens.
+5. **Report.** Markdown/CSV, with optional MLflow.
+6. **Scenario set v1.** About 18 scenarios covering restrictions × budget ×
+   household × snapshot. *Owner review.*
+7. **LLM judge for culinary quality only.** The judge prompt must contain no
+   restriction label or attribute name, enforced by a test, so the judge never
+   decides compliance.
+8. **Gold set.** About 40 recipes labelled by the owner, used to calibrate the
+   judge.
+9. **Model sweep.** *Owner:* candidate models and provider, judge model, and
+   API spend cap.
+10. **Substitution.** Fault-injection scenarios that score retry efficacy, plus
+    a design doc re-specifying Phase 4b as product_id-keyed and attribute-gated.
+
+### Track C: pipeline correctness found while scoping
+
+- **Cost semantics.** Pick one: plan cost = shopping-list cost (per deal), or
+  per recipe. *Owner decision.* Costing also ignores quantity, household size
+  and `price_is_per_item`, so costs are lower bounds.
+- **Recipe persistence.** `save_recipes` drops meal_type, prep_time,
+  cuisine_type and the nutrition fields. Add a `generation_id` plus the model,
+  restrictions and snapshot, so persisted plans can be re-scored. Needs a
+  migration and owner approval for Neon.
+- **Shopping list.** Build it from one generation, not the last 10 recipes
+  across generations.
+- **Budget.** Enforce or check it after generation; today it lives only in the
+  Chef prompt.
+- **Recipe count.** Enforce it, and handle `num_meals` of 1–2, where a SousChef
+  can get a target of 0.
+- **Preferences.** Pass them to the SousChefs.
+- **`deal_index`.** It is keyed by product name and collides across stores, and
+  the Chef's menu repair resolves names before ids.
+- **MLflow.** Fix orphan runs from pool threads, log the model, and count real
+  tokens instead of characters.
+- **Retry strategies.** "reassign_chef" reuses the same chef, and Strategy B is
+  a no-op.
+- **Uncited ingredients in instructions.** A vegan recipe can say "add butter"
+  in free text. Neither citations nor (by policy) an LLM or a name match may
+  catch it. *Owner decision:* the proposed fix is that instructions reference
+  ingredients by index, checked structurally.
+
+## Backlog (parked)
+
+Parked by the owner or deferred until the evaluation stage needs them:
+
+- `halal` and `kosher` attributes. Dropped for now on 2026-10-28; one Neon user
+  (a mockup) carries `kosher`, which is unenforced and must score N/A, never
+  pass.
+- Flattening merge chains. 018 refuses chains, so a product that has absorbed
+  others cannot itself be merged.
+- `training/` is out of step with the citation schema. Do not reuse its
+  substring dietary scoring or its `allergen_safety` LLM-judge dimension.
+- Alias a469 (COUNTRY HARVEST) is still proposed and deferred. The 3 rejected
+  deals (#79 and #80, rusk; #448, Breaded Buttermilk) stay unlinked by design.
+- Ingest more postal codes; store raw payloads (an owner decision on volume and
+  licensing).
+- Larger-model selection, now folded into Track E §9.
+- `scripts/debug_agent_io.py` is stale and bypasses the dietary gate. Fix or
+  delete it.
 
 ## Next
 
