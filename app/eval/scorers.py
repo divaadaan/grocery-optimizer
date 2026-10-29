@@ -20,7 +20,8 @@ Scorers
 -------
 * :func:`score_structural` -- did the run complete with the requested number
   of approved recipes; per-role schema-validation retries and failures,
-  reconstructed from ``llm_calls`` (see :func:`attempt_chains`); state errors.
+  reconstructed from ``llm_calls`` (see :func:`attempt_chains`); state errors;
+  instruction-step references (:func:`score_instructions`).
 * :func:`score_citations` -- every plan ingredient cites a deal that exists
   in the snapshot *and* was offered to this run (re-derived through the
   snapshot's dietary gate), or a confirmed ``assumed_on_hand`` staple.
@@ -34,8 +35,9 @@ Scorers
   or deal name is read.
 * :func:`score_budget` -- plan cost vs the scenario's spend limit. A **lower
   bound**: one deal unit per citation, no quantity, household size or
-  multi-buy semantics. Reported both as the per-recipe sum (what production's
-  ``total_cost`` does) and per unique deal across the plan.
+  multi-buy semantics. Reported both as the per-recipe sum and per unique
+  deal across the plan. Production's ``total_cost`` is per unique deal (owner
+  decision, Track C); recordings made before that summed per recipe.
 * :func:`score_on_sale` -- deal vs staple citations, deals used / offered,
   and savings vs regular price -- ``None`` (absent) when no used deal carries
   a regular price, never a fabricated 0.
@@ -67,7 +69,8 @@ from app.eval.runner import SnapshotDrift, snapshot_identity, validate_artifact
 from app.eval.snapshots import Snapshot, SnapshotDeals
 
 #: Bump on any change to the RunScore layout or to a metric's definition.
-SCORE_SCHEMA_VERSION = 1
+#: 2: ``structural.instructions`` (instruction-step ingredient references).
+SCORE_SCHEMA_VERSION = 2
 
 PASS, FAIL, NA = "PASS", "FAIL", "NA"
 
@@ -316,6 +319,75 @@ def score_structural(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[st
         "agent_call_log": dict(sorted(log.items())),
         "errors": list(state.get("errors") or []),
         "warnings": list(state.get("warnings") or []),
+        "instructions": score_instructions(artifact, snapshot),
+    }
+
+
+def score_instructions(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[str, Any]:
+    """Instruction steps of the plan, checked structurally
+    (``app/agents/instruction_refs.py``): every ``{N}`` in a step template
+    must index the recipe's own ingredients; an ingredient no step references
+    is counted, not failed. Re-derived from ``instruction_steps`` templates,
+    not from the run's parsed ``ingredient_refs``.
+
+    ``render_mismatches`` re-renders each template with the cited names from
+    the snapshot (deal ``product_name`` / staple ``canonical_name``) and
+    counts recipes whose stored ``instructions`` differ: a check on the
+    rendering pipeline, not on the words. Literal food words typed into step
+    text are *not* detected and cannot be without name matching, which is
+    forbidden; see the residual-risk note in ``instruction_refs``.
+
+    Recipes without ``instruction_steps`` (artifacts from before the
+    placeholder format) are counted in ``unstructured_recipes``; the counts
+    are ``None`` when no plan recipe is structured.
+    """
+    from app.agents.instruction_refs import (
+        parse_step, render_step, step_problems, unreferenced)
+
+    v = _view(artifact, snapshot)
+    names = {"deal": {k: d.get("product_name") or "" for k, d in v.deals.items()},
+             "product": {k: p.get("canonical_name") or "" for k, p in v.products.items()}}
+    structured = steps = refs = invalid = no_ref = mismatched = 0
+    unref: List[Dict[str, Any]] = []
+    for rid, recipe in zip(v.plan_ids, v.plan):
+        raw = recipe.get("instruction_steps")
+        if not isinstance(raw, list):
+            continue
+        structured += 1
+        templates = [s.get("template", "") if isinstance(s, dict) else "" for s in raw]
+        ings = _ingredients(recipe)
+        n = len(ings)
+        for t in templates:
+            parsed = parse_step(t)
+            steps += 1
+            refs += len(parsed.refs)
+            invalid += len(parsed.malformed) + sum(r >= n for r in parsed.refs)
+            no_ref += not parsed.refs
+        missing = unreferenced(templates, n)
+        if missing:
+            unref.append({"recipe_id": rid, "ingredient_indices": missing})
+        if not step_problems(templates, n):
+            def name_of(i, ings=ings):
+                ing = ings[i]
+                deal, product = _cited_deal(ing), _cited_product(ing)
+                return (names["deal"].get(deal) if deal is not None
+                        else names["product"].get(product)) or (
+                        ing.get("name", "") if isinstance(ing, dict) else "")
+            if [render_step(t, name_of) for t in templates] != list(recipe.get("instructions") or []):
+                mismatched += 1
+    known = structured > 0
+    return {
+        "recipes": len(v.plan),
+        "structured_recipes": structured,
+        "unstructured_recipes": len(v.plan) - structured,
+        "steps": steps if known else None,
+        "references": refs if known else None,
+        "invalid_references": invalid if known else None,
+        "steps_without_references": no_ref if known else None,
+        "unreferenced_ingredients": sum(len(u["ingredient_indices"]) for u in unref)
+        if known else None,
+        "unreferenced": unref,
+        "render_mismatches": mismatched if known else None,
     }
 
 
@@ -530,6 +602,9 @@ def score_budget(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[str, A
         "recorded_matches_per_recipe_sum": (
             None if not isinstance(recorded, (int, float))
             else abs(float(recorded) - recipe_sum) <= _COST_EPS),
+        "recorded_matches_per_unique_deal": (
+            None if not isinstance(recorded, (int, float))
+            else abs(float(recorded) - unique_sum) <= _COST_EPS),
     }
 
 
@@ -679,6 +754,10 @@ class RunScore:
             "recipes_requested": s["recipes_requested"],
             "schema_retries": sum(r["retries"] for r in s["schema"].values()),
             "schema_failures": sum(r["failed_invocations"] for r in s["schema"].values()),
+            "instruction_steps": s["instructions"]["steps"],
+            "instruction_invalid_refs": s["instructions"]["invalid_references"],
+            "unreferenced_ingredients": s["instructions"]["unreferenced_ingredients"],
+            "unstructured_instructions": s["instructions"]["unstructured_recipes"],
             "compliance_gate": k["gate"], "compliance_rate": k["compliance_rate"],
             "verdict_disagreements": len(k["agreement"]["disagreements"]),
             "unsupported_restrictions": ",".join(k["unsupported_restrictions"]),
@@ -749,6 +828,7 @@ __all__ = [
     "ASSIGNED_DEALS_HEADER", "BUDGET_CAVEATS", "CITATION_KINDS", "FAIL", "NA", "PASS",
     "RunScore", "SCORE_SCHEMA_VERSION", "STAPLES_HEADER", "ScoringError",
     "attempt_chains", "classify_citation", "score_budget", "score_citations",
-    "score_compliance", "score_diversity", "score_latency_tokens", "score_on_sale",
-    "score_run", "score_structural", "verify_snapshot",
+    "score_compliance", "score_diversity", "score_instructions",
+    "score_latency_tokens", "score_on_sale", "score_run", "score_structural",
+    "verify_snapshot",
 ]

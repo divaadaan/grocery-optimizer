@@ -18,8 +18,27 @@ fabricated 0 or a guess (CLAUDE.md "Product framing").
 
 Assumes one deal unit per cited ingredient, as before -- quantity-aware
 pricing needs unit parsing the data cannot support yet.
+
+Plan cost = shopping-list cost (owner decision, Track C): a meal plan charges
+each cited deal **once**, however many of its recipes reuse it
+(:func:`price_plan`). A recipe's own ``total_cost`` (:func:`price_recipe`) is
+informational -- what that recipe would cost bought alone -- and summing those
+double-charges a shared deal.
+
+Every figure here is a **lower bound** (:data:`LOWER_BOUND_CAVEATS`): it
+ignores ingredient quantity, household size and multi-buy / per-item pricing
+(Track A4 pending). Nothing may present it as proof a plan fits a budget.
 """
+from itertools import chain
 from typing import Dict, Iterable, List, NamedTuple, Optional, Set
+
+#: Why a computed cost is only a lower bound. Surfaced with every budget check.
+LOWER_BOUND_CAVEATS = (
+    "lower bound: one deal unit per cited deal",
+    "ignores ingredient quantity and household size",
+    "ignores per-item vs multi-buy pricing",
+    "pantry staples cost 0 (assumed on hand)",
+)
 
 
 class RecipePricing(NamedTuple):
@@ -90,6 +109,17 @@ def price_recipe(
         round(total, 2),
         round(savings, 2) if savings_known else None,
         unpriced,
+    )
+
+
+def price_plan(
+    recipes: Iterable[Dict], deal_lookup: Dict[str, Dict]
+) -> RecipePricing:
+    """Price a whole meal plan as its shopping list: each cited deal once
+    across all ``recipes`` (and its savings once), staples 0. Still a lower
+    bound -- see :data:`LOWER_BOUND_CAVEATS`."""
+    return price_recipe(
+        chain.from_iterable(r.get("ingredients") or [] for r in recipes), deal_lookup
     )
 
 

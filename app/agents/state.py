@@ -19,7 +19,12 @@ class Recipe(TypedDict):
     # deal_id (an assigned deal) / product_id (a pantry staple) is set; name
     # is display-only. price is computed by costing.py from the citation.
     ingredients: List[Dict]
+    # Rendered step text: each {N} placeholder replaced by the cited name of
+    # ingredients[N] (sous_chef.render_instructions). What string consumers read.
     instructions: List[str]
+    # [{template, ingredient_refs}]: the model's placeholder steps and the
+    # ingredient indices each references (agents/instruction_refs.py).
+    instruction_steps: List[Dict]
     servings: int
     total_cost: float
     estimated_prep_time: int
@@ -57,6 +62,8 @@ class RecipeGenerationState(TypedDict):
 
     # Deal data from database
     available_deals: List[Dict]
+    # str(deal_id) -> deal row. Keyed by id, never by product_name: the same
+    # name at two stores is two deals.
     deal_index: Dict[str, Dict]
 
     # Curated product catalog for citations, loaded by load_recipe_catalog.
@@ -69,7 +76,9 @@ class RecipeGenerationState(TypedDict):
     deal_products: Dict[str, List[Dict]]
 
     # Chef orchestration
-    ingredient_groups: List[List[Dict]]  # 3 groups for 3 SousChefs
+    # One group per SousChef: 3, or num_meals when that is smaller, so no
+    # SousChef is ever asked for 0 recipes (chef_orchestrator._merge_groups)
+    ingredient_groups: List[List[Dict]]
     ingredient_reuse_map: Dict[str, int]
     target_ingredients_per_group: int
 
@@ -88,14 +97,23 @@ class RecipeGenerationState(TypedDict):
     # with approved_recipe_ids — written once by finalize_meal_plan
     saved_recipe_ids: List[int]
 
-    # Retry mechanism
+    # Retry mechanism -- policy in ChefOrchestrator.handle_rejections:
+    # iteration 1 "feedback" (same SousChef), iteration 2 "reassign_chef"
+    # (the next SousChef's group). "none" until the first retry.
     iteration_count: int
     max_iterations: int
-    retry_strategy: Literal["reassign_chef", "new_ingredients"]
+    retry_strategy: Literal["none", "feedback", "reassign_chef"]
     recipes_pending_retry: Dict[str, str]
+    # Recipes still missing towards num_meals even if every rejected one is
+    # fixed; retry_generation asks the SousChefs for this many new ones.
+    recipes_shortfall: int
 
-    # Cost tracking. budget_remaining is what is left of the *period* budget
-    # after already-completed spend and this plan:
+    # Cost tracking. total_cost is the plan's shopping-list cost: each cited
+    # deal charged once however many recipes reuse it (costing.price_plan);
+    # a recipe's own total_cost is informational. All costs are LOWER BOUNDS
+    # (quantity, household size and multi-buy are ignored).
+    # budget_remaining is what is left of the *period* budget after
+    # already-completed spend and this plan:
     #   budget - budget_spent_this_period - total_cost
     # It was budget - total_cost, which handed every generation in the period
     # the whole period's money.
@@ -104,6 +122,11 @@ class RecipeGenerationState(TypedDict):
     # None = no cited deal has a regular price (unknown, not zero)
     estimated_savings: Optional[float]
     budget_remaining: float
+    # Post-generation budget check of the final plan (graph.plan_budget_check):
+    # {status: "within_lower_bound" | "over", plan_cost, budget,
+    #  spent_this_period, available, headroom, budget_period, lower_bound,
+    #  caveats}. Written by finalize_meal_plan.
+    budget_check: Dict
 
     # Generation identity + provenance, set once by run_recipe_generation.
     # generation_id: one uuid4 per run_recipe_generation call; the persisted

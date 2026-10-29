@@ -463,7 +463,8 @@ def _sous_chef_reply(prompt: str) -> str:
     recipe = {"name": "Scripted " + "+".join(str(d["deal_id"]) for d in deals),
               "meal_type": "dinner", "cuisine_type": "Any", "servings": 2,
               "estimated_prep_time": "20 minutes", "ingredients": ingredients,
-              "instructions": ["Cook it."]}
+              "instructions": ["Combine " + ", ".join(
+                  f"{{{i}}}" for i in range(len(ingredients))) + ".", "Cook it."]}
     return json.dumps({"recipes": [recipe]})
 
 

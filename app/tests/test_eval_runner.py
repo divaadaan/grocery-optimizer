@@ -128,7 +128,8 @@ def sous_chef_reply(texts: List[str]) -> str:
     recipe = {"name": "Scripted " + "+".join(str(d["deal_id"]) for d in deals),
               "meal_type": "dinner", "cuisine_type": "Any", "servings": 2,
               "estimated_prep_time": "20 minutes", "ingredients": ingredients,
-              "instructions": ["Cook it."]}
+              "instructions": ["Combine " + ", ".join(
+                  f"{{{i}}}" for i in range(len(ingredients))) + ".", "Cook it."]}
     return json.dumps({"recipes": [recipe]})
 
 
@@ -339,7 +340,7 @@ def test_content_recipe_ids_are_deterministic_and_unique():
     from app.agents.llm_output import GeneratedRecipe
 
     r = GeneratedRecipe.model_validate({"name": "A", "ingredients": [
-        {"name": "x", "deal_id": 1, "quantity": "1", "unit": "u"}], "instructions": ["c"]})
+        {"name": "x", "deal_id": 1, "quantity": "1", "unit": "u"}], "instructions": ["c {0}"]})
     a, b = ContentRecipeIds(), ContentRecipeIds()
     first = [a("sous_chef_1", r), a("sous_chef_1", r), a("sous_chef_2", r)]
     assert first == [b("sous_chef_1", r), b("sous_chef_1", r), b("sous_chef_2", r)]

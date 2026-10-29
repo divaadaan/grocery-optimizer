@@ -77,12 +77,14 @@ def set_restrictions(artifact, labels):
 def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
     score = score_run(base_artifact, base_snapshot)
     assert score.verdict == PASS and score.verdict_reasons == []
-    assert score.schema_version == scorers.SCORE_SCHEMA_VERSION == 1
+    assert score.schema_version == scorers.SCORE_SCHEMA_VERSION == 2
     row = score.summary_row()
     assert row == {
         "scenario": "seed27-vegetarian", "snapshot": "seed27", "verdict": "PASS",
         "status": "completed", "recipes_approved": 3, "recipes_requested": 3,
         "schema_retries": 2, "schema_failures": 0,
+        "instruction_steps": 6, "instruction_invalid_refs": 0,
+        "unreferenced_ingredients": 0, "unstructured_instructions": 0,
         "compliance_gate": "PASS", "compliance_rate": 1.0, "verdict_disagreements": 0,
         "unsupported_restrictions": "",
         "citation_validity": 1.0, "invalid_citations": 0,
@@ -90,7 +92,7 @@ def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
         "budget_available": 80.0, "budget_status": "within_lower_bound",
         "deal_share": 0.6667, "deals_used": 6, "deals_offered": 22,
         "savings_vs_regular": 5.8, "mean_jaccard": 0.0, "max_jaccard": 0.0,
-        "llm_calls": 9, "llm_seconds": row["llm_seconds"], "total_tokens": 5935,
+        "llm_calls": 9, "llm_seconds": row["llm_seconds"], "total_tokens": 6637,
         "tokens_known_calls": 6,
     }
     assert row["llm_seconds"] == pytest.approx(base_artifact["timing"]["llm_seconds"], abs=1e-5)
@@ -103,6 +105,11 @@ def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
     assert s["schema"]["nutritionist"]["invocations"] == 3
     assert s["agent_call_log"] == {"Chef_Orchestrator:plan_ingredient_groups": 1,
                                    "Nutritionist:validate_recipe": 3}
+    assert s["instructions"] == {
+        "recipes": 3, "structured_recipes": 3, "unstructured_recipes": 0,
+        "steps": 6, "references": 9, "invalid_references": 0,
+        "steps_without_references": 3, "unreferenced_ingredients": 0,
+        "unreferenced": [], "render_mismatches": 0}
     assert score.citations["counts"]["deal"] == 6 and score.citations["counts"]["staple"] == 3
     assert score.citations["offered_matches_run"] is True
     k = score.compliance
@@ -110,19 +117,20 @@ def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
     assert k["agreement"] == {"compared": 3, "agree": 3, "disagreements": []}
     assert k["served_deals_failing_gate"] == []
     assert score.budget["recorded_matches_per_recipe_sum"] is True
+    assert score.budget["recorded_matches_per_unique_deal"] is True  # no deal reused
     assert score.budget["lower_bound"] is True
     assert score.on_sale["regular_price_coverage"] == "regular price known for 6/6 deals used"
     assert score.on_sale["used_deal_ids"] == [3, 12, 15, 16, 21, 22]
     lt = score.latency_tokens
     assert lt["roles"]["nutritionist"]["tokens"]["total_tokens"] == {"sum": None, "known": 0}
-    assert lt["roles"]["chef"]["tokens"]["total_tokens"] == {"sum": 1891, "known": 1}
+    assert lt["roles"]["chef"]["tokens"]["total_tokens"] == {"sum": 1931, "known": 1}
     assert lt["total"]["token_coverage"] == "tokens known for 6/9 calls"
 
 
 def test_run_score_is_json_serialisable(base_artifact, base_snapshot):
     score = score_run(base_artifact, base_snapshot)
     data = json.loads(score.to_json())
-    assert data["schema_version"] == 1 and data["kind"] == "recipe-eval-score"
+    assert data["schema_version"] == 2 and data["kind"] == "recipe-eval-score"
     assert data == score.to_dict()
 
 
@@ -436,7 +444,7 @@ def test_partially_reported_usage_fields(art, base_snapshot):
     chef["response"]["usage"]["output_tokens"] = None
     t = scorers.score_latency_tokens(art, base_snapshot)["roles"]["chef"]["tokens"]
     assert t["output_tokens"] == {"sum": None, "known": 0}
-    assert t["input_tokens"] == {"sum": 1760, "known": 1}
+    assert t["input_tokens"] == {"sum": 1800, "known": 1}
 
 
 # --------------------------------------------------------------------------
@@ -492,8 +500,10 @@ def test_exhausted_schema_retries_count_as_failures():
     score = score_run(artifact)
     sous = score.structural["schema"]["sous_chef"]
     attempts = score.structural["max_attempts"]
-    assert sous["invocations"] == 3 and sous["failed_invocations"] == 3
-    assert sous["calls"] == 3 * attempts and sous["retries"] == 3 * (attempts - 1)
+    # 3 initial SousChefs, then each of the 2 retry iterations tops up the
+    # 3-recipe shortfall across the 3 groups (graph.retry_generation).
+    assert sous["invocations"] == 9 and sous["failed_invocations"] == 9
+    assert sous["calls"] == 9 * attempts and sous["retries"] == 9 * (attempts - 1)
     assert score.structural["completed"] is False
     assert score.verdict == FAIL
 
@@ -514,7 +524,7 @@ def test_citation_violation_on_last_attempt_is_a_failure():
         return ter.scripted_factory(role, spec)
 
     score = score_run(runner.record(ter.scenario(), llm_factory=factory))
-    assert score.structural["schema"]["sous_chef"]["failed_invocations"] == 3
+    assert score.structural["schema"]["sous_chef"]["failed_invocations"] == 9  # + 2 top-ups
     assert score.structural["schema"]["sous_chef"]["unverified_invocations"] == 0
 
 
@@ -532,7 +542,7 @@ def test_cli_summary_and_json(capsys, tmp_path, base_artifact):
 
     assert score_eval.main([str(FIXTURE), "--json"]) == 0
     data = json.loads(capsys.readouterr().out)
-    assert data["verdict"] == PASS and data["schema_version"] == 1
+    assert data["verdict"] == PASS and data["schema_version"] == 2
 
     bad = copy.deepcopy(base_artifact)
     plan(bad)[0]["ingredients"].append({"name": "x", "deal_id": 1})
@@ -553,3 +563,40 @@ def test_cli_refuses_a_drifted_snapshot(capsys, tmp_path, base_artifact):
     path = runner.write_artifact(drifted, tmp_path / "drift.json")
     assert score_eval.main([str(path)]) == 2
     assert "cannot score" in capsys.readouterr().err
+
+
+# --------------------------------------------------------------------------
+# Instruction-step references (Track C)
+# --------------------------------------------------------------------------
+
+def test_instructions_metric_counts_bad_and_missing_references(base_artifact, base_snapshot):
+    a = copy.deepcopy(base_artifact)
+    first = plan(a)[0]
+    n = len(first["ingredients"])
+    first["instruction_steps"] = [
+        {"template": "Slice {0}.", "ingredient_refs": [0]},
+        {"template": f"Add {{{n}}} and {{x}}.", "ingredient_refs": [n]},
+    ]
+    i = scorers.score_instructions(a, base_snapshot)
+    assert i["invalid_references"] == 2       # out of range + malformed
+    assert i["unreferenced"] == [{"recipe_id": a["final_state"]["approved_recipe_ids"][0],
+                                  "ingredient_indices": list(range(1, n))}]
+    assert i["unreferenced_ingredients"] == n - 1
+    assert i["steps"] == 6 and i["steps_without_references"] == 2
+
+
+def test_instructions_metric_detects_text_not_rendered_from_citations(base_artifact, base_snapshot):
+    a = copy.deepcopy(base_artifact)
+    plan(a)[0]["instructions"][0] = "Edited after rendering."
+    assert scorers.score_instructions(a, base_snapshot)["render_mismatches"] == 1
+
+
+def test_legacy_artifact_without_instruction_steps_is_unstructured(base_artifact, base_snapshot):
+    a = copy.deepcopy(base_artifact)
+    for r in plan(a):
+        r.pop("instruction_steps")
+    i = scorers.score_instructions(a, base_snapshot)
+    assert i["unstructured_recipes"] == 3 and i["structured_recipes"] == 0
+    assert i["steps"] is None and i["unreferenced_ingredients"] is None
+    row = score_run(a, base_snapshot).summary_row()
+    assert row["instruction_steps"] is None and row["unstructured_instructions"] == 3

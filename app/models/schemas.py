@@ -185,9 +185,30 @@ class RecipeGenerationRequest(BaseModel):
         }
 
 
+class PlanBudgetCheck(BaseModel):
+    """The finished plan's cost checked against the remaining period budget.
+
+    ``plan_cost`` is a LOWER BOUND (each cited deal once; quantity, household
+    size and multi-buy ignored), so the best this can say is
+    ``within_lower_bound`` -- never that the plan is within budget.
+    """
+    status: Literal["within_lower_bound", "over"]
+    plan_cost: Decimal
+    budget: Decimal
+    spent_this_period: Decimal
+    available: Decimal
+    headroom: Decimal
+    budget_period: Optional[str] = None
+    lower_bound: bool = True
+    caveats: List[str] = Field(default_factory=list)
+
+
 class RecipeGenerationResponse(BaseModel):
     """Response model for recipe generation."""
     recipes: List[RecipeInfo]
+    # Shopping-list cost of the plan: each cited deal charged once however
+    # many recipes reuse it (a recipe's own total_cost is "bought alone").
+    # A lower bound -- see budget_check.caveats.
     total_cost: Decimal
     cost_per_meal: Decimal
     # null when no cited deal carries a regular price (unknown, not zero)
@@ -198,6 +219,11 @@ class RecipeGenerationResponse(BaseModel):
     # Identifies this meal plan; pass it to the shopping-list endpoints to
     # build the list from exactly these recipes.
     generation_id: Optional[str] = None
+    # Additive (Track C). meals_requested vs len(recipes): partial is true
+    # when fewer recipes were approved than asked for.
+    meals_requested: Optional[int] = None
+    partial: bool = False
+    budget_check: Optional[PlanBudgetCheck] = None
 
 
 class RecipeGenerationJobCreated(BaseModel):

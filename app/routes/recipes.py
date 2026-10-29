@@ -98,6 +98,10 @@ def _build_generation_response(
         status=result["status"],
         warnings=result.get("warnings", []),
         generation_id=result.get("generation_id"),
+        meals_requested=result.get("num_meals"),
+        partial=(result.get("num_meals") is not None
+                 and len(recipes) < result["num_meals"]),
+        budget_check=result.get("budget_check") or None,
     )
 
 

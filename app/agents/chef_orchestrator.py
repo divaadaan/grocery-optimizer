@@ -1,7 +1,8 @@
 import json
 import time
 from .state import RecipeGenerationState
-from .prompts import PromptTemplates
+from .prompts import PromptTemplates, combination_rule_hints, hint_lines
+from .costing import deals_by_id
 from .llm_factory import make_llm, model_name, provider_name
 from .llm_usage import MeteredLLM
 from .llm_output import ChefPlan, LLMOutputError, invoke_validated, raw_output_report
@@ -15,20 +16,23 @@ def _deal_id(deal):
 
 
 def _restrict_to_served_deals(groups, served_deals):
-    """Keep only selections that name a deal we actually served.
+    """Keep only selections that cite a deal we actually served, by id.
 
     Every deal in ``served_deals`` already passed the dietary gate in
     ``fetch_current_deals``, so membership in that set is the whole safety
     property here: a selection the model invented (a product not on the menu)
-    is the only way an unsafe item could enter a group. A selection is matched
-    by exact ``product_name`` first, then by ``deal_id``, and is rewritten to
-    the served deal's own name and id so downstream lookups by name resolve.
+    is the only way an unsafe item could enter a group.
+
+    A selection resolves by its ``deal_id`` **only**. One without a deal_id,
+    or with one we did not serve, is invalid output and is dropped with a
+    logged reason -- never resolved by ``product_name``, which collides across
+    stores ("an ingredient or deal name never decides anything", CLAUDE.md).
+    A kept selection is rewritten to the served deal's own name (display only).
 
     Groups emptied by the strip are backfilled from unused served deals so the
-    downstream contract of 3 non-empty groups holds.
+    downstream contract of non-empty groups holds.
     Returns ``(cleaned_groups, num_removed)``.
     """
-    by_name = {d.get("product_name"): d for d in served_deals}
     by_id = {str(_deal_id(d)): d for d in served_deals if _deal_id(d) is not None}
 
     used: set = set()
@@ -37,31 +41,58 @@ def _restrict_to_served_deals(groups, served_deals):
     for group in groups:
         kept = []
         for sel in group:
-            deal = by_name.get(sel.get("product_name"))
-            if deal is None and sel.get("deal_id") is not None:
-                deal = by_id.get(str(sel.get("deal_id")))
+            raw_id = sel.get("deal_id")
+            key = "" if raw_id is None else str(raw_id).strip()
+            deal = by_id.get(key) if key else None
             if deal is None:
                 removed += 1
+                reason = "no deal_id" if not key else f"deal_id {raw_id!r} was not served"
+                print(f"[Chef] dropped selection {sel.get('product_name')!r}: {reason}")
                 continue
             kept.append({
                 **sel,
                 "product_name": deal.get("product_name", ""),
                 "deal_id": _deal_id(deal),
             })
-            used.add(deal.get("product_name"))
+            used.add(key)
         cleaned.append(kept)
 
-    spare = [d for d in served_deals if d.get("product_name") not in used]
+    spare = [d for d in served_deals
+             if _deal_id(d) is not None and str(_deal_id(d)) not in used]
     for group in cleaned:
         if not group and spare:
             deal = spare.pop(0)
-            used.add(deal.get("product_name"))
+            used.add(str(_deal_id(deal)))
             group.append({
                 "product_name": deal.get("product_name", ""),
                 "quantity_estimate": "",
                 "deal_id": _deal_id(deal),
             })
     return cleaned, removed
+
+
+def _merge_groups(groups, num_meals):
+    """Fold the Chef's groups into at most ``num_meals`` groups.
+
+    One SousChef per group, and a SousChef must never get a target of zero
+    recipes, so a plan for 1 or 2 meals runs 1 or 2 SousChefs. Rather than
+    discard the Chef's other groups, group ``j`` is folded into group
+    ``j % num_meals`` (duplicate deal_ids dropped), so every planned deal
+    stays on offer. Three or more meals leave the groups untouched.
+    """
+    k = max(1, min(len(groups), num_meals))
+    if k == len(groups):
+        return groups
+    merged = [[] for _ in range(k)]
+    seen = [set() for _ in range(k)]
+    for j, group in enumerate(groups):
+        i = j % k
+        for sel in group:
+            key = str(sel.get("deal_id"))
+            if key not in seen[i]:
+                seen[i].add(key)
+                merged[i].append(sel)
+    return merged
 
 
 class ChefOrchestrator:
@@ -109,8 +140,10 @@ class ChefOrchestrator:
             dietary_restrictions=state["dietary_restrictions"],
         )
 
-        # Create deal index for O(1) lookups
-        deal_index = {deal["product_name"]: deal for deal in deals}
+        # Deal index for O(1) lookups, keyed by str(deal_id). It used to be
+        # keyed by product_name, which collides across stores (two stores'
+        # "BROCCOLI CROWNS" are two deals); names never resolve a deal.
+        deal_index = deals_by_id(deals)
 
         print(f"[Chef] Found {len(deals)} deals for postal code {state['postal_code']}")
 
@@ -162,6 +195,8 @@ class ChefOrchestrator:
             household_size=state["household_size"],
             num_meals=state["num_meals"],
             dietary_restrictions=", ".join(state["dietary_restrictions"]),
+            combination_hints=hint_lines(
+                combination_rule_hints(state["dietary_restrictions"], unit="group")),
             preferences=json.dumps(state.get("preferences", {}))
         )
 
@@ -185,6 +220,9 @@ class ChefOrchestrator:
             if removed:
                 print(f"[Chef] Removed {removed} item(s) not in the served deal set")
 
+            # Fewer than 3 meals -> fewer SousChefs, never one with target 0.
+            ingredient_groups = _merge_groups(ingredient_groups, state["num_meals"])
+
             ingredient_reuse_map = plan.ingredient_reuse_map
 
             # Log to MLflow
@@ -199,7 +237,7 @@ class ChefOrchestrator:
             )
             self.tracker.log_ingredient_groups(ingredient_groups, ingredient_reuse_map)
 
-            print(f"[Chef] Created 3 ingredient groups with {len(ingredient_reuse_map)} unique ingredients")
+            print(f"[Chef] Created {len(ingredient_groups)} ingredient groups with {len(ingredient_reuse_map)} unique ingredients")
             print(f"[Chef] Ingredient reuse: {ingredient_reuse_map}")
 
             return {
@@ -226,34 +264,45 @@ class ChefOrchestrator:
 
     def handle_rejections(self, state: RecipeGenerationState) -> dict:
         """
-        Node 7: Process rejected recipes and determine retry strategy.
+        Node 7: Pick this iteration's retry strategy and queue the work.
+
+        Retry policy (one strategy per iteration; ``max_iterations`` is 2):
+
+        1. ``"feedback"`` -- each rejected recipe goes back to the SousChef
+           that wrote it, on the same ingredient group, with the
+           Nutritionist's feedback (which names the violating citations).
+           The cheapest fix: usually one ingredient has to go.
+        2. ``"reassign_chef"`` -- a recipe still rejected goes to a
+           *different* SousChef, i.e. the next ingredient group round-robin,
+           with the same feedback. If the group itself is the problem, a
+           different set of deals is the fix. With a single group there is
+           no other SousChef, and it degrades to ``"feedback"``.
+
+        "reassign_chef" used to be iteration 1 and reused the same SousChef
+        and group; Strategy B, "new_ingredients", only cleared the retry
+        queue -- a no-op that spent an iteration. Each name now does what it
+        says, and "new_ingredients" is gone rather than faked.
+
+        Either strategy also tops up a shortfall: ``recipes_shortfall`` is how
+        many recipes are missing even if every rejected one is fixed (a
+        SousChef returned fewer than its target, or nothing). retry_generation
+        asks the SousChefs for that many new recipes.
         """
         print(f"[Chef] Handling {len(state['rejected_recipe_ids'])} rejected recipes...")
 
         iteration_count = state["iteration_count"] + 1
-        update = {"iteration_count": iteration_count}
+        strategy = "feedback" if iteration_count == 1 else "reassign_chef"
+        shortfall = max(0, state["num_meals"]
+                        - len(state["approved_recipe_ids"])
+                        - len(state["rejected_recipe_ids"]))
+        print(f"[Chef] Strategy: {strategy} (shortfall: {shortfall})")
 
-        # Determine strategy
-        if iteration_count == 1:
-            # Strategy A: Reassign to different SousChef
-            print("[Chef] Strategy: Reassign to different SousChef")
-
-            # Keep same ingredient groups, just mark for retry
-            update["retry_strategy"] = "reassign_chef"
-            update["recipes_pending_retry"] = {
+        return {
+            "iteration_count": iteration_count,
+            "retry_strategy": strategy,
+            "recipes_pending_retry": {
                 recipe_id: state["validation_results"][recipe_id]["feedback"]
                 for recipe_id in state["rejected_recipe_ids"]
-            }
-
-        else:
-            # Strategy B: Select new ingredients
-            print("[Chef] Strategy: Select new ingredients from remaining deals")
-
-            # Use LLM to pick new ingredients
-            # (Implementation similar to plan_ingredient_groups)
-            # For now, simplified version
-            update["retry_strategy"] = "new_ingredients"
-            update["recipes_pending_retry"] = {}
-            update["warnings"] = ["Max iterations reached, selecting new ingredients"]
-
-        return update
+            },
+            "recipes_shortfall": shortfall,
+        }
