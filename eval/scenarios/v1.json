@@ -1,0 +1,266 @@
+{
+  "scenarios": [
+    {
+      "name": "week1016-unrestricted-generous-hh4",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 300,
+        "household_size": 4,
+        "num_meals": 7
+      },
+      "notes": "Baseline: no restrictions, ample budget, family of 4, full week. Budget should not bind; measures plain recipe quality."
+    },
+    {
+      "name": "week1016-vegetarian-mid-hh2",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 90,
+        "household_size": 2,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "vegetarian"
+        ]
+      },
+      "notes": "Vegetarian on the large snapshot; mid budget for a couple."
+    },
+    {
+      "name": "week1016-vegan-tight-hh2",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 30,
+        "household_size": 2,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "vegan"
+        ]
+      },
+      "notes": "Strictest plant diet plus a budget that should bind (about 2.1 per person-meal)."
+    },
+    {
+      "name": "week1016-pescatarian-mid-hh1-m2",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 10,
+        "household_size": 1,
+        "num_meals": 2,
+        "dietary_restrictions": [
+          "pescatarian"
+        ]
+      },
+      "notes": "Pescatarian, one person, two meals; short plan."
+    },
+    {
+      "name": "week1016-glutenfree-generous-hh4",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 300,
+        "household_size": 4,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "gluten_free"
+        ]
+      },
+      "notes": "Gluten-free (curated contains_gluten, NULL fails closed) with ample budget."
+    },
+    {
+      "name": "week1016-dairyfree-mid-hh2-m1",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 10,
+        "household_size": 2,
+        "num_meals": 1,
+        "dietary_restrictions": [
+          "dairy_free"
+        ]
+      },
+      "notes": "Single-meal plan with dairy_free; smallest num_meals."
+    },
+    {
+      "name": "week1016-nutfree-tight-hh4",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 60,
+        "household_size": 4,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "nut_free"
+        ]
+      },
+      "notes": "nut_free for a family of 4 on a binding budget (about 2.1 per person-meal)."
+    },
+    {
+      "name": "week1016-vegan-glutenfree-mid-hh2",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 90,
+        "household_size": 2,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "vegan",
+          "gluten_free"
+        ]
+      },
+      "notes": "Combined restriction: the offered deals shrink sharply."
+    },
+    {
+      "name": "week1016-kosher-mid-hh2",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 90,
+        "household_size": 2,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "kosher"
+        ]
+      },
+      "notes": "Kosher exercises the no-meat-with-dairy recipe rule. No product has a kosher decision in the snapshot, so 0 deals are offered (fail closed)."
+    },
+    {
+      "name": "week1016-kosher-nutfree-generous-hh4",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 300,
+        "household_size": 4,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "kosher",
+          "nut_free"
+        ]
+      },
+      "notes": "Combined kosher + nut_free. 0 deals offered while not_kosher is undecided everywhere."
+    },
+    {
+      "name": "week1016-vegetarian-monthly-spent-hh2",
+      "snapshot": "week-2026-10-16",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 400,
+        "household_size": 2,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "vegetarian"
+        ],
+        "budget_period": "monthly",
+        "budget_spent_this_period": 150
+      },
+      "notes": "Monthly budget period with 150 already spent: exercises remaining-budget semantics. Carries no tight/mid/generous tag."
+    },
+    {
+      "name": "seed27-unrestricted-mid-hh2-m2",
+      "snapshot": "seed27",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 20,
+        "household_size": 2,
+        "num_meals": 2
+      },
+      "notes": "Small 27-deal snapshot, unrestricted, two meals."
+    },
+    {
+      "name": "seed27-vegetarian-tight-hh1",
+      "snapshot": "seed27",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 15,
+        "household_size": 1,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "vegetarian"
+        ]
+      },
+      "notes": "One person, full week, binding budget (about 2.1 per person-meal)."
+    },
+    {
+      "name": "seed27-vegan-generous-hh4",
+      "snapshot": "seed27",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 300,
+        "household_size": 4,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "vegan"
+        ]
+      },
+      "notes": "Vegan family of 4 on few offered deals; scarcity rather than budget is the limit."
+    },
+    {
+      "name": "seed27-dairyfree-glutenfree-mid-hh2",
+      "snapshot": "seed27",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 90,
+        "household_size": 2,
+        "num_meals": 7,
+        "dietary_restrictions": [
+          "dairy_free",
+          "gluten_free"
+        ]
+      },
+      "notes": "Combined dairy_free + gluten_free on a small deal pool."
+    },
+    {
+      "name": "seed27-kosher-mid-hh1-m1",
+      "snapshot": "seed27",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 5,
+        "household_size": 1,
+        "num_meals": 1,
+        "dietary_restrictions": [
+          "kosher"
+        ]
+      },
+      "notes": "Kosher on seed27: 0 deals offered. Expect an empty or failed run, which is itself the measurement."
+    },
+    {
+      "name": "sparse5-unrestricted-mid-hh2",
+      "snapshot": "sparse5",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 60,
+        "household_size": 2,
+        "num_meals": 7
+      },
+      "notes": "Scarcity: 7 meals requested from only 5 deals, no restriction."
+    },
+    {
+      "name": "sparse5-vegan-mid-hh2-m2",
+      "snapshot": "sparse5",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 20,
+        "household_size": 2,
+        "num_meals": 2,
+        "dietary_restrictions": [
+          "vegan"
+        ]
+      },
+      "notes": "Scarcity: a vegan user is offered exactly 1 deal."
+    },
+    {
+      "name": "sparse5-glutenfree-tight-hh1-m1",
+      "snapshot": "sparse5",
+      "user": {
+        "postal_code": "M5V3A8",
+        "budget": 2.5,
+        "household_size": 1,
+        "num_meals": 1,
+        "dietary_restrictions": [
+          "gluten_free"
+        ]
+      },
+      "notes": "Scarcity plus tight: gluten-free offered 1 deal, budget below its median price."
+    }
+  ]
+}
