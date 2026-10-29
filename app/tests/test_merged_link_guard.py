@@ -66,6 +66,9 @@ class LinkCursor:
                 raise MergedLinkRefused(survivor=params["pid"] + 100)
             self._pending.append((params["raw"], params["pid"]))
             self.rowcount = 1
+        elif "SELECT deal_id, unit" in sql:
+            self._next = [{"deal_id": 1, "unit": "ea.", "sale_story": None,
+                           "pre_price_text": None}]
         elif "SELECT DISTINCT d.product_name" in sql:
             self._next = [{"product_name": n} for n in self.names]
         elif "FROM product_aliases" in sql:
