@@ -3,7 +3,8 @@ import time
 from .state import RecipeGenerationState
 from .prompts import PromptTemplates, combination_rule_hints, hint_lines
 from .costing import deals_by_id
-from .llm_factory import make_llm, model_name
+from .llm_factory import make_llm, model_name, provider_name
+from .llm_usage import MeteredLLM
 from .llm_output import ChefPlan, LLMOutputError, invoke_validated, raw_output_report
 from ..services.budget import available_for_plan
 from ..services.database import DatabaseService
@@ -121,7 +122,9 @@ class ChefOrchestrator:
             user_id=state["user_id"],
             num_meals=state["num_meals"],
             budget=state["budget"],
-            dietary_restrictions=state["dietary_restrictions"]
+            dietary_restrictions=state["dietary_restrictions"],
+            generation_id=state.get("generation_id"),
+            models=(state.get("provenance") or {}).get("models"),
         )
 
         # Fetch deals from database.
@@ -200,7 +203,9 @@ class ChefOrchestrator:
         # Call LLM — schema enforces exactly 3 non-empty groups, with retries
         # on invalid output (see llm_output.invoke_validated)
         try:
-            plan, raw = invoke_validated(self.llm, prompt, ChefPlan)
+            # Metered for MLflow: provider-reported tokens across retries
+            llm = MeteredLLM(self.llm)
+            plan, raw = invoke_validated(llm, prompt, ChefPlan)
 
             ingredient_groups = [
                 [selection.model_dump() for selection in group]
@@ -224,10 +229,11 @@ class ChefOrchestrator:
             duration = time.time() - start_time
             self.tracker.log_agent_call(
                 agent_name="Chef_Orchestrator",
-                tokens=len(raw),  # Approximate
                 duration=duration,
                 model=model_name("chef"),
-                success=True
+                success=True,
+                usage=llm.usage,
+                provider=provider_name(),
             )
             self.tracker.log_ingredient_groups(ingredient_groups, ingredient_reuse_map)
 

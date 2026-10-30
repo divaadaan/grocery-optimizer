@@ -21,6 +21,10 @@ The old version also compared the same product across stores to pick the
 cheapest. That required name matching, so it is gone: a citation names one
 specific deal and that is the line.
 
+Scope: the caller passes ONE generation's recipes (the route resolves the
+user's latest generation, or the one asked for). A list never mixes meal
+plans.
+
 Savings: ``regular_price - sale_price`` over listed deals that carry a regular
 price. When none do, ``estimated_savings`` is ``None`` (absent, not 0).
 """

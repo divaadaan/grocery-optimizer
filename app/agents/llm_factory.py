@@ -87,3 +87,20 @@ def make_llm(role: str, settings: Optional[Settings] = None) -> Any:
             f"supported: {sorted(_PROVIDERS)}"
         ) from None
     return build(spec, model_name(role, settings), settings)
+
+
+def provider_name(settings: Optional[Settings] = None) -> str:
+    """The configured provider name, normalised as ``make_llm`` reads it."""
+    settings = settings or _default_settings
+    return (settings.llm_provider or "").strip().lower()
+
+
+def configured_models(settings: Optional[Settings] = None) -> Dict[str, Dict[str, str]]:
+    """``role -> {provider, model}`` for every role, as production builds them.
+
+    This is the provenance a persisted generation records
+    (``recipe_generations.models``) and what MLflow logs per role. A caller
+    that builds its models another way (the eval harness) supplies its own map.
+    """
+    return {role: {"provider": provider_name(settings), "model": model_name(role, settings)}
+            for role in ROLES}

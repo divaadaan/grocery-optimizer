@@ -2,9 +2,11 @@
 Recipe generation endpoints
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 import logging
 from datetime import datetime
+from typing import Optional
+from uuid import UUID
 
 from app.config import settings
 from app.models.schemas import (
@@ -46,8 +48,9 @@ def _recipe_row_to_info(recipe: dict) -> RecipeInfo:
         meal_type=recipe.get("meal_type"),
         cuisine_type=recipe.get("cuisine_type"),
         nutrition_facts=recipe.get("nutritional_info"),
-        health_score=None,  # Not stored on the recipes table
-        created_at=recipe["created_at"]
+        health_score=recipe.get("health_score"),  # null before migration 022
+        created_at=recipe["created_at"],
+        generation_id=recipe.get("generation_id"),
     )
 
 
@@ -82,7 +85,8 @@ def _build_generation_response(
             cuisine_type=recipe_data.get("cuisine_type"),
             nutrition_facts=result["validation_results"].get(recipe_id, {}).get("nutrition_facts"),
             health_score=result["validation_results"].get(recipe_id, {}).get("health_score"),
-            created_at=datetime.now()
+            created_at=datetime.now(),
+            generation_id=result.get("generation_id"),
         ))
 
     return RecipeGenerationResponse(
@@ -93,6 +97,7 @@ def _build_generation_response(
         generation_time=generation_time,
         status=result["status"],
         warnings=result.get("warnings", []),
+        generation_id=result.get("generation_id"),
         meals_requested=result.get("num_meals"),
         partial=(result.get("num_meals") is not None
                  and len(recipes) < result["num_meals"]),
@@ -332,7 +337,9 @@ async def get_recipe(recipe_id: int) -> RecipeInfo:
             })
 async def get_user_recipes(
     user_id: int,
-    limit: int = 10
+    limit: int = 10,
+    generation_id: Optional[UUID] = Query(
+        None, description="Only this generation's recipes (one meal plan)."),
 ) -> list[RecipeInfo]:
     """
     Get all recipes for a user.
@@ -341,6 +348,7 @@ async def get_user_recipes(
 
     - **user_id**: User ID
     - **limit**: Maximum number of recipes to return (default: 10)
+    - **generation_id** (optional): only recipes from that generation
     """
     try:
         user = UserService.get_user_by_id(user_id)
@@ -350,7 +358,11 @@ async def get_user_recipes(
                 detail=f"User with ID {user_id} not found"
             )
 
-        recipes = db_service.get_user_recipes(user_id, limit)
+        if generation_id is None:
+            recipes = db_service.get_user_recipes(user_id, limit)
+        else:
+            recipes = db_service.get_user_recipes(
+                user_id, limit, generation_id=str(generation_id))
         return [_recipe_row_to_info(recipe) for recipe in recipes]
 
     except HTTPException:

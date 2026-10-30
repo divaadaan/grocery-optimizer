@@ -47,6 +47,7 @@ BUDGET_STATUS = {
 # A finished graph state with one approved, persisted recipe.
 FINAL_STATE = {
     "status": "completed",
+    "generation_id": "6f1c2e5b-7a4d-4f0e-8b3a-6c1d2e5f7a90",
     "approved_recipe_ids": ["r1"],
     "saved_recipe_ids": [4242],
     "generated_recipes": {
@@ -412,7 +413,7 @@ def test_completed_job_carries_the_full_generation_response(client, monkeypatch)
     # The pre-job response contract, intact, plus Track C's additive fields.
     assert set(result) == {
         "recipes", "total_cost", "cost_per_meal", "estimated_savings",
-        "generation_time", "status", "warnings",
+        "generation_time", "status", "warnings", "generation_id",
         "meals_requested", "partial", "budget_check",
     }
     assert result["status"] == "completed"
@@ -426,6 +427,9 @@ def test_completed_job_carries_the_full_generation_response(client, monkeypatch)
     assert recipe["name"] == "Penne Pomodoro"
     assert recipe["nutrition_facts"] == {"calories": 520}
     assert float(recipe["health_score"]) == 7.5
+    # The generation id reaches the client on the plan and on each recipe.
+    assert result["generation_id"] == FINAL_STATE["generation_id"]
+    assert recipe["generation_id"] == FINAL_STATE["generation_id"]
 
 
 def test_status_reports_the_live_stage_while_running(client, monkeypatch):

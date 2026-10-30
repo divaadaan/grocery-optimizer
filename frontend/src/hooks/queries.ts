@@ -171,6 +171,8 @@ export const useGenerateRecipes = (): RecipeGeneration => {
   useEffect(() => {
     if (state === "completed" && userId !== undefined) {
       queryClient.invalidateQueries({ queryKey: queryKeys.userRecipes(userId) });
+      // The shopping list follows the latest generation, so it changed too.
+      queryClient.invalidateQueries({ queryKey: queryKeys.shoppingList(userId) });
     }
   }, [state, userId, queryClient]);
 

@@ -14,7 +14,8 @@ from .llm_output import (
 )
 from .costing import deals_by_id, ingredient_price, price_recipe
 from .instruction_refs import render_step, structured_steps
-from .llm_factory import make_llm, model_name
+from .llm_factory import make_llm, model_name, provider_name
+from .llm_usage import MeteredLLM
 from ..services import products
 from ..services.mlflow_logger import MLflowLogger
 
@@ -246,7 +247,9 @@ class SousChef:
         )
 
         try:
-            batch, raw = invoke_validated(self.llm, prompt, RecipeBatch, context=context)
+            # Metered for MLflow: provider-reported tokens across retries
+            llm = MeteredLLM(self.llm)
+            batch, raw = invoke_validated(llm, prompt, RecipeBatch, context=context)
             recipes = [_to_recipe(chef_id, r, deal_lookup, self.recipe_id, staples)
                        for r in batch.recipes]
 
@@ -255,10 +258,11 @@ class SousChef:
             # Log to MLflow
             self.tracker.log_agent_call(
                 agent_name=chef_id,
-                tokens=len(raw),
                 duration=duration,
                 model=model_name("sous_chef"),
-                success=True
+                success=True,
+                usage=llm.usage,
+                provider=provider_name(),
             )
 
             print(f"[{chef_id}] Generated {len(recipes)} recipes in {duration:.2f}s")
