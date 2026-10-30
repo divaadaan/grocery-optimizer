@@ -4660,14 +4660,14 @@
  ],
  "meta": {
   "as_of": "2026-10-16",
-  "captured_at": "2026-10-29T20:37:14.977464+00:00",
+  "captured_at": "2026-10-30T00:28:26.996570+00:00",
   "format_version": 2,
   "name": "week-2026-10-16",
-  "notes": "Flipp deals live on 2026-10-16 at M5V3A8, reconstructed from the deal rows' validity windows (rows are kept, not deleted, after expiry). Products/attributes/links are Neon's state at capture time, not as of 2026-10-16: attributes have no history. Format 2: not_kosher (migration 021) added as null = undecided; no product had a kosher decision at capture time.",
+  "notes": "Flipp deals live on 2026-10-16 at M5V3A8, reconstructed from the deal rows' validity windows (rows are kept, not deleted, after expiry). Products/attributes/links are Neon's state at capture time, not as of 2026-10-16: attributes have no history. Re-captured 2026-10-29 after migration 021 and kosher labelling (corrections 205-377) and the animal-byproduct backfill (175-204): every confirmed product has every attribute decided.",
   "postal_codes": [
    "M5V3A8"
   ],
-  "schema_migration": "020_ingestion_runs.sql",
+  "schema_migration": "022_recipe_generations.sql",
   "source": "neon"
  },
  "products": [
@@ -4675,7 +4675,7 @@
    "assumed_on_hand": false,
    "canonical_name": "chicken breast",
    "category": "meat",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": false,
    "contains_egg": false,
    "contains_fish": false,
@@ -4683,7 +4683,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 4,
    "status": "confirmed"
   },
@@ -4691,7 +4691,7 @@
    "assumed_on_hand": false,
    "canonical_name": "cooked chicken breast",
    "category": "deli",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": false,
    "contains_egg": false,
    "contains_fish": false,
@@ -4699,7 +4699,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 5,
    "status": "confirmed"
   },
@@ -4707,7 +4707,7 @@
    "assumed_on_hand": false,
    "canonical_name": "canned chicken breast",
    "category": "pantry",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": false,
    "contains_egg": false,
    "contains_fish": false,
@@ -4715,7 +4715,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 6,
    "status": "confirmed"
   },
@@ -4723,7 +4723,7 @@
    "assumed_on_hand": false,
    "canonical_name": "breaded chicken breast",
    "category": "frozen",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": true,
    "contains_fish": false,
@@ -4731,7 +4731,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 7,
    "status": "confirmed"
   },
@@ -4739,7 +4739,7 @@
    "assumed_on_hand": false,
    "canonical_name": "milk",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": true,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4747,7 +4747,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 8,
    "status": "confirmed"
   },
@@ -4755,7 +4755,7 @@
    "assumed_on_hand": false,
    "canonical_name": "lactose-free milk",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": true,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4763,7 +4763,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 9,
    "status": "confirmed"
   },
@@ -4771,7 +4771,7 @@
    "assumed_on_hand": false,
    "canonical_name": "chocolate milk",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": true,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4779,7 +4779,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 10,
    "status": "confirmed"
   },
@@ -4787,7 +4787,7 @@
    "assumed_on_hand": false,
    "canonical_name": "protein milk",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": true,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4795,7 +4795,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 11,
    "status": "confirmed"
   },
@@ -4803,7 +4803,7 @@
    "assumed_on_hand": false,
    "canonical_name": "evaporated milk",
    "category": "pantry",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": true,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4811,7 +4811,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 12,
    "status": "confirmed"
   },
@@ -4819,7 +4819,7 @@
    "assumed_on_hand": false,
    "canonical_name": "condensed milk",
    "category": "pantry",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4827,7 +4827,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 13,
    "status": "confirmed"
   },
@@ -4835,7 +4835,7 @@
    "assumed_on_hand": false,
    "canonical_name": "milk powder",
    "category": "pantry",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": true,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4843,7 +4843,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 14,
    "status": "confirmed"
   },
@@ -4851,7 +4851,7 @@
    "assumed_on_hand": false,
    "canonical_name": "cream",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4859,7 +4859,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 16,
    "status": "confirmed"
   },
@@ -4867,7 +4867,7 @@
    "assumed_on_hand": false,
    "canonical_name": "milk chocolate",
    "category": "confectionery",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4875,7 +4875,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 18,
    "status": "confirmed"
   },
@@ -4883,7 +4883,7 @@
    "assumed_on_hand": false,
    "canonical_name": "baking chocolate chips",
    "category": "pantry",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4891,7 +4891,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 19,
    "status": "confirmed"
   },
@@ -4899,7 +4899,7 @@
    "assumed_on_hand": false,
    "canonical_name": "ice milk",
    "category": "frozen",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4907,7 +4907,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 21,
    "status": "confirmed"
   },
@@ -4923,7 +4923,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 22,
    "status": "confirmed"
   },
@@ -4939,7 +4939,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 24,
    "status": "confirmed"
   },
@@ -4947,7 +4947,7 @@
    "assumed_on_hand": false,
    "canonical_name": "buttermilk",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -4955,7 +4955,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 28,
    "status": "confirmed"
   },
@@ -4971,7 +4971,7 @@
    "contains_meat": false,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 29,
    "status": "confirmed"
   },
@@ -4987,7 +4987,7 @@
    "contains_meat": false,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 30,
    "status": "confirmed"
   },
@@ -4995,7 +4995,7 @@
    "assumed_on_hand": false,
    "canonical_name": "lactose-free cream",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -5003,7 +5003,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 31,
    "status": "confirmed"
   },
@@ -5019,7 +5019,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 32,
    "status": "confirmed"
   },
@@ -5027,7 +5027,7 @@
    "assumed_on_hand": false,
    "canonical_name": "cream cheese",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -5035,7 +5035,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 33,
    "status": "confirmed"
   },
@@ -5043,7 +5043,7 @@
    "assumed_on_hand": false,
    "canonical_name": "chicken breast bites",
    "category": "frozen",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": false,
    "contains_egg": false,
    "contains_fish": false,
@@ -5051,7 +5051,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 34,
    "status": "confirmed"
   },
@@ -5059,7 +5059,7 @@
    "assumed_on_hand": false,
    "canonical_name": "pork meatballs",
    "category": "frozen",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": false,
    "contains_egg": false,
    "contains_fish": false,
@@ -5067,7 +5067,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 35,
    "status": "confirmed"
   },
@@ -5075,7 +5075,7 @@
    "assumed_on_hand": false,
    "canonical_name": "flavoured milk drink",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": true,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -5083,7 +5083,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 36,
    "status": "confirmed"
   },
@@ -5091,7 +5091,7 @@
    "assumed_on_hand": false,
    "canonical_name": "processed cheese slices",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -5099,7 +5099,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 37,
    "status": "confirmed"
   },
@@ -5107,7 +5107,7 @@
    "assumed_on_hand": false,
    "canonical_name": "cheddar cheese slices",
    "category": "dairy",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": true,
    "contains_egg": false,
    "contains_fish": false,
@@ -5115,7 +5115,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 38,
    "status": "confirmed"
   },
@@ -5131,7 +5131,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 39,
    "status": "confirmed"
   },
@@ -5139,7 +5139,7 @@
    "assumed_on_hand": false,
    "canonical_name": "chicken thighs",
    "category": "meat",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": false,
    "contains_egg": false,
    "contains_fish": false,
@@ -5147,7 +5147,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 40,
    "status": "confirmed"
   },
@@ -5155,7 +5155,7 @@
    "assumed_on_hand": false,
    "canonical_name": "chicken drumsticks",
    "category": "meat",
-   "contains_animal_byproduct": null,
+   "contains_animal_byproduct": false,
    "contains_dairy": false,
    "contains_egg": false,
    "contains_fish": false,
@@ -5163,7 +5163,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 41,
    "status": "confirmed"
   },
@@ -5179,7 +5179,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 42,
    "status": "confirmed"
   },
@@ -5195,7 +5195,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 43,
    "status": "confirmed"
   },
@@ -5211,7 +5211,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 44,
    "status": "confirmed"
   },
@@ -5227,7 +5227,7 @@
    "contains_meat": false,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 45,
    "status": "confirmed"
   },
@@ -5243,7 +5243,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 46,
    "status": "confirmed"
   },
@@ -5259,7 +5259,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 47,
    "status": "confirmed"
   },
@@ -5275,7 +5275,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 48,
    "status": "confirmed"
   },
@@ -5291,7 +5291,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 49,
    "status": "confirmed"
   },
@@ -5307,7 +5307,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 50,
    "status": "confirmed"
   },
@@ -5323,7 +5323,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 51,
    "status": "confirmed"
   },
@@ -5339,7 +5339,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 52,
    "status": "confirmed"
   },
@@ -5355,7 +5355,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 53,
    "status": "confirmed"
   },
@@ -5371,7 +5371,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 54,
    "status": "confirmed"
   },
@@ -5387,7 +5387,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 55,
    "status": "confirmed"
   },
@@ -5403,7 +5403,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 56,
    "status": "confirmed"
   },
@@ -5419,7 +5419,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 59,
    "status": "confirmed"
   },
@@ -5435,7 +5435,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 60,
    "status": "confirmed"
   },
@@ -5451,7 +5451,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 61,
    "status": "confirmed"
   },
@@ -5467,7 +5467,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 62,
    "status": "confirmed"
   },
@@ -5483,7 +5483,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 63,
    "status": "confirmed"
   },
@@ -5499,7 +5499,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 65,
    "status": "confirmed"
   },
@@ -5515,7 +5515,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 66,
    "status": "confirmed"
   },
@@ -5531,7 +5531,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 67,
    "status": "confirmed"
   },
@@ -5547,7 +5547,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 68,
    "status": "confirmed"
   },
@@ -5563,7 +5563,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 69,
    "status": "confirmed"
   },
@@ -5579,7 +5579,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 70,
    "status": "confirmed"
   },
@@ -5595,7 +5595,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 71,
    "status": "confirmed"
   },
@@ -5611,7 +5611,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 72,
    "status": "confirmed"
   },
@@ -5627,7 +5627,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 73,
    "status": "confirmed"
   },
@@ -5643,7 +5643,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 75,
    "status": "confirmed"
   },
@@ -5659,7 +5659,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 76,
    "status": "confirmed"
   },
@@ -5675,7 +5675,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 77,
    "status": "confirmed"
   },
@@ -5691,7 +5691,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 80,
    "status": "confirmed"
   },
@@ -5707,7 +5707,7 @@
    "contains_meat": true,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 81,
    "status": "confirmed"
   },
@@ -5723,7 +5723,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 82,
    "status": "confirmed"
   },
@@ -5739,7 +5739,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 83,
    "status": "confirmed"
   },
@@ -5755,7 +5755,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 84,
    "status": "confirmed"
   },
@@ -5771,7 +5771,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 85,
    "status": "confirmed"
   },
@@ -5787,7 +5787,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 86,
    "status": "confirmed"
   },
@@ -5803,7 +5803,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 87,
    "status": "confirmed"
   },
@@ -5819,7 +5819,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 88,
    "status": "confirmed"
   },
@@ -5835,7 +5835,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 92,
    "status": "confirmed"
   },
@@ -5851,7 +5851,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 94,
    "status": "confirmed"
   },
@@ -5867,7 +5867,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 95,
    "status": "confirmed"
   },
@@ -5883,7 +5883,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 96,
    "status": "confirmed"
   },
@@ -5899,7 +5899,7 @@
    "contains_meat": false,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 97,
    "status": "confirmed"
   },
@@ -5915,7 +5915,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 99,
    "status": "confirmed"
   },
@@ -5931,7 +5931,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 101,
    "status": "confirmed"
   },
@@ -5947,7 +5947,7 @@
    "contains_meat": false,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 102,
    "status": "confirmed"
   },
@@ -5963,7 +5963,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 103,
    "status": "confirmed"
   },
@@ -5979,7 +5979,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 104,
    "status": "confirmed"
   },
@@ -5995,7 +5995,7 @@
    "contains_meat": false,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 107,
    "status": "confirmed"
   },
@@ -6011,7 +6011,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 108,
    "status": "confirmed"
   },
@@ -6027,7 +6027,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 109,
    "status": "confirmed"
   },
@@ -6043,7 +6043,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 112,
    "status": "confirmed"
   },
@@ -6059,7 +6059,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 116,
    "status": "confirmed"
   },
@@ -6075,7 +6075,7 @@
    "contains_meat": false,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 117,
    "status": "confirmed"
   },
@@ -6091,7 +6091,7 @@
    "contains_meat": false,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 118,
    "status": "confirmed"
   },
@@ -6107,7 +6107,7 @@
    "contains_meat": false,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 119,
    "status": "confirmed"
   },
@@ -6123,7 +6123,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 120,
    "status": "confirmed"
   },
@@ -6139,7 +6139,7 @@
    "contains_meat": true,
    "contains_nuts": true,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 122,
    "status": "confirmed"
   },
@@ -6155,7 +6155,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 123,
    "status": "confirmed"
   },
@@ -6171,7 +6171,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 124,
    "status": "confirmed"
   },
@@ -6187,7 +6187,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 125,
    "status": "confirmed"
   },
@@ -6203,7 +6203,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 126,
    "status": "confirmed"
   },
@@ -6219,7 +6219,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 127,
    "status": "confirmed"
   },
@@ -6235,7 +6235,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 128,
    "status": "confirmed"
   },
@@ -6251,7 +6251,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 129,
    "status": "confirmed"
   },
@@ -6267,7 +6267,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 130,
    "status": "confirmed"
   },
@@ -6283,7 +6283,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 131,
    "status": "confirmed"
   },
@@ -6299,7 +6299,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 132,
    "status": "confirmed"
   },
@@ -6315,7 +6315,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 133,
    "status": "confirmed"
   },
@@ -6331,7 +6331,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 134,
    "status": "confirmed"
   },
@@ -6347,7 +6347,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 135,
    "status": "confirmed"
   },
@@ -6363,7 +6363,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 136,
    "status": "confirmed"
   },
@@ -6379,7 +6379,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 137,
    "status": "confirmed"
   },
@@ -6395,7 +6395,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 138,
    "status": "confirmed"
   },
@@ -6411,7 +6411,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 139,
    "status": "confirmed"
   },
@@ -6427,7 +6427,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 140,
    "status": "confirmed"
   },
@@ -6443,7 +6443,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 141,
    "status": "confirmed"
   },
@@ -6459,7 +6459,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 142,
    "status": "confirmed"
   },
@@ -6475,7 +6475,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 143,
    "status": "confirmed"
   },
@@ -6491,7 +6491,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 144,
    "status": "confirmed"
   },
@@ -6507,7 +6507,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 145,
    "status": "confirmed"
   },
@@ -6523,7 +6523,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 146,
    "status": "confirmed"
   },
@@ -6539,7 +6539,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 147,
    "status": "confirmed"
   },
@@ -6555,7 +6555,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 148,
    "status": "confirmed"
   },
@@ -6571,7 +6571,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 149,
    "status": "confirmed"
   },
@@ -6587,7 +6587,7 @@
    "contains_meat": false,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": false,
    "product_id": 150,
    "status": "confirmed"
   },
@@ -6603,7 +6603,7 @@
    "contains_meat": true,
    "contains_nuts": false,
    "merged_into": null,
-   "not_kosher": null,
+   "not_kosher": true,
    "product_id": 158,
    "status": "confirmed"
   }

@@ -157,14 +157,18 @@ def test_a_v1_snapshot_is_refused_with_the_not_kosher_upgrade_path():
         Snapshot.from_dict(data)
 
 
-def test_committed_snapshots_carry_not_kosher_as_undecided():
-    """Migrated v1 -> v2 with null: no product had a kosher decision when
-    they were captured, and null fails closed for kosher users."""
+def test_committed_snapshots_have_every_attribute_decided():
+    """Re-captured 2026-10-29 after kosher labelling: every product in every
+    committed snapshot has every attribute decided, and kosher users are
+    served only products explicitly not_kosher = false."""
     for name in ("seed27", "week-2026-10-16", "sparse5"):
         snap = load_snapshot(name)
         assert snap.meta["format_version"] == 2
-        assert {p["not_kosher"] for p in snap.data["products"]} == {None}
-        assert snap.deal_source().fetch_current_deals(snap.postal_codes[0], ["kosher"]) == []
+        for product in snap.data["products"]:
+            assert all(product[a] is not None for a in ATTRIBUTES), product["product_id"]
+        linked = snap.linked_products()
+        for deal in snap.deal_source().fetch_current_deals(snap.postal_codes[0], ["kosher"]):
+            assert all(p["not_kosher"] is False for p in linked[deal["deal_id"]])
 
 
 def test_missing_version_is_refused():

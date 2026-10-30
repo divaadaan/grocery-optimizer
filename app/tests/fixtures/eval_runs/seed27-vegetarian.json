@@ -1,46 +1,46 @@
 {
  "artifact": {
-  "created_at": "2026-10-29T23:47:14+00:00",
+  "created_at": "2026-10-30T00:28:55+00:00",
   "format_version": 1,
   "kind": "recipe-eval-run",
   "mode": "record"
  },
  "code": {
   "git_dirty": true,
-  "git_sha": "3cacf6672caaad36f7d5671a6c9ba565ec4e9fb2"
+  "git_sha": "bc259a9256a6be7e8d5c55c63370883107d61140"
  },
  "final_state": {
   "agent_call_log": [
    {
     "action": "plan_ingredient_groups",
     "agent": "Chef_Orchestrator",
-    "duration": 0.0007059574127197266,
+    "duration": 0.0006728172302246094,
     "success": true,
-    "timestamp": 1793317634.682772
+    "timestamp": 1793320135.301859
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.0003669261932373047,
+    "duration": 0.0002989768981933594,
     "recipe_id": "99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e",
-    "timestamp": 1793317634.6880352
+    "timestamp": 1793320135.3072987
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.00024771690368652344,
+    "duration": 0.00023293495178222656,
     "recipe_id": "becb1037-60cb-5a45-9441-da7e49f3cc01",
-    "timestamp": 1793317634.6882842
+    "timestamp": 1793320135.3075325
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.0002262592315673828,
+    "duration": 0.00020313262939453125,
     "recipe_id": "3a34bbf0-96f6-5d16-9f1f-43ceaae657e1",
-    "timestamp": 1793317634.6885114
+    "timestamp": 1793320135.3077362
    }
   ],
   "approved_recipe_ids": [
@@ -613,7 +613,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 175,
      "status": "confirmed"
     }
@@ -629,7 +629,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 171,
      "status": "confirmed"
     }
@@ -645,7 +645,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 155,
      "status": "confirmed"
     }
@@ -661,7 +661,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": true,
      "product_id": 161,
      "status": "confirmed"
     }
@@ -677,7 +677,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": true,
      "product_id": 157,
      "status": "confirmed"
     }
@@ -693,7 +693,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 153,
      "status": "confirmed"
     }
@@ -709,7 +709,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 156,
      "status": "confirmed"
     }
@@ -725,7 +725,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 169,
      "status": "confirmed"
     }
@@ -741,7 +741,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 133,
      "status": "confirmed"
     }
@@ -757,7 +757,7 @@
      "contains_gluten": true,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": true,
      "product_id": 43,
      "status": "confirmed"
     }
@@ -773,7 +773,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 61,
      "status": "confirmed"
     }
@@ -789,7 +789,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": true,
      "product_id": 63,
      "status": "confirmed"
     }
@@ -805,7 +805,7 @@
      "contains_gluten": true,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": true,
      "product_id": 174,
      "status": "confirmed"
     }
@@ -821,7 +821,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 86,
      "status": "confirmed"
     }
@@ -837,7 +837,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 170,
      "status": "confirmed"
     }
@@ -853,7 +853,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 146,
      "status": "confirmed"
     }
@@ -869,7 +869,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": true,
      "product_id": 52,
      "status": "confirmed"
     }
@@ -885,7 +885,7 @@
      "contains_gluten": true,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": true,
      "product_id": 166,
      "status": "confirmed"
     }
@@ -901,7 +901,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": true,
      "product_id": 176,
      "status": "confirmed"
     }
@@ -917,7 +917,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 160,
      "status": "confirmed"
     }
@@ -926,14 +926,14 @@
     {
      "canonical_name": "milk",
      "category": "dairy",
-     "contains_animal_byproduct": null,
+     "contains_animal_byproduct": true,
      "contains_dairy": true,
      "contains_egg": false,
      "contains_fish": false,
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 8,
      "status": "confirmed"
     }
@@ -949,7 +949,7 @@
      "contains_gluten": false,
      "contains_meat": false,
      "contains_nuts": false,
-     "not_kosher": null,
+     "not_kosher": false,
      "product_id": 62,
      "status": "confirmed"
     }
@@ -1112,6 +1112,7 @@
     "total_cost": 2.48
    }
   },
+  "generation_id": "3cb2e550-7fc1-45d7-9b31-3674943d8aa0",
   "household_size": 2,
   "ingredient_groups": [
    [
@@ -1167,7 +1168,7 @@
     "contains_gluten": true,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 139,
     "status": "confirmed"
    },
@@ -1181,7 +1182,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 134,
     "status": "confirmed"
    },
@@ -1195,7 +1196,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 132,
     "status": "confirmed"
    },
@@ -1209,7 +1210,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 144,
     "status": "confirmed"
    },
@@ -1223,7 +1224,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 124,
     "status": "confirmed"
    },
@@ -1237,7 +1238,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": true,
     "product_id": 142,
     "status": "confirmed"
    },
@@ -1251,7 +1252,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 126,
     "status": "confirmed"
    },
@@ -1265,7 +1266,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 131,
     "status": "confirmed"
    },
@@ -1279,7 +1280,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": true,
     "product_id": 141,
     "status": "confirmed"
    },
@@ -1293,7 +1294,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 125,
     "status": "confirmed"
    },
@@ -1307,7 +1308,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 137,
     "status": "confirmed"
    },
@@ -1321,7 +1322,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": true,
     "product_id": 148,
     "status": "confirmed"
    },
@@ -1335,7 +1336,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 135,
     "status": "confirmed"
    },
@@ -1349,7 +1350,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 136,
     "status": "confirmed"
    },
@@ -1363,7 +1364,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 140,
     "status": "confirmed"
    },
@@ -1377,7 +1378,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 147,
     "status": "confirmed"
    },
@@ -1391,7 +1392,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 145,
     "status": "confirmed"
    },
@@ -1405,7 +1406,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 150,
     "status": "confirmed"
    },
@@ -1419,7 +1420,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 146,
     "status": "confirmed"
    },
@@ -1433,7 +1434,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 149,
     "status": "confirmed"
    },
@@ -1447,7 +1448,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 130,
     "status": "confirmed"
    },
@@ -1461,7 +1462,7 @@
     "contains_gluten": true,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": true,
     "product_id": 128,
     "status": "confirmed"
    },
@@ -1475,7 +1476,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": true,
     "product_id": 127,
     "status": "confirmed"
    },
@@ -1489,7 +1490,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 129,
     "status": "confirmed"
    },
@@ -1503,7 +1504,7 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 138,
     "status": "confirmed"
    },
@@ -1517,7 +1518,7 @@
     "contains_gluten": true,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": true,
     "product_id": 143,
     "status": "confirmed"
    },
@@ -1531,13 +1532,36 @@
     "contains_gluten": false,
     "contains_meat": false,
     "contains_nuts": false,
-    "not_kosher": null,
+    "not_kosher": false,
     "product_id": 133,
     "status": "confirmed"
    }
   ],
   "postal_code": "M5V3A8",
   "preferences": {},
+  "provenance": {
+   "models": {
+    "chef": {
+     "model": "chef-script",
+     "provider": "scripted"
+    },
+    "nutritionist": {
+     "model": "nutri-script",
+     "provider": "scripted"
+    },
+    "sous_chef": {
+     "model": "sous-script",
+     "provider": "scripted"
+    }
+   },
+   "snapshot": {
+    "as_of": "2026-07-15",
+    "captured_at": "2026-10-30T00:28:26.147499+00:00",
+    "content_sha256": "1a8216d8ec48d2b83399ffb5c1ce60e508705b3cd12d11ae9293d7ea22e1052a",
+    "format_version": 2,
+    "name": "seed27"
+   }
+  },
   "recipes_pending_retry": {},
   "recipes_shortfall": 0,
   "rejected_recipe_ids": [],
@@ -1634,7 +1658,7 @@
  "llm_calls": [
   {
    "error": null,
-   "latency_s": 0.00035121499968227,
+   "latency_s": 0.0003350749975652434,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "chef-script",
@@ -1668,7 +1692,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.0003901939999195747,
+   "latency_s": 0.00041491400043014437,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1702,7 +1726,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00017667800057097338,
+   "latency_s": 0.00021095699776196852,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1736,7 +1760,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.0001845580009103287,
+   "latency_s": 0.00020761700216098689,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1778,7 +1802,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00015763800001877826,
+   "latency_s": 0.00018531699970480986,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1812,7 +1836,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00016669800061208662,
+   "latency_s": 0.00017262699839193374,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1854,7 +1878,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00023579600019729696,
+   "latency_s": 0.000189657999726478,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1884,7 +1908,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.0001381980000587646,
+   "latency_s": 0.00012947800132678822,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1914,7 +1938,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.0001245179992110934,
+   "latency_s": 0.00011216900020372123,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1989,16 +2013,16 @@
  },
  "snapshot": {
   "as_of": "2026-07-15",
-  "captured_at": "2026-10-29T20:37:14.173828+00:00",
-  "content_sha256": "5dead25200b633d38e724aca86413670ccfd052993f7c533a3492b5682531fc9",
+  "captured_at": "2026-10-30T00:28:26.147499+00:00",
+  "content_sha256": "1a8216d8ec48d2b83399ffb5c1ce60e508705b3cd12d11ae9293d7ea22e1052a",
   "format_version": 2,
   "name": "seed27"
  },
  "state_notes": [],
  "timing": {
-  "llm_seconds": 0.0019254930011811666,
-  "started_at": "2026-10-29T23:47:14+00:00",
-  "wall_seconds": 0.02055823299997428
+  "llm_seconds": 0.0019578119972720742,
+  "started_at": "2026-10-30T00:28:55+00:00",
+  "wall_seconds": 0.019426520997512853
  },
  "tracker_calls": [
   "start_run",
