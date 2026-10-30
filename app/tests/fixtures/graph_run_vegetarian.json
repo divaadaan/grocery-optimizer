@@ -58,7 +58,7 @@
             {"name": "broccoli", "deal_id": 12, "quantity": "2", "unit": "heads"},
             {"name": "olive oil", "product_id": 102, "quantity": "2", "unit": "tbsp"}
           ],
-          "instructions": ["Press and cube the tofu.", "Stir-fry tofu and broccoli in olive oil."]
+          "instructions": ["Press and cube {0}.", "Stir-fry {0} and {1} in {2}."]
         }]}
       },
       {
@@ -73,7 +73,7 @@
             {"name": "veggie dumplings", "deal_id": 15, "quantity": "1", "unit": "bag"},
             {"name": "salt", "product_id": 101, "quantity": "1", "unit": "tsp"}
           ],
-          "instructions": "Pan-fry the dumplings; warm the chickpeas with salt; serve together."
+          "instructions": "Pan-fry {1}; warm {0} with {2}; serve together."
         }]
       },
       {
@@ -89,7 +89,7 @@
             {"name": "diced tomatoes", "deal_id": 16, "quantity": "1", "unit": "can"},
             {"name": "salt", "product_id": 101, "quantity": "1", "unit": "tsp"}
           ],
-          "instructions": ["Rinse the rice.", "Simmer rice with tomatoes and salt until tender."]
+          "instructions": ["Rinse {0}.", "Simmer {0} with {1} and {2} until tender."]
         }]}
       }
     ],
@@ -105,7 +105,7 @@
           {"name": "olive oil", "product_id": 102, "quantity": "1", "unit": "tbsp"},
           {"name": "salt", "product_id": 101, "quantity": "1", "unit": "tsp"}
         ],
-        "instructions": ["Crisp the chickpeas in olive oil.", "Season with salt."]
+        "instructions": ["Crisp {0} in {1}.", "Season with {2}."]
       }
     },
     "nutritionist": {

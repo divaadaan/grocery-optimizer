@@ -50,14 +50,36 @@ def test_a_hallucinated_product_is_stripped_and_the_group_backfilled():
 
 def test_a_selection_matched_by_deal_id_is_rewritten_to_the_served_name():
     """The model got the id right and the name wrong ('tomatoes'): resolve it
-    to the deal we served so downstream name lookups find it."""
-    groups = [[_sel("tomatoes", "2")], [_sel("Firm Tofu")], [_sel("Peanut Butter")]]
+    by id to the deal we served; the name shown is the deal's own."""
+    groups = [[_sel("tomatoes", "2")], [_sel("Firm Tofu", 4)], [_sel("Peanut Butter", 1)]]
     cleaned, removed = _restrict_to_served_deals(groups, SERVED)
     assert removed == 0
     assert cleaned[0][0]["product_name"] == "Beefsteak Tomatoes"
     assert cleaned[0][0]["deal_id"] == 2
-    # Name match fills in a missing id.
-    assert cleaned[1][0]["deal_id"] == 4
+
+
+def test_a_selection_without_a_deal_id_is_never_resolved_by_name():
+    """An exact served product_name with no deal_id is invalid output: it is
+    dropped, never matched by name (CLAUDE.md: a name never decides)."""
+    groups = [[_sel("Firm Tofu")], [_sel("Peanut Butter", "")], [_sel("Butternut Squash", 3)]]
+    cleaned, removed = _restrict_to_served_deals(groups, SERVED)
+    assert removed == 2
+    # The emptied groups are backfilled by id from unused served deals --
+    # not with the name the model wrote.
+    assert all(cleaned)
+    assert [g[0]["deal_id"] for g in cleaned] == [1, 2, 3]
+
+
+def test_same_product_name_at_two_stores_stays_two_deals():
+    served = [
+        {"deal_id": 21, "product_name": "BROCCOLI CROWNS", "store_name": "FreshCo"},
+        {"deal_id": 22, "product_name": "BROCCOLI CROWNS", "store_name": "No Frills"},
+        {"deal_id": 23, "product_name": "TOFU"},
+    ]
+    groups = [[_sel("BROCCOLI CROWNS", 22)], [_sel("BROCCOLI CROWNS", 21)], [_sel("TOFU", 23)]]
+    cleaned, removed = _restrict_to_served_deals(groups, served)
+    assert removed == 0
+    assert [g[0]["deal_id"] for g in cleaned] == [22, 21, 23]
 
 
 def test_extra_selection_fields_survive():

@@ -399,7 +399,9 @@ def _sous_chef(responses):
     return chef
 
 
-def test_offered_deals_resolve_by_id_then_exact_name_and_drop_the_rest():
+def test_offered_deals_resolve_by_id_only_and_drop_the_rest():
+    """An exact product_name with no deal_id is NOT resolved: names collide
+    across stores and never decide anything."""
     from app.agents.costing import deals_by_id
     from app.agents.sous_chef import offered_deals
     group = [
@@ -408,9 +410,8 @@ def test_offered_deals_resolve_by_id_then_exact_name_and_drop_the_rest():
         {"product_name": "Hallucinated", "deal_id": 999},
         {"product_name": "dup", "deal_id": 1},
     ]
-    index = {d["product_name"]: d for d in DEALS}
-    offered = offered_deals(group, deals_by_id(DEALS), index)
-    assert [d["deal_id"] for d in offered] == [1, 4]
+    offered = offered_deals(group, deals_by_id(DEALS))
+    assert [d["deal_id"] for d in offered] == [1]
     assert offered[0]["product_name"] == "EGGPLANT ITALIAN"  # the deal's own name
 
 
@@ -423,8 +424,9 @@ def test_staples_offered_are_filtered_by_restriction():
 
 
 def _batch(*ingredients):
+    steps = ["Cook " + " and ".join(f"{{{i}}}" for i in range(len(ingredients))) + "."]
     return json.dumps([{"name": "Ratatouille", "ingredients": list(ingredients),
-                        "instructions": ["Cook."], "servings": 2}])
+                        "instructions": steps, "servings": 2}])
 
 
 def test_generate_recipes_retries_on_unoffered_citation_and_prices_from_citations():
@@ -482,7 +484,7 @@ def test_generate_recipes_skips_a_group_with_nothing_citable():
 def test_regenerate_with_feedback_uses_the_same_citation_rules():
     chef = _sous_chef([
         json.dumps({"name": "Fixed", "ingredients": [{"name": "Eggplant", "deal_id": 1}],
-                    "instructions": ["Cook."]}),
+                    "instructions": ["Cook {0}."]}),
     ])
     recipe = chef.regenerate_with_feedback(
         chef_id="sous_chef_2", original_recipe={"name": "Old", "ingredients": []},
@@ -500,11 +502,11 @@ def test_sous_chef_prompts_take_the_pantry_list():
     from app.agents.prompts import PromptTemplates
     PromptTemplates.SOUS_CHEF_RECIPE_GENERATION.format(
         ingredients_json="[]", pantry_json="[]", target_recipe_count=1, servings=2,
-        dietary_restrictions="",
+        dietary_restrictions="", combination_hints="", preferences="none",
     )
     PromptTemplates.SOUS_CHEF_RETRY_WITH_FEEDBACK.format(
         original_recipe_json="{}", feedback="", ingredients_json="[]", pantry_json="[]",
-        servings=2,
+        servings=2, dietary_restrictions="", combination_hints="", preferences="none",
     )
 
 
@@ -555,9 +557,11 @@ def test_graph_savings_come_from_cited_deals_and_never_invent_a_regular_price():
     from app.agents import graph
     state = {"available_deals": DEALS}
     no_regular = [_recipe({"name": "e", "deal_id": 1}, {"name": "s", "product_id": 101})]
-    assert graph._savings(state, no_regular) is None
+    assert graph._plan_pricing(state, no_regular).estimated_savings is None
     with_regular = [_recipe({"name": "c", "deal_id": 2})]
-    assert graph._savings(state, with_regular) == 0.5
+    assert graph._plan_pricing(state, with_regular).estimated_savings == 0.5
+    # A deal reused by two recipes is bought -- and saved on -- once.
+    assert graph._plan_pricing(state, with_regular * 2).estimated_savings == 0.5
 
 
 # --------------------------------------------------------------------------
