@@ -133,7 +133,7 @@ def test_markdown_header_and_section_order(variants):
     md = report.render_markdown(variants, STAMP)
     assert "- Generated at: 2026-10-30T12:00:00Z" in md
     assert "- Runs: 4" in md and "- Verdicts: PASS 2 / FAIL 1 / N/A 1" in md
-    assert "3cacf6672c" in md
+    assert "bc259a9256" in md
     assert md.index("# Recipe") < md.index("## Compliance") < md.index("## Runs") \
         < md.index("## Aggregates")
 

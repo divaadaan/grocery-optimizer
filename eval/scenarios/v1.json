@@ -122,7 +122,7 @@
           "kosher"
         ]
       },
-      "notes": "Kosher exercises the no-meat-with-dairy recipe rule. No product has a kosher decision in the snapshot, so 0 deals are offered (fail closed)."
+      "notes": "Kosher: offered deals are mostly produce, eggs and plain staples; the recipe rule forbids meat with dairy."
     },
     {
       "name": "week1016-kosher-nutfree-generous-hh4",
@@ -137,7 +137,7 @@
           "nut_free"
         ]
       },
-      "notes": "Combined kosher + nut_free. 0 deals offered while not_kosher is undecided everywhere."
+      "notes": "Combined kosher + nut_free; nut_free removes nothing from the kosher pool."
     },
     {
       "name": "week1016-vegetarian-monthly-spent-hh2",
@@ -221,7 +221,7 @@
           "kosher"
         ]
       },
-      "notes": "Kosher on seed27: 0 deals offered. Expect an empty or failed run, which is itself the measurement."
+      "notes": "Kosher on the small snapshot, one meal, tight budget."
     },
     {
       "name": "sparse5-unrestricted-mid-hh2",

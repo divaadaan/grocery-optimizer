@@ -3,16 +3,49 @@
 Canonical plan, last revised 2026-10-29 (originally 2026-06-12). Dated
 `*Shipped:*` / `*Progress:*` entries below are historical records — the test
 counts inside them were true when written and are deliberately not rewritten.
-Current suite on `main`: **1294 passed, 5 skipped, 4 deselected**
-(`pytest -m "not llm"`, after #41).
+Current suite on `main`: **1424 passed, 5 skipped, 4 deselected**
+(`pytest -m "not llm"`, after #47 and the 2026-10-29 snapshot re-capture).
 
 **Where we are (2026-10-28):** the curated-product database work is finished
 (see *Direction (2026-10-28)*). The next stage is **evaluation**: recipe
 quality, substitution handling, and scraping/parsing fitness for go-live. The
 ordered plan is *Next stage: evaluation readiness*; parked work is in
-*Backlog (parked)*. As of 2026-10-29, Track A items 1–2 and Track E items 1–4 are
-shipped (#33–#36, #38–#40), and `kosher` is enforced (#41). E5 (report) is
-next.
+*Backlog (parked)*. As of 2026-10-29 (end of day), Track A items 1–2, Track E items
+1–6 and every Track C item are shipped (#33–#36, #38–#47), and `kosher` is
+enforced (#41). The product database is done for this stage; work moves to
+recipe generation and agent orchestration. Start with *Next up (2026-10-29)*
+below.
+
+### Next up (2026-10-29)
+
+Owner-approved, in order:
+
+1. **Failed generations get a `recipe_generations` row** (owner: yes). Today
+   only finalized plans persist; a failed run leaves nothing to debug. This
+   needs a migration that widens `chk_recipe_generations_status` to allow
+   `failed`, plus the failure reason and the counts.
+2. **Render instructions with the linked product's `canonical_name`** (owner:
+   yes) instead of the raw flyer `product_name` ("AROY-D COCONUT MILK 400
+   ML"). This is still curated data, never the model's text. Fall back to
+   `product_name` for unlinked deals.
+3. **Persist `instruction_steps`** (the placeholder templates and their
+   ingredient refs) alongside the rendered text, so saved recipes can be
+   re-scored structurally. Needs a migration.
+4. **A dedicated `dietary_compliance` column** for the Nutritionist's verdict;
+   #47 stores it in the old `allergen_info` column. Deferred but soon (owner).
+5. **First live recording.** Run `scripts/run_eval.py record` over
+   `eval/scenarios/v1.json` against the local model. Check that Ollama fills
+   `usage_metadata`; the raw counts are in `response_metadata` if not.
+6. **Open owner questions from E4/C1:**
+   - Should a partial plan be a FAIL (it is today)?
+   - Should a budget that is over even as a lower bound gate the verdict?
+   - Should the shortfall top-up run when every SousChef failed?
+   - The 60% partial threshold.
+7. **Frontend:** add `generation_id`, `budget_check`, `meals_requested` and
+   `partial` to `frontend/src/api/types.ts` and show the over-budget warning.
+
+**Over budget (owner decision 2026-10-29):** a warning only, no repair, until
+costs stop being lower bounds (Track A4).
 
 Supersedes `NEXT_STEPS.md` (see git history
 for the WSL-migration log and verification notes it contained).
@@ -249,7 +282,9 @@ was spot-checked against code or Neon by the coordinator.
    as of 2026-07-15, from `scripts/seed_sample_data.sql` rows still in Neon),
    `week-2026-10-16` (181 deals) and `sparse5` (5 deals). Past-dated snapshots
    carry *capture-time* product attributes, because attributes have no history.
-   Format v2 (#41) adds `not_kosher`, which is null in the committed files.
+   Format v2 (#41) adds `not_kosher`. *Re-captured 2026-10-29* after the
+   kosher and animal-byproduct backfills: same deal, product and link counts,
+   and every attribute is now decided in all three snapshots.
 3. **Runner with record/replay.** The artifact is the final state plus a call
    log. Replay is deterministic and runs in CI.
 
@@ -296,8 +331,25 @@ was spot-checked against code or Neon by the coordinator.
    Kosher reach grows by linking deals to brand-specific products whose
    hechsher can be confirmed.
 5. **Report.** Markdown/CSV, with optional MLflow.
+
+   *Shipped (2026-10-29, #43):* `app/eval/report.py` and `scripts/eval_report.py
+   ARTIFACT... --out-dir DIR [--mlflow]` write `report.md` (the compliance
+   section first, then runs, then aggregates by model configuration and by
+   snapshot) and `runs.csv` (nulls left empty, never 0). Budget columns are
+   lower bounds under both cost semantics; savings appear only where they're
+   known. MLflow is opt-in and lazily imported. A directory or glob skips JSON
+   that isn't a run artifact. Exit codes: 1 on any FAIL, 2 on an unscorable
+   input.
 6. **Scenario set v1.** About 18 scenarios covering restrictions × budget ×
    household × snapshot. *Owner review.*
+
+   *Shipped (2026-10-29, #44):* `eval/scenarios/v1.json` has 19 scenarios,
+   reviewed in `eval/scenarios/v1.md`. They cover every supported label, three
+   combined sets, tight, mid and generous budgets, a monthly budget with spend
+   already recorded, households of 1, 2 and 4, `num_meals` of 1, 2 and 7, and
+   all three snapshots. Tests assert the coverage matrix and that the review
+   doc's offered-deal counts match the snapshots. After the re-capture, the
+   kosher scenarios are offered 31, 31 and 15 deals.
 7. **LLM judge for culinary quality only.** The judge prompt must contain no
    restriction label or attribute name, enforced by a test, so the judge never
    decides compliance.
@@ -310,30 +362,54 @@ was spot-checked against code or Neon by the coordinator.
 
 ### Track C: pipeline correctness found while scoping
 
-- **Cost semantics.** Pick one: plan cost = shopping-list cost (per deal), or
-  per recipe. *Owner decision.* Costing also ignores quantity, household size
-  and `price_is_per_item`, so costs are lower bounds.
-- **Recipe persistence.** `save_recipes` drops meal_type, prep_time,
-  cuisine_type and the nutrition fields. Add a `generation_id` plus the model,
-  restrictions and snapshot, so persisted plans can be re-scored. Needs a
-  migration and owner approval for Neon.
-- **Shopping list.** Build it from one generation, not the last 10 recipes
-  across generations.
-- **Budget.** Enforce or check it after generation; today it lives only in the
-  Chef prompt.
-- **Recipe count.** Enforce it, and handle `num_meals` of 1–2, where a SousChef
-  can get a target of 0.
-- **Preferences.** Pass them to the SousChefs.
-- **`deal_index`.** It is keyed by product name and collides across stores, and
-  the Chef's menu repair resolves names before ids.
-- **MLflow.** Fix orphan runs from pool threads, log the model, and count real
-  tokens instead of characters.
-- **Retry strategies.** "reassign_chef" reuses the same chef, and Strategy B is
-  a no-op.
-- **Uncited ingredients in instructions.** A vegan recipe can say "add butter"
-  in free text. Neither citations nor (by policy) an LLM or a name match may
-  catch it. *Owner decision:* the proposed fix is that instructions reference
-  ingredients by index, checked structurally.
+*All shipped 2026-10-29* (#45, #46, #47; owner decisions: per-deal cost, index
+references). The original findings are kept in git history.
+
+- **Cost semantics, budget, recipe count, `deal_index`, preferences, retries
+  (#46, C1).**
+  - Plan `total_cost` is the shopping-list cost: each cited deal charged once
+    (`costing.price_plan`), still a lower bound. Each recipe keeps a
+    "bought alone" figure for information.
+  - `finalize_meal_plan` adds a `budget_check` (`within_lower_bound` / `over`,
+    always labelled a lower bound) and an over-budget warning. When more
+    recipes are approved than requested, the plan keeps the cheapest subset of
+    exactly `num_meals`.
+  - `num_meals` of 1–2 folds the Chef's groups, so no SousChef gets a target
+    of 0. Retries top up shortfalls, and fewer approved sets `partial: true`.
+  - `deal_index` is keyed by `deal_id`; the name fallbacks are gone, and a
+    selection without a valid id is dropped and logged.
+  - Preferences reach both SousChef prompts.
+  - Retry policy: iteration 1 is feedback to the same SousChef; iteration 2
+    reassigns round-robin. The no-op strategy was removed.
+  - Combination-rule hints (kosher: no meat with dairy) are built from
+    `RESTRICTION_COMBINATION_RULES`.
+- **Uncited ingredients in instructions (#45, C2).**
+  - Each step writes ingredients as `{N}`, the index into the recipe's own
+    ingredient list. Validation in `invoke_validated` rejects malformed or
+    out-of-range placeholders and recipes where no step references an
+    ingredient.
+  - Rendering substitutes the *cited* item's name, never the model's.
+    `Recipe.instruction_steps` keeps the templates.
+  - The scorer and report gained instruction metrics.
+  - *Residual risk, by design:* a literal food word typed into step text is
+    not detected, because that would need name matching. A test pins this.
+- **Persistence, shopping list, MLflow (#47, C3).**
+  - Migration 022 (**applied to Neon 2026-10-29**) adds `recipe_generations`:
+    one row per finalized plan, with status, counts, restrictions, budget and
+    spend, household, preferences, models per role, eval snapshot identity,
+    MLflow run id and totals. `recipes` and `shopping_lists` gain a
+    `generation_id`.
+  - `save_recipes` stores meal type, prep time, cuisine, nutrition, health
+    score and the compliance verdict (in `allergen_info` for now, see
+    *Next up* §4).
+  - The shopping list is built from one generation (`?generation_id=`,
+    default latest).
+  - MLflow: one parent run per generation across SousChef threads (a
+    ContextVar scope), models logged per role, and tokens only from
+    `usage_metadata` (`MeteredLLM`). The character-count "tokens" metric is
+    gone.
+  - The integration made `finalize_meal_plan` save C1's trimmed plan, not
+    every approved recipe.
 
 ## Backlog (parked)
 
