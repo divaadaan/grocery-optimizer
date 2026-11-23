@@ -219,7 +219,11 @@ STREAMED_FINAL_STATE = {
 
 def _run_streamed(monkeypatch, events, **kwargs):
     from app import main_recipe_generation
+    from app.services import mlflow_logger
 
+    # Default GraphDeps -> the production tracker, which would trace: keep
+    # MLflow (and its tracking-server probe) out of these seam tests.
+    monkeypatch.setattr(mlflow_logger, "_ensure_configured", lambda: False)
     stub = StubGraph(events)
     monkeypatch.setattr(main_recipe_generation, "create_recipe_generation_graph",
                         lambda deps=None: stub)

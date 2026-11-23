@@ -12,11 +12,16 @@ from ..services.database import DatabaseService
 from ..services.mlflow_logger import MLflowLogger
 
 
+# How many served deals the Chef's prompt shows (context budget). The rest are
+# still served and may be backfilled, but the model never saw them.
+_PROMPT_DEAL_LIMIT = 100
+
+
 def _deal_id(deal):
     return deal.get("deal_id", deal.get("id"))
 
 
-def _restrict_to_served_deals(groups, served_deals):
+def _restrict_to_served_deals(groups, served_deals, details=None):
     """Keep only selections that cite a deal we actually served, by id.
 
     Every deal in ``served_deals`` already passed the dietary gate in
@@ -33,13 +38,21 @@ def _restrict_to_served_deals(groups, served_deals):
     Groups emptied by the strip are backfilled from unused served deals so the
     downstream contract of non-empty groups holds.
     Returns ``(cleaned_groups, num_removed)``.
+
+    ``details``, if given, is a dict filled in place for observability (the
+    MLflow ``chef_plan.json``): ``dropped`` -- one
+    ``{group, product_name, deal_id, reason}`` per stripped selection -- and
+    ``backfilled`` -- one ``{group, deal_id, product_name}`` per spare deal
+    put into an emptied group. It never changes what is returned.
     """
+    dropped: list = []
+    backfilled: list = []
     by_id = {str(_deal_id(d)): d for d in served_deals if _deal_id(d) is not None}
 
     used: set = set()
     cleaned: list = []
     removed = 0
-    for group in groups:
+    for group_index, group in enumerate(groups):
         kept = []
         for sel in group:
             raw_id = sel.get("deal_id")
@@ -49,6 +62,9 @@ def _restrict_to_served_deals(groups, served_deals):
                 removed += 1
                 reason = "no deal_id" if not key else f"deal_id {raw_id!r} was not served"
                 print(f"[Chef] dropped selection {sel.get('product_name')!r}: {reason}")
+                dropped.append({"group": group_index,
+                                "product_name": sel.get("product_name"),
+                                "deal_id": raw_id, "reason": reason})
                 continue
             kept.append({
                 **sel,
@@ -60,7 +76,7 @@ def _restrict_to_served_deals(groups, served_deals):
 
     spare = [d for d in served_deals
              if _deal_id(d) is not None and str(_deal_id(d)) not in used]
-    for group in cleaned:
+    for group_index, group in enumerate(cleaned):
         if not group and spare:
             deal = spare.pop(0)
             used.add(str(_deal_id(deal)))
@@ -69,6 +85,11 @@ def _restrict_to_served_deals(groups, served_deals):
                 "quantity_estimate": "",
                 "deal_id": _deal_id(deal),
             })
+            backfilled.append({"group": group_index, "deal_id": _deal_id(deal),
+                               "product_name": deal.get("product_name", "")})
+    if details is not None:
+        details["dropped"] = dropped
+        details["backfilled"] = backfilled
     return cleaned, removed
 
 
@@ -190,8 +211,9 @@ class ChefOrchestrator:
                   f"${state['budget']:.2f} (already spent ${spent:.2f} this "
                   f"{state.get('budget_period') or 'period'})")
 
+        prompt_deals = served_deals[:_PROMPT_DEAL_LIMIT]  # Limit for context
         prompt = PromptTemplates.CHEF_INGREDIENT_PLANNING.format(
-            deals_json=json.dumps(served_deals[:100], indent=2),  # Limit for context
+            deals_json=json.dumps(prompt_deals, indent=2),
             budget=round(budget_available, 2),
             household_size=state["household_size"],
             num_meals=state["num_meals"],
@@ -213,11 +235,15 @@ class ChefOrchestrator:
                 for group in plan.ingredient_groups
             ]
 
+            raw_groups = [[dict(sel) for sel in group] for group in ingredient_groups]
+
             # Safety net: a selection must be a deal we served. Strip anything
             # the model invented, backfilling emptied groups.
+            restriction: dict = {}
             ingredient_groups, removed = _restrict_to_served_deals(
-                ingredient_groups, served_deals
+                ingredient_groups, served_deals, details=restriction
             )
+            restricted_groups = [list(group) for group in ingredient_groups]
             if removed:
                 print(f"[Chef] Removed {removed} item(s) not in the served deal set")
 
@@ -236,7 +262,22 @@ class ChefOrchestrator:
                 usage=llm.usage,
                 provider=provider_name(),
             )
-            self.tracker.log_ingredient_groups(ingredient_groups, ingredient_reuse_map)
+            self.tracker.log_ingredient_groups(
+                ingredient_groups, ingredient_reuse_map,
+                plan={
+                    "num_meals": state["num_meals"],
+                    "served_deals_available": len(served_deals),
+                    "served_deals_in_prompt": len(prompt_deals),
+                    "prompt_deal_ids": [_deal_id(d) for d in prompt_deals],
+                    "raw_groups": raw_groups,
+                    "dropped": restriction.get("dropped", []),
+                    "backfilled": restriction.get("backfilled", []),
+                    "restricted_groups": restricted_groups,
+                    "final_groups": ingredient_groups,
+                    "ingredient_reuse_map": ingredient_reuse_map,
+                    "rationale": plan.rationale,
+                },
+            )
 
             print(f"[Chef] Created {len(ingredient_groups)} ingredient groups with {len(ingredient_reuse_map)} unique ingredients")
             print(f"[Chef] Ingredient reuse: {ingredient_reuse_map}")

@@ -61,6 +61,13 @@ class Settings(BaseSettings):
     # MLflow
     mlflow_tracking_uri: str = Field(default="http://localhost:5000", env="MLFLOW_TRACKING_URI")
     mlflow_experiment_name: str = Field(default="grocery-meal-planner", env="MLFLOW_EXPERIMENT_NAME")
+    # Where tracking goes when an http(s) MLFLOW_TRACKING_URI does not answer the
+    # startup probe (app/services/mlflow_logger.py). Empty = the repo's local,
+    # gitignored ./mlruns file store; "off" disables tracking instead.
+    mlflow_fallback_tracking_uri: str = Field(default="", env="MLFLOW_FALLBACK_TRACKING_URI")
+    # MLflow Tracing of the recipe graph (one trace per generation, with every
+    # LLM prompt/response). Traces hold full prompts: user profile, deal lists.
+    mlflow_tracing: bool = Field(default=True, env="MLFLOW_TRACING")
 
     # Hugging Face
     huggingface_api_key: Optional[str] = Field(default=None, env="HUGGINGFACE_API_KEY")

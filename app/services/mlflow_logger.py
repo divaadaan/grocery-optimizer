@@ -1,7 +1,8 @@
-"""MLflow tracking for recipe generation: one MLflow run per generation.
+"""MLflow tracking for recipe generation: one MLflow run (and one trace) per
+generation.
 
 Best-effort observability: configured lazily on first use, and a tracking
-failure never takes down the recipe workflow.
+failure never takes down -- or stalls -- the recipe workflow.
 
 One run per generation, across threads
 --------------------------------------
@@ -25,20 +26,69 @@ Tokens are logged only as the provider reported them (``usage_metadata``,
 via ``app.agents.llm_usage``); a count the provider did not report is not
 logged. The old ``*_tokens`` metric was ``len(raw)`` -- characters -- and is
 gone.
+
+Tracing (one trace per generation)
+----------------------------------
+:func:`generation_trace` wraps the graph run in a root span
+(``recipe_generation``) and hands back an ``MlflowLangchainTracer`` to pass as
+the graph's ``callbacks``. LangChain propagates callbacks through the config
+LangGraph gives every task -- including the ``Send`` fan-out's SousChef
+threads -- and the tracer parents each span by the OTel context the task
+copied from its caller (or the LangChain ``parent_run_id``), never by thread.
+So every node, and inside it every chat-model call (full prompt, raw
+response, provider usage, latency), lands in the *one* trace. It is an
+explicit callback rather than ``mlflow.langchain.autolog()``: autolog patches
+LangChain process-wide, which would also trace eval replays and tests that
+never asked for it.
+
+The trace is linked to the generation's run (``mlflow.sourceRun`` metadata,
+which is what the run page's Traces tab searches by) and tagged with
+``generation_id``; the run gets a ``trace_request_id`` tag back. The run is
+created inside the graph (``start_run``), after the trace has started, so the
+link is written just before the root span closes.
+
+**Privacy:** traces (and ``chef_plan.json``) hold full prompts -- the user's
+dietary profile, budget, preferences and the served deal lists. Fine for the
+local file store; think before pointing ``MLFLOW_TRACKING_URI`` at a shared
+server (or set ``MLFLOW_TRACING=false``).
+
+Outages never block generation
+------------------------------
+A dead ``http://`` tracking server used to stall each generation 15-20
+minutes in MLflow's own retries (7 retries, 120 s timeouts). Now:
+
+* :func:`_ensure_configured` probes an http(s) tracking URI once (``GET
+  /health``, :data:`PROBE_TIMEOUT_S` connect/read). Unreachable -> a warning
+  and the fallback store: ``MLFLOW_FALLBACK_TRACKING_URI``, by default the
+  repo's gitignored ``./mlruns`` (view it with ``mlflow ui
+  --backend-store-uri ./mlruns``). Falling back rather than disabling keeps
+  the run inspectable -- the reason tracking exists -- at no cost;
+  ``MLFLOW_FALLBACK_TRACKING_URI=off`` disables tracking instead.
+* MLflow's HTTP retry/timeout knobs are capped (:data:`HTTP_ENV_CAPS`, via
+  ``os.environ.setdefault`` so an explicit setting wins), so a server that
+  dies mid-run costs one bounded request. A connection failure then trips a
+  breaker: the rest of that generation skips tracking, and the next
+  generation re-probes (and falls back if the server is still gone).
 """
 from __future__ import annotations
 
 import contextlib
 import functools
+import logging
+import os
 import threading
 import time
 from contextvars import ContextVar
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
+from urllib.parse import urlparse
 
 import mlflow
 
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 # Configured lazily on first use; see _ensure_configured.
 _configured = False
@@ -49,12 +99,33 @@ _config_lock = threading.Lock()
 
 _TOKEN_KEYS = ("input_tokens", "output_tokens", "total_tokens")
 
+# The gitignored local file store tracking falls back to.
+DEFAULT_FALLBACK_URI = (Path(__file__).resolve().parents[2] / "mlruns").as_uri()
+
+# Probe of an http(s) tracking server: connect and read timeout, seconds.
+PROBE_TIMEOUT_S = 2.0
+
+# MLflow 2.22's defaults are 7 retries, backoff factor 2 and a 120 s timeout
+# per request (mlflow/environment_variables.py; read per request by
+# mlflow/utils/rest_utils.py). Capped so one request against a server that
+# dies mid-run is bounded (2 attempts x 5 s + ~1 s backoff); explicit env wins.
+HTTP_ENV_CAPS = {
+    "MLFLOW_HTTP_REQUEST_MAX_RETRIES": "1",
+    "MLFLOW_HTTP_REQUEST_BACKOFF_FACTOR": "1",
+    "MLFLOW_HTTP_REQUEST_TIMEOUT": "5",
+}
+
+_DISABLED_WORDS = ("off", "none", "disabled", "false")
+
 
 @dataclass
 class _RunScope:
     """The MLflow run of one generation, shared by all its graph tasks."""
     generation_id: Optional[str] = None
     run_id: Optional[str] = None
+    # Set when the tracking server stopped answering mid-generation: the rest
+    # of this generation skips MLflow.
+    tripped: bool = False
 
 
 _scope: ContextVar[Optional[_RunScope]] = ContextVar("mlflow_generation_scope", default=None)
@@ -73,21 +144,108 @@ def generation_scope(generation_id: Optional[str]) -> Iterator[_RunScope]:
         _scope.reset(token)
 
 
+# --------------------------------------------------------------------------
+# Configuration: probe, fallback, capped retries
+# --------------------------------------------------------------------------
+
+def _cap_http_retries() -> None:
+    for key, value in HTTP_ENV_CAPS.items():
+        os.environ.setdefault(key, value)
+
+
+def _probe(uri: str, timeout: float = PROBE_TIMEOUT_S) -> Optional[str]:
+    """``None`` if ``uri`` can be used, else why not. Only http(s) URIs are
+    probed (one GET, no retries); anything else -- ``file:``, a plain path,
+    databricks -- is MLflow's to resolve."""
+    if urlparse(uri).scheme not in ("http", "https"):
+        return None
+    import requests  # noqa: PLC0415 -- an MLflow dependency
+
+    try:
+        requests.get(uri.rstrip("/") + "/health", timeout=(timeout, timeout))
+    except requests.RequestException as exc:
+        return f"{type(exc).__name__}: {exc}"
+    return None  # any HTTP answer means a server is there
+
+
+def _fallback_uri() -> Optional[str]:
+    configured = (settings.mlflow_fallback_tracking_uri or "").strip()
+    if configured.lower() in _DISABLED_WORDS:
+        return None
+    return configured or DEFAULT_FALLBACK_URI
+
+
+def _resolve_tracking_uri() -> Optional[str]:
+    """The URI to track to: the configured one if it answers, else the
+    fallback (``None`` = tracking disabled)."""
+    uri = settings.mlflow_tracking_uri
+    problem = _probe(uri)
+    if problem is None:
+        return uri
+    fallback = _fallback_uri()
+    outcome = f"tracking to {fallback} instead" if fallback else "tracking disabled"
+    logger.warning("MLflow tracking server %s unreachable (%s); %s", uri, problem, outcome)
+    print(f"[MLflow] Tracking server {uri} unreachable ({problem}); {outcome}")
+    return fallback
+
+
 def _ensure_configured() -> bool:
     global _configured, _available, _client, _experiment_id
     with _config_lock:
         if not _configured:
             _configured = True
             try:
-                mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
-                experiment = mlflow.set_experiment(settings.mlflow_experiment_name)
-                _experiment_id = getattr(experiment, "experiment_id", None)
-                _client = mlflow.MlflowClient()
-                _available = True
+                _cap_http_retries()
+                uri = _resolve_tracking_uri()
+                if uri is None:
+                    _available = False
+                else:
+                    mlflow.set_tracking_uri(uri)
+                    experiment = mlflow.set_experiment(settings.mlflow_experiment_name)
+                    _experiment_id = getattr(experiment, "experiment_id", None)
+                    _client = mlflow.MlflowClient()
+                    _available = True
             except Exception as e:
                 print(f"[MLflow] Tracking unavailable, continuing without it: {e}")
                 _available = False
     return _available
+
+
+def _reset_configuration() -> None:
+    """Forget the configuration so the next call re-probes (breaker, tests)."""
+    global _configured, _available, _client, _experiment_id
+    with _config_lock:
+        _configured = False
+        _available = False
+        _client = None
+        _experiment_id = None
+
+
+def _is_connection_failure(exc: Optional[BaseException]) -> bool:
+    """A tracking server that stopped answering, vs. any other error."""
+    import requests  # noqa: PLC0415
+
+    seen = set()
+    while exc is not None and id(exc) not in seen:
+        seen.add(id(exc))
+        if isinstance(exc, (requests.ConnectionError, requests.Timeout,
+                            ConnectionError, TimeoutError)):
+            return True
+        text = str(exc)
+        if "Max retries exceeded" in text or "timeout exception" in text:
+            return True  # MlflowException wrapping the requests error by text
+        exc = exc.__cause__ or exc.__context__
+    return False
+
+
+def _trip(reason: str) -> None:
+    """Stop tracking for the rest of this generation; re-probe next time."""
+    scope = _scope.get()
+    if scope is not None:
+        scope.tripped = True
+    _reset_configuration()
+    print(f"[MLflow] Tracking server stopped answering ({reason}); "
+          "skipping tracking for the rest of this generation")
 
 
 def _best_effort(default=None):
@@ -95,12 +253,17 @@ def _best_effort(default=None):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            scope = _scope.get()
+            if scope is not None and scope.tripped:
+                return default
             if not _ensure_configured():
                 return default
             try:
                 return func(*args, **kwargs)
             except Exception as e:
                 print(f"[MLflow] {func.__name__} failed (ignored): {e}")
+                if _is_connection_failure(e):
+                    _trip(type(e).__name__)
                 return default
         return wrapper
     return decorator
@@ -204,21 +367,45 @@ class MLflowLogger:
 
     @staticmethod
     @_best_effort()
-    def log_ingredient_groups(groups: List[List[Dict]], reuse_map: Dict[str, int]):
-        """Log Chef's ingredient grouping strategy."""
+    def log_ingredient_groups(groups: List[List[Dict]], reuse_map: Dict[str, int],
+                              plan: Optional[Dict[str, Any]] = None):
+        """Log the Chef's ingredient groups and, if given, its whole plan.
+
+        ``plan`` (built by ``ChefOrchestrator.plan_ingredient_groups``) is
+        logged as ``chef_plan.json``: the model's raw selections, what
+        ``_restrict_to_served_deals`` dropped and why, what it backfilled
+        into which group, the final (merged) groups, and how many served
+        deals the prompt showed vs. were available.
+
+        Models routinely return an empty ``ingredient_reuse_map`` (the
+        schema defaults it to ``{}``). This used to evaluate
+        ``max({}.values())``, raise ``ValueError`` before logging anything,
+        and -- swallowed by ``_best_effort`` -- record nothing at all, groups
+        included. Reuse metrics are now logged only when there is a map to
+        summarise.
+        """
         run_id = _current_run_id()
         if run_id is None:
             return
-        _log_metrics(run_id, {
-            "ingredient_groups_count": len(groups),
-            "avg_ingredients_per_group": sum(len(g) for g in groups) / len(groups),
-            "total_unique_ingredients": len(reuse_map),
-            "max_ingredient_reuse": max(reuse_map.values()),
-            "avg_ingredient_reuse": sum(reuse_map.values()) / len(reuse_map)
-        })
+        reuse_map = reuse_map or {}
+        metrics: Dict[str, float] = {"ingredient_groups_count": len(groups)}
+        if groups:
+            metrics["avg_ingredients_per_group"] = sum(len(g) for g in groups) / len(groups)
+        metrics["total_unique_ingredients"] = len(reuse_map)
+        if reuse_map:
+            metrics["max_ingredient_reuse"] = max(reuse_map.values())
+            metrics["avg_ingredient_reuse"] = sum(reuse_map.values()) / len(reuse_map)
+        if plan:
+            metrics["chef_selections_dropped"] = len(plan.get("dropped") or [])
+            metrics["chef_selections_backfilled"] = len(plan.get("backfilled") or [])
+            for key in ("served_deals_available", "served_deals_in_prompt"):
+                if isinstance(plan.get(key), int):
+                    metrics[f"chef_{key}"] = plan[key]
+        _log_metrics(run_id, metrics)
 
-        # Log reuse map as artifact
         _client.log_dict(run_id, reuse_map, "ingredient_reuse_map.json")
+        _client.log_dict(run_id, plan if plan else {"final_groups": groups},
+                         "chef_plan.json")
 
     @staticmethod
     @_best_effort()
@@ -293,3 +480,114 @@ class MLflowLogger:
 
         status = "FINISHED" if state.get("status") == "completed" else "FAILED"
         _client.set_terminated(run_id, status=status)
+
+
+# --------------------------------------------------------------------------
+# Tracing
+# --------------------------------------------------------------------------
+
+def _make_tracer() -> Any:
+    """MLflow's LangChain tracer, plus provider token usage on each LLM span.
+
+    The stock tracer serializes the ``LLMResult`` without the message's
+    ``usage_metadata``, so the counts are copied onto the span as a
+    ``token_usage`` attribute -- provider-reported only, like the run's
+    ``*_tokens`` metrics (absent when the provider reported none).
+    """
+    from mlflow.langchain.langchain_tracer import MlflowLangchainTracer  # noqa: PLC0415
+
+    from app.agents.llm_usage import response_usage  # noqa: PLC0415
+
+    class _UsageTracer(MlflowLangchainTracer):
+        def on_llm_end(self, response, *, run_id, **kwargs):
+            try:
+                usage = _generation_usage(response, response_usage)
+                if usage:
+                    self._get_span_by_run_id(run_id).set_attribute("token_usage", usage)
+            except Exception as e:  # observability only
+                print(f"[MLflow] recording token usage on a span failed (ignored): {e}")
+            return super().on_llm_end(response, run_id=run_id, **kwargs)
+
+    return _UsageTracer()
+
+
+def _generation_usage(response: Any, response_usage: Any) -> Dict[str, int]:
+    """Summed provider counts over the result's messages; a key only when
+    every message reported it (``llm_usage.MeteredLLM``'s rule)."""
+    per_message = [response_usage(getattr(gen, "message", None))
+                   for gens in (getattr(response, "generations", None) or [])
+                   for gen in gens]
+    out: Dict[str, int] = {}
+    for key in _TOKEN_KEYS:
+        values = [u[key] for u in per_message]
+        if values and all(v is not None for v in values):
+            out[key] = sum(values)
+    return out
+
+
+def _link_trace(request_id: str, scope: _RunScope) -> None:
+    """Tag the still-open trace with the generation, point it at the run,
+    and point the run back at it."""
+    if scope.generation_id:
+        mlflow.update_current_trace(tags={"generation_id": scope.generation_id})
+    if not scope.run_id or scope.tripped or not _available:
+        return
+    from mlflow.tracing.constant import TraceMetadataKey  # noqa: PLC0415
+    from mlflow.tracing.trace_manager import InMemoryTraceManager  # noqa: PLC0415
+
+    # Metadata set before the root span ends is merged into the stored
+    # TraceInfo at end_trace; the run page's Traces tab filters on it.
+    with InMemoryTraceManager.get_instance().get_trace(request_id) as trace:
+        if trace is not None:
+            trace.info.request_metadata[TraceMetadataKey.SOURCE_RUN] = scope.run_id
+    _client.set_tag(scope.run_id, "trace_request_id", request_id)
+
+
+@contextlib.contextmanager
+def generation_trace(scope: _RunScope, enabled: bool = True) -> Iterator[List[Any]]:
+    """Trace one generation. Yields the LangChain callbacks to run the graph
+    with: ``[]`` -- and nothing else happens -- when ``enabled`` is false,
+    ``MLFLOW_TRACING`` is off or MLflow is unavailable. Otherwise opens the
+    ``recipe_generation`` root span, so every graph span joins one trace,
+    and links that trace to the generation's run before closing it.
+
+    Never raises for a tracking reason; an exception from the graph itself
+    propagates unchanged (the trace is then recorded with status ERROR).
+    """
+    span_cm = span = None
+    callbacks: List[Any] = []
+    if enabled and settings.mlflow_tracing and not scope.tripped:
+        try:
+            if _ensure_configured():
+                span_cm = mlflow.start_span(name="recipe_generation", span_type="CHAIN")
+                span = span_cm.__enter__()
+                if scope.generation_id:
+                    span.set_attribute("generation_id", scope.generation_id)
+                callbacks = [_make_tracer()]
+        except Exception as e:
+            print(f"[MLflow] tracing unavailable (ignored): {e}")
+            if span is not None:
+                with contextlib.suppress(Exception):
+                    span_cm.__exit__(None, None, None)
+            span_cm = span = None
+            callbacks = []
+
+    if span_cm is None:
+        yield callbacks
+        return
+
+    exc_info: tuple = (None, None, None)
+    try:
+        yield callbacks
+    except BaseException as e:
+        exc_info = (type(e), e, e.__traceback__)
+        raise
+    finally:
+        try:
+            _link_trace(span.request_id, scope)
+        except Exception as e:
+            print(f"[MLflow] linking trace to run failed (ignored): {e}")
+        try:
+            span_cm.__exit__(*exc_info)
+        except Exception as e:
+            print(f"[MLflow] closing trace failed (ignored): {e}")
