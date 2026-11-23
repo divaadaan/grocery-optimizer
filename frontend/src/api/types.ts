@@ -114,6 +114,54 @@ export interface RecipeGenerationRequest {
   user_id: number;
   num_meals: number;
   preferences: RecipeGenerationPreferences;
+  /** Deals kept from POST /plans/trays; omitted = keep everything offered. */
+  kept_deal_ids?: number[];
+  /** Pantry staples confirmed; omitted = all offered. */
+  pantry_product_ids?: number[];
+}
+
+// Trays (POST /plans/trays) ----------------------------------------------
+
+export type TrayName = "anchors" | "sides" | "stock_up";
+
+/** One tray item: the cheapest deal for its item, and how it compares across chains. */
+export interface TrayItem {
+  deal_id: number;
+  product_name: string;
+  store_name: string | null;
+  chain: string | null;
+  sale_price: number;
+  unit: string | null;
+  item: string;
+  role: string;
+  /** Price basis of compare_price / median_price. */
+  basis: "lb" | "l" | "each" | "pkg";
+  compare_price: number;
+  median_price: number;
+  n_chains: number;
+  /** 1 - compare_price / median_price; 0 when only one chain has it. */
+  gap: number;
+}
+
+export interface PantryItem {
+  product_id: number;
+  name: string;
+}
+
+export interface TrayProposalRequest {
+  user_id: number;
+  num_meals: number;
+}
+
+export interface TrayProposalResponse {
+  user_id: number;
+  postal_code: string;
+  num_meals: number;
+  trays: Record<TrayName, TrayItem[]>;
+  pantry: PantryItem[];
+  counts: Record<string, number>;
+  label_version: string;
+  warnings: string[];
 }
 
 export interface RecipeGenerationResponse {

@@ -15,6 +15,8 @@ import type {
   RecipeGenerationRequest,
   RecipeInfo,
   ShoppingListResponse,
+  TrayProposalRequest,
+  TrayProposalResponse,
   UserCreate,
   UserResponse,
   UserUpdate,
@@ -61,6 +63,12 @@ export const searchDeals = (postalCode: string, q: string) =>
   get<DealInfo[]>(
     `${API_PREFIX}/postal-code/search/${encodeURIComponent(postalCode)}?q=${encodeURIComponent(q)}`,
   );
+
+// Plans -----------------------------------------------------------------
+
+/** This week's trays (anchors / sides / stock-up) and pantry to confirm. */
+export const proposeTrays = (req: TrayProposalRequest) =>
+  post<TrayProposalResponse>(`${API_PREFIX}/plans/trays`, req);
 
 // Recipes ---------------------------------------------------------------
 
