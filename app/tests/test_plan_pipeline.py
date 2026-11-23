@@ -229,9 +229,12 @@ def test_writer_sees_only_its_dish_stock_up_and_pantry():
     run(model)
     chicken = next(m[0]["content"] for s, m in model.prompts if "**The dish:** Chicken" in
                    m[0]["content"])
-    assert '"deal_id": 1' in chicken and '"deal_id": 5' in chicken
-    assert '"deal_id": 6' in chicken           # stock-up
-    assert '"deal_id": 3' not in chicken and '"deal_id": 4' not in chicken
+    assert "- chicken thighs → deal_id 1 (" in chicken
+    assert "- russet potatoes → deal_id 5 (" in chicken
+    assert "→ deal_id 6 (" in chicken           # stock-up
+    assert "→ deal_id 3 (" not in chicken and "→ deal_id 4 (" not in chicken
+    # pantry: name first, alphabetical
+    assert chicken.index("- butter → product_id 52") < chicken.index("- olive oil → product_id 50")
     assert "Use ONLY the assigned deals" not in chicken
 
 
