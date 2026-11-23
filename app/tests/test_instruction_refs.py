@@ -11,6 +11,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.agents.instruction_refs import (
+    deal_cited_name,
     parse_step,
     referenced,
     render_step,
@@ -23,7 +24,10 @@ from app.agents.sous_chef import render_instructions, retry_view
 from app.services import mlflow_logger
 from app.tests.test_cited_compliance import (
     BUTTER,
+    CATALOG,
+    COCONUT_MILK,
     DEALS,
+    PROPOSED_TOFU,
     FISH_SAUCE,
     SALT,
     _nutritionist,
@@ -214,3 +218,72 @@ def test_a_literal_food_word_in_step_text_is_not_detected_by_design():
     out = render_instructions([i.model_dump() for i in r.ingredients], r.instructions,
                               deal_lookup, [{"product_id": 101, "name": "Salt"}])
     assert out[0] == "Fry EGGPLANT ITALIAN in butter."
+
+
+# --- deals render as their linked product's canonical name -------------------
+
+def _deal_ings(*deal_ids):
+    return [{"name": "model words", "deal_id": d} for d in deal_ids]
+
+
+def test_linked_deal_renders_the_products_canonical_name():
+    deal_lookup = {str(d["deal_id"]): d for d in DEALS}
+    out = render_instructions(_deal_ings(2), ["Simmer {0}."], deal_lookup, [],
+                              CATALOG.deal_products)
+    assert out == ["Simmer Coconut Milk."]
+    assert COCONUT_MILK["canonical_name"] != deal_lookup["2"]["product_name"]
+
+
+def test_unlinked_deal_falls_back_to_the_flyer_name():
+    deal_lookup = {str(d["deal_id"]): d for d in DEALS}
+    # deal 6 has no junction row; an absent/empty links mapping is the same
+    for links in (CATALOG.deal_products, {}, None):
+        assert render_instructions(_deal_ings(6), ["Add {0}."], deal_lookup, [],
+                                   links) == ["Add UNLINKED THING."]
+
+
+def test_deal_linked_to_several_products_keeps_the_flyer_name():
+    """Deal 8 ("EGGPLANT OR CHEDDAR 2 FOR $5") links two products. No single
+    canonical name describes it, and picking one (first, alphabetical) would
+    be an arbitrary choice that misdescribes the other, so the flyer name
+    stays."""
+    deal_lookup = {str(d["deal_id"]): d for d in DEALS}
+    assert len(CATALOG.deal_products["8"]) == 2
+    assert render_instructions(_deal_ings(8), ["Bake {0}."], deal_lookup, [],
+                               CATALOG.deal_products) == ["Bake EGGPLANT OR CHEDDAR 2 FOR $5."]
+
+
+def test_unconfirmed_or_blank_canonical_names_are_not_used():
+    assert deal_cited_name("TOFU", [PROPOSED_TOFU]) == "TOFU"
+    assert deal_cited_name("X", [dict(COCONUT_MILK, canonical_name="  ")]) == "X"
+    assert deal_cited_name("X", [dict(COCONUT_MILK, canonical_name=None)]) == "X"
+    assert deal_cited_name("X", [dict(COCONUT_MILK)]) == "Coconut Milk"
+    assert deal_cited_name("X", []) == "X"
+
+
+def test_staples_still_render_their_own_name_beside_a_linked_deal():
+    deal_lookup = {str(d["deal_id"]): d for d in DEALS}
+    ings = [{"name": "a", "deal_id": 2}, {"name": "b", "product_id": 103}]
+    out = render_instructions(ings, ["Stir {1} into {0}."], deal_lookup,
+                              [{"product_id": 103, "name": "Butter"}],
+                              CATALOG.deal_products)
+    assert out == ["Stir Butter into Coconut Milk."]
+
+
+def test_generate_recipes_renders_canonical_names_from_deal_products():
+    reply = json.dumps([{
+        "name": "Curry", "servings": 2,
+        "ingredients": [{"name": "coconut", "deal_id": 2}],
+        "instructions": ["Simmer {0}."]}])
+    kwargs = dict(
+        chef_id="sous_chef_1", ingredient_group=[{"product_name": "C", "deal_id": 2}],
+        target_recipe_count=1, household_size=2, dietary_restrictions=[],
+        available_deals=DEALS, pantry_staples=[],
+    )
+    (r,) = _sous_chef([reply]).generate_recipes(
+        **kwargs, deal_products=CATALOG.deal_products)
+    assert r["instructions"] == ["Simmer Coconut Milk."]
+    assert r["instruction_steps"][0]["template"] == "Simmer {0}."
+    # Without links (read unavailable) it degrades to the flyer name.
+    (r,) = _sous_chef([reply]).generate_recipes(**kwargs)
+    assert r["instructions"] == ["Simmer AROY-D COCONUT MILK 400 ML."]
