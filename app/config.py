@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     # first streamed chunk (and any pause between chunks).
     llm_connect_timeout_seconds: float = Field(default=5.0, env="LLM_CONNECT_TIMEOUT_SECONDS", gt=0)
     llm_read_timeout_seconds: float = Field(default=600.0, env="LLM_READ_TIMEOUT_SECONDS", gt=0)
+    # Context window sent to Ollama as options.num_ctx. Unset, the server uses its
+    # own default (2048/4096) and silently truncates longer prompts.
+    ollama_num_ctx: int = Field(default=8192, env="OLLAMA_NUM_CTX", gt=0)
 
     # MLflow
     mlflow_tracking_uri: str = Field(default="http://localhost:5000", env="MLFLOW_TRACKING_URI")

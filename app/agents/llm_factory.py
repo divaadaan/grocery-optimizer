@@ -66,6 +66,9 @@ def _ollama(spec: RoleSpec, model: str, settings: Settings) -> Any:
         "model": model,
         "base_url": settings.ollama_base_url,
         "temperature": spec.temperature,
+        # Without it Ollama applies its server default window and silently
+        # truncates a longer prompt (output tokens share the window too).
+        "num_ctx": settings.ollama_num_ctx,
     }
     if spec.json_output:
         kwargs["format"] = "json"
