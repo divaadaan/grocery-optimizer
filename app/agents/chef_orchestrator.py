@@ -5,6 +5,7 @@ from .prompts import PromptTemplates, combination_rule_hints, hint_lines
 from .costing import deals_by_id
 from .llm_factory import make_llm, model_name, provider_name
 from .llm_usage import MeteredLLM
+from .llm_errors import infra_record, infrastructure_cause
 from .llm_output import ChefPlan, LLMOutputError, invoke_validated, raw_output_report
 from ..services.budget import available_for_plan
 from ..services.database import DatabaseService
@@ -257,10 +258,25 @@ class ChefOrchestrator:
             print(f"[Chef] ERROR: {e}")
             if isinstance(e, LLMOutputError):
                 print(f"[Chef] raw model output (never validated):\n{raw_output_report(e)}")
-            return {
+            update = {
                 "errors": [f"Chef planning failed: {str(e)}"],
                 "status": "failed",
             }
+            # Planning failure already ends the run; an unreachable model is
+            # recorded so failure_reason names it (llm_errors.classify).
+            cause = infrastructure_cause(e)
+            if cause is not None:
+                self.tracker.log_agent_call(
+                    agent_name="Chef_Orchestrator",
+                    duration=time.time() - start_time,
+                    model=model_name("chef"),
+                    success=False,
+                    error=f"{type(cause).__name__}: {cause}",
+                    provider=provider_name(),
+                )
+                update["infrastructure_errors"] = [
+                    infra_record("chef_orchestrator", cause, "plan")]
+            return update
 
     def handle_rejections(self, state: RecipeGenerationState) -> dict:
         """

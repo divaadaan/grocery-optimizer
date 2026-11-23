@@ -106,6 +106,9 @@ def run_recipe_generation(
         status="initializing",
         errors=[],
         warnings=[]
+        # infrastructure_errors is deliberately not seeded: it appears in the
+        # state only when an agent records a dead model, so the final state
+        # of a healthy run (and every recorded eval artifact) is unchanged.
     )
 
     # Create and run graph

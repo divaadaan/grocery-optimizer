@@ -14,6 +14,7 @@ from .llm_output import (
 )
 from .costing import deals_by_id, ingredient_price, price_recipe
 from .instruction_refs import deal_cited_name, render_step, structured_steps
+from .llm_errors import LLMInfrastructureError, infra_record, infrastructure_cause
 from .llm_factory import make_llm, model_name, provider_name
 from .llm_usage import MeteredLLM
 from ..services import products
@@ -235,6 +236,10 @@ class SousChef:
         This is the parallel worker node. Every ingredient must cite an
         offered deal_id or staple product_id; a citation outside that set is a
         validation failure fed back to the model by invoke_validated.
+
+        Model output that never validates returns ``[]`` (a shortfall the
+        retry tops up); an unreachable model raises
+        :class:`~app.agents.llm_errors.LLMInfrastructureError`.
         """
         print(f"[{chef_id}] Generating {target_recipe_count} recipes...")
 
@@ -282,11 +287,36 @@ class SousChef:
             return recipes
 
         except Exception as e:
+            self._raise_if_infrastructure(chef_id, e, "generate",
+                                          time.time() - start_time)
             print(f"[{chef_id}] ERROR: {e}")
             if isinstance(e, LLMOutputError):
                 print(f"[{chef_id}] raw model output (never validated):\n"
                       f"{raw_output_report(e)}")
             return []
+
+    def _raise_if_infrastructure(self, chef_id: str, error: Exception, stage: str,
+                                 duration: float) -> None:
+        """Re-raise a dead-model failure as :class:`LLMInfrastructureError`.
+
+        Model-output failures (no schema-valid JSON, bad citations) return
+        nothing and are topped up on retry. An unreachable or timed-out model
+        is different: retrying it burns iterations for nothing, so it is
+        raised for the graph node to record (``llm_errors.classify``)."""
+        cause = infrastructure_cause(error)
+        if cause is None:
+            return
+        print(f"[{chef_id}] INFRASTRUCTURE ERROR ({stage}): "
+              f"{type(cause).__name__}: {cause}")
+        self.tracker.log_agent_call(
+            agent_name=chef_id,
+            duration=duration,
+            model=model_name("sous_chef"),
+            success=False,
+            error=f"{type(cause).__name__}: {cause}",
+            provider=provider_name(),
+        )
+        raise LLMInfrastructureError(chef_id, cause, stage) from error
 
     def regenerate_with_feedback(
         self,
@@ -304,8 +334,13 @@ class SousChef:
     ) -> Recipe:
         """
         Regenerate a rejected recipe with Nutritionist feedback.
+
+        ``None`` when the model's output never validates; an unreachable
+        model raises :class:`~app.agents.llm_errors.LLMInfrastructureError`.
         """
         print(f"[{chef_id}] Regenerating recipe with feedback...")
+
+        start_time = time.time()
 
         deal_lookup, deals, staples, context = self._offer(
             ingredient_group, available_deals, deal_index, pantry_staples,
@@ -337,6 +372,8 @@ class SousChef:
             return recipe
 
         except Exception as e:
+            self._raise_if_infrastructure(chef_id, e, "regenerate",
+                                          time.time() - start_time)
             print(f"[{chef_id}] Regeneration ERROR: {e}")
             if isinstance(e, LLMOutputError):
                 print(f"[{chef_id}] raw model output (never validated):\n"
@@ -364,20 +401,36 @@ def sous_chef_generate_node(task: dict, sous_chef: Optional[SousChef] = None) ->
     if sous_chef is None:
         sous_chef = SousChef()
 
-    recipes = sous_chef.generate_recipes(
-        chef_id=chef_id,
-        ingredient_group=ingredient_group,
-        target_recipe_count=target_recipe_count,
-        household_size=task["household_size"],
-        dietary_restrictions=task["dietary_restrictions"],
-        available_deals=task.get("available_deals", []),
-        pantry_staples=task.get("pantry_staples", []),
-        deal_index=task.get("deal_index", {}),
-        preferences=task.get("preferences") or {},
-        deal_products=task.get("deal_products") or {},
-    )
+    try:
+        recipes = sous_chef.generate_recipes(
+            chef_id=chef_id,
+            ingredient_group=ingredient_group,
+            target_recipe_count=target_recipe_count,
+            household_size=task["household_size"],
+            dietary_restrictions=task["dietary_restrictions"],
+            available_deals=task.get("available_deals", []),
+            pantry_staples=task.get("pantry_staples", []),
+            deal_index=task.get("deal_index", {}),
+            preferences=task.get("preferences") or {},
+            deal_products=task.get("deal_products") or {},
+        )
+    except LLMInfrastructureError as e:
+        # Recorded, not raised: the other parallel SousChefs still fan in, and
+        # route_after_validation stops retrying on it (infrastructure_errors
+        # is an append reducer, so concurrent writes all survive).
+        return infrastructure_update(e)
 
     return {
         "generated_recipes": {r["recipe_id"]: r for r in recipes},
         "sous_chef_assignments": {r["recipe_id"]: chef_id for r in recipes},
+    }
+
+
+def infrastructure_update(error: LLMInfrastructureError) -> dict:
+    """State writes recording a dead-model failure (graph nodes)."""
+    record = infra_record(error.agent, error.cause, error.stage)
+    return {
+        "infrastructure_errors": [record],
+        "warnings": [f"Model unreachable: {record['error_type']} from "
+                     f"{record['agent']} ({record['stage']})"],
     }

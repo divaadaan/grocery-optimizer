@@ -4,6 +4,7 @@ from typing import Dict
 from .state import RecipeGenerationState, ValidationResult
 from .prompts import PromptTemplates
 from .llm_factory import make_llm
+from .llm_errors import infrastructure_cause
 from .llm_output import NutritionistVerdict, invoke_validated
 from .dietary import CitationCatalog, compliance_report
 from ..services.mlflow_logger import MLflowLogger
@@ -34,7 +35,9 @@ class Nutritionist:
         approved_ids = []
         rejected_ids = []
         errors = []
+        warnings = []
         call_log = []
+        model_down = None  # the infrastructure error that made the LLM unusable
         # The curated products the recipes' citations resolve to, loaded once
         # per run by the load_recipe_catalog node.
         catalog = CitationCatalog.from_state(state)
@@ -81,14 +84,23 @@ class Nutritionist:
             )
             nutrition_facts: Dict = {}
             health_score = 0.0
-            try:
-                verdict, _raw = invoke_validated(self.llm, prompt, NutritionistVerdict)
-                nutrition_facts = verdict.nutrition_facts
-                health_score = verdict.health_score
-            except Exception as e:
-                print(f"[Nutritionist] advisory nutrition facts unavailable for "
-                      f"{recipe['name']}: {e}")
-                errors.append(f"Nutrition-facts error for {recipe_id}: {str(e)}")
+            if model_down is None:
+                try:
+                    verdict, _raw = invoke_validated(self.llm, prompt, NutritionistVerdict)
+                    nutrition_facts = verdict.nutrition_facts
+                    health_score = verdict.health_score
+                except Exception as e:
+                    print(f"[Nutritionist] advisory nutrition facts unavailable for "
+                          f"{recipe['name']}: {e}")
+                    errors.append(f"Nutrition-facts error for {recipe_id}: {str(e)}")
+                    # An unreachable model is not asked again for the rest of
+                    # this batch. It does not fail the run: the LLM here is
+                    # advisory and the verdict above is already decided.
+                    model_down = infrastructure_cause(e)
+                    if model_down is not None:
+                        warnings.append(
+                            f"Nutrition facts unavailable: model unreachable "
+                            f"({type(model_down).__name__} from nutritionist)")
 
             result = ValidationResult(
                 recipe_id=recipe_id,
@@ -132,7 +144,7 @@ class Nutritionist:
 
         # validation_results / agent_call_log / errors have reducers — return
         # only new entries. The id lists are plain channels — return full values.
-        return {
+        update = {
             "status": "validating",
             "validation_results": validation_results,
             "approved_recipe_ids": state["approved_recipe_ids"] + approved_ids,
@@ -140,3 +152,6 @@ class Nutritionist:
             "agent_call_log": call_log,
             "errors": errors,
         }
+        if warnings:
+            update["warnings"] = warnings
+        return update
