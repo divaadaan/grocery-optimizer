@@ -24,10 +24,12 @@ def _jsonable(row: Dict) -> Dict:
 
 
 # Columns every recipe read returns (RecipeInfo is built from these).
+# dietary_compliance is the verdict's only source (migration 023); the legacy
+# allergen_info column it was copied from is deliberately not read.
 _RECIPE_COLUMNS = """
-    recipe_id, user_id, name, ingredients, instructions,
+    recipe_id, user_id, name, ingredients, instructions, instruction_steps,
     total_cost, servings, prep_time, cook_time, cuisine_type,
-    meal_type, nutritional_info, allergen_info, health_score,
+    meal_type, nutritional_info, dietary_compliance, health_score,
     generation_id, created_at
 """
 
@@ -118,16 +120,20 @@ class DatabaseService:
         """
         Save one generation's recipes, with its provenance, in one transaction.
 
-        ``generation`` (``graph.finalize_meal_plan`` builds it) becomes the
-        ``recipe_generations`` row and its ``generation_id`` is stamped on
-        every recipe (migration 022). ``None`` saves the recipes unlinked, as
-        before 022 -- no production path does that.
+        ``generation`` (``graph.finalize_meal_plan`` / ``handle_failure``
+        build it) becomes the ``recipe_generations`` row and its
+        ``generation_id`` is stamped on every recipe (migration 022). A failed
+        run is ``status='failed'`` with a ``failure_reason`` and no recipes
+        (migration 023). ``None`` saves the recipes unlinked, as before 022
+        -- no production path does that.
 
         Each recipe keeps everything the graph produced: ingredients with
         their ``deal_id`` / ``product_id`` citations exactly as generated
-        (JSONB), meal_type, cuisine_type, prep time, and the Nutritionist's
-        advisory ``nutrition_facts`` / ``health_score`` and its
-        ``dietary_compliance`` verdict (stored in ``allergen_info``).
+        (JSONB), the rendered ``instructions`` and the ``instruction_steps``
+        behind them (JSONB), meal_type, cuisine_type, prep time, the
+        Nutritionist's advisory ``nutrition_facts`` / ``health_score``, and
+        its ``dietary_compliance`` verdict (its own column since 023;
+        ``allergen_info`` is no longer written).
 
         Returns list of recipe_ids, in input order.
         """
@@ -139,23 +145,27 @@ class DatabaseService:
             num_recipes_saved, dietary_restrictions, budget, budget_period,
             budget_spent_this_period, household_size, postal_code,
             preferences, models, snapshot, mlflow_run_id, total_cost,
-            estimated_savings, created_at
+            estimated_savings, failure_reason, iteration_count,
+            num_recipes_generated, num_recipes_approved, num_recipes_rejected,
+            created_at
         ) VALUES (
             %(generation_id)s, %(user_id)s, %(status)s, %(num_meals_requested)s,
             %(num_recipes_saved)s, %(dietary_restrictions)s, %(budget)s,
             %(budget_period)s, %(budget_spent_this_period)s, %(household_size)s,
             %(postal_code)s, %(preferences)s, %(models)s, %(snapshot)s,
-            %(mlflow_run_id)s, %(total_cost)s, %(estimated_savings)s, NOW()
+            %(mlflow_run_id)s, %(total_cost)s, %(estimated_savings)s,
+            %(failure_reason)s, %(iteration_count)s, %(num_recipes_generated)s,
+            %(num_recipes_approved)s, %(num_recipes_rejected)s, NOW()
         );
         """
 
         query = """
         INSERT INTO recipes (
-            user_id, name, ingredients, instructions,
+            user_id, name, ingredients, instructions, instruction_steps,
             total_cost, servings, prep_time, cuisine_type, meal_type,
-            nutritional_info, allergen_info, health_score, generation_id,
+            nutritional_info, dietary_compliance, health_score, generation_id,
             created_at
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
         RETURNING recipe_id;
         """
 
@@ -183,6 +193,11 @@ class DatabaseService:
                     "mlflow_run_id": generation.get("mlflow_run_id") or None,
                     "total_cost": generation.get("total_cost"),
                     "estimated_savings": generation.get("estimated_savings"),
+                    "failure_reason": generation.get("failure_reason"),
+                    "iteration_count": generation.get("iteration_count"),
+                    "num_recipes_generated": generation.get("num_recipes_generated"),
+                    "num_recipes_approved": generation.get("num_recipes_approved"),
+                    "num_recipes_rejected": generation.get("num_recipes_rejected"),
                 })
             for recipe in recipes:
                 cursor.execute(query, (
@@ -190,6 +205,7 @@ class DatabaseService:
                     recipe['name'],
                     json.dumps(recipe['ingredients']),  # JSONB, citations intact
                     recipe['instructions'],  # TEXT[]
+                    _json_or_none(recipe.get('instruction_steps')),  # JSONB
                     recipe['total_cost'],
                     recipe['servings'],
                     recipe.get('estimated_prep_time'),
@@ -248,12 +264,15 @@ class DatabaseService:
             return [_jsonable(dict(row)) for row in results]
 
     def get_latest_generation_id(self, user_id: int) -> Optional[str]:
-        """The user's most recent persisted generation, or None if they have
-        none (no plan yet, or only recipes saved before migration 022)."""
+        """The user's most recent persisted meal plan, or None if they have
+        none (no plan yet, or only recipes saved before migration 022).
+
+        Failed runs (migration 023) have a row but no recipes, so they are
+        skipped: a failed regeneration must not hide the last real plan."""
         query = """
         SELECT generation_id
         FROM recipe_generations
-        WHERE user_id = %s
+        WHERE user_id = %s AND status <> 'failed'
         ORDER BY created_at DESC
         LIMIT 1;
         """

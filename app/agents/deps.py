@@ -17,9 +17,11 @@ Interfaces (duck-typed, matching the production objects):
 * ``recipe_store`` -- ``save_recipes(user_id, recipes, generation=None)
                       -> [recipe_id, ...]`` (``DatabaseService``) -- the
                       graph's only write. ``generation`` is the provenance
-                      dict ``finalize_meal_plan`` builds (``generation_id``,
-                      models, restrictions, budget, snapshot, ...); a store
-                      persists it with the recipes, atomically.
+                      dict ``finalize_meal_plan`` / ``handle_failure`` build
+                      (``generation_id``, status, models, restrictions,
+                      budget, snapshot, run counts, ``failure_reason``...); a
+                      store persists it with the recipes, atomically. A
+                      failed run calls it with no recipes.
 * ``tracker``      -- ``MLflowLogger``'s static interface
 * ``recipe_ids``   -- ``(chef_id, generated recipe) -> recipe_id``
                       (``sous_chef.RecipeIdFactory``); ``None`` is a fresh

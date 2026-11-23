@@ -51,6 +51,8 @@ def _recipe_row_to_info(recipe: dict) -> RecipeInfo:
         health_score=recipe.get("health_score"),  # null before migration 022
         created_at=recipe["created_at"],
         generation_id=recipe.get("generation_id"),
+        instruction_steps=recipe.get("instruction_steps"),  # null before 023
+        dietary_compliance=recipe.get("dietary_compliance"),
     )
 
 
@@ -87,6 +89,8 @@ def _build_generation_response(
             health_score=result["validation_results"].get(recipe_id, {}).get("health_score"),
             created_at=datetime.now(),
             generation_id=result.get("generation_id"),
+            instruction_steps=recipe_data.get("instruction_steps"),
+            dietary_compliance=result["validation_results"].get(recipe_id, {}).get("dietary_compliance"),
         ))
 
     return RecipeGenerationResponse(
@@ -159,8 +163,11 @@ def _run_generation_job(job_id: str, user: dict, request: RecipeGenerationReques
         return
 
     if result.get("status") != COMPLETED:
+        # handle_failure recorded a status='failed' recipe_generations row
+        # under this id (migration 023); expose it so the run can be looked up.
         errors = result.get("errors") or ["Unknown error"]
-        job_registry.fail(job_id, f"Recipe generation failed: {'; '.join(errors)}")
+        job_registry.fail(job_id, f"Recipe generation failed: {'; '.join(errors)}",
+                          generation_id=result.get("generation_id"))
         return
 
     try:
@@ -170,7 +177,8 @@ def _run_generation_job(job_id: str, user: dict, request: RecipeGenerationReques
         job_registry.fail(job_id, f"Recipe generation produced an unusable result: {e}")
         return
 
-    job_registry.complete(job_id, response.model_dump())
+    job_registry.complete(job_id, response.model_dump(),
+                          generation_id=result.get("generation_id"))
     logger.info(f"Recipe job {job_id} completed with {len(response.recipes)} recipes")
 
 
@@ -193,6 +201,7 @@ def _job_status(job: RecipeJob) -> RecipeGenerationJobStatus:
         elapsed_seconds=job.elapsed_seconds,
         result=job.result,
         error=job.error,
+        generation_id=job.generation_id,
     )
 
 

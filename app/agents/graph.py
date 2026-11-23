@@ -1,3 +1,4 @@
+import logging
 from functools import partial
 from itertools import combinations
 from math import comb
@@ -13,6 +14,8 @@ from .nutritionist import Nutritionist
 from ..services import products, recipe_catalog
 from ..services.database import DatabaseService
 from ..services.mlflow_logger import MLflowLogger
+
+logger = logging.getLogger(__name__)
 
 # No module-level agents or DB service: everything external is built from a
 # GraphDeps by create_recipe_generation_graph (app/agents/deps.py). Node
@@ -357,7 +360,7 @@ def plan_budget_check(state: RecipeGenerationState, plan_cost: float) -> dict:
 
 def _persistable(state: RecipeGenerationState, recipe_id: str) -> dict:
     """An approved recipe as the store persists it: the generated recipe
-    (citations untouched) plus the Nutritionist's advisory nutrition facts,
+    (citations and ``instruction_steps`` untouched) plus the Nutritionist's advisory nutrition facts,
     health score and compliance verdict, which live in validation_results.
     A copy — state's recipe is not modified."""
     validation = (state.get("validation_results") or {}).get(recipe_id) or {}
@@ -370,15 +373,32 @@ def _persistable(state: RecipeGenerationState, recipe_id: str) -> dict:
 
 
 def _generation_record(state: RecipeGenerationState, num_saved: int,
-                       total_cost: float, estimated_savings: Optional[float]) -> dict:
+                       total_cost: Optional[float], estimated_savings: Optional[float],
+                       failure_reason: Optional[str] = None) -> dict:
     """Provenance of this generation (the ``recipe_generations`` row): what
-    the plan was generated against and by what, enough to re-score it."""
+    the plan was generated against and by what, enough to re-score it.
+
+    ``failure_reason`` marks a failed run (``handle_failure``): status
+    ``failed``, nothing saved, no plan totals. The run counts (iterations,
+    generated / approved / rejected) are recorded for every outcome
+    (migration 023)."""
     provenance = state.get("provenance") or {}
+    if failure_reason is not None:
+        status = "failed"
+    elif num_saved >= state["num_meals"]:
+        status = "completed"
+    else:
+        status = "partial"
     return {
         "generation_id": state.get("generation_id"),
-        "status": "completed" if num_saved >= state["num_meals"] else "partial",
+        "status": status,
+        "failure_reason": failure_reason,
         "num_meals_requested": state["num_meals"],
         "num_recipes_saved": num_saved,
+        "iteration_count": state.get("iteration_count") or 0,
+        "num_recipes_generated": len(state.get("generated_recipes") or {}),
+        "num_recipes_approved": len(state.get("approved_recipe_ids") or []),
+        "num_recipes_rejected": len(state.get("rejected_recipe_ids") or []),
         "dietary_restrictions": list(state["dietary_restrictions"]),
         "budget": state["budget"],
         "budget_period": state.get("budget_period"),
@@ -475,11 +495,58 @@ def finalize_meal_plan(state: RecipeGenerationState, recipe_store=None,
     return update
 
 
-def handle_failure(state: RecipeGenerationState, tracker=MLflowLogger) -> dict:
+def failure_reason(state: RecipeGenerationState) -> str:
+    """Why the run reached ``handle_failure``, for ``recipe_generations``.
+
+    Two routes lead there (``fan_out_to_sous_chefs`` and
+    ``route_after_validation``): planning produced no ingredient groups, or
+    the retries ran out short of even a partial plan."""
+    if state.get("status") == "failed" or not state.get("ingredient_groups"):
+        detail = "; ".join(state.get("errors") or []) or "no ingredient groups"
+        return f"Planning failed: {detail}"
+    return (f"Insufficient approved recipes: "
+            f"{len(state.get('approved_recipe_ids') or [])}/{state['num_meals']} "
+            f"approved after {state.get('iteration_count') or 0} retry "
+            f"iteration(s) (max {state.get('max_iterations')}), "
+            f"{len(state.get('rejected_recipe_ids') or [])} still rejected")
+
+
+def handle_failure(state: RecipeGenerationState, recipe_store=None,
+                   tracker=MLflowLogger) -> dict:
     """
     Node 10: Handle workflow failure gracefully.
+
+    Persists a ``status='failed'`` ``recipe_generations`` row (migration
+    023): the same provenance ``finalize_meal_plan`` writes, the failure
+    reason and the run counts, and zero recipes. ``recipe_store`` is
+    ``GraphDeps.recipe_store``; ``None`` means the production database.
+
+    Recording the failure is best effort: if the write itself fails it is
+    logged and reported as a warning, and the run still ends as the failure
+    it is -- a broken audit write must not mask the original failure.
     """
     print("[Orchestrator] ✗ Workflow failed - graceful degradation")
+
+    if recipe_store is None:
+        recipe_store = DatabaseService()
+
+    update = {
+        "status": "failed",
+        "errors": ["Unable to generate sufficient approved recipes"],
+    }
+
+    reason = failure_reason(state)
+    try:
+        recipe_store.save_recipes(
+            state["user_id"], [],
+            generation=_generation_record(state, 0, None, None,
+                                          failure_reason=reason),
+        )
+    except Exception as e:  # noqa: BLE001 - audit write must not mask the failure
+        logger.error("Could not record failed generation %s: %s",
+                     state.get("generation_id"), e, exc_info=True)
+        update["warnings"] = [
+            f"The failed generation could not be recorded ({type(e).__name__})"]
 
     # Log failure to MLflow
     tracker.log_final_metrics(
@@ -493,10 +560,7 @@ def handle_failure(state: RecipeGenerationState, tracker=MLflowLogger) -> dict:
 
     tracker.finalize_run(state)
 
-    return {
-        "status": "failed",
-        "errors": ["Unable to generate sufficient approved recipes"],
-    }
+    return update
 
 
 # Build the graph
@@ -531,7 +595,9 @@ def create_recipe_generation_graph(deps: Optional[GraphDeps] = None):
     workflow.add_node("finalize_meal_plan",
                       partial(finalize_meal_plan, recipe_store=deps.recipe_store,
                               tracker=deps.tracker))
-    workflow.add_node("handle_failure", partial(handle_failure, tracker=deps.tracker))
+    workflow.add_node("handle_failure",
+                      partial(handle_failure, recipe_store=deps.recipe_store,
+                              tracker=deps.tracker))
 
     # Define edges
     workflow.set_entry_point("initialize_chef")

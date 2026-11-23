@@ -104,6 +104,9 @@ class RecipeJob:
     finished_at: Optional[datetime] = None
     result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
+    # The run's recipe_generations id, once the graph has finished (failed
+    # runs have a row too, migration 023).
+    generation_id: Optional[str] = None
     # Completed SousChef tasks, for the "n/3 cooking…" label.
     sous_chefs_done: int = field(default=0, repr=False)
 
@@ -208,7 +211,8 @@ class RecipeJobRegistry:
             if stage is not None:
                 job.stage, job.stage_index = stage
 
-    def complete(self, job_id: str, result: Dict[str, Any]) -> None:
+    def complete(self, job_id: str, result: Dict[str, Any],
+                 generation_id: Optional[str] = None) -> None:
         with self._lock:
             job = self._jobs.get(job_id)
             if job is None or job.is_terminal:
@@ -216,15 +220,18 @@ class RecipeJobRegistry:
             job.state = COMPLETED
             job.stage, job.stage_index = "Meal plan ready", len(PIPELINE_STAGES)
             job.result = result
+            job.generation_id = generation_id
             job.finished_at = datetime.now()
 
-    def fail(self, job_id: str, error: str) -> None:
+    def fail(self, job_id: str, error: str,
+             generation_id: Optional[str] = None) -> None:
         with self._lock:
             job = self._jobs.get(job_id)
             if job is None or job.is_terminal:
                 return
             job.state = FAILED
             job.error = error
+            job.generation_id = generation_id
             job.finished_at = datetime.now()
 
     # -- housekeeping ------------------------------------------------------
