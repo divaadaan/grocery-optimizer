@@ -1,10 +1,10 @@
 # Development Roadmap
 
-Canonical plan, last revised 2026-10-29 (originally 2026-06-12). Dated
+Canonical plan, last revised 2026-11-23 (originally 2026-06-12). Dated
 `*Shipped:*` / `*Progress:*` entries below are historical records — the test
 counts inside them were true when written and are deliberately not rewritten.
-Current suite on `main`: **1424 passed, 5 skipped, 4 deselected**
-(`pytest -m "not llm"`, after #47 and the 2026-10-29 snapshot re-capture).
+Current suite on `main`: **1528 passed, 5 skipped, 4 deselected**
+(`pytest -m "not llm"`, after #53).
 
 **Where we are (2026-10-28):** the curated-product database work is finished
 (see *Direction (2026-10-28)*). The next stage is **evaluation**: recipe
@@ -13,42 +13,70 @@ ordered plan is *Next stage: evaluation readiness*; parked work is in
 *Backlog (parked)*. As of 2026-10-29 (end of day), Track A items 1–2, Track E items
 1–6 and every Track C item are shipped (#33–#36, #38–#47), and `kosher` is
 enforced (#41). The product database is done for this stage; work moves to
-recipe generation and agent orchestration. Start with *Next up (2026-10-29)*
+recipe generation and agent orchestration. Start with *Next up (2026-11-23)*
 below.
 
-### Next up (2026-10-29)
+### Next up (2026-11-23)
 
-Owner-approved, in order:
+Goal: audit an end-to-end run. Items 1–4 of the 2026-10-29 list shipped on
+2026-11-23 (see *Shipped 2026-11-23* below), and the scoring questions are
+answered. What remains, in order:
 
-1. **Failed generations get a `recipe_generations` row** (owner: yes). Today
-   only finalized plans persist; a failed run leaves nothing to debug. This
-   needs a migration that widens `chk_recipe_generations_status` to allow
-   `failed`, plus the failure reason and the counts.
-2. **Render instructions with the linked product's `canonical_name`** (owner:
-   yes) instead of the raw flyer `product_name` ("AROY-D COCONUT MILK 400
-   ML"). This is still curated data, never the model's text. Fall back to
-   `product_name` for unlinked deals.
-3. **Persist `instruction_steps`** (the placeholder templates and their
-   ingredient refs) alongside the rendered text, so saved recipes can be
-   re-scored structurally. Needs a migration.
-4. **A dedicated `dietary_compliance` column** for the Nutritionist's verdict;
-   #47 stores it in the old `allergen_info` column. Deferred but soon (owner).
-5. **First live recording.** Run `scripts/run_eval.py record` over
-   `eval/scenarios/v1.json` against the local model. Check that Ollama fills
-   `usage_metadata`; the raw counts are in `response_metadata` if not.
-6. **Open owner questions from E4/C1:**
-   - Should a partial plan be a FAIL (it is today)?
-   - Should a budget that is over even as a lower bound gate the verdict?
-   - Should the shortfall top-up run when every SousChef failed?
-   - The 60% partial threshold.
-7. **Frontend:** add `generation_id`, `budget_check`, `meals_requested` and
-   `partial` to `frontend/src/api/types.ts` and show the over-budget warning.
+1. **First live recording** (in progress). Smoke-record one scenario
+   (`seed27-vegetarian-tight-hh1`) from `eval/scenarios/v1.json` on the
+   current `qwen2.5:7b` (Chef, SousChef) + `phi4-mini` (Nutritionist), with
+   `OLLAMA_NUM_CTX=8192`. Check that Ollama fills `usage_metadata` (raw counts
+   are in `response_metadata` if not) and look at per-call latency. Artifacts
+   go under `eval/recordings/<date>/` (untracked).
+2. **Model comparison (folds into Track E §9).** Record the same scenario on
+   `qwen3:30b-a3b` (MoE, ~3B active, thinking off) and `qwen2.5:32b`, compare
+   with the eval report, then record all 19 scenarios on the winner. Owner
+   leaning towards larger models rather than tuning 7B ones. GPTQ checkpoints
+   would need a non-Ollama provider; reasoning models need thinking handled
+   with `format="json"` and a larger `num_ctx`.
+3. **Frontend:** add `generation_id`, `budget_check`, `meals_requested`,
+   `partial`, `instruction_steps` and `dietary_compliance` to
+   `frontend/src/api/types.ts` and show the over-budget warning.
+4. **Follow-ups from #50–#53:** clear or drop the legacy `allergen_info`
+   values; an exception raised before `handle_failure` still leaves no
+   `recipe_generations` row; no API endpoint to look up a failed generation;
+   `num_ctx` is not in model provenance; the streaming read timeout is per
+   chunk, not a whole-call deadline.
 
-**Over budget (owner decision 2026-10-29):** a warning only, no repair, until
-costs stop being lower bounds (Track A4).
+**Scoring decisions (owner, 2026-11-23):**
+- A partial plan is a **FAIL** (unchanged).
+- Over budget, even as a lower bound, does **not** gate the verdict; it is
+  reported beside it. The product stays warning-only (2026-10-29) until costs
+  stop being lower bounds (Track A4).
+- The shortfall top-up keeps running after model-output failures, but
+  **infrastructure errors fail fast** (#51).
+- The **60%** partial threshold stays; revisit after the first recording.
+- Lowercase `canonical_name`s in rendered steps ("penne") are fine.
 
-Supersedes `NEXT_STEPS.md` (see git history
-for the WSL-migration log and verification notes it contained).
+**Shipped 2026-11-23** (Neon: migration 023 applied with owner approval,
+recorded in `schema_migrations`):
+- **#49** Instructions render a cited deal by its linked product's
+  `canonical_name` (exactly one confirmed linked product, else the flyer
+  `product_name`; `instruction_refs.deal_cited_name`). Deal links are now read
+  for every user; the eval scorer uses the same helper.
+- **#50** Migration 023: failed generations get a `recipe_generations` row
+  (`status='failed'`, `failure_reason`, run counts); `recipes.instruction_steps`
+  and `recipes.dietary_compliance` (backfilled from `allergen_info`, which is
+  now legacy and neither written nor read). `get_latest_generation_id` skips
+  failed runs.
+- **#51** Fail fast on LLM infrastructure errors (`app/agents/llm_errors.py`,
+  classified by exception type only): no retries against a dead model;
+  finalize_partial at ≥ 60%, else `handle_failure` with an
+  `Infrastructure failure: …` reason.
+- **#52** Explicit HTTP timeouts on model calls (`LLM_CONNECT_TIMEOUT_SECONDS`
+  5, `LLM_READ_TIMEOUT_SECONDS` 600); Ollama 404 (model not found) counts as
+  infrastructure.
+- **#53** `OLLAMA_NUM_CTX` (default 8192): Ollama's server default window was
+  silently truncating the ~2k-token Chef prompt.
+
+**Environment:** `.env` now points `OLLAMA_BASE_URL` at
+`http://localhost:11434`; the old WSL-gateway address (`172.18.128.1`) no
+longer answers from native WSL.
 
 ## Done
 
