@@ -40,6 +40,14 @@ _SHOPPING_LIST_COLUMNS = """
 """
 
 
+_TRAY_PROVENANCE_SQL = """
+UPDATE recipe_generations
+SET offered_deal_ids = %(offered)s, kept_deal_ids = %(kept)s,
+    pantry_product_ids = %(pantry)s, dish_plan = %(dish_plan)s
+WHERE generation_id = %(generation_id)s
+"""
+
+
 class DatabaseService:
     """Handle all database interactions for recipe generation (shared pool)."""
 
@@ -114,6 +122,51 @@ class DatabaseService:
             cursor.execute(query, params)
             results = cursor.fetchall()
             return [_jsonable(dict(row)) for row in results]
+
+    def fetch_gated_deals(
+        self,
+        postal_code: str,
+        dietary_restrictions: Optional[List[str]] = None,
+    ) -> List[Dict]:
+        """Every current deal for a postal code that clears the dietary gate.
+
+        The tray builder's input (``app/services/trays.py``). Unlike
+        :meth:`fetch_current_deals` there is no ranking and no cap: the
+        ``discount_percentage`` ranking kept every major chain (whose flyers
+        carry no regular price) out of the old Chef's view, and the trays now
+        do the selecting. Ordered by ``deal_id`` so the result is stable.
+
+        ``dietary_restrictions`` is the DIETARY GATE (``deal_gate.deal_filter``),
+        applied in SQL exactly as in :meth:`fetch_current_deals`.
+        """
+        query = """
+        SELECT
+            d.deal_id,
+            d.product_name,
+            d.sale_price,
+            d.regular_price,
+            d.unit,
+            d.category,
+            d.source,
+            d.product_id,
+            s.name as store_name,
+            s.store_id,
+            s.chain
+        FROM deals d
+        JOIN stores s ON d.store_id = s.store_id
+        WHERE s.postal_code = %(postal_code)s
+          AND d.valid_until >= CURRENT_DATE
+          AND d.valid_from <= CURRENT_DATE
+        """
+        params: Dict = {"postal_code": postal_code}
+        fragment, extra = deal_filter(dietary_restrictions)
+        query += fragment
+        params.update(extra)
+        query += "\n        ORDER BY d.deal_id;"
+
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, params)
+            return [_jsonable(dict(row)) for row in cursor.fetchall()]
 
     def save_recipes(self, user_id: int, recipes: List[Dict],
                      generation: Optional[Dict[str, Any]] = None) -> List[int]:
@@ -199,6 +252,18 @@ class DatabaseService:
                     "num_recipes_approved": generation.get("num_recipes_approved"),
                     "num_recipes_rejected": generation.get("num_recipes_rejected"),
                 })
+                if "kept_deal_ids" in generation:
+                    # Approach C provenance (migration 024): what the trays
+                    # offered, what the user kept, the confirmed pantry and the
+                    # validated dish plan. Written only by the new pipeline, so
+                    # the old path never needs 024.
+                    cursor.execute(_TRAY_PROVENANCE_SQL, {
+                        "generation_id": generation_id,
+                        "offered": list(generation.get("offered_deal_ids") or []),
+                        "kept": list(generation.get("kept_deal_ids") or []),
+                        "pantry": list(generation.get("pantry_product_ids") or []),
+                        "dish_plan": _json_or_none(generation.get("dish_plan")),
+                    })
             for recipe in recipes:
                 cursor.execute(query, (
                     user_id,

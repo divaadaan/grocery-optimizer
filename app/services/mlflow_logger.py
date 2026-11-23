@@ -409,6 +409,15 @@ class MLflowLogger:
 
     @staticmethod
     @_best_effort()
+    def log_dict(data: Any, artifact_file: str):
+        """Log one JSON artifact (e.g. ``dish_plan.json``) into the run."""
+        run_id = _current_run_id()
+        if run_id is None:
+            return
+        _client.log_dict(run_id, data, artifact_file)
+
+    @staticmethod
+    @_best_effort()
     def log_validation_results(validation_results: Dict[str, Any]):
         """Log Nutritionist validation metrics."""
         run_id = _current_run_id()

@@ -18,7 +18,6 @@ from app.models.schemas import (
     ErrorResponse
 )
 from app.services import products
-from app.services.budget import DEFAULT_PERIOD, budget_status
 from app.services.user_service import UserService
 from app.services.database import DatabaseService
 from app.services.recipe_jobs import (
@@ -124,41 +123,25 @@ def _run_generation_job(job_id: str, user: dict, request: RecipeGenerationReques
     job_registry.mark_running(job_id)
     start_time = time.time()
 
-    # Read the spend already committed in this budget period, at run time
-    # rather than at request time, so a list completed while the job queued is
-    # counted. `budget` is the period ceiling, not a per-generation allowance:
-    # without this the plan is costed against the whole week's or month's money
-    # however much of it is already gone.
+    # Approach C (experiments/chef/DESIGN_APPROACH_C.md): confirmed trays ->
+    # dish plan -> one recipe per dish. Budget-agnostic: cost is reported only.
     try:
-        status_now = budget_status(user)
-        budget_period = status_now["budget_period"]
-        budget_spent = status_now["spent"]
-    except Exception as e:
-        # A budget read failure must not sink the generation. Falling back to
-        # 0.0 restores the old (over-generous) ceiling, and says so loudly
-        # instead of silently.
-        logger.error(
-            f"Could not read budget status for user {user['user_id']}: {e}. "
-            "Costing this plan against the full period budget.", exc_info=True
-        )
-        budget_period = DEFAULT_PERIOD
-        budget_spent = 0.0
-
-    try:
-        result = main_recipe_generation.run_recipe_generation(
+        result = main_recipe_generation.run_plan_generation(
             user_id=user["user_id"],
             postal_code=user["postal_code"],
-            budget=float(user["budget"]),
-            budget_period=budget_period,
-            budget_spent_this_period=budget_spent,
             household_size=user["household_size"],
             dietary_restrictions=user["dietary_restrictions"],
             num_meals=request.num_meals,
             preferences=request.preferences,
+            kept_deal_ids=request.kept_deal_ids,
+            pantry_product_ids=request.pantry_product_ids,
             progress_callback=lambda node: job_registry.report_node(job_id, node),
         )
+    except main_recipe_generation.SelectionError as e:
+        job_registry.fail(job_id, str(e))
+        return
     except Exception as e:
-        logger.error(f"Error in LangGraph workflow for job {job_id}: {e}", exc_info=True)
+        logger.error(f"Error in the generation pipeline for job {job_id}: {e}", exc_info=True)
         job_registry.fail(job_id, f"Recipe generation workflow failed: {e}")
         return
 
@@ -217,20 +200,24 @@ async def generate_recipes(request: RecipeGenerationRequest) -> RecipeGeneration
     """
     Start generating an optimized meal plan. Returns immediately with a job.
 
-    Generation uses AI agents (Chef Orchestrator, SousChefs, Nutritionist) and
-    takes minutes with local models, so this endpoint does **not** wait for it:
+    Generation plans dishes from the trays the user confirmed
+    (`POST /plans/trays`) and writes one recipe per dish; it takes minutes
+    with local models, so this endpoint does **not** wait for it:
     it validates the request, queues the work, and returns a `job_id`. Poll
     `GET /recipes/generate/status/{job_id}` for progress and the result.
 
     - **user_id**: User ID for preferences and postal code
     - **num_meals**: Number of meals to generate (default: 7)
     - **preferences**: Optional preferences (cuisine types, meal types, ingredients to avoid)
+    - **kept_deal_ids**: deals kept from `POST /plans/trays` (omit = keep all offered)
+    - **pantry_product_ids**: pantry staples confirmed (omit = all offered)
 
     **Process (reported as progress stages):**
-    1. Fetch user preferences and local deals
-    2. Chef Orchestrator plans ingredient groups
-    3. 3 SousChefs generate recipes in parallel
-    4. Nutritionist validates recipes (rejected ones are retried)
+    1. Re-check the kept ingredients against this week's gated trays
+    2. The Chef plans one dish per meal around the kept anchors
+    3. One SousChef call writes each dish's recipe
+    4. Each recipe's dietary verdict (curated product attributes); a failed
+       dish gets one retry
     5. Approved recipes are persisted and returned in the job result
     """
     try:

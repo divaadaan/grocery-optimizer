@@ -584,3 +584,21 @@ def test_flipping_a_snapshot_attribute_changes_what_the_graph_serves():
     assert served_after == shown_before - affected
     assert victim not in _shown_to_chef(after)
     assert state["status"] == "completed", state["errors"]
+
+
+def test_gated_deal_source_has_no_cap_no_ranking_and_carries_unit():
+    data = mini()
+    data["deals"] = [_deal(i, f"D{i}", 1.0) for i in range(250, 0, -1)]
+    data["deal_products"] = []
+    out = Snapshot.from_dict(data).deal_source().fetch_gated_deals(POSTAL)
+    assert [d["deal_id"] for d in out] == list(range(1, 251))
+    assert {"unit", "category", "chain", "store_name"} <= set(out[0])
+
+
+def test_gated_deal_source_applies_the_same_gate():
+    data = mini()
+    deals = Snapshot.from_dict(data).deal_source()
+    for restrictions in ([], ["vegan"], ["vegetarian"], None):
+        gated = {d["deal_id"] for d in deals.fetch_gated_deals(POSTAL, restrictions)}
+        current = {d["deal_id"] for d in deals.fetch_current_deals(POSTAL, restrictions)}
+        assert gated == current
