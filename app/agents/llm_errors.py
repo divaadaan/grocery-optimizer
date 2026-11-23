@@ -25,7 +25,9 @@ httpx 0.28.1), observed against local test servers:
   (context ``httpx.HTTPStatusError``).
 * HTTP 404           -> the same types with ``status_code`` 404: the model is
   not pulled or the name is wrong. Retrying can never succeed, so it is
-  infrastructure (decided by status code, never by message text). Other 4xx
+  infrastructure (decided by status code, never by message text). So are
+  401/403 (credentials), 402 (HF router: no credits) and 429 (rate limit),
+  which ``llm_chat``'s HF calls raise as ``httpx.HTTPStatusError``. Other 4xx
   and the status-less ``ResponseError`` an error line mid-stream raises stay
   model output.
 
@@ -45,8 +47,10 @@ from .llm_output import LLMOutputError
 INFRASTRUCTURE = "infrastructure"
 MODEL_OUTPUT = "model_output"
 
-#: Model not pulled / wrong name: can never succeed on retry.
-_NOT_FOUND = 404
+#: Model not pulled / wrong name (404), bad or missing credentials (401/403),
+#: no pre-paid credits on the HF router (402), rate limited (429): retrying
+#: the same call straight away can never succeed.
+_NOT_RETRYABLE_4XX = frozenset({401, 402, 403, 404, 429})
 
 
 def _optional_types() -> Tuple[Tuple[Type[BaseException], ...], Tuple[type, ...]]:
@@ -106,7 +110,7 @@ def _is_infrastructure(exc: BaseException) -> bool:
         return True
     if _STATUS_TYPES and isinstance(exc, _STATUS_TYPES):
         code = _status_code(exc)
-        return code is not None and (code >= 500 or code == _NOT_FOUND)
+        return code is not None and (code >= 500 or code in _NOT_RETRYABLE_4XX)
     return False
 
 

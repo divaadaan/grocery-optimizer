@@ -114,6 +114,12 @@ INFRA_CASES = [
     ("httpx 502", _status_error(502)),
     ("ollama 404 (model not found)", ollama.ResponseError("model 'x' not found", 404)),
     ("httpx 404", _status_error(404)),
+    # Credentials / HF router credits / rate limit: an immediate retry of the
+    # same call cannot succeed (llm_chat's HF calls raise these).
+    ("httpx 401", _status_error(401)),
+    ("httpx 402 (no HF credits)", _status_error(402)),
+    ("ollama 403", ollama.ResponseError("forbidden", 403)),
+    ("httpx 429", _status_error(429)),
     ("wrapped by __cause__",
      _raised_from(RuntimeError("chain failed"), httpx.ConnectError("refused"))),
     ("wrapped by __context__",
@@ -133,7 +139,6 @@ MODEL_OUTPUT_CASES = [
     ("ollama 400", ollama.ResponseError("bad request", 400)),
     ("ollama mid-stream error, no status", ollama.ResponseError("oops")),
     ("httpx 422", _status_error(422)),
-    ("ollama 403", ollama.ResponseError("forbidden", 403)),
     # Status decides, not text: a 400 *saying* "not found" is model output.
     ("ollama 400 saying not found", ollama.ResponseError("model not found", 400)),
     # An explicit model-output error is model output even if it was raised

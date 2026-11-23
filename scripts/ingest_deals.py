@@ -193,6 +193,17 @@ def main(argv: list[str] | None = None) -> int:
                 "app/services/price_baseline.py needs 4-8 weeks of runs\n        "
                 "before it can replace it."
             )
+        if settings.deal_labelling_enabled:
+            # Synchronous here (a CLI exit would kill a background thread).
+            # A labelling failure is reported but never fails the ingestion.
+            from app.services.deal_labeller import label_pending
+
+            try:
+                labelling = label_pending(postal_code)
+            except Exception as exc:  # noqa: BLE001
+                print(f"  LABELLING FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
+            else:
+                print("  labelling: " + json.dumps(labelling.as_dict(), default=str))
 
     return exit_code
 
