@@ -1,7 +1,7 @@
 import json
 import time
 import uuid
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Mapping, Optional, Sequence
 from .state import Recipe
 from .prompts import PromptTemplates, combination_rule_hints, hint_lines, preferences_text
 from .llm_output import (
@@ -13,7 +13,7 @@ from .llm_output import (
     raw_output_report,
 )
 from .costing import deals_by_id, ingredient_price, price_recipe
-from .instruction_refs import render_step, structured_steps
+from .instruction_refs import deal_cited_name, render_step, structured_steps
 from .llm_factory import make_llm, model_name, provider_name
 from .llm_usage import MeteredLLM
 from ..services import products
@@ -89,14 +89,19 @@ def random_recipe_id(chef_id: str, model: GeneratedRecipe) -> str:
 
 
 def cited_name(ingredient: Dict, deal_lookup: Dict[str, Dict],
-               staple_names: Dict[str, str]) -> str:
-    """The name of what an ingredient *cites*: the deal row's
-    ``product_name`` or the offered staple's name. Falls back to the model's
+               staple_names: Dict[str, str],
+               deal_products: Optional[Mapping[str, Sequence[Dict]]] = None) -> str:
+    """The name of what an ingredient *cites*: for a deal, its linked
+    product's curated ``canonical_name`` (``deal_cited_name``: only when
+    exactly one confirmed product is linked, else the deal row's flyer
+    ``product_name``); for a staple, the offered staple's name. Falls back to the model's
     display ``name`` only if the citation does not resolve here (validation
     has already required the citation to be one this SousChef was offered)."""
     if ingredient.get("deal_id") is not None:
         deal = deal_lookup.get(str(ingredient["deal_id"])) or {}
-        name = deal.get("product_name")
+        key = str(ingredient["deal_id"])
+        name = deal_cited_name(deal.get("product_name") or "",
+                               (deal_products or {}).get(key) or [])
     else:
         name = staple_names.get(str(ingredient.get("product_id")))
     return name or ingredient.get("name", "")
@@ -104,14 +109,17 @@ def cited_name(ingredient: Dict, deal_lookup: Dict[str, Dict],
 
 def render_instructions(ingredients: List[Dict], templates: List[str],
                         deal_lookup: Dict[str, Dict],
-                        staples: Optional[List[Dict]] = None) -> List[str]:
+                        staples: Optional[List[Dict]] = None,
+                        deal_products: Optional[Mapping[str, Sequence[Dict]]] = None,
+                        ) -> List[str]:
     """Render placeholder steps (``app/agents/instruction_refs.py``) to the
     text a user reads, substituting each ``{N}`` with the cited name of
     ``ingredients[N]``. The ingredient words come from cited,
     compliance-checked items; words the model typed literally do not (see
     the residual-risk note in ``instruction_refs``)."""
     staple_names = {str(s.get("product_id")): s.get("name", "") for s in staples or []}
-    names = [cited_name(ing, deal_lookup, staple_names) for ing in ingredients]
+    names = [cited_name(ing, deal_lookup, staple_names, deal_products)
+             for ing in ingredients]
     return [render_step(t, names.__getitem__) for t in templates]
 
 
@@ -119,6 +127,7 @@ def _to_recipe(
     chef_id: str, model: GeneratedRecipe, deal_lookup: Dict[str, Dict],
     recipe_id: RecipeIdFactory = random_recipe_id,
     staples: Optional[List[Dict]] = None,
+    deal_products: Optional[Mapping[str, Sequence[Dict]]] = None,
 ) -> Recipe:
     """Build a Recipe from validated model output.
 
@@ -130,7 +139,8 @@ def _to_recipe(
     ``instructions`` is the rendered text (what every string consumer reads);
     ``instruction_steps`` keeps the model's placeholder templates and their
     ingredient indices. ``staples`` are the staples offered to this call
-    (``offered_staples``), for their names.
+    (``offered_staples``), for their names; ``deal_products`` (state's
+    ``deal_id`` -> linked products) gives cited deals their canonical names.
     """
     ingredients = []
     for ing in model.ingredients:
@@ -150,7 +160,7 @@ def _to_recipe(
         name=model.name,
         ingredients=ingredients,
         instructions=render_instructions(ingredients, model.instructions,
-                                         deal_lookup, staples),
+                                         deal_lookup, staples, deal_products),
         instruction_steps=structured_steps(model.instructions),
         servings=model.servings,
         total_cost=pricing.total_cost,
@@ -217,6 +227,7 @@ class SousChef:
         pantry_staples: List[Dict],
         deal_index: Optional[Dict[str, Dict]] = None,
         preferences: Optional[Dict] = None,
+        deal_products: Optional[Mapping[str, Sequence[Dict]]] = None,
     ) -> List[Recipe]:
         """
         Generate recipes from assigned deals and on-hand staples.
@@ -250,7 +261,8 @@ class SousChef:
             # Metered for MLflow: provider-reported tokens across retries
             llm = MeteredLLM(self.llm)
             batch, raw = invoke_validated(llm, prompt, RecipeBatch, context=context)
-            recipes = [_to_recipe(chef_id, r, deal_lookup, self.recipe_id, staples)
+            recipes = [_to_recipe(chef_id, r, deal_lookup, self.recipe_id, staples,
+                                 deal_products)
                        for r in batch.recipes]
 
             duration = time.time() - start_time
@@ -288,6 +300,7 @@ class SousChef:
         pantry_staples: List[Dict],
         deal_index: Optional[Dict[str, Dict]] = None,
         preferences: Optional[Dict] = None,
+        deal_products: Optional[Mapping[str, Sequence[Dict]]] = None,
     ) -> Recipe:
         """
         Regenerate a rejected recipe with Nutritionist feedback.
@@ -318,7 +331,7 @@ class SousChef:
 
             # Create new recipe with new ID
             recipe = _to_recipe(chef_id, batch.recipes[0], deal_lookup, self.recipe_id,
-                                staples)
+                                staples, deal_products)
 
             print(f"[{chef_id}] Regenerated: {recipe['name']}")
             return recipe
@@ -361,6 +374,7 @@ def sous_chef_generate_node(task: dict, sous_chef: Optional[SousChef] = None) ->
         pantry_staples=task.get("pantry_staples", []),
         deal_index=task.get("deal_index", {}),
         preferences=task.get("preferences") or {},
+        deal_products=task.get("deal_products") or {},
     )
 
     return {

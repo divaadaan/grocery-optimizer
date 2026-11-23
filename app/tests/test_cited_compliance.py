@@ -528,16 +528,16 @@ def test_load_recipe_catalog_reads_staples_and_links(monkeypatch):
     assert "warnings" not in update
 
 
-def test_load_recipe_catalog_skips_links_for_unrestricted_users(monkeypatch):
+def test_load_recipe_catalog_reads_links_for_unrestricted_users_too(monkeypatch):
+    """Links give cited deals their canonical names in recipe steps, so the
+    read is not limited to restricted users."""
     from app.agents import graph
-
-    def boom(ids):
-        raise AssertionError("should not be read")
     monkeypatch.setattr(graph.recipe_catalog, "fetch_pantry_staples", lambda: [])
-    monkeypatch.setattr(graph.recipe_catalog, "fetch_deal_products", boom)
+    monkeypatch.setattr(graph.recipe_catalog, "fetch_deal_products",
+                        lambda ids: {"1": [EGGPLANT]})
     update = graph.load_recipe_catalog(
         {"dietary_restrictions": [], "available_deals": DEALS})
-    assert update["deal_products"] == {}
+    assert update["deal_products"] == {"1": [EGGPLANT]}
 
 
 def test_load_recipe_catalog_degrades_without_failing_open(monkeypatch):

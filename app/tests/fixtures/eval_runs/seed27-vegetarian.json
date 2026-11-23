@@ -1,46 +1,46 @@
 {
  "artifact": {
-  "created_at": "2026-10-30T00:28:55+00:00",
+  "created_at": "2026-11-23T16:42:43+00:00",
   "format_version": 1,
   "kind": "recipe-eval-run",
   "mode": "record"
  },
  "code": {
   "git_dirty": true,
-  "git_sha": "bc259a9256a6be7e8d5c55c63370883107d61140"
+  "git_sha": "a7640869f41e9482d91b114b712af23a598c791b"
  },
  "final_state": {
   "agent_call_log": [
    {
     "action": "plan_ingredient_groups",
     "agent": "Chef_Orchestrator",
-    "duration": 0.0006728172302246094,
+    "duration": 0.0009183883666992188,
     "success": true,
-    "timestamp": 1793320135.301859
+    "timestamp": 1795452163.7090907
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.0002989768981933594,
+    "duration": 0.0002982616424560547,
     "recipe_id": "99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e",
-    "timestamp": 1793320135.3072987
+    "timestamp": 1795452163.7144334
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.00023293495178222656,
+    "duration": 0.00023937225341796875,
     "recipe_id": "becb1037-60cb-5a45-9441-da7e49f3cc01",
-    "timestamp": 1793320135.3075325
+    "timestamp": 1795452163.714674
    },
    {
     "action": "validate_recipe",
     "agent": "Nutritionist",
     "approved": true,
-    "duration": 0.00020313262939453125,
+    "duration": 0.00020265579223632812,
     "recipe_id": "3a34bbf0-96f6-5d16-9f1f-43ceaae657e1",
-    "timestamp": 1793320135.3077362
+    "timestamp": 1795452163.7148774
    }
   ],
   "approved_recipe_ids": [
@@ -1002,7 +1002,7 @@
      }
     ],
     "instructions": [
-     "Combine Spaghetti, Carrots, All-Purpose Flour.",
+     "Combine spaghetti, carrots, All-Purpose Flour.",
      "Cook it."
     ],
     "meal_type": "dinner",
@@ -1052,7 +1052,7 @@
      }
     ],
     "instructions": [
-     "Combine Bananas, Pasta Penne, All-Purpose Flour.",
+     "Combine bananas, penne, All-Purpose Flour.",
      "Cook it."
     ],
     "meal_type": "dinner",
@@ -1102,7 +1102,7 @@
      }
     ],
     "instructions": [
-     "Combine Canned Tomatoes, Bell Peppers Red, All-Purpose Flour.",
+     "Combine canned tomatoes, red bell peppers, All-Purpose Flour.",
      "Cook it."
     ],
     "meal_type": "dinner",
@@ -1112,7 +1112,7 @@
     "total_cost": 2.48
    }
   },
-  "generation_id": "3cb2e550-7fc1-45d7-9b31-3674943d8aa0",
+  "generation_id": "3162662e-feab-4f1a-9669-e4c4a6264376",
   "household_size": 2,
   "ingredient_groups": [
    [
@@ -1603,9 +1603,9 @@
      "violations": []
     },
     "feedback": "Approved: all ingredients comply with the vegetarian restriction.",
-    "health_score": 82.0,
+    "health_score": 76.0,
     "nutrition_facts": {
-     "calories_per_serving": 892
+     "calories_per_serving": 886
     },
     "recipe_id": "99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e"
    },
@@ -1658,7 +1658,7 @@
  "llm_calls": [
   {
    "error": null,
-   "latency_s": 0.0003350749975652434,
+   "latency_s": 0.0005176230000074611,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "chef-script",
@@ -1692,7 +1692,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00041491400043014437,
+   "latency_s": 0.0004271450000032928,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1726,7 +1726,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00021095699776196852,
+   "latency_s": 0.0001817879999634897,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1760,7 +1760,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00020761700216098689,
+   "latency_s": 0.00022664799996618967,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1802,7 +1802,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00018531699970480986,
+   "latency_s": 0.0001840280000351413,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1836,7 +1836,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00017262699839193374,
+   "latency_s": 0.00018860800003039913,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "sous-script",
@@ -1878,7 +1878,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.000189657999726478,
+   "latency_s": 0.00018394799997167866,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1892,14 +1892,14 @@
    "request": {
     "messages": [
      {
-      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e\",\n  \"name\": \"Scripted 15+3\",\n  \"ingredients\": [\n    {\n      \"name\": \"Bananas\",\n      \"deal_id\": 15,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.69\n    },\n    {\n      \"name\": \"Pasta Penne\",\n      \"deal_id\": 3,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Combine Bananas, Pasta Penne, All-Purpose Flour.\",\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.18,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"99b95ff9-7ad0-5847-9a7b-3dd3d3c2fa7e\",\n  \"name\": \"Scripted 15+3\",\n  \"ingredients\": [\n    {\n      \"name\": \"Bananas\",\n      \"deal_id\": 15,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.69\n    },\n    {\n      \"name\": \"Pasta Penne\",\n      \"deal_id\": 3,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Combine bananas, penne, All-Purpose Flour.\",\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.18,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "a9098d7c4f1d2110bb4036fec3abf9f9eea1c0770a48cea99a8bc5a27e1d820a",
+   "request_sha256": "4d4e4ae14a15ab2976d100cb9d3f43c6628b47ad0159fa9405d610bf064c03d0",
    "response": {
-    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 892}, \"health_score\": \"82\"}",
+    "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 886}, \"health_score\": \"76\"}",
     "response_metadata": {},
     "usage": null
    },
@@ -1908,7 +1908,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00012947800132678822,
+   "latency_s": 0.00013000899997450688,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1922,12 +1922,12 @@
    "request": {
     "messages": [
      {
-      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"becb1037-60cb-5a45-9441-da7e49f3cc01\",\n  \"name\": \"Scripted 21+12\",\n  \"ingredients\": [\n    {\n      \"name\": \"Canned Tomatoes\",\n      \"deal_id\": 21,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Bell Peppers Red\",\n      \"deal_id\": 12,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Combine Canned Tomatoes, Bell Peppers Red, All-Purpose Flour.\",\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"becb1037-60cb-5a45-9441-da7e49f3cc01\",\n  \"name\": \"Scripted 21+12\",\n  \"ingredients\": [\n    {\n      \"name\": \"Canned Tomatoes\",\n      \"deal_id\": 21,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Bell Peppers Red\",\n      \"deal_id\": 12,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Combine canned tomatoes, red bell peppers, All-Purpose Flour.\",\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "460197e9bca5b048cbdf45773ce1470539074d9ed974f1e65352e1dab6a2aeb9",
+   "request_sha256": "97486be0d9729ea7880a086d6b44ce715a6912265d2b6e60d7484b1297084035",
    "response": {
     "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 220}, \"health_score\": \"60\"}",
     "response_metadata": {},
@@ -1938,7 +1938,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.00011216900020372123,
+   "latency_s": 0.00011242799996580288,
    "model": {
     "class": "__main__.ConversationModel",
     "model": "nutri-script",
@@ -1952,12 +1952,12 @@
    "request": {
     "messages": [
      {
-      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"3a34bbf0-96f6-5d16-9f1f-43ceaae657e1\",\n  \"name\": \"Scripted 22+16\",\n  \"ingredients\": [\n    {\n      \"name\": \"Spaghetti\",\n      \"deal_id\": 22,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Carrots\",\n      \"deal_id\": 16,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Combine Spaghetti, Carrots, All-Purpose Flour.\",\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
+      "content": "You are a professional Nutritionist validating recipe quality and safety.\n\n**Recipe to Validate:**\n{\n  \"recipe_id\": \"3a34bbf0-96f6-5d16-9f1f-43ceaae657e1\",\n  \"name\": \"Scripted 22+16\",\n  \"ingredients\": [\n    {\n      \"name\": \"Spaghetti\",\n      \"deal_id\": 22,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 0.99\n    },\n    {\n      \"name\": \"Carrots\",\n      \"deal_id\": 16,\n      \"quantity\": \"1\",\n      \"unit\": \"unit\",\n      \"price\": 1.49\n    },\n    {\n      \"name\": \"All-Purpose Flour\",\n      \"product_id\": 139,\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\",\n      \"price\": 0.0\n    }\n  ],\n  \"instructions\": [\n    \"Combine spaghetti, carrots, All-Purpose Flour.\",\n    \"Cook it.\"\n  ],\n  \"servings\": 2,\n  \"total_cost\": 2.48,\n  \"estimated_prep_time\": 20,\n  \"meal_type\": \"dinner\",\n  \"cuisine_type\": \"Any\"\n}\n\n**User's Dietary Restrictions:**\nvegetarian\n\n**Not your call:** dietary compliance and allergen safety are decided in code from the curated attributes of the deals and pantry products each ingredient cites. Your `approved` and `dietary_compliance` fields are recorded but never decide anything, so do not try to judge restrictions.\n\n**Review Checklist:**\n1. **Nutritional Balance:** Are macros balanced? (protein, carbs, healthy fats)\n2. **Practical Cooking:** Are instructions clear and achievable?\n3. **Ingredient Coherence:** Do ingredients work well together?\n\n**Calculate Nutrition Facts:**\n- Estimate calories per serving\n- Estimate protein (g), carbs (g), fat (g)\n- Note significant vitamins/minerals\n\n**Output Format (JSON):**\n{\n  \"approved\": true/false,\n  \"feedback\": \"Specific issues if rejected, or praise if approved\",\n  \"nutrition_facts\": {\n    \"calories_per_serving\": 0,\n    \"protein_g\": 0,\n    \"carbs_g\": 0,\n    \"fat_g\": 0,\n    \"fiber_g\": 0,\n    \"vitamins\": [\"Vitamin A\", \"Iron\", ...]\n  },\n  \"dietary_compliance\": {\n    \"allergen_free\": true/false,\n    \"meets_restrictions\": true/false,\n    \"violations\": [\"list any violations\"]\n  },\n  \"health_score\": 0-100\n}\n\nIf you reject this recipe, provide specific, actionable feedback for improvement.\n\nValidate the recipe now:",
       "type": "human"
      }
     ]
    },
-   "request_sha256": "271dde67ae7c23556ab7e5010a7cfe46a3db117896f0976817db15d23b513dc4",
+   "request_sha256": "d74cdf89bef5bdc9d653f1db9e8f33fad18d7e1bda016840ed7bcf677f346d4f",
    "response": {
     "content": "{\"approved\": false, \"feedback\": \"advisory only\", \"nutrition_facts\": {\"calories_per_serving\": 890}, \"health_score\": \"80\"}",
     "response_metadata": {},
@@ -2020,9 +2020,9 @@
  },
  "state_notes": [],
  "timing": {
-  "llm_seconds": 0.0019578119972720742,
-  "started_at": "2026-10-30T00:28:55+00:00",
-  "wall_seconds": 0.019426520997512853
+  "llm_seconds": 0.002152224999917962,
+  "started_at": "2026-11-23T16:42:43+00:00",
+  "wall_seconds": 0.02041923100000531
  },
  "tracker_calls": [
   "start_run",

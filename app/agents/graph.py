@@ -32,9 +32,9 @@ def load_recipe_catalog(state: RecipeGenerationState, catalog=None) -> dict:
     * deal_products  -> for every available deal, its linked products and
       their attributes; the Nutritionist's compliance verdict reads these.
 
-    Linked products are only fetched when the user has a restriction the
-    attributes enforce: for anyone else compliance is trivially approved and
-    the read would be wasted.
+    The links are read for every user: besides the compliance verdict, the
+    SousChef renders a cited deal as its linked product's canonical name
+    (``instruction_refs.deal_cited_name``), restricted or not.
 
     A failed read degrades, it never fails open: no staples means recipes
     can only cite deals; no deal links means a restricted user's recipes are
@@ -51,14 +51,17 @@ def load_recipe_catalog(state: RecipeGenerationState, catalog=None) -> dict:
         warnings.append(f"Pantry staples unavailable ({type(e).__name__}); "
                         "recipes may cite assigned deals only")
 
-    if products.restrictions_to_attributes(state["dietary_restrictions"]):
-        deal_ids = [d.get("deal_id") for d in state.get("available_deals") or []]
-        try:
-            update["deal_products"] = catalog.fetch_deal_products(deal_ids)
-        except Exception as e:
-            print(f"[Catalog] deal product links unavailable: {e}")
+    deal_ids = [d.get("deal_id") for d in state.get("available_deals") or []]
+    try:
+        update["deal_products"] = catalog.fetch_deal_products(deal_ids)
+    except Exception as e:
+        print(f"[Catalog] deal product links unavailable: {e}")
+        if products.restrictions_to_attributes(state["dietary_restrictions"]):
             warnings.append(f"Deal product links unavailable ({type(e).__name__}); "
                             "dietary compliance cannot be confirmed for any deal")
+        else:
+            warnings.append(f"Deal product links unavailable ({type(e).__name__}); "
+                            "instructions will use flyer product names")
 
     print(f"[Catalog] {len(update['pantry_staples'])} pantry staples, "
           f"{len(update['deal_products'])} linked deals")
@@ -145,6 +148,7 @@ def fan_out_to_sous_chefs(
             "deal_index": state["deal_index"],
             "available_deals": state.get("available_deals") or [],
             "pantry_staples": state.get("pantry_staples") or [],
+            "deal_products": state.get("deal_products") or {},
             "chef_id": f"sous_chef_{i+1}",
             "ingredient_group": groups[i],
             "target_recipe_count": target,
@@ -244,6 +248,7 @@ def retry_generation(state: RecipeGenerationState,
         pantry_staples=state.get("pantry_staples") or [],
         deal_index=state["deal_index"],
         preferences=state.get("preferences") or {},
+        deal_products=state.get("deal_products") or {},
     )
     reassign = state.get("retry_strategy") == "reassign_chef" and len(groups) > 1
 

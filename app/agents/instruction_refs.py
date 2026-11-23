@@ -7,8 +7,9 @@ of that ingredient in the recipe's own ``ingredients`` list::
     "Dice {0} and fry it in {2} until golden."
 
 The displayed text is produced by :func:`render_step`, which substitutes each
-placeholder with the *cited* item's name (the deal's ``product_name`` or the
-staple product's ``canonical_name``), not the model's free-text ingredient
+placeholder with the *cited* item's name (the deal's linked product's ``canonical_name``,
+or the flyer ``product_name`` when unlinked or ambiguous; the staple
+product's ``canonical_name``), not the model's free-text ingredient
 name. So every ingredient a step references is one that cites a deal or
 staple, and that citation is what the dietary authority
 (``app/agents/dietary.py``) checks.
@@ -98,11 +99,32 @@ def render_step(template: str, name_of: Callable[[int], str]) -> str:
     return PLACEHOLDER.sub(lambda m: name_of(int(m.group(1))), template)
 
 
+def deal_cited_name(product_name: str, linked_products: Sequence[dict]) -> str:
+    """The name a cited deal renders as: the ``canonical_name`` of its linked
+    product when the link is unambiguous, else the deal's flyer
+    ``product_name``.
+
+    Unambiguous means exactly one linked product, and that product is
+    ``confirmed`` with a non-blank ``canonical_name``. A deal linked to
+    several products (a bundle or multi-item tile) has no single curated name
+    that describes it, and an unconfirmed product's name is still a draft, so
+    both keep the flyer name. Curated data only; never the model's text, and
+    nothing is matched against any name. Shared by the SousChef renderer and
+    the eval scorer so the two cannot disagree.
+    """
+    if len(linked_products) == 1:
+        product = linked_products[0]
+        name = (product.get("canonical_name") or "").strip()
+        if product.get("status") == "confirmed" and name:
+            return name
+    return product_name
+
+
 def structured_steps(templates: Sequence[str]) -> List[dict]:
     """The structured form kept on a Recipe beside the rendered text:
     ``[{"template": str, "ingredient_refs": [int, ...]}]``."""
     return [{"template": t, "ingredient_refs": parse_step(t).refs} for t in templates]
 
 
-__all__ = ["PLACEHOLDER", "ParsedStep", "parse_step", "referenced", "render_step",
+__all__ = ["PLACEHOLDER", "ParsedStep", "deal_cited_name", "parse_step", "referenced", "render_step",
            "step_problems", "structured_steps", "unreferenced"]
