@@ -87,3 +87,32 @@ def test_no_module_but_the_factory_constructs_a_chat_model():
         if "ChatOllama" in text or "langchain_ollama" in text:
             offenders.append(str(path.relative_to(APP_DIR)))
     assert offenders == []
+
+
+# --- num_ctx ---------------------------------------------------------------
+
+def test_num_ctx_default_and_env_override(monkeypatch):
+    from app.config import Settings
+    monkeypatch.delenv("OLLAMA_NUM_CTX", raising=False)
+    assert Settings(_env_file=None, database_url="postgresql://x:x@127.0.0.1:1/x").ollama_num_ctx == 8192
+    monkeypatch.setenv("OLLAMA_NUM_CTX", "16384")
+    assert Settings(_env_file=None, database_url="postgresql://x:x@127.0.0.1:1/x").ollama_num_ctx == 16384
+
+
+@pytest.mark.parametrize("bad", ["0", "-1"])
+def test_num_ctx_rejects_non_positive(monkeypatch, bad):
+    from pydantic import ValidationError
+    from app.config import Settings
+    monkeypatch.setenv("OLLAMA_NUM_CTX", bad)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None, database_url="postgresql://x:x@127.0.0.1:1/x")
+
+
+@pytest.mark.parametrize("role", sorted(EXPECTED))
+def test_make_llm_sends_num_ctx_in_request_options(role):
+    from langchain_core.messages import HumanMessage
+    cfg = settings.model_copy(update={"ollama_num_ctx": 12345})
+    llm = make_llm(role, cfg)
+    assert llm.num_ctx == 12345
+    opts = llm._chat_params([HumanMessage(content="hi")])["options"]
+    assert opts["num_ctx"] == 12345
