@@ -115,6 +115,51 @@ class DatabaseService:
             results = cursor.fetchall()
             return [_jsonable(dict(row)) for row in results]
 
+    def fetch_gated_deals(
+        self,
+        postal_code: str,
+        dietary_restrictions: Optional[List[str]] = None,
+    ) -> List[Dict]:
+        """Every current deal for a postal code that clears the dietary gate.
+
+        The tray builder's input (``app/services/trays.py``). Unlike
+        :meth:`fetch_current_deals` there is no ranking and no cap: the
+        ``discount_percentage`` ranking kept every major chain (whose flyers
+        carry no regular price) out of the old Chef's view, and the trays now
+        do the selecting. Ordered by ``deal_id`` so the result is stable.
+
+        ``dietary_restrictions`` is the DIETARY GATE (``deal_gate.deal_filter``),
+        applied in SQL exactly as in :meth:`fetch_current_deals`.
+        """
+        query = """
+        SELECT
+            d.deal_id,
+            d.product_name,
+            d.sale_price,
+            d.regular_price,
+            d.unit,
+            d.category,
+            d.source,
+            d.product_id,
+            s.name as store_name,
+            s.store_id,
+            s.chain
+        FROM deals d
+        JOIN stores s ON d.store_id = s.store_id
+        WHERE s.postal_code = %(postal_code)s
+          AND d.valid_until >= CURRENT_DATE
+          AND d.valid_from <= CURRENT_DATE
+        """
+        params: Dict = {"postal_code": postal_code}
+        fragment, extra = deal_filter(dietary_restrictions)
+        query += fragment
+        params.update(extra)
+        query += "\n        ORDER BY d.deal_id;"
+
+        with self.db.get_cursor() as cursor:
+            cursor.execute(query, params)
+            return [_jsonable(dict(row)) for row in cursor.fetchall()]
+
     def save_recipes(self, user_id: int, recipes: List[Dict],
                      generation: Optional[Dict[str, Any]] = None) -> List[int]:
         """

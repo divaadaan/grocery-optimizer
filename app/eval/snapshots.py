@@ -389,6 +389,14 @@ class SnapshotDeals:
 
     def fetch_current_deals(self, postal_code: str,
                             dietary_restrictions: Optional[Iterable[str]] = None) -> list[dict]:
+        served, stores = self._served(postal_code, dietary_restrictions)
+        served.sort(key=_served_order)
+        return self._rows(served[:DEAL_LIMIT], stores)
+
+    def _served(self, postal_code: str, dietary_restrictions: Optional[Iterable[str]]
+                ) -> tuple[list[dict], dict]:
+        """Current, gated snapshot deals for a postal code (unordered), and
+        the stores by id. Records the call."""
         restrictions = list(dietary_restrictions) if dietary_restrictions is not None else None
         self.calls.append((postal_code, restrictions))
         snap = self.snapshot
@@ -410,7 +418,24 @@ class SnapshotDeals:
             if not deal_allows(linked.get(deal["deal_id"], []), restrictions):
                 continue
             served.append(deal)
-        served.sort(key=_served_order)
+        return served, stores
+
+    def fetch_gated_deals(self, postal_code: str,
+                          dietary_restrictions: Optional[Iterable[str]] = None) -> list[dict]:
+        """``DatabaseService.fetch_gated_deals`` over the snapshot: the same
+        filter and gate, no ranking, no cap, ordered by ``deal_id``, with
+        ``unit`` and ``category``."""
+        served, stores = self._served(postal_code, dietary_restrictions)
+        served.sort(key=lambda d: d["deal_id"])
+        rows = self._rows(served, stores)
+        by_id = {d["deal_id"]: d for d in served}
+        for row in rows:
+            row["unit"] = by_id[row["deal_id"]].get("unit")
+            row["category"] = by_id[row["deal_id"]].get("category")
+        return rows
+
+    @staticmethod
+    def _rows(served: list[dict], stores: dict) -> list[dict]:
         return [
             {
                 "deal_id": d["deal_id"],
@@ -424,7 +449,7 @@ class SnapshotDeals:
                 "store_id": d["store_id"],
                 "chain": stores[d["store_id"]]["chain"],
             }
-            for d in served[:DEAL_LIMIT]
+            for d in served
         ]
 
 
