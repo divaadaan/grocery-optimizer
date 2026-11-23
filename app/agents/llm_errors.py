@@ -22,8 +22,15 @@ httpx 0.28.1), observed against local test servers:
 * read timeout       -> ``httpx.ReadTimeout`` (-> ``httpcore.ReadTimeout``
   -> ``TimeoutError``); connect timeouts are ``httpx.ConnectTimeout``.
 * HTTP 5xx           -> ``ollama.ResponseError`` with ``status_code`` 500+
-  (context ``httpx.HTTPStatusError``). 4xx and the status-less
-  ``ResponseError`` an error line mid-stream raises stay model output.
+  (context ``httpx.HTTPStatusError``).
+* HTTP 404           -> the same types with ``status_code`` 404: the model is
+  not pulled or the name is wrong. Retrying can never succeed, so it is
+  infrastructure (decided by status code, never by message text). Other 4xx
+  and the status-less ``ResponseError`` an error line mid-stream raises stay
+  model output.
+
+The timeouts above only exist because ``llm_factory`` sets them explicitly:
+the Ollama chat client has no default HTTP timeout, so a hung server would block forever.
 """
 from __future__ import annotations
 
@@ -37,6 +44,9 @@ from .llm_output import LLMOutputError
 
 INFRASTRUCTURE = "infrastructure"
 MODEL_OUTPUT = "model_output"
+
+#: Model not pulled / wrong name: can never succeed on retry.
+_NOT_FOUND = 404
 
 
 def _optional_types() -> Tuple[Tuple[Type[BaseException], ...], Tuple[type, ...]]:
@@ -96,7 +106,7 @@ def _is_infrastructure(exc: BaseException) -> bool:
         return True
     if _STATUS_TYPES and isinstance(exc, _STATUS_TYPES):
         code = _status_code(exc)
-        return code is not None and code >= 500
+        return code is not None and (code >= 500 or code == _NOT_FOUND)
     return False
 
 

@@ -112,6 +112,8 @@ INFRA_CASES = [
     ("ollama 500", ollama.ResponseError("boom", 500)),
     ("ollama 503", ollama.ResponseError("busy", 503)),
     ("httpx 502", _status_error(502)),
+    ("ollama 404 (model not found)", ollama.ResponseError("model 'x' not found", 404)),
+    ("httpx 404", _status_error(404)),
     ("wrapped by __cause__",
      _raised_from(RuntimeError("chain failed"), httpx.ConnectError("refused"))),
     ("wrapped by __context__",
@@ -128,10 +130,12 @@ MODEL_OUTPUT_CASES = [
     ("ValueError", ValueError("bad")),
     ("KeyError", KeyError("recipes")),
     ("unknown RuntimeError", RuntimeError("something")),
-    ("ollama 404 (model not found)", ollama.ResponseError("model 'x' not found", 404)),
     ("ollama 400", ollama.ResponseError("bad request", 400)),
     ("ollama mid-stream error, no status", ollama.ResponseError("oops")),
     ("httpx 422", _status_error(422)),
+    ("ollama 403", ollama.ResponseError("forbidden", 403)),
+    # Status decides, not text: a 400 *saying* "not found" is model output.
+    ("ollama 400 saying not found", ollama.ResponseError("model not found", 400)),
     # An explicit model-output error is model output even if it was raised
     # while some infrastructure error was being handled.
     ("LLMOutputError over a ConnectError",
@@ -203,12 +207,73 @@ def test_the_installed_stack_raises_what_the_classifier_calls_infrastructure(
     assert classify(info.value) == INFRASTRUCTURE
 
 
-def test_the_installed_stack_404_is_not_infrastructure():
+def test_the_installed_stack_404_is_infrastructure():
     from langchain_core.messages import HumanMessage
     llm = _real_chat_model(lambda r: httpx.Response(404, json={"error": "model not found"}))
     with pytest.raises(ollama.ResponseError) as info:
         llm.invoke([HumanMessage(content="hi")])
+    assert classify(info.value) == INFRASTRUCTURE
+
+
+def test_the_installed_stack_other_4xx_is_model_output():
+    from langchain_core.messages import HumanMessage
+    llm = _real_chat_model(lambda r: httpx.Response(400, json={"error": "bad"}))
+    with pytest.raises(ollama.ResponseError) as info:
+        llm.invoke([HumanMessage(content="hi")])
     assert classify(info.value) == MODEL_OUTPUT
+
+
+def test_make_llm_timeout_expires_as_classified_infrastructure():
+    """The timeout make_llm configures really produces httpx.ReadTimeout /
+    ConnectTimeout (against in-process servers, no Ollama), which classify
+    treats as infrastructure."""
+    from langchain_core.messages import HumanMessage
+    from app.agents.llm_factory import make_llm
+    from app.config import settings as base
+
+    # Accepts connections, never answers.
+    srv = socket.socket()
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(5)
+    held = []
+    stop = threading.Event()
+
+    def accept():
+        srv.settimeout(0.1)
+        while not stop.is_set():
+            try:
+                held.append(srv.accept()[0])
+            except OSError:
+                pass
+    t = threading.Thread(target=accept, daemon=True)
+    t.start()
+    try:
+        cfg = base.model_copy(update={
+            "ollama_base_url": f"http://127.0.0.1:{srv.getsockname()[1]}",
+            "llm_read_timeout_seconds": 0.3})
+        llm = make_llm("sous_chef", cfg)
+        with pytest.raises(httpx.ReadTimeout) as info:
+            llm.invoke([HumanMessage(content="hi")])
+        assert classify(info.value) == INFRASTRUCTURE
+    finally:
+        stop.set()
+        t.join()
+        for c in held:
+            c.close()
+        srv.close()
+
+
+def test_make_llm_connect_timeout_is_classified_infrastructure():
+    # A refused port is a ConnectError; the configured connect timeout is
+    # what bounds an unroutable host. Pin the value reaches httpx.
+    from app.agents.llm_factory import make_llm
+    from app.config import settings as base
+    cfg = base.model_copy(update={"llm_connect_timeout_seconds": 1.5,
+                                  "llm_read_timeout_seconds": 42.0})
+    llm = make_llm("chef", cfg)
+    timeout = llm._client._client.timeout
+    assert (timeout.connect, timeout.read) == (1.5, 42.0)
+    assert classify(httpx.ConnectTimeout("t")) == INFRASTRUCTURE
 
 
 # --------------------------------------------------------------------------
@@ -284,6 +349,19 @@ def test_other_infrastructure_errors_also_fail_fast(exc_factory, name):
     assert state["iteration_count"] == 0
     assert _generation(deps, state)["failure_reason"].startswith(
         f"Infrastructure failure: {name} from sous_chef_")
+
+
+def test_model_not_found_404_from_every_sous_chef_fails_fast():
+    deps = make_deps(THREE_GROUPS,
+                     sous=_always(lambda: ollama.ResponseError("model 'x' not found", 404)))
+    nodes = []
+    state = run(deps, num_meals=3, progress=nodes.append)
+    assert state["status"] == "failed"
+    assert state["iteration_count"] == 0
+    assert "handle_rejections" not in nodes and "retry_generation" not in nodes
+    assert len(deps.sous_chef_llm.prompts) == 3
+    reason = _generation(deps, state)["failure_reason"]
+    assert reason.startswith("Infrastructure failure: ResponseError from sous_chef_")
 
 
 def test_model_output_failures_still_retry_up_to_max_iterations():
