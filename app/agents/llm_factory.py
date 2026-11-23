@@ -31,6 +31,10 @@ class RoleSpec:
     model_setting: str   # Settings attribute holding this role's model name
     temperature: float
     json_output: bool = True
+    #: Default output-token cap (``OLLAMA_NUM_PREDICT`` overrides it for all roles).
+    #: Observed outputs are 160-610 tokens; this leaves headroom but stops a
+    #: runaway generation (one hit 81,920 tokens / 21 minutes).
+    num_predict: int = 2048
 
 
 #: The agent roles. Values reproduce the ChatOllama arguments each agent
@@ -41,7 +45,7 @@ ROLES: Dict[str, RoleSpec] = {
     # Higher creativity for recipes
     "sous_chef": RoleSpec("ollama_sous_chef_model", temperature=0.8),
     # Lower temperature for consistent (advisory) nutrition facts
-    "nutritionist": RoleSpec("ollama_nutritionist_model", temperature=0.3),
+    "nutritionist": RoleSpec("ollama_nutritionist_model", temperature=0.3, num_predict=1024),
 }
 
 
@@ -69,6 +73,10 @@ def _ollama(spec: RoleSpec, model: str, settings: Settings) -> Any:
         # Without it Ollama applies its server default window and silently
         # truncates a longer prompt (output tokens share the window too).
         "num_ctx": settings.ollama_num_ctx,
+        # Caps output length: a runaway generation otherwise streams until the
+        # window is full. Truncated JSON fails validation and is retried as a
+        # model-output failure. Deliberately not part of model provenance.
+        "num_predict": settings.ollama_num_predict or spec.num_predict,
     }
     if spec.json_output:
         kwargs["format"] = "json"
