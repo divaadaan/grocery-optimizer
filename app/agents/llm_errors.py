@@ -42,6 +42,7 @@ from typing import Iterator, Optional, Tuple, Type
 
 from pydantic import ValidationError
 
+from .llm_chat import ChatOutputError
 from .llm_output import LLMOutputError
 
 INFRASTRUCTURE = "infrastructure"
@@ -92,6 +93,7 @@ INFRASTRUCTURE_TYPES: Tuple[Type[BaseException], ...] = (
 #: raised while handling something else (their ``__context__`` is ignored).
 MODEL_OUTPUT_TYPES: Tuple[Type[BaseException], ...] = (
     LLMOutputError,
+    ChatOutputError,
     ValidationError,
     json.JSONDecodeError,
 )

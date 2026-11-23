@@ -11,6 +11,10 @@ from app.services.mlflow_logger import MLflowLogger, generation_scope, generatio
 
 logger = logging.getLogger(__name__)
 
+# The API's generation path (approach C). run_recipe_generation below is the
+# old LangGraph pipeline, kept only for the eval harness until it moves over.
+from app.agents.plan_pipeline import SelectionError, run_plan_generation  # noqa: E402,F401
+
 # MLflow is configured lazily by MLflowLogger on first use, so an unreachable
 # tracking server can't break recipe generation.
 

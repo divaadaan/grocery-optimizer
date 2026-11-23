@@ -177,6 +177,11 @@ class RecipeGenerationRequest(BaseModel):
     user_id: int
     num_meals: int = Field(default=7, ge=1, le=21)
     preferences: Dict[str, Any] = Field(default_factory=dict)
+    # Approach C: what the user kept from POST /plans/trays and the pantry
+    # staples they confirmed. None = keep everything offered. The server
+    # rebuilds the trays and uses only the intersection.
+    kept_deal_ids: Optional[List[int]] = None
+    pantry_product_ids: Optional[List[int]] = None
 
     class Config:
         json_schema_extra = {

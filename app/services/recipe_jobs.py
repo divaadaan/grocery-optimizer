@@ -50,11 +50,11 @@ TERMINAL_STATES = frozenset({COMPLETED, FAILED})
 # graph has a retry loop, so a job can revisit step 5 — the index is a
 # checklist position, not a monotonic percentage.
 PIPELINE_STAGES = (
-    "Fetching local deals for your postal code",
-    "Chef Orchestrator groups ingredients for reuse",
-    "Three SousChefs draft recipes in parallel",
-    "Aggregating recipes and costing them against the deal index",
-    "Nutritionist validates each recipe",
+    "Checking the ingredients you kept against this week's deals",
+    "The Chef plans one dish per meal",
+    "SousChefs write each dish's recipe",
+    "Costing the recipes against this week's deals",
+    "Checking each recipe against your dietary restrictions",
     "Saving your meal plan",
 )
 
@@ -68,6 +68,12 @@ QUEUED_STAGE = ("Queued behind another generation", 0)
 # "what is now running", keyed by the node that just completed. Node names
 # must match `app.agents.graph.create_recipe_generation_graph`.
 _STAGE_AFTER_NODE: Dict[str, tuple] = {
+    # Approach C (app/agents/plan_pipeline.py)
+    "confirm_selection": (PIPELINE_STAGES[1], 2),
+    "plan_dishes": (PIPELINE_STAGES[2], 3),
+    "write_recipes": (PIPELINE_STAGES[4], 5),
+    "dietary_verdict": (PIPELINE_STAGES[5], 6),
+    # The old LangGraph pipeline (eval harness only)
     "initialize_chef": (PIPELINE_STAGES[1], 2),
     "plan_ingredient_groups": ("SousChef 1/3 cooking…", 3),
     "aggregate_recipes": (PIPELINE_STAGES[4], 5),

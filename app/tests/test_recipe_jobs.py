@@ -33,16 +33,6 @@ USER = {
 }
 
 # What the stubbed budget read reports for USER: $20 of the $75 month gone.
-BUDGET_STATUS = {
-    "user_id": 7,
-    "budget": 75.0,
-    "budget_period": "monthly",
-    "spent": 20.0,
-    "remaining": 55.0,
-    "available_for_plan": 55.0,
-    "is_over_budget": False,
-    "completed_lists": 1,
-}
 
 # A finished graph state with one approved, persisted recipe.
 FINAL_STATE = {
@@ -318,12 +308,6 @@ def client(monkeypatch):
         "get_user_by_id",
         staticmethod(lambda user_id: USER if user_id == USER["user_id"] else None),
     )
-    # The job worker reads how much of the budget period is already spent
-    # (app/services/budget.py) before costing the plan; that is a DB read, so
-    # it is stubbed here with the rest of the DB. BUDGET_STATUS says the user
-    # is $20 into their $75 month.
-    monkeypatch.setattr(recipes_route, "budget_status",
-                        lambda user, **kw: dict(BUDGET_STATUS))
     # A fresh registry per test so job ids and eviction never leak across tests.
     monkeypatch.setattr(recipes_route, "job_registry", RecipeJobRegistry())
 
@@ -352,7 +336,7 @@ def _fake_generation(nodes=HAPPY_PATH_NODES, final_state=FINAL_STATE, raises=Non
 def _install_fake_graph(monkeypatch, fake):
     from app import main_recipe_generation
 
-    monkeypatch.setattr(main_recipe_generation, "run_recipe_generation", fake)
+    monkeypatch.setattr(main_recipe_generation, "run_plan_generation", fake)
 
 
 def _wait_terminal(registry, job_id, timeout=5.0):
@@ -463,12 +447,26 @@ def test_status_reports_the_live_stage_while_running(client, monkeypatch):
     assert _poll_until_terminal(client, job_id)["state"] == COMPLETED
 
 
-def test_generation_is_costed_against_the_unspent_part_of_the_period(client, monkeypatch):
-    """The worker must forward period spend, not just the period budget.
+def test_worker_forwards_the_confirmed_selection_and_no_budget(client, monkeypatch):
+    """Approach C: the kept deals and confirmed pantry reach the pipeline;
+    the product is budget-agnostic, so no budget is forwarded."""
+    captured = {}
 
-    Without this the plan is priced against the whole week's or month's money
-    however much of it the user has already spent — the bug this wiring fixes.
-    """
+    def fake(progress_callback=None, **kwargs):
+        captured.update(kwargs)
+        return FINAL_STATE
+
+    _install_fake_graph(monkeypatch, fake)
+    job_id = client.post("/recipes/generate", json={
+        "user_id": 7, "num_meals": 2, "kept_deal_ids": [3, 1],
+        "pantry_product_ids": [9]}).json()["job_id"]
+    assert _poll_until_terminal(client, job_id)["state"] == COMPLETED
+    assert captured["kept_deal_ids"] == [3, 1]
+    assert captured["pantry_product_ids"] == [9]
+    assert "budget" not in captured
+
+
+def test_omitted_selection_means_keep_everything_offered(client, monkeypatch):
     captured = {}
 
     def fake(progress_callback=None, **kwargs):
@@ -478,29 +476,19 @@ def test_generation_is_costed_against_the_unspent_part_of_the_period(client, mon
     _install_fake_graph(monkeypatch, fake)
     job_id = client.post("/recipes/generate", json={"user_id": 7, "num_meals": 2}).json()["job_id"]
     assert _poll_until_terminal(client, job_id)["state"] == COMPLETED
-
-    assert captured["budget"] == 75.0
-    assert captured["budget_period"] == "monthly"
-    assert captured["budget_spent_this_period"] == 20.0
+    assert captured["kept_deal_ids"] is None and captured["pantry_product_ids"] is None
 
 
-def test_a_failed_budget_read_does_not_sink_the_generation(client, monkeypatch):
-    """Degrade to the full period budget rather than failing the job."""
-    captured = {}
-
-    def boom(user, **kw):
-        raise RuntimeError("neon is unreachable")
-
-    monkeypatch.setattr(recipes_route, "budget_status", boom)
+def test_a_selection_without_anchors_fails_the_job_with_the_reason(client, monkeypatch):
+    from app.agents.plan_pipeline import SelectionError
 
     def fake(progress_callback=None, **kwargs):
-        captured.update(kwargs)
-        return FINAL_STATE
+        raise SelectionError("Keep at least one anchor (protein) to plan dishes around.")
 
     _install_fake_graph(monkeypatch, fake)
     job_id = client.post("/recipes/generate", json={"user_id": 7, "num_meals": 2}).json()["job_id"]
-    assert _poll_until_terminal(client, job_id)["state"] == COMPLETED
-    assert captured["budget_spent_this_period"] == 0.0
+    body = _poll_until_terminal(client, job_id)
+    assert body["state"] == FAILED and "anchor" in body["error"]
 
 
 def test_workflow_exception_becomes_a_failed_job(client, monkeypatch):

@@ -216,3 +216,52 @@ def parse_json_object(text: str) -> Optional[Dict[str, Any]]:
                     return obj if isinstance(obj, dict) else None
         start = text.find("{", start + 1)
     return None
+
+
+#: Appended after an invalid reply: the error and a request for strict JSON.
+RETRY_PROMPT = ("Your previous response was invalid: {error}\n\n"
+                "Respond again with ONLY a valid JSON object matching the output format "
+                "requested above. No prose, no comments, no markdown fences.")
+
+
+class ChatOutputError(RuntimeError):
+    """No schema-valid reply after every attempt (a model-output failure)."""
+
+    def __init__(self, message: str, replies: List[Reply], last_error: str):
+        super().__init__(message)
+        self.replies = replies
+        self.last_error = last_error
+
+
+def chat_validated(chat_fn: ChatFn, spec: str, messages: List[Dict[str, Any]],
+                   validate: Callable[[Dict[str, Any]], Any], *, max_attempts: int = 2,
+                   **chat_kwargs) -> Tuple[Any, List[Reply]]:
+    """Call the model and validate its JSON reply; on failure, show the model
+    its reply and the error and ask once more (``max_attempts`` in all).
+
+    ``validate`` takes the parsed JSON object and returns the validated value
+    or raises (``ValueError`` / pydantic ``ValidationError``). Returns
+    ``(value, every Reply)``. Raises :class:`ChatOutputError` when no attempt
+    validates; transport/HTTP errors propagate untouched (infrastructure).
+    """
+    replies: List[Reply] = []
+    convo = list(messages)
+    last_error = "no attempts made"
+    for attempt in range(1, max_attempts + 1):
+        reply = chat_fn(spec, convo, **chat_kwargs)
+        replies.append(reply)
+        data = parse_json_object(reply.text)
+        if data is None:
+            last_error = ("no JSON object in the reply"
+                          + (" (output was cut off at the token limit)"
+                             if reply.finish_reason == "length" else ""))
+        else:
+            try:
+                return validate(data), replies
+            except (ValueError, TypeError) as e:  # pydantic ValidationError is a ValueError
+                last_error = str(e)[:1500]
+        if attempt < max_attempts:
+            convo = convo + [{"role": "assistant", "content": reply.text},
+                             {"role": "user", "content": RETRY_PROMPT.format(error=last_error)}]
+    raise ChatOutputError(f"no valid output after {max_attempts} attempts: {last_error}",
+                          replies, last_error)
