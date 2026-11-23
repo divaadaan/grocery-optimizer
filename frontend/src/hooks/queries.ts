@@ -26,6 +26,7 @@ export const queryKeys = {
   userRecipes: (userId: number) => ["recipes", "user", userId] as const,
   generationJob: (jobId: string) => ["recipes", "generation-job", jobId] as const,
   shoppingList: (userId: number) => ["shopping-list", userId] as const,
+  trays: (userId: number, numMeals: number) => ["plans", "trays", userId, numMeals] as const,
 };
 
 const noRetryOn404or501 = (failureCount: number, error: Error) => {
@@ -196,6 +197,16 @@ export const useGenerateRecipes = (): RecipeGeneration => {
     job: job.data,
   };
 };
+
+/** The trays to confirm before generation. Deterministic server-side, so cached. */
+export const useTrayProposal = (userId: number | undefined, numMeals: number) =>
+  useQuery({
+    queryKey: queryKeys.trays(userId ?? -1, numMeals),
+    queryFn: () => api.proposeTrays({ user_id: userId!, num_meals: numMeals }),
+    enabled: userId !== undefined,
+    staleTime: 5 * 60 * 1000,
+    retry: noRetryOn404or501,
+  });
 
 export const useUserRecipes = (userId: number | undefined) =>
   useQuery({

@@ -5,18 +5,18 @@ import type { RecipeGenerationJobStatus } from "../../api/types";
 
 /**
  * Generation runs as a background job; `job` carries the real LangGraph
- * stage ("SousChef 2/3 cooking…") and its position in the pipeline, both
+ * stage and its position in the pipeline, both
  * server-supplied so this list cannot drift from the graph. Until the first
  * poll lands there is no job yet — fall back to the static checklist below.
  * The elapsed timer stays local so it ticks between polls.
  */
 
 const FALLBACK_PIPELINE = [
-  "Fetching local deals for your postal code",
-  "Chef Orchestrator groups ingredients for reuse",
-  "Three SousChefs draft recipes in parallel",
-  "Aggregating recipes and costing them against the deal index",
-  "Nutritionist validates each recipe",
+  "Checking the ingredients you kept against this week's deals",
+  "The Chef plans one dish per meal",
+  "SousChefs write each dish's recipe",
+  "Costing the recipes against this week's deals",
+  "Checking each recipe against your dietary restrictions",
   "Saving your meal plan",
 ];
 
