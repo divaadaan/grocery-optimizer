@@ -44,6 +44,13 @@ class Settings(BaseSettings):
     ollama_chef_model: str = Field(default="smollm:1.7b", env="OLLAMA_CHEF_MODEL")
     ollama_sous_chef_model: str = Field(default="smollm:360m", env="OLLAMA_SOUS_CHEF_MODEL")
     ollama_nutritionist_model: str = Field(default="smollm:360m", env="OLLAMA_NUTRITIONIST_MODEL")
+    # HTTP timeouts (seconds) for every model call. The Ollama chat client has none by
+    # default, so a hung Ollama would block a run forever and the fail-fast in
+    # app/agents/llm_errors.py (httpx.ReadTimeout/ConnectTimeout) never fires.
+    # Read is generous: it must cover a cold model load plus the wait for the
+    # first streamed chunk (and any pause between chunks).
+    llm_connect_timeout_seconds: float = Field(default=5.0, env="LLM_CONNECT_TIMEOUT_SECONDS", gt=0)
+    llm_read_timeout_seconds: float = Field(default=600.0, env="LLM_READ_TIMEOUT_SECONDS", gt=0)
 
     # MLflow
     mlflow_tracking_uri: str = Field(default="http://localhost:5000", env="MLFLOW_TRACKING_URI")

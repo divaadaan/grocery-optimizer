@@ -7,7 +7,9 @@ model setting). Nothing else in ``app/`` may import a provider's chat class --
 ``test_llm_factory`` pins that.
 
 Adding a provider means one builder function registered in ``_PROVIDERS``
-(plus whatever model-name settings it needs); the agents do not change. Only
+(plus whatever model-name settings it needs); the agents do not change. Every
+builder must set an explicit HTTP timeout (``LLM_CONNECT_TIMEOUT_SECONDS`` /
+``LLM_READ_TIMEOUT_SECONDS``) so a hung model fails fast. Only
 Ollama exists today, and its import is deferred to the builder so a test that
 injects a fake model never needs the provider package at all.
 
@@ -57,6 +59,7 @@ def model_name(role: str, settings: Optional[Settings] = None) -> str:
 
 
 def _ollama(spec: RoleSpec, model: str, settings: Settings) -> Any:
+    import httpx
     from langchain_ollama import ChatOllama
 
     kwargs: Dict[str, Any] = {
@@ -66,6 +69,12 @@ def _ollama(spec: RoleSpec, model: str, settings: Settings) -> Any:
     }
     if spec.json_output:
         kwargs["format"] = "json"
+    # ChatOllama has no default timeout. client_kwargs reaches ollama.Client ->
+    # httpx.Client; expiry raises httpx.ConnectTimeout / ReadTimeout, which
+    # llm_errors classifies as infrastructure. write/pool use the read value.
+    read = settings.llm_read_timeout_seconds
+    kwargs["client_kwargs"] = {"timeout": httpx.Timeout(
+        read, connect=settings.llm_connect_timeout_seconds)}
     return ChatOllama(**kwargs)
 
 
