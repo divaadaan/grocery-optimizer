@@ -82,10 +82,11 @@ explicitly by path. Never `git checkout`, `git switch`, `git stash`, or
 
 ## Product framing
 
-The hero metric is **meeting dietary goals within the spend limit the user
-sets** — not savings against a regular price. Deal data mostly lacks a reliable
-regular price, so savings is a secondary metric and must degrade to absent
-rather than to a fabricated number.
+The hero metric is **what you can cook from grocery sales near you while
+meeting your dietary restrictions** (owner, 2026-11-23: budget-agnostic). Cost
+is reported, never a constraint. Deal data mostly lacks a reliable regular
+price, so savings is a secondary metric and must degrade to absent rather than
+to a fabricated number.
 
 Dietary compliance is a deterministic code path, never learned or LLM-judged
 behavior. That conclusion cost an entire SFT track — do not reintroduce an LLM
@@ -101,9 +102,14 @@ authority:
 - Recipes: `app/agents/dietary.py` — every SousChef ingredient cites a `deal_id`
   or a staple `product_id`; the verdict is a lookup on the cited products.
 
-**No name, keyword or substring matching anywhere downstream of product review**
-— not as a filter, a veto, a review alarm or a backfill heuristic. An ingredient
-or deal *name* never decides anything. NULL attributes fail closed. A diet the
+**No name, keyword or substring matching may grant, deny or veto a deal or
+recipe on dietary grounds** — not as a filter, a veto, a review alarm or a
+backfill heuristic. An ingredient or deal *name* never decides dietary access.
+Item/role labels that decide only what is *surfaced* (grouping, trays, price
+comparison) are allowed, but they must be stored data from the labelling job
+(`deal_labels`, `app/services/deal_labeller.py`), never string matching in
+code, and they apply only to the already-gated deal set. NULL attributes fail
+closed. A diet the
 attributes can't express (halal, today) needs a new attribute, not a word list.
 Until it has one, its label is unsupported: the user API refuses it with a 422
 and generation refuses to run for it, so it can never be "approved".

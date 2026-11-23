@@ -19,6 +19,7 @@ from app.models.schemas import (
 )
 from app.config import settings
 from app.services.store_service import StoreService
+from app.services.deal_labeller import start_background_labelling
 from app.services.flipp_ingestion import run_ingestion
 from app.services.flipp_staples import STAPLES, staple_terms
 
@@ -113,11 +114,15 @@ async def _run_refresh(postal_code: str, terms: Optional[List[str]] = None,
             detail="A deal refresh is already running. Try again when it finishes.",
         )
     try:
-        return await run_in_threadpool(
+        report = await run_in_threadpool(
             run_ingestion, postal_code, terms=terms, trigger=trigger
         )
     finally:
         _refresh_lock.release()
+    # Label the new deals for the tray builder in the background; no-op when
+    # DEAL_LABELLING_ENABLED is off, and it can never fail the refresh.
+    start_background_labelling(postal_code)
+    return report
 
 
 @router.post("/discover",

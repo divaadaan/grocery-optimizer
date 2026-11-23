@@ -285,3 +285,27 @@ def test_staples_endpoint_lists_the_terms(client):
     assert "chicken breast" in body["terms_by_category"]["Meat & Poultry"]
     assert "flipp_staples.py" in body["note"]
     assert body["count"] == sum(len(v) for v in body["terms_by_category"].values())
+
+
+def test_refresh_starts_background_labelling_after_ingestion(
+    client, ingestion_enabled, fake_ingestion, monkeypatch
+):
+    started = []
+    monkeypatch.setattr(stores_route, "start_background_labelling",
+                        lambda postal_code: started.append(postal_code))
+    response = client.post("/postal-code/refresh", json={"postal_code": "M5V 3A8"})
+    assert response.status_code == 200
+    assert started == ["M5V3A8"]
+
+
+def test_failed_ingestion_does_not_start_labelling(client, ingestion_enabled, monkeypatch):
+    started = []
+    monkeypatch.setattr(stores_route, "start_background_labelling",
+                        lambda postal_code: started.append(postal_code))
+
+    def _boom(*a, **k):
+        raise RuntimeError("provider down")
+
+    monkeypatch.setattr(stores_route, "run_ingestion", _boom)
+    client.post("/postal-code/refresh", json={"postal_code": "M5V 3A8"})
+    assert started == []

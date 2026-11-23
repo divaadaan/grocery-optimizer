@@ -72,6 +72,14 @@ class Settings(BaseSettings):
     # Hugging Face
     huggingface_api_key: Optional[str] = Field(default=None, env="HUGGINGFACE_API_KEY")
 
+    # Approach-C model specs (app/agents/llm_chat.py): "ollama:<model>" or
+    # "hf:<org/model>". Design: experiments/chef/DESIGN_APPROACH_C.md section 10.
+    llm_labeller_model: str = Field(default="hf:openai/gpt-oss-120b", env="LLM_LABELLER_MODEL")
+    # Label new deals in the background after every ingestion run (needs
+    # HUGGINGFACE_API_KEY when the labeller is an hf: model). Labelling never
+    # runs at request time and a labelling failure never fails ingestion.
+    deal_labelling_enabled: bool = Field(default=True, env="DEAL_LABELLING_ENABLED")
+
     # ------------------------------------------------------------------
     # Deal ingestion (Flipp flyer search)
     # ------------------------------------------------------------------
