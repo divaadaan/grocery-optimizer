@@ -55,6 +55,8 @@ RECIPE = {
         {"name": "salt", "product_id": 9, "quantity": "1", "unit": "tsp", "price": 0.0},
     ],
     "instructions": ["Simmer lentils", "Season"],
+    "instruction_steps": [{"template": "Simmer {0}", "ingredient_refs": [0]},
+                          {"template": "Season with {1}", "ingredient_refs": [1]}],
     "servings": 2,
     "total_cost": 2.49,
     "estimated_prep_time": 35,
@@ -119,17 +121,23 @@ def test_save_recipes_writes_generation_and_recipes_in_one_transaction():
     assert gen_params["estimated_savings"] is None  # unknown stays NULL
 
     assert recipe_sql.startswith("INSERT INTO recipes")
-    (user_id, name, ingredients, instructions, total_cost, servings, prep_time,
-     cuisine, meal_type, nutrition, compliance, health, generation_id) = recipe_params
+    (user_id, name, ingredients, instructions, steps, total_cost, servings,
+     prep_time, cuisine, meal_type, nutrition, compliance, health,
+     generation_id) = recipe_params
     assert (user_id, name, servings, total_cost) == (7, "Lentil Curry", 2, 2.49)
     # Citations persisted exactly as generated.
     assert json.loads(ingredients) == RECIPE["ingredients"]
     assert instructions == RECIPE["instructions"]
+    # The placeholder steps behind the rendered text (migration 023).
+    assert json.loads(steps) == RECIPE["instruction_steps"]
     assert (prep_time, cuisine, meal_type) == (35, "Indian", "dinner")
     assert json.loads(nutrition) == RECIPE["nutrition_facts"]
     assert json.loads(compliance) == RECIPE["dietary_compliance"]
     assert health == 78.5
     assert generation_id == GENERATION["generation_id"]
+    # The verdict has its own column; the legacy one is no longer written.
+    assert "dietary_compliance" in recipe_sql and "allergen_info" not in recipe_sql
+    assert "instruction_steps" in recipe_sql
 
 
 def test_save_recipes_snapshot_identity_is_stored_as_json():
@@ -149,7 +157,8 @@ def test_save_recipes_without_generation_writes_no_generation_row():
     assert len(executed) == 1
     params = executed[0][1]
     # Missing optional fields become NULL rather than raising.
-    assert params[6:] == (None, None, None, None, None, None, None)
+    assert params[4] is None  # instruction_steps
+    assert params[7:] == (None, None, None, None, None, None, None)
 
 
 def test_rows_with_uuid_and_decimal_become_plain_json():

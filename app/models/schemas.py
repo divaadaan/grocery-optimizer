@@ -163,6 +163,13 @@ class RecipeInfo(BaseModel):
     # The generation (meal plan) this recipe belongs to; null for recipes
     # saved before generations were recorded (migration 022).
     generation_id: Optional[str] = None
+    # The placeholder steps behind `instructions` ([{template,
+    # ingredient_refs}], agents/instruction_refs.py); null for recipes saved
+    # before migration 023.
+    instruction_steps: Optional[List[Dict[str, Any]]] = None
+    # The Nutritionist's deterministic compliance verdict {allergen_free,
+    # meets_restrictions, violations}; null for recipes saved before 022.
+    dietary_compliance: Optional[Dict[str, Any]] = None
 
 
 class RecipeGenerationRequest(BaseModel):
@@ -270,6 +277,13 @@ class RecipeGenerationJobStatus(BaseModel):
     error: Optional[str] = Field(
         default=None,
         description="Populated once state == failed"
+    )
+    generation_id: Optional[str] = Field(
+        default=None,
+        description="The run's recipe_generations id once the graph has "
+                    "finished -- for a failed run too, whose row records why "
+                    "it failed. Null while running, and when the workflow "
+                    "raised before it could record anything"
     )
 
 
