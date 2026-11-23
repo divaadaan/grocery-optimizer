@@ -381,3 +381,53 @@ class HealthCheckResponse(BaseModel):
     redis: Optional[str]
     ollama: Optional[str]
     timestamp: datetime = Field(default_factory=datetime.now)
+
+
+# ============================================================================
+# Approach C: trays (POST /plans/trays)
+# ============================================================================
+
+class TrayProposalRequest(BaseModel):
+    """Ask for this week's trays for a user (their postal code and diet)."""
+    user_id: int
+    num_meals: int = Field(default=5, ge=1, le=21)
+
+
+class TrayItemInfo(BaseModel):
+    """One deal in a tray: the cheapest deal for its item, and how it compares."""
+    deal_id: int
+    product_name: str
+    store_name: Optional[str] = None
+    chain: Optional[str] = None
+    sale_price: float
+    unit: Optional[str] = None
+    item: str
+    role: str
+    basis: Literal["lb", "l", "each", "pkg"]
+    compare_price: float = Field(..., description="Price on `basis` ($/lb, $/L, $/each or $/package)")
+    median_price: float = Field(..., description="Median across chains on the same basis")
+    n_chains: int
+    gap: float = Field(..., description="1 - compare_price/median_price; 0 with a single chain")
+
+
+class PantryItemInfo(BaseModel):
+    product_id: int
+    name: str
+
+
+class TraysInfo(BaseModel):
+    anchors: List[TrayItemInfo]
+    sides: List[TrayItemInfo]
+    stock_up: List[TrayItemInfo]
+
+
+class TrayProposalResponse(BaseModel):
+    """Trays to keep/reject and the pantry to confirm, before generation."""
+    user_id: int
+    postal_code: str
+    num_meals: int
+    trays: TraysInfo
+    pantry: List[PantryItemInfo]
+    counts: Dict[str, int]
+    label_version: str
+    warnings: List[str] = Field(default_factory=list)
