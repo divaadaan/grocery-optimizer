@@ -54,11 +54,15 @@ def test_cheapest_per_item_with_cross_chain_gap():
     assert (a.n_chains, a.median_price, a.gap, a.basis) == (3, 4.0, 0.5, "lb")
 
 
-def test_same_item_on_different_bases_is_not_compared():
-    deals = [deal(1, 2.0, "A", "lb"), deal(2, 9.0, "B")]
-    labels = {1: L("chicken thighs", "protein"), 2: L("chicken thighs", "protein")}
+def test_same_item_on_different_bases_is_not_compared_and_shown_once():
+    deals = [deal(1, 2.0, "A", "lb"), deal(2, 9.0, "B"), deal(3, 12.0, "C")]
+    labels = {i: L("chicken thighs", "protein") for i in (1, 2, 3)}
+    best = trays._group_best(deals, labels)
+    # lb and pkg are separate groups: deal 1 is never compared with 2 and 3
+    assert {(t.deal_id, t.basis, t.n_chains) for t in best} == {(1, "lb", 1), (2, "pkg", 2)}
+    # ...but the tray shows the item once: the pkg group ranks first on its gap
     p = trays.build_trays(deals, labels)
-    assert {(t.deal_id, t.basis, t.n_chains) for t in p.anchors} == {(1, "lb", 1), (2, "pkg", 1)}
+    assert [(t.deal_id, t.basis) for t in p.anchors] == [(2, "pkg")]
 
 
 def test_roles_decide_the_tray_and_excluded_roles_never_appear():
@@ -218,3 +222,49 @@ def test_route_warns_when_there_is_no_anchor(monkeypatch, user):
     body = _post("/plans/trays", {"user_id": 1}).json()
     assert any("No protein deals" in w for w in body["warnings"])
     assert any("No current deals" in w for w in body["warnings"])
+
+
+# ------------------------------------------------------------ sides quota
+
+def _sides_market(n_per_role):
+    deals, labels = [], {}
+    did = 1
+    for role, n in n_per_role.items():
+        for i in range(n):
+            # dairy gets the biggest gaps so it would win every slot unquota'd
+            gap_price = 1.0 if role == "dairy" else 2.0
+            for chain, price in (("A", gap_price), ("B", 4.0)):
+                deals.append(deal(did, price, chain, "lb"))
+                labels[did] = L(f"{role} {i}", role)
+                did += 1
+    return deals, labels
+
+
+def test_side_quotas_sum_to_the_tray_size():
+    assert sum(trays.SIDE_QUOTAS.values()) == trays.N_SIDES
+    assert set(trays.SIDE_QUOTAS) == trays.SIDE_ROLES
+
+
+def test_dairy_cannot_crowd_out_the_vegetables():
+    deals, labels = _sides_market({"dairy": 30, "vegetable": 30, "starch": 30, "fruit": 30})
+    sides = trays.build_trays(deals, labels).sides
+    by_role = {}
+    for t in sides:
+        by_role[t.role] = by_role.get(t.role, 0) + 1
+    assert by_role == trays.SIDE_QUOTAS
+    gaps = [round(t.gap, 2) for t in sides]
+    assert gaps == sorted(gaps, reverse=True)  # still in tray order
+
+
+def test_unused_quota_goes_to_the_best_leftovers():
+    deals, labels = _sides_market({"dairy": 30, "vegetable": 3, "starch": 0, "fruit": 0})
+    sides = trays.build_trays(deals, labels).sides
+    assert len(sides) == trays.N_SIDES
+    assert sum(t.role == "vegetable" for t in sides) == 3
+    assert sum(t.role == "dairy" for t in sides) == 22
+
+
+def test_an_item_labelled_with_two_roles_appears_once_per_tray():
+    deals = [deal(1, 1.0, "A", "lb"), deal(2, 2.0, "B", "lb")]
+    labels = {1: L("tomato", "vegetable"), 2: L("tomato", "fruit")}
+    assert [t.deal_id for t in trays.build_trays(deals, labels).sides] == [1]

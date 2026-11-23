@@ -16,7 +16,8 @@ same trays out.
 
    ========  ====================================  ====
    ANCHORS   protein                                15
-   SIDES     vegetable, starch, fruit, dairy        25
+   SIDES     vegetable 12, starch 5, fruit 4,       25
+             dairy 4 (unused slots: best leftovers)
    STOCK-UP  pantry_staple, condiment (>=2 chains)  15
    ========  ====================================  ====
 
@@ -40,6 +41,11 @@ ANCHOR_ROLES = frozenset({"protein"})
 SIDE_ROLES = frozenset({"vegetable", "starch", "fruit", "dairy"})
 STOCK_UP_ROLES = frozenset({"pantry_staple", "condiment"})
 N_ANCHORS, N_SIDES, N_STOCK_UP = 15, 25, 15
+#: SIDES slots per role (owner, 2026-11-23: dairy was crowding out the
+#: vegetables -- milk, cream cheese and butter took ~10 of 25). Sums to
+#: N_SIDES. A role with fewer good deals than its quota leaves its slots to
+#: the best remaining sides of any role.
+SIDE_QUOTAS = {"vegetable": 12, "starch": 5, "fruit": 4, "dairy": 4}
 
 TRAYS = ("anchors", "sides", "stock_up")
 
@@ -161,7 +167,34 @@ def _pick(best: List[TrayItem], roles: frozenset, k: int, need_compare: bool = F
           ) -> List[TrayItem]:
     rows = [b for b in best if b.role in roles and (b.n_chains >= 2 or not need_compare)]
     rows.sort(key=lambda b: (-round(b.gap, 2), BASIS_RANK[b.basis], b.compare_price, b.deal_id))
-    return rows[:k]
+    # One row per item per tray: the same item priced per lb and per package
+    # forms two groups (never compared with each other), but showing both
+    # wastes a slot. The better-ranked one stays.
+    seen: set = set()
+    unique = []
+    for b in rows:
+        if b.item not in seen:  # across roles too ("tomato" as vegetable and fruit)
+            seen.add(b.item)
+            unique.append(b)
+    return unique[:k]
+
+
+def _pick_with_quotas(best: List[TrayItem], quotas: Dict[str, int], k: int
+                      ) -> List[TrayItem]:
+    """Fill ``k`` slots: each role first takes up to its quota of its best rows,
+    then any unused slots go to the best leftovers regardless of role. The
+    result is in the usual tray order."""
+    ranked = _pick(best, frozenset(quotas), len(best))
+    chosen: List[TrayItem] = []
+    taken = {role: 0 for role in quotas}
+    for row in ranked:
+        if taken[row.role] < quotas[row.role]:
+            chosen.append(row)
+            taken[row.role] += 1
+    chosen_ids = {r.deal_id for r in chosen}
+    chosen += [r for r in ranked if r.deal_id not in chosen_ids][: max(0, k - len(chosen))]
+    order = {r.deal_id: i for i, r in enumerate(ranked)}
+    return sorted(chosen[:k], key=lambda r: order[r.deal_id])
 
 
 def build_trays(deals: List[Dict[str, Any]], labels: Dict[int, Label]) -> TrayProposal:
@@ -169,7 +202,7 @@ def build_trays(deals: List[Dict[str, Any]], labels: Dict[int, Label]) -> TrayPr
     best = _group_best(deals, labels)
     proposal = TrayProposal(
         anchors=_pick(best, ANCHOR_ROLES, N_ANCHORS),
-        sides=_pick(best, SIDE_ROLES, N_SIDES),
+        sides=_pick_with_quotas(best, SIDE_QUOTAS, N_SIDES),
         stock_up=_pick(best, STOCK_UP_ROLES, N_STOCK_UP, need_compare=True),
     )
     labelled = sum(1 for d in deals if int(d["deal_id"]) in labels)
