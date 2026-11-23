@@ -7,7 +7,7 @@ from app.agents.graph import create_recipe_generation_graph
 from app.agents.state import RecipeGenerationState
 from app.services import products
 from app.services.budget import DEFAULT_PERIOD
-from app.services.mlflow_logger import generation_scope
+from app.services.mlflow_logger import MLflowLogger, generation_scope, generation_trace
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +126,19 @@ def run_recipe_generation(
     # generation_scope binds this generation's MLflow run to the context the
     # graph copies into every task, so the parallel SousChefs log into the
     # same run instead of each starting an orphan (app/services/mlflow_logger.py).
+    #
+    # generation_trace records the whole run as one MLflow trace (a span per
+    # node, every LLM prompt/response inside), via a LangChain callback the
+    # graph propagates to every task, SousChef threads included. Only the
+    # production tracker is traced: an injected tracker (eval harness, tests)
+    # means "no MLflow", and gets no callbacks -- the graph runs exactly as
+    # before.
     final_state = None
-    with generation_scope(generation_id):
-        for mode, chunk in graph.stream(initial_state, stream_mode=["updates", "values"]):
+    with generation_scope(generation_id) as scope, generation_trace(
+            scope, enabled=graph_deps.tracker is MLflowLogger) as callbacks:
+        traced = {"config": {"callbacks": callbacks}} if callbacks else {}
+        for mode, chunk in graph.stream(initial_state, stream_mode=["updates", "values"],
+                                        **traced):
             if mode == "values":
                 final_state = chunk
             elif progress_callback is not None:

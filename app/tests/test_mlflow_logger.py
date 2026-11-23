@@ -81,6 +81,9 @@ def fake_mlflow(monkeypatch):
     monkeypatch.setattr(mlflow_logger, "_available", False)
     monkeypatch.setattr(mlflow_logger, "_client", None)
     monkeypatch.setattr(mlflow_logger, "_experiment_id", None)
+    # No tracking-server probe, no process-wide env writes: the fake is the server.
+    monkeypatch.setattr(mlflow_logger, "_probe", lambda uri, timeout=None: None)
+    monkeypatch.setattr(mlflow_logger, "_cap_http_retries", lambda: None)
     return fake
 
 
