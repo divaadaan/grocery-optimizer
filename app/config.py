@@ -54,6 +54,9 @@ class Settings(BaseSettings):
     # Context window sent to Ollama as options.num_ctx. Unset, the server uses its
     # own default (2048/4096) and silently truncates longer prompts.
     ollama_num_ctx: int = Field(default=8192, env="OLLAMA_NUM_CTX", gt=0)
+    # Optional global override of every role's output-token cap (options.num_predict).
+    # Unset, each role uses its own default (RoleSpec.num_predict in llm_factory).
+    ollama_num_predict: Optional[int] = Field(default=None, env="OLLAMA_NUM_PREDICT", gt=0)
 
     # MLflow
     mlflow_tracking_uri: str = Field(default="http://localhost:5000", env="MLFLOW_TRACKING_URI")

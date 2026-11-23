@@ -116,3 +116,57 @@ def test_make_llm_sends_num_ctx_in_request_options(role):
     assert llm.num_ctx == 12345
     opts = llm._chat_params([HumanMessage(content="hi")])["options"]
     assert opts["num_ctx"] == 12345
+
+
+# --- num_predict -----------------------------------------------------------
+
+@pytest.mark.parametrize("role,expected", [("chef", 2048), ("sous_chef", 2048), ("nutritionist", 1024)])
+def test_make_llm_sends_per_role_num_predict(role, expected):
+    from langchain_core.messages import HumanMessage
+    cfg = settings.model_copy(update={"ollama_num_predict": None})
+    llm = make_llm(role, cfg)
+    assert llm.num_predict == expected
+    assert llm._chat_params([HumanMessage(content="hi")])["options"]["num_predict"] == expected
+
+
+def test_num_predict_env_override_applies_to_all_roles():
+    from langchain_core.messages import HumanMessage
+    cfg = settings.model_copy(update={"ollama_num_predict": 77})
+    for role in EXPECTED:
+        opts = make_llm(role, cfg)._chat_params([HumanMessage(content="hi")])["options"]
+        assert opts["num_predict"] == 77
+
+
+def test_num_predict_setting_validation(monkeypatch):
+    from pydantic import ValidationError
+    from app.config import Settings
+    db = "postgresql://x:x@127.0.0.1:1/x"
+    monkeypatch.delenv("OLLAMA_NUM_PREDICT", raising=False)
+    assert Settings(_env_file=None, database_url=db).ollama_num_predict is None
+    monkeypatch.setenv("OLLAMA_NUM_PREDICT", "512")
+    assert Settings(_env_file=None, database_url=db).ollama_num_predict == 512
+    for bad in ("0", "-5"):
+        monkeypatch.setenv("OLLAMA_NUM_PREDICT", bad)
+        with pytest.raises(ValidationError):
+            Settings(_env_file=None, database_url=db)
+
+
+def test_truncated_json_at_length_cap_is_retried_as_model_output():
+    from app.agents.llm_errors import MODEL_OUTPUT, classify
+    from app.agents.llm_output import LLMOutputError, NutritionistVerdict, invoke_validated
+
+    class Resp:
+        content = '{"score": 7, "notes": "cut off mid-sen'
+        response_metadata = {"done_reason": "length", "eval_count": 1024}
+
+    class Truncating:
+        calls = 0
+
+        def invoke(self, messages):
+            Truncating.calls += 1
+            return Resp()
+
+    with pytest.raises(LLMOutputError) as ei:
+        invoke_validated(Truncating(), "p", NutritionistVerdict, max_attempts=3)
+    assert Truncating.calls == 3
+    assert classify(ei.value) == MODEL_OUTPUT
