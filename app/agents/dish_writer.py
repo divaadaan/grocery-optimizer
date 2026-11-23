@@ -16,7 +16,6 @@ stored recipe (prices from citations, rendered steps) reuses
 """
 from __future__ import annotations
 
-import json
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from app.agents import llm_chat
@@ -35,14 +34,14 @@ PROMPT = """You are a SousChef writing one practical, delicious home recipe.
 **The dish:** {dish_name}
 {why}
 
-**This dish's ingredients bought this week (cite each by its deal_id):**
-{dish_deals_json}
+**This dish's ingredients bought this week** (ingredient → the deal_id to cite):
+{dish_deals}
 
-**Stock-up items also bought this week (optional; cite by deal_id):**
-{stock_up_json}
+**Stock-up items also bought this week** (optional; ingredient → deal_id):
+{stock_up}
 
-**Pantry staples already on hand (cite each by its product_id):**
-{pantry_json}
+**Pantry staples already on hand** (ingredient → the product_id to cite):
+{pantry}
 
 **Requirements:**
 - Servings: {servings}
@@ -51,7 +50,8 @@ PROMPT = """You are a SousChef writing one practical, delicious home recipe.
 - Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;
   you do not have to use all of them.
 - EVERY ingredient must cite exactly one source: "deal_id" for a deal above, OR "product_id" for a
-  pantry staple. Copy the id exactly. If an ingredient is not listed, leave it out.
+  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an
+  ingredient is not listed (e.g. lemon), leave it out; never cite a different item's id.
 - "name" is the plain ingredient name a cook would write (use the deal's "item" when given, e.g.
   "chicken thighs", not the flyer text); costs are computed for you.
 - Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its
@@ -72,16 +72,24 @@ FEEDBACK = """
 """
 
 
-def _deal_view(deal: Mapping[str, Any]) -> Dict[str, Any]:
-    out = {"deal_id": deal["deal_id"], "product_name": deal.get("product_name", ""),
-           "sale_price": deal.get("sale_price")}
-    if deal.get("item"):
-        # The stored label's generic item ("brussels sprouts"): a cleaner
-        # display name than the flyer text. Display only; never decides.
-        out["item"] = deal["item"]
+def deal_line(deal: Mapping[str, Any]) -> str:
+    """``- chicken thighs → deal_id 737 (CHICKEN THIGHS, $2.99/lb)``.
+
+    Name first, id on the same line: a 7B model writes the ingredient name
+    and then looks up its id, and with JSON objects it cited a neighbour's id
+    about one time in six (2026-11-23 live check). The name shown is the
+    stored label item when there is one (display only)."""
+    name = deal.get("item") or deal.get("product_name") or ""
+    price = deal.get("sale_price")
+    price_text = f"${float(price):.2f}" if price is not None else "$?"
     if deal.get("unit"):
-        out["unit"] = deal["unit"]
-    return out
+        price_text += f"/{deal['unit']}"
+    flyer = " ".join(str(deal.get("product_name") or "").split())[:70]
+    return f"- {name} → deal_id {deal['deal_id']} ({flyer}, {price_text})"
+
+
+def pantry_line(item: Mapping[str, Any]) -> str:
+    return f"- {str(item['name']).lower()} → product_id {int(item['product_id'])}"
 
 
 def dish_inputs(dish: PlannedDish, deals: Mapping[int, Mapping[str, Any]],
@@ -98,18 +106,14 @@ def build_prompt(dish: PlannedDish, own: List[Dict], stock: List[Dict],
                  dietary_restrictions: Sequence[str],
                  preferences: Optional[Dict[str, Any]] = None,
                  feedback: Optional[str] = None) -> str:
-    # The pantry the model sees is the dish's planned staples first, then the
-    # rest of the confirmed pantry (it may need salt the planner forgot).
-    planned = set(dish.pantry_product_ids)
-    ordered = ([p for p in pantry if int(p["product_id"]) in planned]
-               + [p for p in pantry if int(p["product_id"]) not in planned])
+    # Alphabetical, so each staple's line is easy to find by name.
+    ordered = sorted(pantry, key=lambda p: str(p["name"]).lower())
     return PROMPT.format(
         dish_name=dish.name,
         why=f"({dish.why})" if dish.why else "",
-        dish_deals_json=json.dumps([_deal_view(d) for d in own]),
-        stock_up_json=json.dumps([_deal_view(d) for d in stock]) if stock else "(none)",
-        pantry_json=json.dumps([{"product_id": int(p["product_id"]), "name": p["name"]}
-                                for p in ordered]),
+        dish_deals="\n".join(deal_line(d) for d in own),
+        stock_up="\n".join(deal_line(d) for d in stock) if stock else "(none)",
+        pantry="\n".join(pantry_line(p) for p in ordered) or "(none)",
         servings=servings,
         dietary_restrictions=", ".join(dietary_restrictions) or "none",
         combination_hints=hint_lines(combination_rule_hints(list(dietary_restrictions))),
