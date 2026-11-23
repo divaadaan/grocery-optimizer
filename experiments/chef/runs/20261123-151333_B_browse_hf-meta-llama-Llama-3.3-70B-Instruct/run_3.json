@@ -1,0 +1,404 @@
+{
+ "seed": 3,
+ "error": null,
+ "score": {
+  "parse_ok": false,
+  "num_dishes": 0,
+  "dishes_ok": false,
+  "cited_ids": 0,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 0.0,
+  "within_budget": false,
+  "chains": {},
+  "categories": {},
+  "beverage_ids": [],
+  "reused_deals": 0,
+  "anchor_categories": {},
+  "position_quintiles": [],
+  "cited_unseen": []
+ },
+ "calls": [
+  {
+   "input_tokens": 776,
+   "output_tokens": 21,
+   "seconds": 0.8,
+   "finish_reason": "tool_calls",
+   "truncated_prompt": false,
+   "num_ctx": null,
+   "tool_calls": [
+    "list_deal_types"
+   ]
+  },
+  {
+   "input_tokens": 899,
+   "output_tokens": 36,
+   "seconds": 1.9,
+   "finish_reason": "tool_calls",
+   "truncated_prompt": false,
+   "num_ctx": null,
+   "tool_calls": [
+    "list_deals_by_type"
+   ]
+  },
+  {
+   "input_tokens": 2163,
+   "output_tokens": 27,
+   "seconds": 0.6,
+   "finish_reason": "tool_calls",
+   "truncated_prompt": false,
+   "num_ctx": null,
+   "tool_calls": [
+    "list_deals_by_type"
+   ]
+  },
+  {
+   "input_tokens": 3190,
+   "output_tokens": 27,
+   "seconds": 0.9,
+   "finish_reason": "tool_calls",
+   "truncated_prompt": false,
+   "num_ctx": null,
+   "tool_calls": [
+    "list_deals_by_type"
+   ]
+  },
+  {
+   "input_tokens": 4296,
+   "output_tokens": 27,
+   "seconds": 0.8,
+   "finish_reason": "tool_calls",
+   "truncated_prompt": false,
+   "num_ctx": null,
+   "tool_calls": [
+    "list_deals_by_type"
+   ]
+  },
+  {
+   "input_tokens": 5389,
+   "output_tokens": 27,
+   "seconds": 0.6,
+   "finish_reason": "tool_calls",
+   "truncated_prompt": false,
+   "num_ctx": null,
+   "tool_calls": [
+    "list_deals_by_type"
+   ]
+  },
+  {
+   "input_tokens": 6567,
+   "output_tokens": 27,
+   "seconds": 0.6,
+   "finish_reason": "tool_calls",
+   "truncated_prompt": false,
+   "num_ctx": null,
+   "tool_calls": [
+    "list_deals_by_type"
+   ]
+  },
+  {
+   "input_tokens": 7713,
+   "output_tokens": 27,
+   "seconds": 0.6,
+   "finish_reason": "tool_calls",
+   "truncated_prompt": false,
+   "num_ctx": null,
+   "tool_calls": [
+    "list_deals_by_type"
+   ]
+  },
+  {
+   "input_tokens": 8736,
+   "output_tokens": 33,
+   "seconds": 0.8,
+   "finish_reason": "tool_calls",
+   "truncated_prompt": false,
+   "num_ctx": null,
+   "tool_calls": [
+    "list_deals_by_type"
+   ]
+  },
+  {
+   "input_tokens": 9851,
+   "output_tokens": 479,
+   "seconds": 3.1,
+   "finish_reason": "stop",
+   "truncated_prompt": false,
+   "num_ctx": null,
+   "tool_calls": []
+  }
+ ],
+ "tool_log": [
+  {
+   "name": "list_deal_types",
+   "arguments": {},
+   "result_head": "Pantry: 193 deals (5 pages)"
+  },
+  {
+   "name": "list_deals_by_type",
+   "arguments": {
+    "category": "Meat & Poultry",
+    "page": "1"
+   },
+   "result_head": "Meat & Poultry \u2014 page 1 of 2:"
+  },
+  {
+   "name": "list_deals_by_type",
+   "arguments": {
+    "category": "Produce",
+    "page": "1"
+   },
+   "result_head": "Produce \u2014 page 1 of 5:"
+  },
+  {
+   "name": "list_deals_by_type",
+   "arguments": {
+    "category": "Pantry",
+    "page": "1"
+   },
+   "result_head": "Pantry \u2014 page 1 of 5:"
+  },
+  {
+   "name": "list_deals_by_type",
+   "arguments": {
+    "category": "Pantry",
+    "page": "2"
+   },
+   "result_head": "Pantry \u2014 page 2 of 5:"
+  },
+  {
+   "name": "list_deals_by_type",
+   "arguments": {
+    "category": "Pantry",
+    "page": "3"
+   },
+   "result_head": "Pantry \u2014 page 3 of 5:"
+  },
+  {
+   "name": "list_deals_by_type",
+   "arguments": {
+    "category": "Pantry",
+    "page": "4"
+   },
+   "result_head": "Pantry \u2014 page 4 of 5:"
+  },
+  {
+   "name": "list_deals_by_type",
+   "arguments": {
+    "category": "Pantry",
+    "page": "5"
+   },
+   "result_head": "Pantry \u2014 page 5 of 5:"
+  },
+  {
+   "name": "list_deals_by_type",
+   "arguments": {
+    "category": "Produce",
+    "page": "2"
+   },
+   "result_head": "Produce \u2014 page 2 of 5:"
+  }
+ ],
+ "plan": {
+  "name": "Roast chicken with garlic potatoes",
+  "anchor_deal_ids": [
+   739
+  ],
+  "side_deal_ids": [
+   586,
+   671
+  ],
+  "pantry_items": [
+   "salt",
+   "olive oil",
+   "garlic"
+  ],
+  "why": "The chicken is on sale and pairs well with roasted potatoes and garlic."
+ },
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You are a home cook planning a week of meals from this week's grocery flyers near the user.\nYou cannot see the flyers directly: browse them with the tools. Start with list_deal_types, then\nopen the categories you need. Plan the way an experienced bargain-hunting cook does:\n1. Find the anchors: the genuinely good protein and main-component deals worth building meals around\n   (compare the same item across stores).\n2. Find discounted pantry staples worth stocking up on.\n3. Pair each anchor with sensible sides that are also on sale.\nOnly real meals from real cooking ingredients. You have at most 15 tool calls; when you have\nenough, stop calling tools and reply with the final plan."
+  },
+  {
+   "role": "user",
+   "content": "**User requirements:**\n- Household: 2 people\n- Plan: 5 dinners\n- Pantry the user already has (use freely, cost $0): salt, black pepper, vegetable oil, olive oil, butter, all-purpose flour, sugar, garlic, yellow onion, dried oregano, dried basil, paprika, ground cumin, chili flakes, soy sauce, vinegar, dijon mustard, chicken or vegetable stock, rice, eggs\n\nReturn ONLY a JSON object of this shape (no comments, no code fences):\n{\n  \"dishes\": [\n    {\n      \"name\": \"Roast chicken with garlic potatoes\",\n      \"anchor_deal_ids\": [123],\n      \"side_deal_ids\": [456, 789],\n      \"pantry_items\": [\"salt\", \"olive oil\"],\n      \"why\": \"one sentence\"\n    }\n  ],\n  \"stock_up_deal_ids\": [321],\n  \"notes\": \"one or two sentences on the overall plan\"\n}\nField meanings: anchor_deal_ids = the main component(s) the dish is built around; side_deal_ids =\nsides and supporting ingredients bought this week; pantry_items = ONLY items from the user's pantry\nlist; stock_up_deal_ids = discounted staples worth buying extra of for future weeks.\nRules: exactly 5 dishes. Every deal id must be copied from the deals you were shown -- never\ninvent one. A deal bought once may be used in several dishes. Build every dish from real cooking\ningredients on sale."
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call-0114db16-1006-48fa-9b4b-30f66d5e7038",
+     "type": "function",
+     "function": {
+      "name": "list_deal_types",
+      "arguments": "{}"
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call-0114db16-1006-48fa-9b4b-30f66d5e7038",
+   "content": "Pantry: 193 deals (5 pages)\nProduce: 183 deals (5 pages)\nBeverages: 158 deals (4 pages)\nDairy & Eggs: 132 deals (4 pages)\nBakery: 97 deals (3 pages)\nSeafood: 70 deals (2 pages)\nMeat & Poultry: 69 deals (2 pages)\nFrozen: 14 deals (1 pages)"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call-d82742b0-d29a-4b88-96af-b3a5de286ac6",
+     "type": "function",
+     "function": {
+      "name": "list_deals_by_type",
+      "arguments": "{\"category\": \"Meat & Poultry\", \"page\": \"1\"}"
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call-d82742b0-d29a-4b88-96af-b3a5de286ac6",
+   "content": "Meat & Poultry \u2014 page 1 of 2:\n739 | AIR-CHILLED Chicken Drumsticks or Thighs | $3.99/lb | Meat & Poultry | Foodland\n726 | AIR-CHILLED Split Chicken Breasts | $6.99/lb | Meat & Poultry | Foodland\n774 | Black Pepper Pork Chop | $12.99/order | Meat & Poultry | Seasons Food Mart\n776 | BONELESS PORK CHOPS OR ROASTS | $3.79/lb | Meat & Poultry | Vince's Market\n778 | BONELESS PORK LOIN CHOPS VALUE PACK OR ROAST CENTRE CUT | $5.99/lb | Meat & Poultry | Metro\n772 | Boneless Pork Sirloin Chops | $4.99/lb | Meat & Poultry | Foodland\n780 | Boneless Pork Sirloin Chops or Roasts | $4.49/lb | Meat & Poultry | Sobeys\n715 | BONELESS SKINLESS CHICKEN BREAST | $9.44/lb | Meat & Poultry | Vince's Market\n734 | BREADED CHICKEN BREAST CUTLETS VALUE PACK BONELESS SKINLESS | $5.99/lb | Meat & Poultry | Metro\n720 | CHICKEN BREAST | $3.49/lb | Meat & Poultry | No Frills\n724 | CHICKEN BREAST VALUE PACK (FRESH, BONELESS) | $5.99/lb | Meat & Poultry | T&T Supermarket\n721 | CHICKEN BREASTS, 4 KG | $58.00 | Meat & Poultry | Wholesale Club and Club Entrep\u00f4t\n737 | CHICKEN THIGHS | $2.99/lb | Meat & Poultry | Zehrs\n740 | CHICKEN THIGHS | $6.99/lb | Meat & Poultry | No Frills\n738 | CHICKEN THIGHS, 6.59/KG | $2.99/lb | Meat & Poultry | Loblaws\n719 | COMPLIMENTS Fresh AIR-CHILLED Bone-In Chicken Breast Halves | $6.49/lb | Meat & Poultry | Sobeys\n752 | COMPLIMENTS Fresh AIR-CHILLED Whole Chicken, Drumsticks or Bone-In Chicken Thighs | $3.49/lb | Meat & Poultry | Sobeys\n731 | COMPLIMENTS Roasted or Smoked Turkey Breast or Cooked or Smoked Chicken Breast | $3.49/100 g | Meat & Poultry | Foodland\n764 | CONTINENTAL MEDIUM GROUND KOSHER BEEF | $13.00/lb | Meat & Poultry | Loblaws\n765 | CONTINENTAL MEDIUM GROUND KOSHER BEEF | $13.00/lb | Meat & Poultry | Your Independent Grocer\n766 | CONTINENTAL MEDIUM GROUND KOSHER BEEF | $13.00/lb | Meat & Poultry | Loblaws\n713 | Farm Boy\u2122 Chicken Breast Schnitzel | $9.99/lb 22.02/kg | Meat & Poultry | Farm Boy\n775 | FRESH BONE-IN PORK COMBINATION CHOPS | $4.99/lb | Meat & Poultry | Food Basics\n727 | Fresh Boneless & Skinless Chicken Breast Cutlets | $9.99/lb 22.02/kg | Meat & Poultry | Highland Farms\n770 | Fresh Boneless Pork Shoulder Butt Chops or Roast | $3.49/7.69kg | Meat & Poultry | Starsky\n717 | FRESH BONELESS SKINLESS CHICKEN BREAST | $4.88/lb | Meat & Poultry | Metro\n718 | Fresh Boneless, Skinless Chicken Breast | $5.99/lb 13.21kg | Meat & Poultry | Starsky\n723 | Fresh Chicken Breast Boneless | $5.99/lb | Meat & Poultry | Winco Food Mart\n767 | Fresh Extra Lean Ground Beef | $7.99/lb 17.61/kg | Meat & Poultry | Highland Farms\n714 | Fresh Ontario Chicken Breast | $6.99/lb 15.41/kg! | Meat & Poultry | Highland Farms\n760 | Fresh Regular Ground Beef | $4.88/lb | Meat & Poultry | Sobeys\n741 | Fresh Whole Chicken | $3.33/lb 7.34/kg | Meat & Poultry | Farm Boy\n769 | Fresh, Never Frozen 100% Canadian Ground Beef Patties | $10.99 | Meat & Poultry | Sobeys\n759 | GRASS FED LEAN GROUND BEEF, 450 G | $5.25 | Meat & Poultry | Real Canadian Superstore\n756 | GRASS FED LEAN GROUND BEEF, 900 G | $10.88 | Meat & Poultry | Zehrs\n757 | GRASS FED LEAN GROUND BEEF, 900 G | $10.88 | Meat & Poultry | Loblaws\n755 | Ground In-Store Daily Lean Ground Beef | $7.99/lb 17.61/kg | Meat & Poultry | Farm Boy\n753 | Healthy Planet Organic Whole Chicken (3.5lb) | $23.99/ea | Meat & Poultry | Healthy Planet\n745 | KOSHER FRESH WHOLE CHICKEN | $3.99/lb | Meat & Poultry | Metro\n763 | LEAN GROUND BEEF & PORK | $7.00/lb | Meat & Poultry | No Frills"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call-9d4839a4-14cf-4860-90b1-b5437a47269b",
+     "type": "function",
+     "function": {
+      "name": "list_deals_by_type",
+      "arguments": "{\"category\": \"Produce\", \"page\": \"1\"}"
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call-9d4839a4-14cf-4860-90b1-b5437a47269b",
+   "content": "Produce \u2014 page 1 of 5:\n586 | 10 lb bagged russet potatoes | $3.94 | Produce | Giant Tiger\n671 | 113 g Haven Greens lettuce blend | $2.47/ea. | Produce | Giant Tiger\n676 | 227 g whole white mushrooms | $1.44 | Produce | Giant Tiger\n564 | 6 YELLOW ONIONS PRODUCT OF ONTARIO CANADA NO.1 GRADE 10 LB RED ONIONS PRODUCT OF ONTARIO \u2026 | $2.88/each | Produce | Food Basics\n532 | Ambrosia Apple | $4.98/bag | Produce | Foody Mart\n536 | Ambrosia Apple 5LB | $6.99/bag | Produce | Bestco Foodmart\n530 | AMBROSIA APPLES OR SWEET POTATOES | $0.99/lb | Produce | No Frills\n668 | ANDY BOY ROMAINE HEARTS | $3.98/bag | Produce | Centra\n672 | Andy Boy Romaine Hearts | $4.99/pkg of 3 | Produce | Highland Farms\n693 | Beef and Mushroom Pot Pie | $4.99/each | Produce | M&M Food Market\n619 | BEETS OR FARMER'S MARKET\u2122 CARROTS | $3.99 | Produce | No Frills\n610 | BEETS, FARMER'S MARKET\u2122 CARROTS OR FARMER'S MARKET\u2122 YELLOW ONIONS, 10 LB | $2.50 | Produce | Real Canadian Superstore\n686 | Belevini Marinated Mushrooms, 440 g | $3.99 | Produce | FreshCo\n690 | BELLE GROVE BUTTON MUSHROOMS | $3.79/ea. | Produce | Metro\n695 | Black Pepper Mushroom Chicken | $12.99/order | Produce | Bestco Foodmart\n583 | Breakfast Potatoes | $4.49 | Produce | Sobeys\n593 | Breakfast Potatoes | $4.49 | Produce | Foodland\n628 | BROCCOLI CROWNS | $5.00 | Produce | Food Basics\n631 | BROCCOLI CROWNS | $2.99/ea. | Produce | Metro\n627 | BROCCOLI FRIED SPROUTS | $4.99/ea | Produce | Centra\n634 | Broccoli Gratin | $10.99/each | Produce | M&M Food Market\n629 | Brussels Sprouts or Broccoli Bunches | $1.99/lb or ea | Produce | Foodland\n609 | Carrot | $0.69/lb | Produce | Bestco Foodmart\n613 | Carrot | $0.58/lb | Produce | Winco Food Mart\n623 | Carrots and Celery with Ranch Dip | $4.99 | Produce | Longos\n574 | CARROTS OR YELLOW ONIONS | $1.49/ea. | Produce | Metro\n560 | CELERY STALKS $3 EA., OR HONEYCRISP APPLES, $3 LB. 6.61/KG | $3.00/lb/ea. | Produce | Loblaws\n559 | CELERY STALKS, OR HONEYCRISP APPLES | $3.00/lb/ea. | Produce | Zehrs\n694 | Chicken With Black Pepper and Mushroom | $12.99/order | Produce | Seasons Food Mart\n611 | Chinese Carrot | $0.58/lb | Produce | Foody Mart\n632 | Chinese Okra/Broccoli Crown | $1.98/lb | Produce | Ranch Fresh Supermarket\n645 | COCKTAIL TOMATOES, 454 G | $2.99 | Produce | No Frills\n579 | COMPLIMENTS Carrots or Onions | $3.00 | Produce | Sobeys\n573 | Compliments Carrots or Onions 3 lb Product of Canada, Canada No. 1, 1.36 kg | $2.99 | Produce | FreshCo\n696 | COMPLIMENTS ORGANIC Sliced White or Cremini Mushrooms | $3.99 | Produce | Sobeys\n625 | Crown Broccoli | $1.68/lb | Produce | Foody Mart\n626 | CROWN BROCCOLI | $1.58/lb | Produce | H Mart\n630 | CROWN BROCCOLI | $1.48/lb | Produce | T&T Supermarket\n702 | Cubed butternut squash or sweet potatoes | $2.94 | Produce | Walmart\n701 | Cubed sweet potatoes | $2.94 | Produce | Walmart"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call-e80acfd0-a8ae-48e0-9f74-6a2d9529087d",
+     "type": "function",
+     "function": {
+      "name": "list_deals_by_type",
+      "arguments": "{\"category\": \"Pantry\", \"page\": \"1\"}"
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call-e80acfd0-a8ae-48e0-9f74-6a2d9529087d",
+   "content": "Pantry \u2014 page 1 of 5:\n1240 | Allergy Smart Gluten Free Brownies, Oat Bites or Cookies | $5.99 | Pantry | Longos\n1147 | ASIF PASTA OR COUSCOUS | $2.99/ea. | Pantry | Metro\n1129 | BARILLA JUMBO SHELLS OR LASAGNE PASTA, 255 - 454 G | $4.00 | Pantry | Real Canadian Superstore\n1119 | Barilla Pasta 340-410g pkg or Annie's Mac & Cheese 156-170g pkg | $1.99 | Pantry | Longos\n1116 | BEI DA HUANG PREMIUM WUCHANG RICE, 5kg | $31.97/ea | Pantry | T&T Supermarket\n1091 | BEN'S ORIGINAL BISTRO EXPRESS RICE | $2.99/each | Pantry | Food Basics\n1170 | Bertolli Pasta Sauce | $4.99 | Pantry | Highland Farms\n1218 | BOB'S RED MILL FLOUR | $12.99/ea. | Pantry | Metro\n1221 | BOB'S RED MILL FLOUR | $18.99/ea. | Pantry | Metro\n1242 | BOB'S RED MILL OATMEAL | $5.49/ea. | Pantry | Metro\n1099 | BOTAN CALROSE RICE, 15LB | $14.97/ea | Pantry | T&T Supermarket\n1128 | Braised Beef Pappardelle Pasta | $17.99 | Pantry | M&M Food Market\n1209 | BRAR'S DESI STYLE DURUM FLOUR, 20 LB | $12.97 | Pantry | Real Canadian Superstore\n1264 | Broya Bone Broth Chicken Turmeric & Ginger | $8.99 | Pantry | Nature's Source and Nature's Signature\n1213 | BUENAS FLOUR STICKS, 227 G | $3.00 | Pantry | Real Canadian Superstore\n1241 | CALIFIA FARMS OAT BEVERAGE | $5.99/ea. | Pantry | Metro\n1164 | CARBONE PASTA SAUCE | $13.99/ea | Pantry | Vince's Market\n1109 | CHA'S RICE | $11.49/ea. | Pantry | Metro\n1112 | CHALO! Basmati Rice | $5.79 | Pantry | Sobeys\n1108 | Chana Masala & Rice | $5.00/each sale | Pantry | M&M Food Market\n1148 | CHEF BOYARDEE CANNED PASTA | $2.99/each | Pantry | Shoppers Drug Mart\n1226 | CJO ORGANIC CANE SUGAR/ CANE SUGAR DARK | $4.48/ea | Pantry | H Mart\n1160 | Classico Pasta Sauce | $2.99 | Pantry | Longos\n1173 | CLASSICO PASTA SAUCE, 218-600 ML | $2.97 | Pantry | Real Canadian Superstore\n1094 | Compliments Crispy Rice Squares Rainbow Sprinkle 528 g | $5.77 | Pantry | FreshCo\n1156 | COMPLIMENTS Family Size Fresh Pasta | $9.99 | Pantry | Sobeys\n1246 | COMPLIMENTS Instant Oatmeal | $7.00 | Pantry | Foodland\n1113 | COMPLIMENTS Long Grain White Rice | $6.49 | Pantry | Foodland\n1131 | Creamy Ros\u00e9 Chicken & Pasta | $19.99 | Pantry | M&M Food Market\n1132 | Creamy Tuscan Style Chicken and Pasta | $19.99 | Pantry | M&M Food Market\n1106 | Cups | $2.99 | Pantry | Sobeys\n1110 | Cups | $2.99 | Pantry | Foodland\n1092 | DAINTY Jasmine Rice | $9.88 | Pantry | Sobeys\n1144 | DELVERDE PASTA, 250-450 G | $2.00 | Pantry | Zehrs\n1145 | DELVERDE PASTA, 250-450 g | $2.00 | Pantry | Loblaws\n1140 | DI MARTINO PASTA | $3.29/ea. | Pantry | Metro\n1118 | Divella Pasta | $1.99 | Pantry | FreshCo\n1121 | Divella Tri-Colour Pasta 500 g | $2.99 | Pantry | FreshCo\n1176 | Dunya Chickpeas 2Kg | $5.98/ea | Pantry | Seasons Food Mart\n1210 | DURUM ATTA FLOUR, 9.07 KG | $13.00 | Pantry | Zehrs"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call-5a0f2d67-0c33-4f22-bc6c-4b80c0e5090c",
+     "type": "function",
+     "function": {
+      "name": "list_deals_by_type",
+      "arguments": "{\"category\": \"Pantry\", \"page\": \"2\"}"
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call-5a0f2d67-0c33-4f22-bc6c-4b80c0e5090c",
+   "content": "Pantry \u2014 page 2 of 5:\n1219 | DURUM ATTA FLOUR, 9.07 KG | $13.00 | Pantry | Your Independent Grocer\n1220 | DURUM ATTA FLOUR, 9.07 KG | $13.00 | Pantry | Loblaws\n1243 | ELMHURST OAT NOG | $8.49/ea. | Pantry | Metro\n1107 | ERAWAN RICE STICK, 454G | $3.50/or $1.77/ea | Pantry | T&T Supermarket\n1120 | Farm Boy\u2122 Pasta | $2.29/pkg | Pantry | Farm Boy\n1262 | FATSO PEANUT BUTTER | $6.99/ea. | Pantry | Metro\n1203 | Five Roses flour | $11.97 | Pantry | Walmart\n1211 | FIVE ROSES OR ROBIN HOOD FLOUR | $11.98/each | Pantry | Food Basics\n1205 | Five Roses or Robin Hood Flour 5 kg | $7.77 | Pantry | FreshCo\n1212 | Flour | $7.99 | Pantry | Sobeys\n1179 | Four Trees by Phoeapolis Olive Oil Extra Virgin Organic | $11.69 | Pantry | Healthy Planet\n1180 | Four Trees by Phoeapolis Olive Oil Extra Virgin Organic | $16.89 | Pantry | Healthy Planet\n1178 | Four Trees by Phoeapolis Olive Oil Extra Virgin Organic 250 mL | $6.49 | Pantry | Healthy Planet\n1200 | GARCIA DE LA CRUZ EXTRA VIRGIN OLIVE OIL | $18.99/ea. | Pantry | Metro\n1171 | GEFEN PASTA OR PIZZA SAUCE | $4.99/ea. | Pantry | Metro\n1149 | Gluten Free Pasta 340 g or Protein+ Pasta 340 g | $3.49 | Pantry | Foodland\n1096 | GOLDEN ROYAL OX THAI HOM MALI RICE 18LBS | $23.98/bag | Pantry | H Mart\n1136 | Great Value frozen meat lasagna | $7.97 | Pantry | Walmart\n1105 | Green Giant core vegetables, restaurant sides or riced vegetables | $3.47 | Pantry | Walmart\n1207 | Hatynka Wheat Flour Extra Class | $2.49 | Pantry | Starsky\n1133 | Heinz beans or pasta | $1.44 | Pantry | Walmart\n1172 | Highland Farms Country Kitchen Pasta Sauce | $7.99 | Pantry | Highland Farms\n1177 | Hippeas Baked Chickpea Puffs All Dressed Up 113 g | $2.99 | Pantry | Healthy Planet\n1189 | IRRESISTIBLE EXTRA VIRGIN OLIVE OIL | $6.49/ea. | Pantry | Metro\n1101 | JASMINE GOLD THAI JASMINE RICE, 8 kg | $13.99 | Pantry | No Frills\n1083 | JASMINE RICE, 18.1 KG | $27.99 | Pantry | Wholesale Club and Club Entrep\u00f4t\n1152 | JOVIAL RICE PASTA | $5.99/ea. | Pantry | Metro\n1265 | Knorr Chicken Broth Mix | $6.98/ea | Pantry | Foody Mart\n1258 | KRAFT PEANUT BUTTER | $5.99/each | Pantry | Shoppers Drug Mart\n1260 | KRAFT PEANUT BUTTER | $3.99 | Pantry | Metro\n1196 | KRITI GOLD'S EXTRA VIRGIN OLIVE OIL, 750 ML | $12.00 | Pantry | Real Canadian Superstore\n1228 | LANTIC SUGAR, 1 KG | $3.50 | Pantry | Zehrs\n1229 | LANTIC SUGAR, 1 KG | $3.50 | Pantry | Loblaws\n1130 | Lemon Herb Chicken and Pasta | $19.99 | Pantry | M&M Food Market\n1268 | LIFE SMART TOFU | $2.77/ea. | Pantry | Metro\n1198 | LIV 99 EXTRA VIRGIN OLIVE OIL | $18.99 | Pantry | Loblaws\n1201 | LIV 99 EXTRA VIRGIN OLIVE OIL | $18.99 | Pantry | Zehrs\n1142 | LIVIVA PASTA | $3.99/ea. | Pantry | Metro\n1081 | Liviva Shirataki Instant Rice GF 120 g | $2.99 | Pantry | Healthy Planet\n1127 | Liviva Shirataki Pasta w/Oat Fibre Organic 400 g | $3.59 | Pantry | Healthy Planet"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call-aa2fa7b3-e3d1-49e6-9a06-76ce2a5ca903",
+     "type": "function",
+     "function": {
+      "name": "list_deals_by_type",
+      "arguments": "{\"category\": \"Pantry\", \"page\": \"3\"}"
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call-aa2fa7b3-e3d1-49e6-9a06-76ce2a5ca903",
+   "content": "Pantry \u2014 page 3 of 5:\n1184 | Longo's Curato Organic Italian Extra Virgin Olive Oil | $10.99 | Pantry | Longos\n1188 | Longo's Curato Sicilian Extra Virgin Olive Oil | $18.99 | Pantry | Longos\n1187 | Longo's Curato Toscano Extra Virgin Olive Oil | $17.99 | Pantry | Longos\n1141 | Longo's Pasta | $4.00 | Pantry | Longos\n1102 | LUNDBERG JASMINE RICE | $4.99/ea. | Pantry | Metro\n1249 | Made Good Soft Baked Oat Bars | $3.74 | Pantry | Healthy Planet\n1191 | MAISON ORPH\u00c9E EXTRA VIRGIN OLIVE OIL | $18.99/ea. | Pantry | Metro\n1195 | MAMA ROSA'S OLIVE POMACE OIL | $9.98 | Pantry | Centra\n1271 | MAPO TOFU | $6.98/ea | Pantry | H Mart\n1216 | MASECA INSTANT CORN MASA FLOUR, 1.8 KG | $8.50 | Pantry | Real Canadian Superstore\n1190 | Mastro Extra Virgin Olive Oil | $8.99/1l | Pantry | Highland Farms\n1080 | Minute Rice | $8.67 | Pantry | Walmart\n1089 | MINUTE RICE READY TO SERVE OR TILDA READY TO HEAT, 250G | $2.50 | Pantry | Real Canadian Superstore\n1087 | MLT Rice/Wheat Sticks Selected | $2.99/ea | Pantry | Btrust Supermarket\n1134 | MOLISANA PASTA OR PASSATA | $1.88/each | Pantry | Food Basics\n1135 | MOLISANA PASTA OR PASSATA | $8.00/each | Pantry | Food Basics\n1122 | Monsieur Gustav Cheese Assorted Varieties 120-170 g, Olivieri Pasta Twin Pack 450-500 g o\u2026 | $4.99 | Pantry | FreshCo\n1250 | MUSH OVERNIGHT OATS | $5.00 | Pantry | Metro\n1225 | NATIVE ORGANIC CANE SUGAR | $4.44/ea | Pantry | Ambrosia Natural Foods\n1245 | Nature's Path Hot Oatmeal | $5.99 | Pantry | Nature's Emporium\n1115 | NEW TREASURE LONG GRAIN PARBOILED RICE, 8 KG | $14.99 | Pantry | Wholesale Club and Club Entrep\u00f4t\n1150 | NO NAME (900g) or PC (375g - 454g) PASTA | $4.00/or 2.49 each | Pantry | Shoppers Drug Mart\n1090 | NO NAME\u00ae GRANOLA BARS OR CRISPY RICE MARSHMALLOW SQUARES, 120-176 G | $2.50 | Pantry | Real Canadian Superstore\n1088 | NO NAME\u00ae LONG GRAIN RICE, 2 KG | $4.00 | Pantry | Real Canadian Superstore\n1192 | NO NAME\u00ae OLIVE OIL, 750 mL | $6.99 | Pantry | No Frills\n1259 | NUTELLA HAZELNUT or PEANUT BUTTER SPREAD | $9.29/each | Pantry | Shoppers Drug Mart\n1123 | O SOLE MIO FRESH PASTA | $2.99/each | Pantry | Food Basics\n1248 | Oat-standing | $4.50 | Pantry | President's Choice\n1238 | Oatly Barista Edition Oat Beverage | $4.49/ea | Pantry | Farm Boy\n1239 | OATLY OAT BEVERAGES | $5.49/ea. | Pantry | Metro\n1194 | Olive Oil | $17.99 | Pantry | Foodland\n1185 | OLIVE POMACE OIL 3L | $9.98/ea | Pantry | Centra\n1244 | One Degree Organic & Gluten Free Protein Instant Oatmeal | $3.99 | Pantry | Nature's Emporium\n1231 | ONLY OATS ROLLED OATS | $11.49/ea. | Pantry | Metro\n1138 | Pasta | $3.99 | Pantry | Sobeys\n1169 | PASTA OR PIZZA SAUCE, 2.84 L | $6.99 | Pantry | Wholesale Club and Club Entrep\u00f4t\n1154 | PASTA TAVOLA RAVIOLI | $6.99/ea. | Pantry | Metro\n1143 | PASTA, 9.07 KG | $27.00 | Pantry | Wholesale Club and Club Entrep\u00f4t\n1232 | PC INSTANT OATMEAL | $2.99/each | Pantry | Shoppers Drug Mart\n1233 | PC RICH & CHEWY GRANOLA BARS (5's), DAD'S OATMEAL OR PEEK FREANS COOKIES | $2.79/each | Pantry | Shoppers Drug Mart"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call-2c6ebff1-f3f9-42ed-9895-ff522b704f2d",
+     "type": "function",
+     "function": {
+      "name": "list_deals_by_type",
+      "arguments": "{\"category\": \"Pantry\", \"page\": \"4\"}"
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call-2c6ebff1-f3f9-42ed-9895-ff522b704f2d",
+   "content": "Pantry \u2014 page 4 of 5:\n1193 | PC SPLENDIDO COLD PRESSED EXTRA VIRGIN OLIVE OIL | $14.99/each | Pantry | Shoppers Drug Mart\n1256 | PC\u00ae BLUE MENU\u00ae PEANUT BUTTER, 750 G | $5.00 | Pantry | Real Canadian Superstore\n1237 | PC\u00ae Organics\u2122 Fruit, Oat & Veggie Bars | $4.00 | Pantry | President's Choice\n1168 | PC\u00ae PASTA SAUCE, 1.8 L | $8.50 | Pantry | Real Canadian Superstore\n1261 | PEANUT BUTTER, 2 KG | $10.99 | Pantry | Wholesale Club and Club Entrep\u00f4t\n1167 | PENNE PASTA IN VODKA SAUCE | $1.69/100g | Pantry | Vince's Market\n1174 | Primo canned beans | $1.00/ea. | Pantry | Giant Tiger\n1117 | Primo pasta | $0.87/ea | Pantry | Giant Tiger\n1159 | Primo Pasta Sauce 680 mL | $1.99 | Pantry | FreshCo\n1255 | Protein Oat Cereal Mountain Maple | $5.39 | Pantry | Healthy Planet\n1234 | Quaker Instant Protein Oatmeal | $5.49/pkg | Pantry | Farm Boy\n1235 | Quaker Oat Flour 700g pkg or Muffin or Cookie Mix 900g pkg | $5.49 | Pantry | Longos\n1125 | Rana Fresh Pasta | $5.99 | Pantry | Longos\n1161 | Rao's Pasta Sauce | $9.99 | Pantry | Longos\n1222 | Redpath Granulated Sugar | $2.99 | Pantry | Longos\n1223 | Redpath sugar | $2.77 | Pantry | Walmart\n1227 | Redpath Sugar | $2.99 | Pantry | Longos\n1263 | REESE'S PEANUT BUTTER TREES (34g) or CADBURY MINI EGGS (33g) | $4.00/or 2.29 each | Pantry | Shoppers Drug Mart\n1204 | Robin Hood flour | $11.97 | Pantry | Walmart\n1206 | Robin Hood or Five Roses Flour | $10.99 | Pantry | Longos\n1214 | ROBIN HOOD OR FIVE ROSES FLOUR | $4.97/ea. | Pantry | Metro\n1217 | ROBIN HOOD or FIVE ROSES Flour | $7.99 | Pantry | Sobeys\n1269 | ROOSTER\u00ae TOFU, 454 G | $4.96/or $2.89 ea. | Pantry | Real Canadian Superstore\n1085 | S.B. Rice Flakes | $1.98/ea | Pantry | Ranch Fresh Supermarket\n1093 | Sekka Medium Grain Rice | $13.98/ea | Pantry | Ranch Fresh Supermarket\n1097 | SEKKA MEDIUM GRAIN RICE 40 LB | $29.98/ea | Pantry | Centra\n1095 | SEKKA Premium Medium Grain Rice | $14.99 | Pantry | Btrust Supermarket\n1082 | Sekka Rice 6.8 kg | $12.77 | Pantry | FreshCo\n1175 | SELECTION CANNED BEANS | $1.79/ea. | Pantry | Metro\n1215 | SELECTION FLOUR | $3.99/ea. | Pantry | Metro\n1100 | SELECTION LONG GRAIN OR PARBOILED RICE | $2.99/ea. | Pantry | Metro\n1139 | SELECTION PASTA | $2.49/ea. | Pantry | Metro\n1165 | SELECTION PASTA SAUCE | $2.99/ea. | Pantry | Metro\n1166 | SELECTION PASTA SAUCE | $2.97/each | Pantry | Food Basics\n1257 | Smucker's Jam 500mL jar or Smucker's No Sugar Added Jam 310mL jam or Jif Peanut Butter 1k\u2026 | $5.99 | Pantry | Longos\n1266 | Soyganic Organic Soft Tofu 2x150g pkg or Soyganic Organic Medium Firm Tofu 454g pkg or So\u2026 | $1.99 | Pantry | Longos\n1137 | ST-HUBERT OR SWISS CHALET MEAT PIE OR IRRESISTIBLE PASTA ENTR\u00c9E | $6.88/each | Pantry | Food Basics\n1270 | STIR-FRIED FISH CAKE, MAPO TOFU | $6.98/ea | Pantry | H Mart\n1251 | Stoked Oats Oats with Flax & Chia 500 g | $5.99 | Pantry | Healthy Planet\n1253 | STOKED OATS ORGANIC GLUTEN-FREE OATS | $5.99/ea | Pantry | Ambrosia Natural Foods"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call-08f5f854-6b38-44f7-a8ff-9bccb0615777",
+     "type": "function",
+     "function": {
+      "name": "list_deals_by_type",
+      "arguments": "{\"category\": \"Pantry\", \"page\": \"5\"}"
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call-08f5f854-6b38-44f7-a8ff-9bccb0615777",
+   "content": "Pantry \u2014 page 5 of 5:\n1236 | Stoked Oats Quick or Steel Cut Oats | $6.99 | Pantry | Longos\n1247 | Stoked Oats Run of the Mill Quick Oats 810 g | $5.39 | Pantry | Healthy Planet\n1254 | Stoked Oats Superfood Granola 300 g | $4.19 | Pantry | Healthy Planet\n1126 | Stuffed Pasta Shells | $17.99/each | Pantry | M&M Food Market\n1230 | Sugar Diamond Squish, Assorted | $3.99 | Pantry | Party City\n1224 | Sugar Red Honey Pomelo | $3.98/ea | Pantry | Seasons Food Mart\n1267 | SUPERIOR TOFU / ORGANIC TOFU, 454G | $1.97/$2.87/ea | Pantry | T&T Supermarket\n1104 | SURAJ\u00ae AGED BASMATI RICE, 8 LB | $7.99 | Pantry | Zehrs\n1114 | SURAJ\u00ae AGED BASMATI RICE, 8 LB | $7.99 | Pantry | Loblaws\n1181 | Terra Delyssa Organic Extra Virgin Olive Oil | $8.99 | Pantry | Nature's Emporium\n1182 | TERRA DELYSSA VIRGIN OLIVE OIL, 1 L | $10.98 | Pantry | Zehrs\n1183 | TERRA DELYSSA VIRGIN OLIVE OIL, 1 L | $11.98 | Pantry | Loblaws\n1103 | THE RICE STUFF RICE | $3.99/ea. | Pantry | Metro\n1153 | Three Cheese Pasta Bake | $5.99/each sale | Pantry | M&M Food Market\n1098 | TILDA BASMATI RICE | $12.88/each | Pantry | Food Basics\n1084 | Tilda Pure Basmati Rice | $15.99 | Pantry | Longos\n1124 | Time Wise Pasta | $5.00 | Pantry | Sobeys\n1272 | TJ FENG YE TOFU FIVE SPICE BEAN CURD, 380g | $6.50/or 3.37/ea | Pantry | T&T Supermarket\n1111 | Unico Arborio Rice | $3.99 | Pantry | Highland Farms\n1146 | VINCE'S OWN CHEESY PULLED PORK PASTA | $1.79/100g | Pantry | Vince's Market\n1162 | VINCE'S OWN PENNE RIGATE & PASTA SAUCE | $0.99/100g | Pantry | Vince's Market\n1163 | VINCE'S OWN PENNE RIGATE IN PASTA SAUCE | $0.99/100g | Pantry | Vince's Market\n1208 | WHOLE WHEAT FLOUR, 9.07 KG | $19.99 | Pantry | Wholesale Club and Club Entrep\u00f4t\n1086 | Y&Y Glutinous Rice Flour | $0.88/ea | Pantry | Foody Mart\n1252 | YUMI OVERNIGHT OATS | $8.99/ea. | Pantry | Metro\n1186 | Zenolive Organic Extra Virgin Olive Oil | $14.99 | Pantry | Nature's Emporium\n1197 | ZETA KOSHER EXTRA VIRGIN OLIVE OIL, 750 ML | $15.99 | Pantry | Loblaws\n1199 | ZETA KOSHER EXTRA VIRGIN OLIVE OIL, 750 ML | $15.99 | Pantry | Your Independent Grocer\n1202 | ZETA KOSHER EXTRA VIRGIN OLIVE OIL, 750 ML | $15.99 | Pantry | Loblaws\n1155 | ZIGGY'S\u00ae FRESH PASTA TWIN PACKS, 600 G | $5.00 | Pantry | Real Canadian Superstore\n1158 | ZIGGY'S\u00ae FRESH PASTA, TWIN PACKS, 600 G | $5.00 | Pantry | Zehrs\n1157 | ZIGGY'S\u00ae FRESH PASTA, TWIN PACKS,600 G | $5.00 | Pantry | Your Independent Grocer\n1151 | ZIGGY'S\u00ae PASTA, 350/360 g or RESER'S SALADS, 425/454 g | $2.50 | Pantry | No Frills"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call-3fb1ffdb-8c37-4a3e-a587-1f534db76cb1",
+     "type": "function",
+     "function": {
+      "name": "list_deals_by_type",
+      "arguments": "{\"category\": \"Produce\", \"page\": \"2\"}"
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "tool_call_id": "call-3fb1ffdb-8c37-4a3e-a587-1f534db76cb1",
+   "content": "Produce \u2014 page 2 of 5:\n666 | Farm Boy\u2122 Stuffed Bell Peppers or Portabella Mushrooms | $9.99/lb | Produce | Farm Boy\n576 | FARMER'S MARKET MINI CUCUMBERS, PKG OF 6 OR YELLOW ONIONS, 3 LB BAG | $2.99 | Produce | No Frills\n558 | FARMER'S MARKET ROYAL GALA or MCINTOSH APPLES, 4 LB BAG | $4.99 | Produce | No Frills\n575 | FARMER'S MARKET\u2122 CARROTS OR YELLOW ONIONS, 3 LB BAG | $2.50 | Produce | Your Independent Grocer\n577 | FARMER'S MARKET\u2122 CARROTS OR YELLOW ONIONS, 3 LB BAG | $1.50 | Produce | Zehrs\n578 | FARMER'S MARKET\u2122 CARROTS OR YELLOW ONIONS, 3 LB BAG | $1.50 | Produce | Loblaws\n540 | FARMER'S MARKET\u2122 GALA OR MCINTOSH\u2122 APPLES, 4 LB | $5.00 | Produce | Real Canadian Superstore\n539 | FARMER'S MARKET\u2122 MCINTOSH OR AMBROSIA APPLES, 4 LB | $6.00 | Produce | Your Independent Grocer\n557 | FARMER'S MARKET\u2122 MCINTOSH OR AMBROSIA APPLES, 4 LB | $5.50 | Produce | Loblaws\n541 | FARMER'S MARKET\u2122 MCINTOSH OR AMBROSIA APPLES, 4LB | $5.50 | Produce | Zehrs\n591 | FARMER'S MARKET\u2122 RUSSET POTATOES, 10 LB | $2.00 | Produce | Real Canadian Superstore\n661 | FARMER'S MARKET\u2122 SWEET PEPPERS, PKG OF 4 OR PC\u00ae LITTLE BEAUTS VARIETY TOMATOES, 567 G | $4.99 | Produce | No Frills\n688 | Foojoy Dried Shiitake Mushroom | $49.98/each | Produce | Seasons Food Mart\n531 | Fresh Apples | $0.99/lb | Produce | Highland Farms\n553 | Fresh Apples Russet | $2.99/4lb cello bag | Produce | Highland Farms\n622 | Fresh Carrot in Box 22lb | $19.99/box | Produce | Seasons Food Mart\n642 | Fresh Heirloom Tomatoes | $2.49/lb | Produce | Longos\n545 | Fresh Honeycrisp Apples | $7.99 | Produce | Longos\n555 | Fresh Kissabel Rouge Apples | $5.99 | Produce | Longos\n620 | Fresh Mini Carrots | $3.99 | Produce | Longos\n617 | Fresh Organic Carrots | $2.99/2lb cello bag | Produce | Highland Farms\n651 | Fresh Wild Wonders Gourmet Medley Tomatoes | $6.99 | Produce | Longos\n529 | Gala or Ambrosia Apples | $0.99/lb | Produce | Foodland\n551 | Gala or Ambrosia Apples | $1.99/lb | Produce | Sobeys\n543 | GALA, McINTOSH, RED DELICIOUS, CORTLAND OR AMBROSIA APPLES OR AVOCADOS | $2.88/each | Produce | Food Basics\n571 | Gold Onion in Bag 50lb | $29.99/bag | Produce | Seasons Food Mart\n550 | GOLDEN DELICIOUS APPLE | $2.00/lb | Produce | Loblaws\n533 | GOLDEN DELICIOUS APPLES | $2.00/lb | Produce | Your Independent Grocer\n534 | GOLDEN DELICIOUS APPLES | $2.00/lb | Produce | Loblaws\n699 | Gourmet Mushroom and Black Truffle Oil | $9.99/each | Produce | M&M Food Market\n581 | Green Onion | $1.50/or 0.88/ea | Produce | T&T Supermarket\n582 | Green Onions or Cilantro Product of USA or Mexico | $1.29 | Produce | FreshCo\n660 | GREENHOUSE TOMATOES ON THE VINE OR BRUSSELS SPROUTS | $2.00/lb | Produce | Your Independent Grocer\n635 | Harvest Fresh Chopped Kale or Spinach | $2.75/pkg | Produce | Farm Boy\n636 | Head on Spinach | $1.98/lb | Produce | Winco Food Mart\n637 | HEIRLOOM TOMATO | $2.98/lb | Produce | H Mart\n643 | Heirloom Tomatoes | $3.99/lb 8.80/kg | Produce | Farm Boy\n679 | Holborne Organic Oyster or Shiitake Mushrooms | $5.99/pkg | Produce | Farm Boy\n547 | HONEYCRISP APPLES | $2.99/lb | Produce | Real Canadian Superstore\n709 | Jackson's Sweet Potato Chips Carolina BBQ 142 g | $4.19 | Produce | Healthy Planet"
+  },
+  {
+   "role": "assistant",
+   "content": "{\"dishes\": [\n    {\n      \"name\": \"Roast chicken with garlic potatoes\",\n      \"anchor_deal_ids\": [739],\n      \"side_deal_ids\": [586, 671],\n      \"pantry_items\": [\"salt\", \"olive oil\", \"garlic\"],\n      \"why\": \"The chicken is on sale and pairs well with roasted potatoes and garlic.\"\n    },\n    {\n      \"name\": \"Grilled pork chops with roasted carrots\",\n      \"anchor_deal_ids\": [774],\n      \"side_deal_ids\": [623, 628],\n      \"pantry_items\": [\"salt\", \"black pepper\", \"olive oil\"],\n      \"why\": \"The pork chops are on sale and pair well with roasted carrots.\"\n    },\n    {\n      \"name\": \"Stir-fried vegetables with tofu\",\n      \"anchor_deal_ids\": [1270],\n      \"side_deal_ids\": [576, 577],\n      \"pantry_items\": [\"soy sauce\", \"vegetable oil\"],\n      \"why\": \"The tofu is on sale and can be stir-fried with a variety of vegetables.\"\n    },\n    {\n      \"name\": \"Baked salmon with roasted broccoli\",\n      \"anchor_deal_ids\": [none],\n      \"side_deal_ids\": [629, 630],\n      \"pantry_items\": [\"salt\", \"black pepper\", \"olive oil\"],\n      \"why\": \"The salmon is not on sale, but the broccoli is and pairs well with baked salmon.\"\n    },\n    {\n      \"name\": \"Chicken and vegetable soup\",\n      \"anchor_deal_ids\": [720],\n      \"side_deal_ids\": [671, 623],\n      \"pantry_items\": [\"chicken or vegetable stock\", \"salt\", \"black pepper\"],\n      \"why\": \"The chicken is on sale and can be used to make a hearty soup with a variety of vegetables.\"\n    }\n  ],\n  \"stock_up_deal_ids\": [1200, 1222],\n  \"notes\": \"The plan includes a variety of protein sources and vegetables, and takes advantage of sales on chicken, pork chops, and tofu. The pantry items used are all staples that are likely already stocked. The stock up deals on olive oil and sugar are good opportunities to replenish pantry staples.\"\n}"
+  }
+ ]
+}

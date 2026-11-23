@@ -1,0 +1,33 @@
+{
+ "arm": "A_full_list",
+ "model": "ollama:qwen2.5:7b",
+ "scenario": {
+  "snapshot": "experiments/chef/snapshots/2026-11-23_L4G3E8_open.json",
+  "budget": 100.0,
+  "household_size": 2,
+  "num_meals": 5,
+  "meal_type": "dinner",
+  "pantry": [
+   "salt",
+   "black pepper",
+   "vegetable oil",
+   "olive oil",
+   "butter",
+   "all-purpose flour",
+   "sugar",
+   "garlic",
+   "yellow onion",
+   "dried oregano",
+   "dried basil",
+   "paprika",
+   "ground cumin",
+   "chili flakes",
+   "soy sauce",
+   "vinegar",
+   "dijon mustard",
+   "chicken or vegetable stock",
+   "rice",
+   "eggs"
+  ]
+ }
+}

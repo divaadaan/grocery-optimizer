@@ -1,0 +1,167 @@
+[
+ {
+  "seed": 1,
+  "error": null,
+  "seconds": 13.1,
+  "calls": 1,
+  "tool_calls": 0,
+  "seen": 55,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 18,
+  "invalid_ids": [],
+  "bad_pantry": [
+   "curry powder",
+   "apple"
+  ],
+  "dishes_without_anchor": 0,
+  "total_cost": 57.19,
+  "within_budget": true,
+  "chains": {
+   "Metro": 5,
+   "FreshCo": 2,
+   "Highland Farms": 1,
+   "Real Canadian Superstore": 1,
+   "Foody Mart": 1,
+   "T&T Supermarket": 1,
+   "Seasons Food Mart": 1,
+   "Starsky": 1,
+   "Foodland": 1,
+   "Walmart": 1,
+   "Your Independent Grocer": 1,
+   "Healthy Planet": 1,
+   "Giant Tiger": 1
+  },
+  "categories": {
+   "Produce": 10,
+   "Pantry": 4,
+   "Meat & Poultry": 2,
+   "Seafood": 2
+  },
+  "beverage_ids": [],
+  "reused_deals": 0,
+  "anchor_categories": {
+   "Meat & Poultry": 2,
+   "Seafood": 2,
+   "Pantry": 1
+  },
+  "position_quintiles": [
+   3,
+   4,
+   6,
+   3,
+   2
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 2,
+  "error": null,
+  "seconds": 9.5,
+  "calls": 1,
+  "tool_calls": 0,
+  "seen": 55,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 15,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 50.6,
+  "within_budget": true,
+  "chains": {
+   "Metro": 3,
+   "Seasons Food Mart": 2,
+   "Walmart": 1,
+   "Zehrs": 1,
+   "Real Canadian Superstore": 1,
+   "Food Basics": 1,
+   "T&T Supermarket": 1,
+   "Your Independent Grocer": 1,
+   "Sobeys": 1,
+   "Highland Farms": 1,
+   "FreshCo": 1,
+   "Giant Tiger": 1
+  },
+  "categories": {
+   "Produce": 8,
+   "Pantry": 3,
+   "Seafood": 2,
+   "Meat & Poultry": 2
+  },
+  "beverage_ids": [],
+  "reused_deals": 2,
+  "anchor_categories": {
+   "Meat & Poultry": 2,
+   "Seafood": 2,
+   "Pantry": 1
+  },
+  "position_quintiles": [
+   4,
+   2,
+   5,
+   3,
+   1
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 3,
+  "error": null,
+  "seconds": 9.5,
+  "calls": 1,
+  "tool_calls": 0,
+  "seen": 55,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 17,
+  "invalid_ids": [],
+  "bad_pantry": [
+   "apple"
+  ],
+  "dishes_without_anchor": 0,
+  "total_cost": 57.28,
+  "within_budget": true,
+  "chains": {
+   "Metro": 3,
+   "Real Canadian Superstore": 2,
+   "Foody Mart": 2,
+   "FreshCo": 2,
+   "Highland Farms": 1,
+   "Your Independent Grocer": 1,
+   "T&T Supermarket": 1,
+   "Starsky": 1,
+   "Walmart": 1,
+   "Seasons Food Mart": 1,
+   "Giant Tiger": 1,
+   "Food Basics": 1
+  },
+  "categories": {
+   "Produce": 9,
+   "Pantry": 4,
+   "Meat & Poultry": 2,
+   "Seafood": 2
+  },
+  "beverage_ids": [],
+  "reused_deals": 1,
+  "anchor_categories": {
+   "Meat & Poultry": 2,
+   "Seafood": 2,
+   "Pantry": 1
+  },
+  "position_quintiles": [
+   3,
+   2,
+   5,
+   5,
+   2
+  ],
+  "cited_unseen": []
+ }
+]

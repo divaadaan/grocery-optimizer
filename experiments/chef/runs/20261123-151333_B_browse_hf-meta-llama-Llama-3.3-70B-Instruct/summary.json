@@ -1,0 +1,122 @@
+[
+ {
+  "seed": 1,
+  "error": null,
+  "seconds": 11.3,
+  "calls": 10,
+  "tool_calls": 9,
+  "seen": 313,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 12,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 73.09,
+  "within_budget": true,
+  "chains": {
+   "Giant Tiger": 2,
+   "Longos": 2,
+   "Foodland": 1,
+   "Seasons Food Mart": 1,
+   "H Mart": 1,
+   "FreshCo": 1,
+   "Starsky": 1,
+   "Centra": 1,
+   "Loblaws": 1,
+   "Walmart": 1
+  },
+  "categories": {
+   "Produce": 5,
+   "Meat & Poultry": 4,
+   "Pantry": 3
+  },
+  "beverage_ids": [],
+  "reused_deals": 2,
+  "anchor_categories": {
+   "Meat & Poultry": 4,
+   "Pantry": 1
+  },
+  "position_quintiles": [
+   7,
+   1,
+   1,
+   2,
+   1
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 2,
+  "error": null,
+  "seconds": 6.6,
+  "calls": 6,
+  "tool_calls": 7,
+  "seen": 229,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 11,
+  "invalid_ids": [],
+  "bad_pantry": [
+   "flour"
+  ],
+  "dishes_without_anchor": 0,
+  "total_cost": 57.29,
+  "within_budget": true,
+  "chains": {
+   "Giant Tiger": 3,
+   "Foodland": 2,
+   "Metro": 2,
+   "Food Basics": 1,
+   "No Frills": 1,
+   "Seasons Food Mart": 1,
+   "Loblaws": 1
+  },
+  "categories": {
+   "Produce": 6,
+   "Meat & Poultry": 5
+  },
+  "beverage_ids": [],
+  "reused_deals": 2,
+  "anchor_categories": {
+   "Meat & Poultry": 5
+  },
+  "position_quintiles": [
+   8,
+   3,
+   0,
+   0,
+   0
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 3,
+  "error": null,
+  "seconds": 10.7,
+  "calls": 10,
+  "tool_calls": 9,
+  "seen": 313,
+  "truncated": false,
+  "parse_ok": false,
+  "num_dishes": 0,
+  "dishes_ok": false,
+  "cited_ids": 0,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 0.0,
+  "within_budget": false,
+  "chains": {},
+  "categories": {},
+  "beverage_ids": [],
+  "reused_deals": 0,
+  "anchor_categories": {},
+  "position_quintiles": [],
+  "cited_unseen": []
+ }
+]

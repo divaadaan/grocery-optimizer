@@ -1,0 +1,140 @@
+[
+ {
+  "seed": 1,
+  "error": null,
+  "seconds": 39.0,
+  "calls": 9,
+  "tool_calls": 8,
+  "seen": 252,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 10,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 61.67,
+  "within_budget": true,
+  "chains": {
+   "Longos": 2,
+   "Loblaws": 1,
+   "Farm Boy": 1,
+   "No Frills": 1,
+   "Food Basics": 1,
+   "FreshCo": 1,
+   "Metro": 1,
+   "Your Independent Grocer": 1,
+   "Giant Tiger": 1
+  },
+  "categories": {
+   "Meat & Poultry": 5,
+   "Produce": 5
+  },
+  "beverage_ids": [],
+  "reused_deals": 1,
+  "anchor_categories": {
+   "Meat & Poultry": 5
+  },
+  "position_quintiles": [
+   2,
+   1,
+   2,
+   1,
+   4
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 2,
+  "error": null,
+  "seconds": 54.5,
+  "calls": 9,
+  "tool_calls": 8,
+  "seen": 252,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 11,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 58.14,
+  "within_budget": true,
+  "chains": {
+   "No Frills": 2,
+   "Food Basics": 2,
+   "Giant Tiger": 1,
+   "Metro": 1,
+   "Longos": 1,
+   "Centra": 1,
+   "President's Choice": 1,
+   "Foodland": 1,
+   "Seasons Food Mart": 1
+  },
+  "categories": {
+   "Produce": 6,
+   "Meat & Poultry": 5
+  },
+  "beverage_ids": [],
+  "reused_deals": 3,
+  "anchor_categories": {
+   "Meat & Poultry": 4
+  },
+  "position_quintiles": [
+   2,
+   1,
+   0,
+   3,
+   5
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 3,
+  "error": null,
+  "seconds": 45.5,
+  "calls": 9,
+  "tool_calls": 8,
+  "seen": 252,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 13,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 54.43,
+  "within_budget": true,
+  "chains": {
+   "Longos": 3,
+   "Metro": 2,
+   "Giant Tiger": 2,
+   "No Frills": 1,
+   "FreshCo": 1,
+   "Winco Food Mart": 1,
+   "Foodland": 1,
+   "Walmart": 1,
+   "Foody Mart": 1
+  },
+  "categories": {
+   "Produce": 9,
+   "Meat & Poultry": 4
+  },
+  "beverage_ids": [],
+  "reused_deals": 2,
+  "anchor_categories": {
+   "Meat & Poultry": 3
+  },
+  "position_quintiles": [
+   3,
+   6,
+   0,
+   0,
+   4
+  ],
+  "cited_unseen": []
+ }
+]
