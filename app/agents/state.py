@@ -146,3 +146,13 @@ class RecipeGenerationState(TypedDict):
                     "validating", "retrying", "completed", "failed"]
     errors: Annotated[List[str], operator.add]
     warnings: Annotated[List[str], operator.add]
+    # Dead-model failures (llm_errors.classify == "infrastructure"): one
+    # {agent, stage, error_type, message} per failed call. Append-only because
+    # the parallel SousChefs write it concurrently. Non-empty means stop
+    # retrying -- route_after_validation goes to finalize_partial or
+    # handle_failure instead of spending iterations on an unreachable model.
+    # Optional on purpose: langgraph seeds a reducer channel with typ(), and
+    # Optional[...] is not instantiable, so the key stays ABSENT from the
+    # state until an agent writes it -- a healthy run's final state (and every
+    # recorded eval artifact) is unchanged. Read it with state.get(...).
+    infrastructure_errors: Annotated[Optional[List[Dict]], operator.add]

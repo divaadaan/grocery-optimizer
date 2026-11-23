@@ -9,7 +9,8 @@ from .state import RecipeGenerationState
 from .chef_orchestrator import ChefOrchestrator
 from .costing import LOWER_BOUND_CAVEATS, RecipePricing, deals_by_id, price_plan
 from .deps import GraphDeps
-from .sous_chef import SousChef, sous_chef_generate_node
+from .llm_errors import LLMInfrastructureError, describe
+from .sous_chef import SousChef, infrastructure_update, sous_chef_generate_node
 from .nutritionist import Nutritionist
 from ..services import products, recipe_catalog
 from ..services.database import DatabaseService
@@ -198,6 +199,14 @@ def route_after_validation(
     for rejected recipes *and* for a shortfall (a SousChef that returned too
     few or none) — and only then settles for a partial plan (>= 60% of the
     request) or fails.
+
+    Infrastructure failures short-circuit the retries (owner decision
+    2026-11-23): once any agent recorded one in ``infrastructure_errors``
+    (``llm_errors.classify``: model unreachable, refused, timed out, HTTP
+    5xx) the run settles immediately -- finalize_partial at >= 60%,
+    otherwise handle_failure -- even with iterations left. Every SousChef
+    shares one model server, so a retry would hit the same dead model.
+    Model-output failures (bad JSON / schema / citations) keep retrying.
     """
     num_rejected = len(state["rejected_recipe_ids"])
     num_approved = len(state["approved_recipe_ids"])
@@ -209,12 +218,16 @@ def route_after_validation(
     if num_approved >= num_requested:
         return "finalize"
 
-    if state["iteration_count"] < state["max_iterations"]:
+    infra = state.get("infrastructure_errors") or []
+    if infra:
+        print(f"[Router] Infrastructure failure ({describe(infra[0])}) - "
+              "not retrying")
+    elif state["iteration_count"] < state["max_iterations"]:
         print(f"[Router] {num_approved}/{num_requested} approved - retrying")
         return "retry"
 
-    # Out of iterations. Nothing approved: finalizing would falsely report
-    # success.
+    # Out of iterations, or the model is unreachable. Nothing approved:
+    # finalizing would falsely report success.
     if num_approved > 0 and num_approved >= num_requested * 0.6:
         print("[Router] Partial success - finalizing with approved recipes")
         return "finalize_partial"
@@ -255,42 +268,50 @@ def retry_generation(state: RecipeGenerationState,
     new_recipes = {}
     new_assignments = {}
     regenerated_ids = set()
+    infra_writes: dict = {}
 
-    for recipe_id, feedback in state["recipes_pending_retry"].items():
-        original_recipe = state["generated_recipes"][recipe_id]
+    # An unreachable model stops the pass at the first failure: the remaining
+    # calls would go to the same dead server. What was produced before it is
+    # kept, and route_after_validation stops retrying.
+    try:
+        for recipe_id, feedback in state["recipes_pending_retry"].items():
+            original_recipe = state["generated_recipes"][recipe_id]
 
-        original_chef_id = state["sous_chef_assignments"][recipe_id]
-        chef_index = (int(original_chef_id.split("_")[-1]) - 1) % len(groups)
-        if reassign:
-            chef_index = (chef_index + 1) % len(groups)
-        chef_id = f"sous_chef_{chef_index + 1}"
+            original_chef_id = state["sous_chef_assignments"][recipe_id]
+            chef_index = (int(original_chef_id.split("_")[-1]) - 1) % len(groups)
+            if reassign:
+                chef_index = (chef_index + 1) % len(groups)
+            chef_id = f"sous_chef_{chef_index + 1}"
 
-        new_recipe = sous_chef.regenerate_with_feedback(
-            chef_id=chef_id,
-            original_recipe=original_recipe,
-            feedback=feedback,
-            ingredient_group=groups[chef_index],
-            **common,
-        )
+            new_recipe = sous_chef.regenerate_with_feedback(
+                chef_id=chef_id,
+                original_recipe=original_recipe,
+                feedback=feedback,
+                ingredient_group=groups[chef_index],
+                **common,
+            )
 
-        if new_recipe:
-            new_recipes[new_recipe["recipe_id"]] = new_recipe
-            new_assignments[new_recipe["recipe_id"]] = chef_id
-            regenerated_ids.add(recipe_id)
+            if new_recipe:
+                new_recipes[new_recipe["recipe_id"]] = new_recipe
+                new_assignments[new_recipe["recipe_id"]] = chef_id
+                regenerated_ids.add(recipe_id)
 
-    shortfall = state.get("recipes_shortfall") or 0
-    for i, target in enumerate(split_recipe_count(shortfall, len(groups))):
-        chef_id = f"sous_chef_{i + 1}"
-        for recipe in sous_chef.generate_recipes(
-            chef_id=chef_id,
-            ingredient_group=groups[i],
-            target_recipe_count=target,
-            **common,
-        ):
-            new_recipes[recipe["recipe_id"]] = recipe
-            new_assignments[recipe["recipe_id"]] = chef_id
+        shortfall = state.get("recipes_shortfall") or 0
+        for i, target in enumerate(split_recipe_count(shortfall, len(groups))):
+            chef_id = f"sous_chef_{i + 1}"
+            for recipe in sous_chef.generate_recipes(
+                chef_id=chef_id,
+                ingredient_group=groups[i],
+                target_recipe_count=target,
+                **common,
+            ):
+                new_recipes[recipe["recipe_id"]] = recipe
+                new_assignments[recipe["recipe_id"]] = chef_id
+    except LLMInfrastructureError as e:
+        infra_writes = infrastructure_update(e)
 
     return {
+        **infra_writes,
         "generated_recipes": new_recipes,
         "sous_chef_assignments": new_assignments,
         # Regenerated recipes get fresh IDs and a fresh validation pass;
@@ -505,7 +526,19 @@ def failure_reason(state: RecipeGenerationState) -> str:
 
     Two routes lead there (``fan_out_to_sous_chefs`` and
     ``route_after_validation``): planning produced no ingredient groups, or
-    the retries ran out short of even a partial plan."""
+    the retries ran out short of even a partial plan. Either can be caused
+    by an unreachable model (``infrastructure_errors``); that is reported
+    first and by name, so the row says the model failed, not the recipes."""
+    infra = state.get("infrastructure_errors") or []
+    if infra:
+        first = describe(infra[0])
+        others = sorted({describe(r) for r in infra[1:]} - {first})
+        also = f"; also {', '.join(others)}" if others else ""
+        return (f"Infrastructure failure: {first}{also} -- "
+                f"{len(state.get('approved_recipe_ids') or [])}/"
+                f"{state['num_meals']} approved after "
+                f"{state.get('iteration_count') or 0} retry iteration(s) "
+                f"(max {state.get('max_iterations')})")
     if state.get("status") == "failed" or not state.get("ingredient_groups"):
         detail = "; ".join(state.get("errors") or []) or "no ingredient groups"
         return f"Planning failed: {detail}"
@@ -535,12 +568,13 @@ def handle_failure(state: RecipeGenerationState, recipe_store=None,
     if recipe_store is None:
         recipe_store = DatabaseService()
 
+    reason = failure_reason(state)
     update = {
         "status": "failed",
         "errors": ["Unable to generate sufficient approved recipes"],
     }
-
-    reason = failure_reason(state)
+    if state.get("infrastructure_errors"):
+        update["errors"].append(reason)
     try:
         recipe_store.save_recipes(
             state["user_id"], [],
