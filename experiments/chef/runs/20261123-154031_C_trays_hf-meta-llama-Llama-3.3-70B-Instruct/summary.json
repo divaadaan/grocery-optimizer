@@ -1,0 +1,137 @@
+[
+ {
+  "seed": 1,
+  "error": null,
+  "seconds": 10.9,
+  "calls": 1,
+  "tool_calls": 0,
+  "seen": 55,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 18,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 52.96,
+  "within_budget": true,
+  "chains": {
+   "Walmart": 2,
+   "Metro": 2,
+   "No Frills": 2,
+   "FreshCo": 2,
+   "Seasons Food Mart": 1,
+   "Real Canadian Superstore": 1,
+   "Your Independent Grocer": 1,
+   "Sobeys": 1,
+   "Food Basics": 1,
+   "Foodland": 1,
+   "Foody Mart": 1,
+   "Highland Farms": 1,
+   "Zehrs": 1,
+   "Giant Tiger": 1
+  },
+  "categories": {
+   "Produce": 8,
+   "Pantry": 4,
+   "Meat & Poultry": 3,
+   "Seafood": 2,
+   "Bakery": 1
+  },
+  "beverage_ids": [],
+  "reused_deals": 0,
+  "anchor_categories": {
+   "Meat & Poultry": 3,
+   "Seafood": 2
+  },
+  "position_quintiles": [
+   4,
+   6,
+   3,
+   3,
+   2
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 2,
+  "error": null,
+  "seconds": 14.5,
+  "calls": 1,
+  "tool_calls": 0,
+  "seen": 55,
+  "truncated": false,
+  "parse_ok": false,
+  "num_dishes": 0,
+  "dishes_ok": false,
+  "cited_ids": 0,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 0.0,
+  "within_budget": false,
+  "chains": {},
+  "categories": {},
+  "beverage_ids": [],
+  "reused_deals": 0,
+  "anchor_categories": {},
+  "position_quintiles": [],
+  "cited_unseen": []
+ },
+ {
+  "seed": 3,
+  "error": null,
+  "seconds": 34.3,
+  "calls": 1,
+  "tool_calls": 0,
+  "seen": 55,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 18,
+  "invalid_ids": [],
+  "bad_pantry": [
+   "cumin"
+  ],
+  "dishes_without_anchor": 0,
+  "total_cost": 52.85,
+  "within_budget": true,
+  "chains": {
+   "Food Basics": 3,
+   "Walmart": 2,
+   "Metro": 2,
+   "Real Canadian Superstore": 2,
+   "FreshCo": 2,
+   "Seasons Food Mart": 1,
+   "No Frills": 1,
+   "Sobeys": 1,
+   "Starsky": 1,
+   "Foodland": 1,
+   "Foody Mart": 1,
+   "Giant Tiger": 1
+  },
+  "categories": {
+   "Produce": 9,
+   "Meat & Poultry": 3,
+   "Pantry": 3,
+   "Seafood": 2,
+   "Bakery": 1
+  },
+  "beverage_ids": [],
+  "reused_deals": 0,
+  "anchor_categories": {
+   "Meat & Poultry": 3,
+   "Seafood": 2
+  },
+  "position_quintiles": [
+   3,
+   6,
+   3,
+   4,
+   2
+  ],
+  "cited_unseen": []
+ }
+]

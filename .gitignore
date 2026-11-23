@@ -146,3 +146,6 @@ node_modules/
 *.sqlite
 .DS_Store
 .claude/settings.local.json
+
+# Chef experiments: runs made before the plan contract was fixed
+experiments/chef/runs/_superseded/

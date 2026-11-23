@@ -1,0 +1,164 @@
+[
+ {
+  "seed": 1,
+  "error": null,
+  "seconds": 224.7,
+  "calls": 7,
+  "tool_calls": 9,
+  "seen": 309,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 12,
+  "invalid_ids": [],
+  "bad_pantry": [
+   "chicken stock"
+  ],
+  "dishes_without_anchor": 0,
+  "total_cost": 37.8,
+  "within_budget": true,
+  "chains": {
+   "No Frills": 2,
+   "Zehrs": 1,
+   "Real Canadian Superstore": 1,
+   "T&T Supermarket": 1,
+   "Winco Food Mart": 1,
+   "Vince's Market": 1,
+   "Giant Tiger": 1,
+   "Bestco Foodmart": 1,
+   "Sobeys": 1,
+   "FreshCo": 1,
+   "Foody Mart": 1
+  },
+  "categories": {
+   "Produce": 5,
+   "Meat & Poultry": 4,
+   "Seafood": 1,
+   "Pantry": 1,
+   "Dairy & Eggs": 1
+  },
+  "beverage_ids": [],
+  "reused_deals": 1,
+  "anchor_categories": {
+   "Meat & Poultry": 4,
+   "Seafood": 1
+  },
+  "position_quintiles": [
+   5,
+   5,
+   1,
+   1,
+   0
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 2,
+  "error": null,
+  "seconds": 169.7,
+  "calls": 7,
+  "tool_calls": 11,
+  "seen": 389,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 11,
+  "invalid_ids": [],
+  "bad_pantry": [
+   "cumin",
+   "onion",
+   "onion",
+   "cumin"
+  ],
+  "dishes_without_anchor": 0,
+  "total_cost": 35.58,
+  "within_budget": true,
+  "chains": {
+   "Zehrs": 2,
+   "No Frills": 2,
+   "Real Canadian Superstore": 1,
+   "Vince's Market": 1,
+   "T&T Supermarket": 1,
+   "Sobeys": 1,
+   "Food Basics": 1,
+   "Foody Mart": 1,
+   "FreshCo": 1
+  },
+  "categories": {
+   "Meat & Poultry": 4,
+   "Produce": 4,
+   "Seafood": 1,
+   "Dairy & Eggs": 1,
+   "Pantry": 1
+  },
+  "beverage_ids": [],
+  "reused_deals": 0,
+  "anchor_categories": {
+   "Meat & Poultry": 4,
+   "Seafood": 1
+  },
+  "position_quintiles": [
+   5,
+   2,
+   2,
+   1,
+   1
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 3,
+  "error": null,
+  "seconds": 185.6,
+  "calls": 7,
+  "tool_calls": 10,
+  "seen": 349,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 13,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 39.6,
+  "within_budget": true,
+  "chains": {
+   "Zehrs": 2,
+   "Your Independent Grocer": 1,
+   "Real Canadian Superstore": 1,
+   "T&T Supermarket": 1,
+   "Giant Tiger": 1,
+   "Vince's Market": 1,
+   "Foodland": 1,
+   "Sobeys": 1,
+   "Metro": 1,
+   "No Frills": 1,
+   "Winco Food Mart": 1,
+   "Foody Mart": 1
+  },
+  "categories": {
+   "Produce": 6,
+   "Meat & Poultry": 4,
+   "Pantry": 1,
+   "Seafood": 1,
+   "Dairy & Eggs": 1
+  },
+  "beverage_ids": [],
+  "reused_deals": 0,
+  "anchor_categories": {
+   "Meat & Poultry": 4,
+   "Seafood": 1
+  },
+  "position_quintiles": [
+   5,
+   3,
+   2,
+   1,
+   2
+  ],
+  "cited_unseen": []
+ }
+]

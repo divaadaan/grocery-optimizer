@@ -1,0 +1,3669 @@
+{
+ "model": "hf:openai/gpt-oss-120b",
+ "labels": {
+  "529": {
+   "item": "gala apple",
+   "role": "fruit"
+  },
+  "530": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "531": {
+   "item": "apples",
+   "role": "fruit"
+  },
+  "532": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "533": {
+   "item": "golden delicious apple",
+   "role": "fruit"
+  },
+  "534": {
+   "item": "golden delicious apple",
+   "role": "fruit"
+  },
+  "535": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "536": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "537": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "538": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "539": {
+   "item": "mcintosh apples",
+   "role": "fruit"
+  },
+  "540": {
+   "item": "gala apples",
+   "role": "fruit"
+  },
+  "541": {
+   "item": "mcintosh apples",
+   "role": "fruit"
+  },
+  "542": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "543": {
+   "item": "gala apple",
+   "role": "fruit"
+  },
+  "544": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "545": {
+   "item": "honeycrisp apple",
+   "role": "fruit"
+  },
+  "546": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "547": {
+   "item": "honeycrisp apple",
+   "role": "fruit"
+  },
+  "548": {
+   "item": "gala apple",
+   "role": "fruit"
+  },
+  "549": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "550": {
+   "item": "golden delicious apple",
+   "role": "fruit"
+  },
+  "551": {
+   "item": "gala apple",
+   "role": "fruit"
+  },
+  "552": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "553": {
+   "item": "russet apples",
+   "role": "fruit"
+  },
+  "554": {
+   "item": "apple",
+   "role": "fruit"
+  },
+  "555": {
+   "item": "kissabel rouge apple",
+   "role": "fruit"
+  },
+  "556": {
+   "item": "gala apple",
+   "role": "fruit"
+  },
+  "557": {
+   "item": "mcintosh apples",
+   "role": "fruit"
+  },
+  "558": {
+   "item": "royal gala apples",
+   "role": "fruit"
+  },
+  "559": {
+   "item": "celery stalks",
+   "role": "vegetable"
+  },
+  "560": {
+   "item": "celery stalks",
+   "role": "vegetable"
+  },
+  "561": {
+   "item": "fruit",
+   "role": "fruit"
+  },
+  "562": {
+   "item": "purple onion",
+   "role": "vegetable"
+  },
+  "563": {
+   "item": "yellow onion",
+   "role": "vegetable"
+  },
+  "564": {
+   "item": "yellow onions",
+   "role": "vegetable"
+  },
+  "565": {
+   "item": "red onion",
+   "role": "vegetable"
+  },
+  "566": {
+   "item": "onion",
+   "role": "vegetable"
+  },
+  "567": {
+   "item": "red onion",
+   "role": "vegetable"
+  },
+  "568": {
+   "item": "onion",
+   "role": "vegetable"
+  },
+  "569": {
+   "item": "onion",
+   "role": "vegetable"
+  },
+  "570": {
+   "item": "onion",
+   "role": "vegetable"
+  },
+  "571": {
+   "item": "onion",
+   "role": "vegetable"
+  },
+  "572": {
+   "item": "carrot",
+   "role": "vegetable"
+  },
+  "573": {
+   "item": "carrots",
+   "role": "vegetable"
+  },
+  "574": {
+   "item": "carrots",
+   "role": "vegetable"
+  },
+  "575": {
+   "item": "carrots",
+   "role": "vegetable"
+  },
+  "576": {
+   "item": "mini cucumbers",
+   "role": "vegetable"
+  },
+  "577": {
+   "item": "carrots",
+   "role": "vegetable"
+  },
+  "578": {
+   "item": "carrots",
+   "role": "vegetable"
+  },
+  "579": {
+   "item": "carrots",
+   "role": "vegetable"
+  },
+  "580": {
+   "item": "focaccia",
+   "role": "prepared_meal"
+  },
+  "581": {
+   "item": "green onion",
+   "role": "vegetable"
+  },
+  "582": {
+   "item": "green onion",
+   "role": "vegetable"
+  },
+  "583": {
+   "item": "potatoes",
+   "role": "starch"
+  },
+  "584": {
+   "item": "potatoes",
+   "role": "starch"
+  },
+  "585": {
+   "item": "potato",
+   "role": "starch"
+  },
+  "586": {
+   "item": "russet potatoes",
+   "role": "starch"
+  },
+  "587": {
+   "item": "potato",
+   "role": "starch"
+  },
+  "588": {
+   "item": "potato",
+   "role": "starch"
+  },
+  "589": {
+   "item": "potato",
+   "role": "starch"
+  },
+  "590": {
+   "item": "potato",
+   "role": "starch"
+  },
+  "591": {
+   "item": "russet potatoes",
+   "role": "starch"
+  },
+  "592": {
+   "item": "potato",
+   "role": "starch"
+  },
+  "593": {
+   "item": "potatoes",
+   "role": "starch"
+  },
+  "594": {
+   "item": "potato",
+   "role": "starch"
+  },
+  "595": {
+   "item": "potatoes",
+   "role": "starch"
+  },
+  "596": {
+   "item": "potato",
+   "role": "starch"
+  },
+  "597": {
+   "item": "baby potato",
+   "role": "starch"
+  },
+  "598": {
+   "item": "potatoes",
+   "role": "starch"
+  },
+  "599": {
+   "item": "potatoes",
+   "role": "starch"
+  },
+  "600": {
+   "item": "potatoes",
+   "role": "starch"
+  },
+  "601": {
+   "item": "potatoes",
+   "role": "starch"
+  },
+  "602": {
+   "item": "potatoes",
+   "role": "starch"
+  },
+  "603": {
+   "item": "potatoes",
+   "role": "starch"
+  },
+  "604": {
+   "item": "frozen fries",
+   "role": "prepared_meal"
+  },
+  "605": {
+   "item": "olive loaf",
+   "role": "prepared_meal"
+  },
+  "606": {
+   "item": "pepperoni pizza flavored potato chips",
+   "role": "snack"
+  },
+  "607": {
+   "item": "baked potato",
+   "role": "prepared_meal"
+  },
+  "608": {
+   "item": "carrot",
+   "role": "vegetable"
+  },
+  "609": {
+   "item": "carrots",
+   "role": "vegetable"
+  },
+  "610": {
+   "item": "beet",
+   "role": "vegetable"
+  },
+  "611": {
+   "item": "carrots",
+   "role": "vegetable"
+  },
+  "612": {
+   "item": "carrot",
+   "role": "vegetable"
+  },
+  "613": {
+   "item": "carrots",
+   "role": "vegetable"
+  },
+  "614": {
+   "item": "nantes carrot",
+   "role": "vegetable"
+  },
+  "615": {
+   "item": "carrot",
+   "role": "vegetable"
+  },
+  "616": {
+   "item": "carrot",
+   "role": "vegetable"
+  },
+  "617": {
+   "item": "carrot",
+   "role": "vegetable"
+  },
+  "618": {
+   "item": "carrot",
+   "role": "vegetable"
+  },
+  "619": {
+   "item": "beet",
+   "role": "vegetable"
+  },
+  "620": {
+   "item": "carrot",
+   "role": "vegetable"
+  },
+  "621": {
+   "item": "carrot",
+   "role": "vegetable"
+  },
+  "622": {
+   "item": "carrots",
+   "role": "vegetable"
+  },
+  "623": {
+   "item": "carrots and celery with ranch dip",
+   "role": "prepared_meal"
+  },
+  "624": {
+   "item": "vegetable soup",
+   "role": "prepared_meal"
+  },
+  "625": {
+   "item": "broccoli crowns",
+   "role": "vegetable"
+  },
+  "626": {
+   "item": "broccoli crowns",
+   "role": "vegetable"
+  },
+  "627": {
+   "item": "broccoli fried sprouts",
+   "role": "vegetable"
+  },
+  "628": {
+   "item": "broccoli crowns",
+   "role": "vegetable"
+  },
+  "629": {
+   "item": "brussels sprouts",
+   "role": "vegetable"
+  },
+  "630": {
+   "item": "broccoli crowns",
+   "role": "vegetable"
+  },
+  "631": {
+   "item": "broccoli crowns",
+   "role": "vegetable"
+  },
+  "632": {
+   "item": "chinese okra",
+   "role": "vegetable"
+  },
+  "633": {
+   "item": "spinach",
+   "role": "vegetable"
+  },
+  "634": {
+   "item": "broccoli gratin",
+   "role": "prepared_meal"
+  },
+  "635": {
+   "item": "kale",
+   "role": "vegetable"
+  },
+  "636": {
+   "item": "spinach",
+   "role": "vegetable"
+  },
+  "637": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "638": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "639": {
+   "item": "tomato",
+   "role": "pantry_staple"
+  },
+  "640": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "641": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "642": {
+   "item": "heirloom tomatoes",
+   "role": "vegetable"
+  },
+  "643": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "644": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "645": {
+   "item": "cocktail tomatoes",
+   "role": "vegetable"
+  },
+  "646": {
+   "item": "passata",
+   "role": "pantry_staple"
+  },
+  "647": {
+   "item": "canned beans",
+   "role": "pantry_staple"
+  },
+  "648": {
+   "item": "canned beans",
+   "role": "pantry_staple"
+  },
+  "649": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "650": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "651": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "652": {
+   "item": "cucumber",
+   "role": "vegetable"
+  },
+  "653": {
+   "item": "cucumber",
+   "role": "vegetable"
+  },
+  "654": {
+   "item": "crushed tomatoes",
+   "role": "pantry_staple"
+  },
+  "655": {
+   "item": "san marzano tomato",
+   "role": "pantry_staple"
+  },
+  "656": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "657": {
+   "item": "tomato basil bisque",
+   "role": "prepared_meal"
+  },
+  "658": {
+   "item": "passata",
+   "role": "pantry_staple"
+  },
+  "659": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "660": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "661": {
+   "item": "sweet peppers",
+   "role": "vegetable"
+  },
+  "662": {
+   "item": "tomato",
+   "role": "vegetable"
+  },
+  "663": {
+   "item": "sun-dried tomato",
+   "role": "pantry_staple"
+  },
+  "664": {
+   "item": "ravioli",
+   "role": "prepared_meal"
+  },
+  "665": {
+   "item": "sweet bell pepper",
+   "role": "vegetable"
+  },
+  "666": {
+   "item": "stuffed bell peppers",
+   "role": "prepared_meal"
+  },
+  "667": {
+   "item": "romaine heart",
+   "role": "vegetable"
+  },
+  "668": {
+   "item": "romaine hearts",
+   "role": "vegetable"
+  },
+  "669": {
+   "item": "lettuce",
+   "role": "vegetable"
+  },
+  "670": {
+   "item": "romaine heart",
+   "role": "vegetable"
+  },
+  "671": {
+   "item": "lettuce blend",
+   "role": "vegetable"
+  },
+  "672": {
+   "item": "romaine hearts",
+   "role": "vegetable"
+  },
+  "673": {
+   "item": "lettuce",
+   "role": "vegetable"
+  },
+  "674": {
+   "item": "mixed salad greens",
+   "role": "vegetable"
+  },
+  "675": {
+   "item": "romaine heart",
+   "role": "vegetable"
+  },
+  "676": {
+   "item": "white mushrooms",
+   "role": "vegetable"
+  },
+  "677": {
+   "item": "mushroom",
+   "role": "vegetable"
+  },
+  "678": {
+   "item": "mushroom",
+   "role": "vegetable"
+  },
+  "679": {
+   "item": "mushroom",
+   "role": "vegetable"
+  },
+  "680": {
+   "item": "mushroom",
+   "role": "vegetable"
+  },
+  "681": {
+   "item": "seafood mushroom",
+   "role": "vegetable"
+  },
+  "682": {
+   "item": "mushroom",
+   "role": "vegetable"
+  },
+  "683": {
+   "item": "dried mushroom",
+   "role": "pantry_staple"
+  },
+  "684": {
+   "item": "seafood mushroom",
+   "role": "vegetable"
+  },
+  "685": {
+   "item": "dried mushroom",
+   "role": "pantry_staple"
+  },
+  "686": {
+   "item": "marinated mushrooms",
+   "role": "condiment"
+  },
+  "687": {
+   "item": "dried shiitake mushroom",
+   "role": "pantry_staple"
+  },
+  "688": {
+   "item": "dried shiitake mushrooms",
+   "role": "pantry_staple"
+  },
+  "689": {
+   "item": "egg noodles",
+   "role": "pantry_staple"
+  },
+  "690": {
+   "item": "button mushrooms",
+   "role": "vegetable"
+  },
+  "691": {
+   "item": "shiitake mushroom",
+   "role": "vegetable"
+  },
+  "692": {
+   "item": "mushroom",
+   "role": "vegetable"
+  },
+  "693": {
+   "item": "beef and mushroom pot pie",
+   "role": "prepared_meal"
+  },
+  "694": {
+   "item": "chicken with black pepper and mushroom",
+   "role": "prepared_meal"
+  },
+  "695": {
+   "item": "black pepper mushroom chicken",
+   "role": "prepared_meal"
+  },
+  "696": {
+   "item": "organic sliced white mushrooms",
+   "role": "vegetable"
+  },
+  "697": {
+   "item": "mushroom",
+   "role": "vegetable"
+  },
+  "698": {
+   "item": "chicken",
+   "role": "protein"
+  },
+  "699": {
+   "item": "truffle oil",
+   "role": "condiment"
+  },
+  "700": {
+   "item": "sweet potato",
+   "role": "starch"
+  },
+  "701": {
+   "item": "sweet potatoes",
+   "role": "starch"
+  },
+  "702": {
+   "item": "butternut squash",
+   "role": "vegetable"
+  },
+  "703": {
+   "item": "sweet potato",
+   "role": "starch"
+  },
+  "704": {
+   "item": "sweet potato",
+   "role": "starch"
+  },
+  "705": {
+   "item": "sweet potato vermicelli",
+   "role": "pantry_staple"
+  },
+  "706": {
+   "item": "sweet potato",
+   "role": "starch"
+  },
+  "707": {
+   "item": "sweet potato vermicelli",
+   "role": "pantry_staple"
+  },
+  "708": {
+   "item": "sweet potato chips",
+   "role": "snack"
+  },
+  "709": {
+   "item": "sweet potato chips",
+   "role": "snack"
+  },
+  "710": {
+   "item": "sweet potato chips",
+   "role": "snack"
+  },
+  "711": {
+   "item": "sweet potato",
+   "role": "starch"
+  },
+  "712": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "713": {
+   "item": "chicken schnitzel",
+   "role": "protein"
+  },
+  "714": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "715": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "716": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "717": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "718": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "719": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "720": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "721": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "722": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "723": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "724": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "725": {
+   "item": "chicken breast cutlet",
+   "role": "protein"
+  },
+  "726": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "727": {
+   "item": "chicken breast cutlet",
+   "role": "protein"
+  },
+  "728": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "729": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "730": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "731": {
+   "item": "turkey breast",
+   "role": "protein"
+  },
+  "732": {
+   "item": "chicken breast",
+   "role": "protein"
+  },
+  "733": {
+   "item": "stuffed chicken breast",
+   "role": "protein"
+  },
+  "734": {
+   "item": "chicken breast cutlet",
+   "role": "protein"
+  },
+  "735": {
+   "item": "sliced cheese",
+   "role": "dairy"
+  },
+  "736": {
+   "item": "chicken thigh",
+   "role": "protein"
+  },
+  "737": {
+   "item": "chicken thigh",
+   "role": "protein"
+  },
+  "738": {
+   "item": "chicken thigh",
+   "role": "protein"
+  },
+  "739": {
+   "item": "chicken drumstick",
+   "role": "protein"
+  },
+  "740": {
+   "item": "chicken thigh",
+   "role": "protein"
+  },
+  "741": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "742": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "743": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "744": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "745": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "746": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "747": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "748": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "749": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "750": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "751": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "752": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "753": {
+   "item": "whole chicken",
+   "role": "protein"
+  },
+  "754": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "755": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "756": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "757": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "758": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "759": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "760": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "761": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "762": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "763": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "764": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "765": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "766": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "767": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "768": {
+   "item": "ground beef",
+   "role": "protein"
+  },
+  "769": {
+   "item": "ground beef patty",
+   "role": "protein"
+  },
+  "770": {
+   "item": "pork chop",
+   "role": "protein"
+  },
+  "771": {
+   "item": "pork sirloin chop",
+   "role": "protein"
+  },
+  "772": {
+   "item": "pork chop",
+   "role": "protein"
+  },
+  "773": {
+   "item": "pork chop",
+   "role": "protein"
+  },
+  "774": {
+   "item": "pork chop",
+   "role": "protein"
+  },
+  "775": {
+   "item": "pork chop",
+   "role": "protein"
+  },
+  "776": {
+   "item": "pork chop",
+   "role": "protein"
+  },
+  "777": {
+   "item": "pork shoulder",
+   "role": "protein"
+  },
+  "778": {
+   "item": "pork chop",
+   "role": "protein"
+  },
+  "779": {
+   "item": "pork chop",
+   "role": "protein"
+  },
+  "780": {
+   "item": "pork chop",
+   "role": "protein"
+  },
+  "781": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "782": {
+   "item": "salmon fillet",
+   "role": "protein"
+  },
+  "783": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "784": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "785": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "786": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "787": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "788": {
+   "item": "salmon fillet",
+   "role": "protein"
+  },
+  "789": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "790": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "791": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "792": {
+   "item": "salmon fillet",
+   "role": "protein"
+  },
+  "793": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "794": {
+   "item": "salmon fillet",
+   "role": "protein"
+  },
+  "795": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "796": {
+   "item": "salmon",
+   "role": "protein"
+  },
+  "797": {
+   "item": "canned tuna",
+   "role": "protein"
+  },
+  "798": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "799": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "800": {
+   "item": "surimi",
+   "role": "protein"
+  },
+  "801": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "802": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "803": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "804": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "805": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "806": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "807": {
+   "item": "shrimp rings",
+   "role": "protein"
+  },
+  "808": {
+   "item": "shrimp",
+   "role": "prepared_meal"
+  },
+  "809": {
+   "item": "shrimp rings",
+   "role": "protein"
+  },
+  "810": {
+   "item": "shrimp",
+   "role": "prepared_meal"
+  },
+  "811": {
+   "item": "shrimp and scallop pasta",
+   "role": "prepared_meal"
+  },
+  "812": {
+   "item": "shrimp",
+   "role": "prepared_meal"
+  },
+  "813": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "814": {
+   "item": "shrimp dumpling",
+   "role": "prepared_meal"
+  },
+  "815": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "816": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "817": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "818": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "819": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "820": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "821": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "822": {
+   "item": "shrimp skewer",
+   "role": "protein"
+  },
+  "823": {
+   "item": "shrimp appetizers",
+   "role": "prepared_meal"
+  },
+  "824": {
+   "item": "cooked shrimp",
+   "role": "protein"
+  },
+  "825": {
+   "item": "shrimp dumpling",
+   "role": "prepared_meal"
+  },
+  "826": {
+   "item": "shrimp rings",
+   "role": "protein"
+  },
+  "827": {
+   "item": "shrimp chips",
+   "role": "snack"
+  },
+  "828": {
+   "item": "seafood sampler",
+   "role": "prepared_meal"
+  },
+  "829": {
+   "item": "crab rangoon",
+   "role": "snack"
+  },
+  "830": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "831": {
+   "item": "cooked shrimp",
+   "role": "protein"
+  },
+  "832": {
+   "item": "shrimp paste",
+   "role": "condiment"
+  },
+  "833": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "834": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "835": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "836": {
+   "item": "meat pies",
+   "role": "prepared_meal"
+  },
+  "837": {
+   "item": "shrimp",
+   "role": "prepared_meal"
+  },
+  "838": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "839": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "840": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "841": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "842": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "843": {
+   "item": "breaded fish",
+   "role": "protein"
+  },
+  "844": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "845": {
+   "item": "fish fillet",
+   "role": "protein"
+  },
+  "846": {
+   "item": "fish fillet",
+   "role": "protein"
+  },
+  "847": {
+   "item": "shrimp",
+   "role": "protein"
+  },
+  "848": {
+   "item": "fish fillet",
+   "role": "protein"
+  },
+  "849": {
+   "item": "breaded shrimp",
+   "role": "protein"
+  },
+  "850": {
+   "item": "shrimp",
+   "role": "snack"
+  },
+  "851": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "852": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "853": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "854": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "855": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "856": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "857": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "858": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "859": {
+   "item": "non-dairy creamer",
+   "role": "pantry_staple"
+  },
+  "860": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "861": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "862": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "863": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "864": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "865": {
+   "item": "flavoured milk",
+   "role": "dairy"
+  },
+  "866": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "867": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "868": {
+   "item": "condensed milk",
+   "role": "dairy"
+  },
+  "869": {
+   "item": "coconut milk",
+   "role": "dairy"
+  },
+  "870": {
+   "item": "coconut milk",
+   "role": "dairy"
+  },
+  "871": {
+   "item": "coconut milk",
+   "role": "dairy"
+  },
+  "872": {
+   "item": "coconut milk",
+   "role": "dairy"
+  },
+  "873": {
+   "item": "kefir",
+   "role": "dairy"
+  },
+  "874": {
+   "item": "coconut milk",
+   "role": "dairy"
+  },
+  "875": {
+   "item": "milkshake",
+   "role": "beverage"
+  },
+  "876": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "877": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "878": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "879": {
+   "item": "coconut milk",
+   "role": "dairy"
+  },
+  "880": {
+   "item": "coconut milk",
+   "role": "dairy"
+  },
+  "881": {
+   "item": "coconut milk",
+   "role": "dairy"
+  },
+  "882": {
+   "item": "milk powder",
+   "role": "dairy"
+  },
+  "883": {
+   "item": "evaporated milk",
+   "role": "dairy"
+  },
+  "884": {
+   "item": "milk",
+   "role": "dairy"
+  },
+  "885": {
+   "item": "sweetened condensed milk",
+   "role": "pantry_staple"
+  },
+  "886": {
+   "item": "ice cream",
+   "role": "snack"
+  },
+  "887": {
+   "item": "sweetened condensed milk",
+   "role": "dairy"
+  },
+  "888": {
+   "item": "ice milk",
+   "role": "dairy"
+  },
+  "889": {
+   "item": "buttermilk",
+   "role": "dairy"
+  },
+  "890": {
+   "item": "condensed milk",
+   "role": "dairy"
+  },
+  "891": {
+   "item": "sweetened condensed milk",
+   "role": "dairy"
+  },
+  "892": {
+   "item": "milkshake",
+   "role": "beverage"
+  },
+  "893": {
+   "item": "chocolate milk",
+   "role": "dairy"
+  },
+  "894": {
+   "item": "eggs",
+   "role": "protein"
+  },
+  "895": {
+   "item": "eggs",
+   "role": "protein"
+  },
+  "896": {
+   "item": "free range eggs",
+   "role": "protein"
+  },
+  "897": {
+   "item": "egg",
+   "role": "protein"
+  },
+  "898": {
+   "item": "eggs",
+   "role": "protein"
+  },
+  "899": {
+   "item": "eggs",
+   "role": "protein"
+  },
+  "900": {
+   "item": "eggs",
+   "role": "protein"
+  },
+  "901": {
+   "item": "large eggs",
+   "role": "protein"
+  },
+  "902": {
+   "item": "eggs",
+   "role": "protein"
+  },
+  "903": {
+   "item": "egg",
+   "role": "protein"
+  },
+  "904": {
+   "item": "egg",
+   "role": "protein"
+  },
+  "905": {
+   "item": "egg snack",
+   "role": "snack"
+  },
+  "906": {
+   "item": "eggs",
+   "role": "protein"
+  },
+  "907": {
+   "item": "just egg",
+   "role": "protein"
+  },
+  "908": {
+   "item": "duck egg yolk",
+   "role": "protein"
+  },
+  "909": {
+   "item": "omega 3 eggs",
+   "role": "protein"
+  },
+  "910": {
+   "item": "egg whites",
+   "role": "protein"
+  },
+  "911": {
+   "item": "egg tart",
+   "role": "prepared_meal"
+  },
+  "912": {
+   "item": "protein puffs",
+   "role": "snack"
+  },
+  "913": {
+   "item": "butter",
+   "role": "dairy"
+  },
+  "914": {
+   "item": "butter",
+   "role": "dairy"
+  },
+  "915": {
+   "item": "butter",
+   "role": "dairy"
+  },
+  "916": {
+   "item": "butter",
+   "role": "dairy"
+  },
+  "917": {
+   "item": "butter",
+   "role": "dairy"
+  },
+  "918": {
+   "item": "butter",
+   "role": "dairy"
+  },
+  "919": {
+   "item": "butter",
+   "role": "dairy"
+  },
+  "920": {
+   "item": "butter",
+   "role": "dairy"
+  },
+  "921": {
+   "item": "butter",
+   "role": "dairy"
+  },
+  "922": {
+   "item": "butter",
+   "role": "dairy"
+  },
+  "923": {
+   "item": "butter cream bun",
+   "role": "snack"
+  },
+  "924": {
+   "item": "croissant",
+   "role": "prepared_meal"
+  },
+  "925": {
+   "item": "butter tart",
+   "role": "prepared_meal"
+  },
+  "926": {
+   "item": "cheddar cheese",
+   "role": "dairy"
+  },
+  "927": {
+   "item": "cheddar cheese",
+   "role": "dairy"
+  },
+  "928": {
+   "item": "cheddar cheese",
+   "role": "dairy"
+  },
+  "929": {
+   "item": "cheddar cheese",
+   "role": "dairy"
+  },
+  "930": {
+   "item": "lasagna",
+   "role": "prepared_meal"
+  },
+  "931": {
+   "item": "mac and cheese",
+   "role": "prepared_meal"
+  },
+  "932": {
+   "item": "cheddar cheese",
+   "role": "dairy"
+  },
+  "933": {
+   "item": "chickpea puffs",
+   "role": "snack"
+  },
+  "934": {
+   "item": "cheddar cheese",
+   "role": "dairy"
+  },
+  "935": {
+   "item": "cheese bread",
+   "role": "prepared_meal"
+  },
+  "936": {
+   "item": "cheddar cheese",
+   "role": "dairy"
+  },
+  "937": {
+   "item": "cheddar cheese",
+   "role": "dairy"
+  },
+  "938": {
+   "item": "cheddar cheese",
+   "role": "dairy"
+  },
+  "939": {
+   "item": "shortbread",
+   "role": "snack"
+  },
+  "940": {
+   "item": "cheese",
+   "role": "dairy"
+  },
+  "941": {
+   "item": "chickpea puffs",
+   "role": "snack"
+  },
+  "942": {
+   "item": "cheddar cheese",
+   "role": "dairy"
+  },
+  "943": {
+   "item": "greek yogurt",
+   "role": "dairy"
+  },
+  "944": {
+   "item": "greek yogurt",
+   "role": "dairy"
+  },
+  "945": {
+   "item": "ice cream",
+   "role": "dairy"
+  },
+  "946": {
+   "item": "drinkable yogurt",
+   "role": "dairy"
+  },
+  "947": {
+   "item": "greek yogurt",
+   "role": "dairy"
+  },
+  "948": {
+   "item": "greek yogurt",
+   "role": "dairy"
+  },
+  "949": {
+   "item": "greek yogurt",
+   "role": "dairy"
+  },
+  "950": {
+   "item": "greek yogurt",
+   "role": "dairy"
+  },
+  "951": {
+   "item": "greek yogurt",
+   "role": "dairy"
+  },
+  "952": {
+   "item": "greek yogurt dip",
+   "role": "dairy"
+  },
+  "953": {
+   "item": "greek yogurt",
+   "role": "dairy"
+  },
+  "954": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "955": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "956": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "957": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "958": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "959": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "960": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "961": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "962": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "963": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "964": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "965": {
+   "item": "margarine",
+   "role": "dairy"
+  },
+  "966": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "967": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "968": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "969": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "970": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "971": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "972": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "973": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "974": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "975": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "976": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "977": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "978": {
+   "item": "cheese",
+   "role": "dairy"
+  },
+  "979": {
+   "item": "brie cheese",
+   "role": "dairy"
+  },
+  "980": {
+   "item": "cream cheese",
+   "role": "dairy"
+  },
+  "981": {
+   "item": "yogurt",
+   "role": "dairy"
+  },
+  "982": {
+   "item": "brie cheese",
+   "role": "dairy"
+  },
+  "983": {
+   "item": "rye bread",
+   "role": "starch"
+  },
+  "984": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "985": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "986": {
+   "item": "dempster's grain bread",
+   "role": "starch"
+  },
+  "987": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "988": {
+   "item": "dempster's protein bagel",
+   "role": "starch"
+  },
+  "989": {
+   "item": "gluten free bread",
+   "role": "starch"
+  },
+  "990": {
+   "item": "calabrese bread",
+   "role": "starch"
+  },
+  "991": {
+   "item": "d'italiano bread",
+   "role": "starch"
+  },
+  "992": {
+   "item": "compliments boxed seafood",
+   "role": "protein"
+  },
+  "993": {
+   "item": "compliments pita bread",
+   "role": "starch"
+  },
+  "994": {
+   "item": "raisin bread",
+   "role": "starch"
+  },
+  "995": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "996": {
+   "item": "breaded poultry",
+   "role": "protein"
+  },
+  "997": {
+   "item": "rye bread",
+   "role": "starch"
+  },
+  "998": {
+   "item": "tortilla",
+   "role": "starch"
+  },
+  "999": {
+   "item": "cinnamon bun",
+   "role": "starch"
+  },
+  "1000": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "1001": {
+   "item": "breaded haddock",
+   "role": "protein"
+  },
+  "1002": {
+   "item": "large pasta with garlic bread",
+   "role": "prepared_meal"
+  },
+  "1003": {
+   "item": "prepared pasta",
+   "role": "prepared_meal"
+  },
+  "1004": {
+   "item": "oat bran bread",
+   "role": "starch"
+  },
+  "1005": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "1006": {
+   "item": "cheesy garlic pull-apart bread",
+   "role": "prepared_meal"
+  },
+  "1007": {
+   "item": "sourdough bread",
+   "role": "starch"
+  },
+  "1008": {
+   "item": "large pasta with garlic bread",
+   "role": "prepared_meal"
+  },
+  "1009": {
+   "item": "sourdough pizza",
+   "role": "prepared_meal"
+  },
+  "1010": {
+   "item": "country harvest bread",
+   "role": "starch"
+  },
+  "1011": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "1012": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "1013": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "1014": {
+   "item": "bread bun",
+   "role": "starch"
+  },
+  "1015": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "1016": {
+   "item": "english muffin",
+   "role": "starch"
+  },
+  "1017": {
+   "item": "wrap",
+   "role": "starch"
+  },
+  "1018": {
+   "item": "dr. oetker pizza",
+   "role": "prepared_meal"
+  },
+  "1019": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "1020": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "1021": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "1022": {
+   "item": "artisan bread",
+   "role": "starch"
+  },
+  "1023": {
+   "item": "french bread",
+   "role": "starch"
+  },
+  "1024": {
+   "item": "dempster's white bread",
+   "role": "starch"
+  },
+  "1025": {
+   "item": "bacon wrapped scallop medallions",
+   "role": "protein"
+  },
+  "1026": {
+   "item": "breaded calamari",
+   "role": "protein"
+  },
+  "1027": {
+   "item": "breaded pork cutlets",
+   "role": "prepared_meal"
+  },
+  "1028": {
+   "item": "front street bakery grain bread",
+   "role": "starch"
+  },
+  "1029": {
+   "item": "rye bread",
+   "role": "starch"
+  },
+  "1030": {
+   "item": "bread",
+   "role": "starch"
+  },
+  "1031": {
+   "item": "coconut bread",
+   "role": "starch"
+  },
+  "1032": {
+   "item": "bread crisps",
+   "role": "snack"
+  },
+  "1033": {
+   "item": "calabrese bread",
+   "role": "starch"
+  },
+  "1034": {
+   "item": "dr. oetker pizza",
+   "role": "prepared_meal"
+  },
+  "1035": {
+   "item": "dark rye bread",
+   "role": "starch"
+  },
+  "1036": {
+   "item": "gluten free pita",
+   "role": "starch"
+  },
+  "1037": {
+   "item": "rye bread",
+   "role": "starch"
+  },
+  "1038": {
+   "item": "d'italiano bread",
+   "role": "starch"
+  },
+  "1039": {
+   "item": "breaded scallop medallions",
+   "role": "protein"
+  },
+  "1040": {
+   "item": "gluten free bread",
+   "role": "starch"
+  },
+  "1041": {
+   "item": "country harvest bread",
+   "role": "starch"
+  },
+  "1042": {
+   "item": "dr. oetker pizza",
+   "role": "prepared_meal"
+  },
+  "1043": {
+   "item": "challah bread",
+   "role": "starch"
+  },
+  "1044": {
+   "item": "country harvest bread",
+   "role": "starch"
+  },
+  "1045": {
+   "item": "gluten free bread",
+   "role": "starch"
+  },
+  "1046": {
+   "item": "gluten free bread",
+   "role": "starch"
+  },
+  "1047": {
+   "item": "gluten free pita",
+   "role": "starch"
+  },
+  "1048": {
+   "item": "tortilla",
+   "role": "starch"
+  },
+  "1049": {
+   "item": "dempster's sandwich bread",
+   "role": "starch"
+  },
+  "1050": {
+   "item": "tortilla chips",
+   "role": "snack"
+  },
+  "1051": {
+   "item": "farm boy tortilla",
+   "role": "starch"
+  },
+  "1052": {
+   "item": "rolled tortilla chips",
+   "role": "snack"
+  },
+  "1053": {
+   "item": "tortilla",
+   "role": "starch"
+  },
+  "1054": {
+   "item": "beans",
+   "role": "protein"
+  },
+  "1055": {
+   "item": "tortilla chips",
+   "role": "snack"
+  },
+  "1056": {
+   "item": "dempster's tortilla",
+   "role": "starch"
+  },
+  "1057": {
+   "item": "dempster's tortilla",
+   "role": "starch"
+  },
+  "1058": {
+   "item": "tortilla chips",
+   "role": "snack"
+  },
+  "1059": {
+   "item": "dempsters protein tortilla",
+   "role": "starch"
+  },
+  "1060": {
+   "item": "casa mendosa tortilla",
+   "role": "starch"
+  },
+  "1061": {
+   "item": "protein chips",
+   "role": "snack"
+  },
+  "1062": {
+   "item": "tortilla chips",
+   "role": "snack"
+  },
+  "1063": {
+   "item": "corn tortilla chips",
+   "role": "snack"
+  },
+  "1064": {
+   "item": "bfree protein tortilla",
+   "role": "starch"
+  },
+  "1065": {
+   "item": "humpty dumpty snacks",
+   "role": "snack"
+  },
+  "1066": {
+   "item": "guacamole",
+   "role": "condiment"
+  },
+  "1067": {
+   "item": "tortilla chips",
+   "role": "snack"
+  },
+  "1068": {
+   "item": "cheetos snack",
+   "role": "snack"
+  },
+  "1069": {
+   "item": "humpty dumpty snacks",
+   "role": "snack"
+  },
+  "1070": {
+   "item": "humpty dumpty snacks",
+   "role": "snack"
+  },
+  "1071": {
+   "item": "guacamole",
+   "role": "condiment"
+  },
+  "1072": {
+   "item": "guacamole",
+   "role": "condiment"
+  },
+  "1073": {
+   "item": "country harvest bagel",
+   "role": "starch"
+  },
+  "1074": {
+   "item": "dempster's bagel",
+   "role": "starch"
+  },
+  "1075": {
+   "item": "country harvest bagel",
+   "role": "starch"
+  },
+  "1076": {
+   "item": "country harvest bagel",
+   "role": "starch"
+  },
+  "1077": {
+   "item": "front street bakery bagel",
+   "role": "starch"
+  },
+  "1078": {
+   "item": "pizza bagels",
+   "role": "prepared_meal"
+  },
+  "1079": {
+   "item": "pizza bagels",
+   "role": "prepared_meal"
+  },
+  "1080": {
+   "item": "instant rice",
+   "role": "pantry_staple"
+  },
+  "1081": {
+   "item": "shirataki rice",
+   "role": "starch"
+  },
+  "1082": {
+   "item": "rice",
+   "role": "starch"
+  },
+  "1083": {
+   "item": "jasmine rice",
+   "role": "starch"
+  },
+  "1084": {
+   "item": "basmati rice",
+   "role": "pantry_staple"
+  },
+  "1085": {
+   "item": "rice flakes",
+   "role": "pantry_staple"
+  },
+  "1086": {
+   "item": "glutinous rice flour",
+   "role": "pantry_staple"
+  },
+  "1087": {
+   "item": "rice/wheat sticks",
+   "role": "snack"
+  },
+  "1088": {
+   "item": "long grain rice",
+   "role": "pantry_staple"
+  },
+  "1089": {
+   "item": "minute rice ready to serve",
+   "role": "prepared_meal"
+  },
+  "1090": {
+   "item": "granola bars",
+   "role": "snack"
+  },
+  "1091": {
+   "item": "rice",
+   "role": "pantry_staple"
+  },
+  "1092": {
+   "item": "jasmine rice",
+   "role": "starch"
+  },
+  "1093": {
+   "item": "medium grain rice",
+   "role": "starch"
+  },
+  "1094": {
+   "item": "crispy rice squares",
+   "role": "snack"
+  },
+  "1095": {
+   "item": "medium grain rice",
+   "role": "starch"
+  },
+  "1096": {
+   "item": "jasmine rice",
+   "role": "starch"
+  },
+  "1097": {
+   "item": "medium grain rice",
+   "role": "starch"
+  },
+  "1098": {
+   "item": "basmati rice",
+   "role": "pantry_staple"
+  },
+  "1099": {
+   "item": "calrose rice",
+   "role": "starch"
+  },
+  "1100": {
+   "item": "long grain rice",
+   "role": "starch"
+  },
+  "1101": {
+   "item": "jasmine rice",
+   "role": "starch"
+  },
+  "1102": {
+   "item": "jasmine rice",
+   "role": "starch"
+  },
+  "1103": {
+   "item": "rice",
+   "role": "pantry_staple"
+  },
+  "1104": {
+   "item": "basmati rice",
+   "role": "starch"
+  },
+  "1105": {
+   "item": "mixed vegetables",
+   "role": "vegetable"
+  },
+  "1106": {
+   "item": "cups",
+   "role": "non_food"
+  },
+  "1107": {
+   "item": "rice sticks",
+   "role": "starch"
+  },
+  "1108": {
+   "item": "chana masala with rice",
+   "role": "prepared_meal"
+  },
+  "1109": {
+   "item": "rice",
+   "role": "starch"
+  },
+  "1110": {
+   "item": "cups",
+   "role": "non_food"
+  },
+  "1111": {
+   "item": "arborio rice",
+   "role": "pantry_staple"
+  },
+  "1112": {
+   "item": "basmati rice",
+   "role": "starch"
+  },
+  "1113": {
+   "item": "white rice",
+   "role": "starch"
+  },
+  "1114": {
+   "item": "basmati rice",
+   "role": "starch"
+  },
+  "1115": {
+   "item": "parboiled rice",
+   "role": "pantry_staple"
+  },
+  "1116": {
+   "item": "rice",
+   "role": "pantry_staple"
+  },
+  "1117": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1118": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1119": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1120": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1121": {
+   "item": "tri-colour pasta",
+   "role": "pantry_staple"
+  },
+  "1122": {
+   "item": "cheese",
+   "role": "dairy"
+  },
+  "1123": {
+   "item": "fresh pasta",
+   "role": "pantry_staple"
+  },
+  "1124": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1125": {
+   "item": "fresh pasta",
+   "role": "starch"
+  },
+  "1126": {
+   "item": "stuffed pasta shells",
+   "role": "prepared_meal"
+  },
+  "1127": {
+   "item": "shirataki pasta",
+   "role": "pantry_staple"
+  },
+  "1128": {
+   "item": "braised beef pappardelle",
+   "role": "prepared_meal"
+  },
+  "1129": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1130": {
+   "item": "lemon herb chicken and pasta",
+   "role": "prepared_meal"
+  },
+  "1131": {
+   "item": "creamy ros\u00e9 chicken and pasta",
+   "role": "prepared_meal"
+  },
+  "1132": {
+   "item": "creamy tuscan chicken and pasta",
+   "role": "prepared_meal"
+  },
+  "1133": {
+   "item": "canned beans",
+   "role": "pantry_staple"
+  },
+  "1134": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1135": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1136": {
+   "item": "meat lasagna",
+   "role": "prepared_meal"
+  },
+  "1137": {
+   "item": "meat pie",
+   "role": "prepared_meal"
+  },
+  "1138": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1139": {
+   "item": "pasta",
+   "role": "starch"
+  },
+  "1140": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1141": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1142": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1143": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1144": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1145": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1146": {
+   "item": "cheesy pulled pork pasta",
+   "role": "prepared_meal"
+  },
+  "1147": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1148": {
+   "item": "canned pasta",
+   "role": "prepared_meal"
+  },
+  "1149": {
+   "item": "gluten free pasta",
+   "role": "pantry_staple"
+  },
+  "1150": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1151": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1152": {
+   "item": "rice pasta",
+   "role": "pantry_staple"
+  },
+  "1153": {
+   "item": "three cheese pasta bake",
+   "role": "prepared_meal"
+  },
+  "1154": {
+   "item": "ravioli",
+   "role": "pantry_staple"
+  },
+  "1155": {
+   "item": "fresh pasta",
+   "role": "pantry_staple"
+  },
+  "1156": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1157": {
+   "item": "fresh pasta",
+   "role": "pantry_staple"
+  },
+  "1158": {
+   "item": "fresh pasta",
+   "role": "pantry_staple"
+  },
+  "1159": {
+   "item": "pasta sauce",
+   "role": "condiment"
+  },
+  "1160": {
+   "item": "pasta sauce",
+   "role": "condiment"
+  },
+  "1161": {
+   "item": "pasta sauce",
+   "role": "condiment"
+  },
+  "1162": {
+   "item": "pasta sauce",
+   "role": "pantry_staple"
+  },
+  "1163": {
+   "item": "penne rigate in pasta sauce",
+   "role": "prepared_meal"
+  },
+  "1164": {
+   "item": "pasta sauce",
+   "role": "condiment"
+  },
+  "1165": {
+   "item": "pasta sauce",
+   "role": "condiment"
+  },
+  "1166": {
+   "item": "pasta sauce",
+   "role": "condiment"
+  },
+  "1167": {
+   "item": "penne pasta in vodka sauce",
+   "role": "prepared_meal"
+  },
+  "1168": {
+   "item": "pasta sauce",
+   "role": "condiment"
+  },
+  "1169": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1170": {
+   "item": "pasta sauce",
+   "role": "condiment"
+  },
+  "1171": {
+   "item": "pasta",
+   "role": "pantry_staple"
+  },
+  "1172": {
+   "item": "pasta sauce",
+   "role": "pantry_staple"
+  },
+  "1173": {
+   "item": "pasta sauce",
+   "role": "condiment"
+  },
+  "1174": {
+   "item": "canned beans",
+   "role": "protein"
+  },
+  "1175": {
+   "item": "canned beans",
+   "role": "protein"
+  },
+  "1176": {
+   "item": "chickpeas",
+   "role": "protein"
+  },
+  "1177": {
+   "item": "chickpea puffs",
+   "role": "snack"
+  },
+  "1178": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1179": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1180": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1181": {
+   "item": "extra virgin olive oil",
+   "role": "pantry_staple"
+  },
+  "1182": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1183": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1184": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1185": {
+   "item": "olive pomace oil",
+   "role": "pantry_staple"
+  },
+  "1186": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1187": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1188": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1189": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1190": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1191": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1192": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1193": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1194": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1195": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1196": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1197": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1198": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1199": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1200": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1201": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1202": {
+   "item": "olive oil",
+   "role": "pantry_staple"
+  },
+  "1203": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1204": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1205": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1206": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1207": {
+   "item": "wheat flour",
+   "role": "pantry_staple"
+  },
+  "1208": {
+   "item": "whole wheat flour",
+   "role": "pantry_staple"
+  },
+  "1209": {
+   "item": "durum flour",
+   "role": "pantry_staple"
+  },
+  "1210": {
+   "item": "durum flour",
+   "role": "pantry_staple"
+  },
+  "1211": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1212": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1213": {
+   "item": "flour sticks",
+   "role": "snack"
+  },
+  "1214": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1215": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1216": {
+   "item": "corn masa flour",
+   "role": "pantry_staple"
+  },
+  "1217": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1218": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1219": {
+   "item": "durum flour",
+   "role": "pantry_staple"
+  },
+  "1220": {
+   "item": "durum flour",
+   "role": "pantry_staple"
+  },
+  "1221": {
+   "item": "flour",
+   "role": "pantry_staple"
+  },
+  "1222": {
+   "item": "granulated sugar",
+   "role": "pantry_staple"
+  },
+  "1223": {
+   "item": "sugar",
+   "role": "pantry_staple"
+  },
+  "1224": {
+   "item": "candy",
+   "role": "snack"
+  },
+  "1225": {
+   "item": "cane sugar",
+   "role": "pantry_staple"
+  },
+  "1226": {
+   "item": "cane sugar",
+   "role": "pantry_staple"
+  },
+  "1227": {
+   "item": "sugar",
+   "role": "pantry_staple"
+  },
+  "1228": {
+   "item": "sugar",
+   "role": "pantry_staple"
+  },
+  "1229": {
+   "item": "sugar",
+   "role": "pantry_staple"
+  },
+  "1230": {
+   "item": "candy",
+   "role": "snack"
+  },
+  "1231": {
+   "item": "rolled oats",
+   "role": "pantry_staple"
+  },
+  "1232": {
+   "item": "instant oatmeal",
+   "role": "pantry_staple"
+  },
+  "1233": {
+   "item": "granola bars",
+   "role": "snack"
+  },
+  "1234": {
+   "item": "instant oatmeal",
+   "role": "pantry_staple"
+  },
+  "1235": {
+   "item": "oat flour",
+   "role": "pantry_staple"
+  },
+  "1236": {
+   "item": "quick oats",
+   "role": "pantry_staple"
+  },
+  "1237": {
+   "item": "fruit oat veggie bars",
+   "role": "snack"
+  },
+  "1238": {
+   "item": "oat beverage",
+   "role": "beverage"
+  },
+  "1239": {
+   "item": "oat beverage",
+   "role": "beverage"
+  },
+  "1240": {
+   "item": "gluten free brownies",
+   "role": "snack"
+  },
+  "1241": {
+   "item": "oat beverage",
+   "role": "beverage"
+  },
+  "1242": {
+   "item": "oatmeal",
+   "role": "pantry_staple"
+  },
+  "1243": {
+   "item": "oat nog",
+   "role": "beverage"
+  },
+  "1244": {
+   "item": "instant oatmeal",
+   "role": "pantry_staple"
+  },
+  "1245": {
+   "item": "oatmeal",
+   "role": "pantry_staple"
+  },
+  "1246": {
+   "item": "instant oatmeal",
+   "role": "pantry_staple"
+  },
+  "1247": {
+   "item": "quick oats",
+   "role": "pantry_staple"
+  },
+  "1248": {
+   "item": "oat cereal",
+   "role": "pantry_staple"
+  },
+  "1249": {
+   "item": "oat bars",
+   "role": "snack"
+  },
+  "1250": {
+   "item": "overnight oats",
+   "role": "prepared_meal"
+  },
+  "1251": {
+   "item": "oats with flax and chia",
+   "role": "pantry_staple"
+  },
+  "1252": {
+   "item": "overnight oats",
+   "role": "pantry_staple"
+  },
+  "1253": {
+   "item": "gluten-free oats",
+   "role": "pantry_staple"
+  },
+  "1254": {
+   "item": "granola",
+   "role": "pantry_staple"
+  },
+  "1255": {
+   "item": "oat cereal",
+   "role": "pantry_staple"
+  },
+  "1256": {
+   "item": "peanut butter",
+   "role": "condiment"
+  },
+  "1257": {
+   "item": "jam",
+   "role": "condiment"
+  },
+  "1258": {
+   "item": "peanut butter",
+   "role": "pantry_staple"
+  },
+  "1259": {
+   "item": "hazelnut spread",
+   "role": "condiment"
+  },
+  "1260": {
+   "item": "peanut butter",
+   "role": "pantry_staple"
+  },
+  "1261": {
+   "item": "peanut butter",
+   "role": "condiment"
+  },
+  "1262": {
+   "item": "peanut butter",
+   "role": "pantry_staple"
+  },
+  "1263": {
+   "item": "peanut butter",
+   "role": "condiment"
+  },
+  "1264": {
+   "item": "bone broth",
+   "role": "pantry_staple"
+  },
+  "1265": {
+   "item": "chicken broth",
+   "role": "pantry_staple"
+  },
+  "1266": {
+   "item": "soft tofu",
+   "role": "protein"
+  },
+  "1267": {
+   "item": "tofu",
+   "role": "protein"
+  },
+  "1268": {
+   "item": "tofu",
+   "role": "protein"
+  },
+  "1269": {
+   "item": "tofu",
+   "role": "protein"
+  },
+  "1270": {
+   "item": "fish cake",
+   "role": "prepared_meal"
+  },
+  "1271": {
+   "item": "tofu",
+   "role": "protein"
+  },
+  "1272": {
+   "item": "tofu",
+   "role": "protein"
+  },
+  "1273": {
+   "item": "frozen vegetables",
+   "role": "vegetable"
+  },
+  "1274": {
+   "item": "frozen vegetables",
+   "role": "vegetable"
+  },
+  "1275": {
+   "item": "frozen mixed vegetables",
+   "role": "vegetable"
+  },
+  "1276": {
+   "item": "frozen vegetables",
+   "role": "vegetable"
+  },
+  "1277": {
+   "item": "frozen fries",
+   "role": "starch"
+  },
+  "1278": {
+   "item": "frozen vegetables",
+   "role": "vegetable"
+  },
+  "1279": {
+   "item": "frozen vegetables",
+   "role": "vegetable"
+  },
+  "1280": {
+   "item": "frozen meals",
+   "role": "prepared_meal"
+  },
+  "1281": {
+   "item": "frozen vegetables",
+   "role": "vegetable"
+  },
+  "1282": {
+   "item": "frozen pizza",
+   "role": "prepared_meal"
+  },
+  "1283": {
+   "item": "frozen entrees",
+   "role": "prepared_meal"
+  },
+  "1284": {
+   "item": "frozen pizza",
+   "role": "prepared_meal"
+  },
+  "1285": {
+   "item": "frozen pizza",
+   "role": "prepared_meal"
+  },
+  "1286": {
+   "item": "frozen pizza",
+   "role": "prepared_meal"
+  },
+  "1287": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1288": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1289": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1290": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1291": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1292": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1293": {
+   "item": "apple juice",
+   "role": "beverage"
+  },
+  "1294": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1295": {
+   "item": "lemonade",
+   "role": "beverage"
+  },
+  "1296": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1297": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1298": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1299": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1300": {
+   "item": "orange juice",
+   "role": "beverage"
+  },
+  "1301": {
+   "item": "lemonade",
+   "role": "beverage"
+  },
+  "1302": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1303": {
+   "item": "instant coffee",
+   "role": "beverage"
+  },
+  "1304": {
+   "item": "instant coffee",
+   "role": "beverage"
+  },
+  "1305": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1306": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1307": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1308": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1309": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1310": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1311": {
+   "item": "instant coffee",
+   "role": "beverage"
+  },
+  "1312": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1313": {
+   "item": "instant coffee",
+   "role": "beverage"
+  },
+  "1314": {
+   "item": "ground coffee",
+   "role": "pantry_staple"
+  },
+  "1315": {
+   "item": "whole bean coffee",
+   "role": "beverage"
+  },
+  "1316": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1317": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1318": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1319": {
+   "item": "whole bean coffee",
+   "role": "beverage"
+  },
+  "1320": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1321": {
+   "item": "coffee pouches",
+   "role": "beverage"
+  },
+  "1322": {
+   "item": "ground coffee",
+   "role": "pantry_staple"
+  },
+  "1323": {
+   "item": "ground coffee",
+   "role": "pantry_staple"
+  },
+  "1324": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1325": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1326": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1327": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1328": {
+   "item": "instant coffee",
+   "role": "beverage"
+  },
+  "1329": {
+   "item": "ground coffee",
+   "role": "pantry_staple"
+  },
+  "1330": {
+   "item": "coffee capsules",
+   "role": "pantry_staple"
+  },
+  "1331": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1332": {
+   "item": "instant coffee",
+   "role": "beverage"
+  },
+  "1333": {
+   "item": "ground coffee",
+   "role": "pantry_staple"
+  },
+  "1334": {
+   "item": "ground coffee",
+   "role": "pantry_staple"
+  },
+  "1335": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1336": {
+   "item": "ground coffee",
+   "role": "pantry_staple"
+  },
+  "1337": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1338": {
+   "item": "coffee capsules",
+   "role": "beverage"
+  },
+  "1339": {
+   "item": "canned coffee",
+   "role": "beverage"
+  },
+  "1340": {
+   "item": "coffee pods",
+   "role": "beverage"
+  },
+  "1341": {
+   "item": "coffee",
+   "role": "beverage"
+  },
+  "1342": {
+   "item": "turkish coffee",
+   "role": "beverage"
+  },
+  "1343": {
+   "item": "turkish coffee",
+   "role": "beverage"
+  },
+  "1344": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1345": {
+   "item": "instant coffee",
+   "role": "beverage"
+  },
+  "1346": {
+   "item": "instant coffee",
+   "role": "beverage"
+  },
+  "1347": {
+   "item": "cold brew coffee",
+   "role": "beverage"
+  },
+  "1348": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1349": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1350": {
+   "item": "coffee",
+   "role": "beverage"
+  },
+  "1351": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1352": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1353": {
+   "item": "coffee beans",
+   "role": "beverage"
+  },
+  "1354": {
+   "item": "coffee capsules",
+   "role": "beverage"
+  },
+  "1355": {
+   "item": "coffee pods",
+   "role": "beverage"
+  },
+  "1356": {
+   "item": "cold brew coffee",
+   "role": "beverage"
+  },
+  "1357": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1358": {
+   "item": "instant coffee",
+   "role": "beverage"
+  },
+  "1359": {
+   "item": "coffee pods",
+   "role": "beverage"
+  },
+  "1360": {
+   "item": "coffee pods",
+   "role": "beverage"
+  },
+  "1361": {
+   "item": "ground coffee",
+   "role": "pantry_staple"
+  },
+  "1362": {
+   "item": "coffee pods",
+   "role": "pantry_staple"
+  },
+  "1363": {
+   "item": "ground coffee",
+   "role": "pantry_staple"
+  },
+  "1364": {
+   "item": "whole bean coffee",
+   "role": "beverage"
+  },
+  "1365": {
+   "item": "ground coffee",
+   "role": "beverage"
+  },
+  "1366": {
+   "item": "coffee pods",
+   "role": "beverage"
+  },
+  "1367": {
+   "item": "protein coffee",
+   "role": "beverage"
+  },
+  "1368": {
+   "item": "espresso concentrate",
+   "role": "beverage"
+  },
+  "1369": {
+   "item": "coffee pods",
+   "role": "beverage"
+  },
+  "1370": {
+   "item": "iced coffee",
+   "role": "beverage"
+  },
+  "1371": {
+   "item": "coffee pods",
+   "role": "pantry_staple"
+  },
+  "1372": {
+   "item": "coffee pods",
+   "role": "beverage"
+  },
+  "1373": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1374": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1375": {
+   "item": "tea bags",
+   "role": "beverage"
+  },
+  "1376": {
+   "item": "juice",
+   "role": "beverage"
+  },
+  "1377": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1378": {
+   "item": "cream cracker",
+   "role": "snack"
+  },
+  "1379": {
+   "item": "hot chocolate",
+   "role": "beverage"
+  },
+  "1380": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1381": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1382": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1383": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1384": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1385": {
+   "item": "iced tea",
+   "role": "beverage"
+  },
+  "1386": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1387": {
+   "item": "biscuit assortment",
+   "role": "snack"
+  },
+  "1388": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1389": {
+   "item": "tea biscuits",
+   "role": "snack"
+  },
+  "1390": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1391": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1392": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1393": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1394": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1395": {
+   "item": "iced tea",
+   "role": "beverage"
+  },
+  "1396": {
+   "item": "tea drink",
+   "role": "beverage"
+  },
+  "1397": {
+   "item": "juice",
+   "role": "beverage"
+  },
+  "1398": {
+   "item": "herbal tea",
+   "role": "beverage"
+  },
+  "1399": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1400": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1401": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1402": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1403": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1404": {
+   "item": "espresso capsules",
+   "role": "beverage"
+  },
+  "1405": {
+   "item": "iced tea",
+   "role": "beverage"
+  },
+  "1406": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1407": {
+   "item": "lemonade",
+   "role": "beverage"
+  },
+  "1408": {
+   "item": "iced tea",
+   "role": "beverage"
+  },
+  "1409": {
+   "item": "iced tea",
+   "role": "beverage"
+  },
+  "1410": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1411": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1412": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1413": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1414": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1415": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1416": {
+   "item": "iced tea",
+   "role": "beverage"
+  },
+  "1417": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1418": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1419": {
+   "item": "herbal tea",
+   "role": "beverage"
+  },
+  "1420": {
+   "item": "herbal tea",
+   "role": "beverage"
+  },
+  "1421": {
+   "item": "iced tea",
+   "role": "beverage"
+  },
+  "1422": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1423": {
+   "item": "tea biscuits",
+   "role": "snack"
+  },
+  "1424": {
+   "item": "herbal tea",
+   "role": "beverage"
+  },
+  "1425": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1426": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1427": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1428": {
+   "item": "iced tea",
+   "role": "beverage"
+  },
+  "1429": {
+   "item": "tea gift box",
+   "role": "beverage"
+  },
+  "1430": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1431": {
+   "item": "green tea",
+   "role": "beverage"
+  },
+  "1432": {
+   "item": "iced tea",
+   "role": "beverage"
+  },
+  "1433": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1434": {
+   "item": "tea",
+   "role": "pantry_staple"
+  },
+  "1435": {
+   "item": "iced tea",
+   "role": "beverage"
+  },
+  "1436": {
+   "item": "tea biscuits",
+   "role": "snack"
+  },
+  "1437": {
+   "item": "fruit drink",
+   "role": "beverage"
+  },
+  "1438": {
+   "item": "tea biscuits",
+   "role": "snack"
+  },
+  "1439": {
+   "item": "vodka iced tea",
+   "role": "beverage"
+  },
+  "1440": {
+   "item": "tea",
+   "role": "beverage"
+  },
+  "1441": {
+   "item": "vodka iced tea",
+   "role": "beverage"
+  },
+  "1442": {
+   "item": "fruit drink",
+   "role": "beverage"
+  },
+  "1443": {
+   "item": "instant coffee",
+   "role": "beverage"
+  },
+  "1444": {
+   "item": "thai tea mix",
+   "role": "beverage"
+  }
+ }
+}

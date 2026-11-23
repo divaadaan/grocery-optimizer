@@ -1,0 +1,152 @@
+[
+ {
+  "seed": 1,
+  "error": null,
+  "seconds": 40.5,
+  "calls": 1,
+  "tool_calls": 0,
+  "seen": 916,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 20,
+  "invalid_ids": [],
+  "bad_pantry": [
+   "milk",
+   "pepper"
+  ],
+  "dishes_without_anchor": 0,
+  "total_cost": 112.47,
+  "within_budget": false,
+  "chains": {
+   "Longos": 3,
+   "No Frills": 2,
+   "Ranch Fresh Supermarket": 2,
+   "Sobeys": 2,
+   "President's Choice": 2,
+   "T&T Supermarket": 1,
+   "Seasons Food Mart": 1,
+   "Your Independent Grocer": 1,
+   "Farm Boy": 1,
+   "FreshCo": 1,
+   "Vince's Market": 1,
+   "Real Canadian Superstore": 1,
+   "Loblaws": 1,
+   "Highland Farms": 1
+  },
+  "categories": {
+   "Produce": 15,
+   "Meat & Poultry": 3,
+   "Seafood": 2
+  },
+  "beverage_ids": [],
+  "reused_deals": 0,
+  "anchor_categories": {
+   "Meat & Poultry": 3,
+   "Seafood": 2
+  },
+  "position_quintiles": [
+   8,
+   2,
+   1,
+   6,
+   3
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 2,
+  "error": null,
+  "seconds": 43.0,
+  "calls": 1,
+  "tool_calls": 0,
+  "seen": 916,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 10,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 63.09,
+  "within_budget": true,
+  "chains": {
+   "Sobeys": 2,
+   "Foodland": 1,
+   "Longos": 1,
+   "Wholesale Club and Club Entrep\u00f4t": 1,
+   "Highland Farms": 1,
+   "Loblaws": 1,
+   "President's Choice": 1,
+   "T&T Supermarket": 1,
+   "Walmart": 1
+  },
+  "categories": {
+   "Produce": 3,
+   "Dairy & Eggs": 2,
+   "Pantry": 2,
+   "Meat & Poultry": 1,
+   "Seafood": 1,
+   "Bakery": 1
+  },
+  "beverage_ids": [],
+  "reused_deals": 4,
+  "anchor_categories": {
+   "Produce": 2,
+   "Seafood": 1,
+   "Meat & Poultry": 1
+  },
+  "position_quintiles": [
+   9,
+   0,
+   0,
+   1,
+   0
+  ],
+  "cited_unseen": []
+ },
+ {
+  "seed": 3,
+  "error": null,
+  "seconds": 40.2,
+  "calls": 1,
+  "tool_calls": 0,
+  "seen": 916,
+  "truncated": false,
+  "parse_ok": true,
+  "num_dishes": 5,
+  "dishes_ok": true,
+  "cited_ids": 6,
+  "invalid_ids": [],
+  "bad_pantry": [],
+  "dishes_without_anchor": 0,
+  "total_cost": 49.54,
+  "within_budget": true,
+  "chains": {
+   "Healthy Planet": 2,
+   "Loblaws": 1,
+   "Shoppers Drug Mart": 1,
+   "Zehrs": 1,
+   "Your Independent Grocer": 1
+  },
+  "categories": {
+   "Pantry": 4,
+   "Meat & Poultry": 2
+  },
+  "beverage_ids": [],
+  "reused_deals": 5,
+  "anchor_categories": {
+   "Meat & Poultry": 2
+  },
+  "position_quintiles": [
+   5,
+   1,
+   0,
+   0,
+   0
+  ],
+  "cited_unseen": []
+ }
+]
