@@ -172,3 +172,55 @@ def test_parse_json_object(text, expected):
 def test_no_agent_module_imports_a_langchain_chat_class_here():
     src = open(llm_chat.__file__, encoding="utf-8").read()
     assert "langchain" not in src
+
+
+# ------------------------------------------------------------ chat_validated
+
+def _scripted(*texts):
+    calls = []
+
+    def chat_fn(spec, messages, **kw):
+        calls.append(messages)
+        return llm_chat.Reply(text=texts[len(calls) - 1])
+
+    chat_fn.calls = calls
+    return chat_fn
+
+
+def _need_x(data):
+    if "x" not in data:
+        raise ValueError("missing x")
+    return data["x"]
+
+
+def test_chat_validated_returns_the_first_valid_reply():
+    fn = _scripted('{"x": 1}')
+    value, replies = llm_chat.chat_validated(fn, "ollama:m", [{"role": "user", "content": "q"}],
+                                             _need_x)
+    assert value == 1 and len(replies) == 1
+
+
+def test_chat_validated_shows_the_model_its_error_once():
+    fn = _scripted('{"y": 1}', '{"x": 2}')
+    value, replies = llm_chat.chat_validated(fn, "ollama:m", [{"role": "user", "content": "q"}],
+                                             _need_x)
+    assert value == 2 and len(replies) == 2
+    retry = fn.calls[1]
+    assert retry[1] == {"role": "assistant", "content": '{"y": 1}'}
+    assert "missing x" in retry[2]["content"]
+
+
+def test_chat_validated_gives_up_with_a_model_output_error():
+    fn = _scripted("nope", '{"y": 1}')
+    with pytest.raises(llm_chat.ChatOutputError) as err:
+        llm_chat.chat_validated(fn, "ollama:m", [{"role": "user", "content": "q"}], _need_x)
+    assert len(err.value.replies) == 2 and "missing x" in err.value.last_error
+    assert classify(err.value) == MODEL_OUTPUT
+
+
+def test_chat_validated_lets_infrastructure_errors_through():
+    def chat_fn(spec, messages, **kw):
+        raise httpx.ConnectError("refused", request=httpx.Request("POST", "http://x"))
+
+    with pytest.raises(httpx.ConnectError):
+        llm_chat.chat_validated(chat_fn, "ollama:m", [{"role": "user", "content": "q"}], _need_x)

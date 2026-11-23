@@ -334,6 +334,20 @@ Types for the new request and response fields go in the frontend API types.
 PRs 2 and 4 can run in parallel worktrees once PR 1 has merged. PR 3 depends on 1 and 2. Only
 PR 1's Neon step writes to the database.
 
+## 14a. As built (PR 3) — differences from the text above
+
+- **Selection checks run inside the job, not as a 422.** `kept_deal_ids` / `pantry_product_ids`
+  are intersected with freshly rebuilt trays. Ids no longer offered are dropped and reported as a
+  warning, never trusted. No kept anchor fails the job with the reason. Omitting either field
+  means "keep everything offered", so the API works before the carousel exists.
+- **The old LangGraph pipeline still exists, for the eval harness only.** The API uses
+  `app/agents/plan_pipeline.py`. Moving the harness over and deleting the old Chef, Nutritionist
+  and graph is the cleanup PR.
+- **Display names come from citations.** Each ingredient is shown as the cited staple's name or
+  the deal's label `item`, and steps render the same way. The model's wording is kept as
+  `written_as`. Display only.
+- Settings: `LLM_PLANNER_MODEL`, `LLM_WRITER_MODEL` (default `ollama:qwen2.5:7b`).
+
 ## 14. Answered questions (owner, 2026-11-23)
 
 - §4: **dairy joins SIDES.**

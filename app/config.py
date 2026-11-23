@@ -75,6 +75,9 @@ class Settings(BaseSettings):
     # Approach-C model specs (app/agents/llm_chat.py): "ollama:<model>" or
     # "hf:<org/model>". Design: experiments/chef/DESIGN_APPROACH_C.md section 10.
     llm_labeller_model: str = Field(default="hf:openai/gpt-oss-120b", env="LLM_LABELLER_MODEL")
+    # Dish planner (the Chef) and per-dish recipe writer (the SousChef).
+    llm_planner_model: str = Field(default="ollama:qwen2.5:7b", env="LLM_PLANNER_MODEL")
+    llm_writer_model: str = Field(default="ollama:qwen2.5:7b", env="LLM_WRITER_MODEL")
     # Label new deals in the background after every ingestion run (needs
     # HUGGINGFACE_API_KEY when the labeller is an hf: model). Labelling never
     # runs at request time and a labelling failure never fails ingestion.

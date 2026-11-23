@@ -40,6 +40,14 @@ _SHOPPING_LIST_COLUMNS = """
 """
 
 
+_TRAY_PROVENANCE_SQL = """
+UPDATE recipe_generations
+SET offered_deal_ids = %(offered)s, kept_deal_ids = %(kept)s,
+    pantry_product_ids = %(pantry)s, dish_plan = %(dish_plan)s
+WHERE generation_id = %(generation_id)s
+"""
+
+
 class DatabaseService:
     """Handle all database interactions for recipe generation (shared pool)."""
 
@@ -244,6 +252,18 @@ class DatabaseService:
                     "num_recipes_approved": generation.get("num_recipes_approved"),
                     "num_recipes_rejected": generation.get("num_recipes_rejected"),
                 })
+                if "kept_deal_ids" in generation:
+                    # Approach C provenance (migration 024): what the trays
+                    # offered, what the user kept, the confirmed pantry and the
+                    # validated dish plan. Written only by the new pipeline, so
+                    # the old path never needs 024.
+                    cursor.execute(_TRAY_PROVENANCE_SQL, {
+                        "generation_id": generation_id,
+                        "offered": list(generation.get("offered_deal_ids") or []),
+                        "kept": list(generation.get("kept_deal_ids") or []),
+                        "pantry": list(generation.get("pantry_product_ids") or []),
+                        "dish_plan": _json_or_none(generation.get("dish_plan")),
+                    })
             for recipe in recipes:
                 cursor.execute(query, (
                     user_id,
