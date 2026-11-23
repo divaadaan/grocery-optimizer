@@ -1,7 +1,7 @@
 # Recipe evaluation report
 
 - Generated at: 2026-10-30T12:00:00Z
-- Git sha(s): bc259a9256 (dirty)
+- Git sha(s): a7640869f4 (dirty)
 - Runs: 4
 - Verdicts: PASS 2 / FAIL 1 / N/A 1
 
@@ -44,4 +44,4 @@ Budget columns are **lower bounds** (one deal unit per cited ingredient; ignores
 
 | snapshot | runs | PASS/FAIL/N/A | pass rate | citation validity (mean) | deal share (mean) | jaccard mean (mean) | jaccard max (max) | budget LB per-recipe-sum (mean) | budget LB per-unique-deal (mean) | not within LB | savings (sum, known runs) | llm s (sum) | llm s (mean/run) | tokens (sum) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| seed27 (2026-07-15) | 4 | 2/1/1 | 50% | 98% | 68% | 0.00 | 0.00 | $9.39 | $9.39 | 0 | $17.40 (known for 3/4 runs) | 0.008 | 0.002 | 19911 (known for 18/36 calls) |
+| seed27 (2026-07-15) | 4 | 2/1/1 | 50% | 98% | 68% | 0.00 | 0.00 | $9.39 | $9.39 | 0 | $17.40 (known for 3/4 runs) | 0.009 | 0.002 | 19911 (known for 18/36 calls) |

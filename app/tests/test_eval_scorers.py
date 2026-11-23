@@ -591,6 +591,24 @@ def test_instructions_metric_detects_text_not_rendered_from_citations(base_artif
     assert scorers.score_instructions(a, base_snapshot)["render_mismatches"] == 1
 
 
+def test_scorer_renders_deals_as_the_renderer_does(base_artifact, base_snapshot):
+    """The committed run renders linked deals by canonical name and the scorer
+    agrees (0 mismatches); text rendered from the flyer names instead is
+    reported."""
+    assert scorers.score_instructions(base_artifact, base_snapshot)["render_mismatches"] == 0
+    a = copy.deepcopy(base_artifact)
+    deals = {str(d["deal_id"]): d["product_name"] for d in base_snapshot.data["deals"]}
+    changed = 0
+    for r in plan(a):
+        names = [deals[str(i["deal_id"])] if i.get("deal_id") is not None
+                 else i.get("name", "") for i in r["ingredients"]]
+        flyer = [s["template"].format(*names) for s in r["instruction_steps"]]
+        changed += flyer != r["instructions"]
+        r["instructions"] = flyer
+    assert changed > 0
+    assert scorers.score_instructions(a, base_snapshot)["render_mismatches"] == changed
+
+
 def test_legacy_artifact_without_instruction_steps_is_unstructured(base_artifact, base_snapshot):
     a = copy.deepcopy(base_artifact)
     for r in plan(a):

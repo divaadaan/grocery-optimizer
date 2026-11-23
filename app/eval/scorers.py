@@ -331,7 +331,8 @@ def score_instructions(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[
     not from the run's parsed ``ingredient_refs``.
 
     ``render_mismatches`` re-renders each template with the cited names from
-    the snapshot (deal ``product_name`` / staple ``canonical_name``) and
+    the snapshot (a deal's linked product ``canonical_name`` per
+    ``deal_cited_name``, else its ``product_name``; staple ``canonical_name``) and
     counts recipes whose stored ``instructions`` differ: a check on the
     rendering pipeline, not on the words. Literal food words typed into step
     text are *not* detected and cannot be without name matching, which is
@@ -342,10 +343,11 @@ def score_instructions(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[
     are ``None`` when no plan recipe is structured.
     """
     from app.agents.instruction_refs import (
-        parse_step, render_step, step_problems, unreferenced)
+        deal_cited_name, parse_step, render_step, step_problems, unreferenced)
 
     v = _view(artifact, snapshot)
-    names = {"deal": {k: d.get("product_name") or "" for k, d in v.deals.items()},
+    names = {"deal": {k: deal_cited_name(d.get("product_name") or "", v.linked.get(k, []))
+                      for k, d in v.deals.items()},
              "product": {k: p.get("canonical_name") or "" for k, p in v.products.items()}}
     structured = steps = refs = invalid = no_ref = mismatched = 0
     unref: List[Dict[str, Any]] = []
