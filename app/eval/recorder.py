@@ -1,25 +1,23 @@
-"""Record and replay the recipe graph's LLM calls.
+"""Record and replay the generation pipeline's LLM calls.
 
-The agents touch their chat model through exactly one surface:
-``llm.invoke(messages)`` from :func:`app.agents.llm_output.invoke_validated`,
-where ``messages`` is a list of ``HumanMessage``/``AIMessage`` (the task
-prompt, then on a retry the bad reply and the correction request), and the
-only thing read back is ``.content``. No ``bind``, ``with_structured_output``,
-streaming, batching or tool calls. The wrappers here implement that surface
-and nothing else: any other attribute raises, so a future agent that starts
-using one fails loudly instead of silently bypassing the recording.
+The approach-C agents (``app/agents/plan_pipeline.py``) reach a model through
+exactly one surface: a *chat function* with ``llm_chat.chat``'s signature,
+``chat_fn(spec, messages, **params) -> Reply``, where ``messages`` is a list
+of ``{"role", "content"}`` dicts (the task prompt, then on a retry the bad
+reply and the correction request) and only the ``Reply`` is read back. The
+wrappers here implement that surface:
 
-* :class:`RecordingLLM` -- wraps a real chat model for one role and appends
-  every call to a shared :class:`CallLog`: role, the canonical request
-  messages, model identity and parameters, the response content and
-  metadata, token usage *as the provider reported it* (``usage_metadata``;
-  absent -> ``None``, never estimated), latency, and any exception.
-* :class:`ReplayLLM` -- serves responses from a recorded call log through a
+* :class:`RecordingChat` -- wraps a real chat function for one role and
+  appends every call to a shared :class:`CallLog`: role, the canonical request
+  messages, the model spec and call parameters, the reply text, finish reason
+  and token usage *as the provider reported it* (absent -> ``None``, never
+  estimated), latency, and any exception.
+* :class:`ReplayChat` -- serves replies from a recorded call log through a
   :class:`ReplayLog`. No network, no model.
 
 Call matching (why not "the n-th call")
 ---------------------------------------
-The three SousChefs run in parallel threads, so the global order in which
+The per-dish SousChefs run in parallel threads, so the global order in which
 calls reach the model is wall-clock scheduling, not program logic. A replay
 that served "the next recorded response" would hand SousChef 2 the reply
 recorded for SousChef 1 whenever the threads interleave differently.
@@ -41,11 +39,10 @@ group verbatim) may receive each other's recorded replies. Their requests
 are identical, so the swap is only visible as which ``chef_id`` owns which
 recipe.
 
-Making the requests themselves reproducible needs one more thing: recipe ids
-are printed into the Nutritionist and retry prompts, and production mints
-them with ``uuid4``. :class:`ContentRecipeIds` (injected as
-``GraphDeps.recipe_ids``) derives them from the chef id and the validated
-recipe instead, with its own per-content occurrence counter.
+Recipe ids are not printed into any prompt, but they key the final state, and
+production mints them with ``uuid4``. :class:`ContentRecipeIds` (injected as
+``PlanDeps.recipe_ids``) derives them from the chef id and the validated
+recipe instead, so a replay reproduces the recorded state.
 
 The recorded log is kept in the order calls *started* (``seq``), which is
 informative but is never used for matching.
@@ -64,8 +61,9 @@ import uuid
 from collections import Counter
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-#: The roles ``llm_factory`` knows; a call log entry must name one of these.
-ROLES = ("chef", "sous_chef", "nutritionist")
+#: The pipeline's model roles: the dish planner ("chef") and the per-dish
+#: recipe writer ("sous_chef"). A call log entry must name one of these.
+ROLES = ("chef", "sous_chef")
 
 
 # --------------------------------------------------------------------------
@@ -182,33 +180,16 @@ def render_request(canonical: List[Dict[str, Any]]) -> str:
 # Recording
 # --------------------------------------------------------------------------
 
-def model_identity(model: Any, provider: Optional[str] = None,
-                   name: Optional[str] = None) -> Dict[str, Any]:
-    """What a recorded call says about the model that answered it.
-
-    ``provider``/``model`` are what the scenario asked for; ``params`` is the
-    chat model's own ``_identifying_params`` (model name, temperature,
-    format, ... for a langchain model), or ``None`` if it has none.
-    """
-    params = None
-    try:
-        raw = getattr(model, "_identifying_params", None)
-        if raw is not None:
-            params = jsonable(dict(raw))
-    except Exception:  # identity is best effort; never fail a recording on it
-        params = None
-    cls = type(model)
-    return {"provider": provider, "model": name,
-            "class": f"{cls.__module__}.{cls.__qualname__}", "params": params}
-
-
-def _usage(response: Any) -> Optional[Dict[str, Optional[int]]]:
-    """Token counts only if the provider reported them; never estimated."""
-    usage = getattr(response, "usage_metadata", None)
-    if not usage:
-        return None
-    get = usage.get if isinstance(usage, dict) else (lambda k: getattr(usage, k, None))
-    return {k: get(k) for k in ("input_tokens", "output_tokens", "total_tokens")}
+def model_identity(spec: str, inner: Any = None) -> Dict[str, Any]:
+    """What a recorded call says about the model that answered it: the spec's
+    provider and model (``"ollama:qwen2.5:7b"`` -> ollama / qwen2.5:7b) and the
+    chat function that served it. Not validated: a scripted test provider is
+    recorded as given."""
+    provider, _, name = (spec or "").partition(":")
+    target = getattr(inner, "__wrapped__", inner)
+    cls = (f"{target.__module__}.{getattr(target, '__qualname__', type(target).__qualname__)}"
+           if target is not None else "app.agents.llm_chat.chat")
+    return {"provider": provider, "model": name, "class": cls, "params": None}
 
 
 class CallLog:
@@ -240,60 +221,47 @@ class CallLog:
             return sorted((dict(c) for c in self._calls), key=lambda c: c["seq"])
 
 
-class _InvokeOnly:
-    """Shared ``__getattr__``: only ``.invoke(messages)`` is wrapped."""
+class RecordingChat:
+    """A real chat function for one role, with every call logged."""
 
-    role: str
-
-    def __getattr__(self, name: str):
-        if name.startswith("__"):
-            raise AttributeError(name)
-        raise AttributeError(
-            f"{type(self).__name__}({self.__dict__.get('role')!r}) wraps only "
-            f".invoke(messages); the caller asked for .{name}. Extend app/eval/recorder.py "
-            "before an agent relies on it, or the call would escape the recording.")
-
-
-class RecordingLLM(_InvokeOnly):
-    """A real chat model for one role, with every ``invoke`` logged."""
-
-    def __init__(self, inner: Any, role: str, log: CallLog,
-                 provider: Optional[str] = None, model: Optional[str] = None):
+    def __init__(self, inner: Any, role: str, log: CallLog, spec: str):
         if role not in ROLES:
             raise ValueError(f"unknown role {role!r}; known: {ROLES}")
         self.inner = inner
         self.role = role
         self.log = log
-        self.identity = model_identity(inner, provider, model)
+        self.spec = spec
+        self.identity = model_identity(spec, inner)
 
-    def invoke(self, messages: Any, *args: Any, **kwargs: Any) -> Any:
-        if args or kwargs:
-            raise TypeError(f"RecordingLLM({self.role!r}) wraps invoke(messages) only; "
-                            f"got extra arguments {args!r} {sorted(kwargs)!r}")
+    def __call__(self, spec: str, messages: Any, **params: Any) -> Any:
         canonical = canonical_messages(messages)
         digest = request_sha256(canonical)
         seq, occurrence = self.log.begin(self.role, digest)
         entry: Dict[str, Any] = {
             "seq": seq, "role": self.role, "request_sha256": digest,
             "occurrence": occurrence, "request": {"messages": canonical},
-            "model": self.identity, "response": None, "error": None, "latency_s": None,
+            "model": {**self.identity, "params": jsonable(params)},
+            "response": None, "error": None, "latency_s": None,
         }
         started = time.perf_counter()
         try:
-            response = self.inner.invoke(messages)
+            reply = self.inner(self.spec, messages, **params)
         except Exception as exc:
             entry["latency_s"] = time.perf_counter() - started
             entry["error"] = {"type": type(exc).__name__, "message": str(exc)}
             self.log.finish(entry)
             raise
         entry["latency_s"] = time.perf_counter() - started
-        entry["response"] = {
-            "content": jsonable(getattr(response, "content", None)),
-            "usage": _usage(response),
-            "response_metadata": jsonable(getattr(response, "response_metadata", None) or {}),
-        }
+        usage = None
+        if reply.input_tokens is not None or reply.output_tokens is not None:
+            total = (reply.input_tokens or 0) + (reply.output_tokens or 0)
+            usage = {"input_tokens": reply.input_tokens, "output_tokens": reply.output_tokens,
+                     "total_tokens": total}
+        entry["response"] = {"content": reply.text, "usage": usage,
+                             "response_metadata": {"finish_reason": reply.finish_reason,
+                                                   "truncated_prompt": reply.truncated_prompt}}
         self.log.finish(entry)
-        return response
+        return reply
 
 
 # --------------------------------------------------------------------------
@@ -393,27 +361,30 @@ class ReplayLog:
         return f"{head}. Closest recorded {role!r} request, as a diff:\n{shown}"
 
 
-class ReplayLLM(_InvokeOnly):
-    """Answers ``invoke`` for one role from a :class:`ReplayLog`."""
+class ReplayChat:
+    """Answers chat calls for one role from a :class:`ReplayLog`."""
 
-    def __init__(self, role: str, log: ReplayLog):
+    def __init__(self, role: str, log: ReplayLog, spec: str = "ollama:replay"):
         if role not in ROLES:
             raise ValueError(f"unknown role {role!r}; known: {ROLES}")
         self.role = role
         self.log = log
+        self.spec = spec
 
-    def invoke(self, messages: Any, *args: Any, **kwargs: Any) -> Any:
-        from langchain_core.messages import AIMessage
+    def __call__(self, spec: str, messages: Any, **params: Any) -> Any:
+        from app.agents.llm_chat import Reply
 
-        if args or kwargs:
-            raise TypeError(f"ReplayLLM({self.role!r}) replays invoke(messages) only")
         entry = self.log.serve(self.role, canonical_messages(messages))
         if entry["error"] is not None:
             err = entry["error"]
             raise ReplayedLLMError(f"{err['type']}: {err['message']}")
         response = entry["response"]
-        return AIMessage(content=response["content"],
-                         response_metadata=response.get("response_metadata") or {})
+        usage = response.get("usage") or {}
+        meta = response.get("response_metadata") or {}
+        return Reply(text=response["content"] or "", input_tokens=usage.get("input_tokens"),
+                     output_tokens=usage.get("output_tokens"),
+                     finish_reason=meta.get("finish_reason"),
+                     truncated_prompt=bool(meta.get("truncated_prompt")), model=spec)
 
 
 # --------------------------------------------------------------------------
@@ -425,12 +396,12 @@ RECIPE_ID_NAMESPACE = uuid.UUID("6f1c2d0e-4b1a-5e8f-9a3c-2e7d5b0c9f14")
 
 
 class ContentRecipeIds:
-    """``GraphDeps.recipe_ids`` for evaluation: uuid5 of (chef id, recipe, n).
+    """``PlanDeps.recipe_ids`` for evaluation: uuid5 of (chef id, recipe, n).
 
     ``n`` counts earlier recipes with the same chef id and content in this
     run, so a regenerated recipe identical to its original still gets a new
-    id. Keyed on content rather than call order, so the three parallel
-    SousChefs get the same ids however their threads interleave.
+    id. Keyed on content rather than call order, so the parallel SousChefs
+    get the same ids however their threads interleave.
     """
 
     def __init__(self) -> None:

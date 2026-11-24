@@ -39,7 +39,7 @@ def _fmt(x, pct=False) -> str:
 
 def summary(score: scorers.RunScore) -> str:
     s, k, c = score.structural, score.compliance, score.citations
-    b, o, d = score.budget, score.on_sale, score.diversity
+    b, o, d = score.cost, score.on_sale, score.diversity
     t = score.latency_tokens["total"]
     retries = sum(r["retries"] for r in s["schema"].values())
     failures = sum(r["failed_invocations"] for r in s["schema"].values())
@@ -60,9 +60,8 @@ def summary(score: scorers.RunScore) -> str:
         f"  citations   valid={c['valid']}/{c['ingredients']} "
         + " ".join(f"{kind}={n}" for kind, n in c["counts"].items()
                    if n and kind not in ("deal", "staple")),
-        f"  budget      lower bound ${b['cost_per_recipe_sum']:.2f} per-recipe-sum / "
-        f"${b['cost_per_unique_deal']:.2f} per-unique-deal vs ${b['available']:.2f} "
-        f"available ({b['status']})",
+        f"  cost        lower bound ${b['cost_per_recipe_sum']:.2f} per-recipe-sum / "
+        f"${b['cost_per_unique_deal']:.2f} per-unique-deal (information only)",
         f"  on-sale     deal share={_fmt(o['deal_share'], True)} deals used="
         f"{o['deals_used']}/{o['deals_offered']} savings="
         f"{'absent' if o['savings_vs_regular'] is None else '$%.2f' % o['savings_vs_regular']}"

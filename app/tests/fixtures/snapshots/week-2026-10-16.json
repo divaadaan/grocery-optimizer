@@ -1,4 +1,1273 @@
 {
+ "deal_labels": [
+  {
+   "deal_id": 45,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 46,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 47,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 48,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 49,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 50,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 51,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 52,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 54,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 57,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": 4000.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 58,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 59,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 60,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 61,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 62,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 63,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 64,
+   "item": "chicken drumsticks",
+   "role": "protein",
+   "size_qty": 870.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 65,
+   "item": "canned chicken breast",
+   "role": "protein",
+   "size_qty": 354.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 66,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": 560.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 67,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": 560.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 68,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 69,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 70,
+   "item": "chicken breast bites",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 71,
+   "item": "chicken breast",
+   "role": "prepared_meal",
+   "size_qty": 100.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 73,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 74,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 4000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 77,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 78,
+   "item": "condensed milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 79,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 600.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 80,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 600.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 81,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 4000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 83,
+   "item": "cream",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 86,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 87,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 2000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 88,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 2000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 91,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 4000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 92,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 93,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 94,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 96,
+   "item": "non-dairy beverage",
+   "role": "beverage",
+   "size_qty": 473.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 97,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 99,
+   "item": "coconut milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 100,
+   "item": "lactose free milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 102,
+   "item": "oat milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 103,
+   "item": "coconut milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 104,
+   "item": "coconut milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 105,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 106,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 1000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 107,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 2000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 108,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 109,
+   "item": "lactose free milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 112,
+   "item": "chocolate chips",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 114,
+   "item": "coconut milk",
+   "role": "dairy",
+   "size_qty": 398.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 115,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 118,
+   "item": "evaporated milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 119,
+   "item": "whole milk powder",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 121,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 4000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 122,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 123,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 124,
+   "item": "condensed milk",
+   "role": "dairy",
+   "size_qty": 300.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 126,
+   "item": "evaporated milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 127,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 1650.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 128,
+   "item": "evaporated milk",
+   "role": "dairy",
+   "size_qty": 354.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 130,
+   "item": "condensed milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 132,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 134,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 136,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 137,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 2000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 139,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 2000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 243,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 246,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 249,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 270,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 273,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 342,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 343,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 344,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 345,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": 500.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 346,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": 750.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 347,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": 1000.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 348,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 349,
+   "item": "hazelnut spread",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 351,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": 750.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 352,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 353,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": 1000.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 356,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 357,
+   "item": "peanut butter",
+   "role": "pantry_staple",
+   "size_qty": 750.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 359,
+   "item": "peanut butter cups",
+   "role": "snack",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 365,
+   "item": "red vine tomatoes",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 367,
+   "item": "cherry tomatoes",
+   "role": "vegetable",
+   "size_qty": 340.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 370,
+   "item": "canned tomatoes",
+   "role": "pantry_staple",
+   "size_qty": 398.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 371,
+   "item": "canned tomatoes",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 372,
+   "item": "canned tomatoes",
+   "role": "pantry_staple",
+   "size_qty": 796.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 373,
+   "item": "strawberry tomatoes",
+   "role": "vegetable",
+   "size_qty": 340.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 377,
+   "item": "vine tomatoes",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 380,
+   "item": "hothouse tomatoes",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 381,
+   "item": "greenhouse tomatoes",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 384,
+   "item": "beefsteak tomatoes",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 385,
+   "item": "organic vine tomatoes",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 386,
+   "item": "mixed tomatoes",
+   "role": "vegetable",
+   "size_qty": 340.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 389,
+   "item": "canned tomatoes",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 391,
+   "item": "ontario tomatoes",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 392,
+   "item": "cherry tomatoes",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 393,
+   "item": "cherry tomatoes",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 394,
+   "item": "canned tomatoes",
+   "role": "pantry_staple",
+   "size_qty": 398.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 395,
+   "item": "strawberry tomatoes",
+   "role": "vegetable",
+   "size_qty": 340.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 396,
+   "item": "strawberry tomatoes",
+   "role": "vegetable",
+   "size_qty": 340.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 398,
+   "item": "tomato paste",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 403,
+   "item": "avocado",
+   "role": "fruit",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 404,
+   "item": "canned tomatoes",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 405,
+   "item": "tomatoes",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 406,
+   "item": "canned tomatoes",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 408,
+   "item": "tomato and grilled cheese",
+   "role": "prepared_meal",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 412,
+   "item": "broccoli",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 413,
+   "item": "grape tomatoes",
+   "role": "vegetable",
+   "size_qty": 283.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 428,
+   "item": "bread",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 429,
+   "item": "cheese bread",
+   "role": "prepared_meal",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 430,
+   "item": "sprouted bread",
+   "role": "pantry_staple",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 432,
+   "item": "custard puff bread",
+   "role": "snack",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 434,
+   "item": "sandwich bread",
+   "role": "pantry_staple",
+   "size_qty": 675.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 435,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 436,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 437,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 438,
+   "item": "hamburger bun",
+   "role": "starch",
+   "size_qty": 4.0,
+   "size_unit": "each"
+  },
+  {
+   "deal_id": 439,
+   "item": "calamari rings",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 441,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 442,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": 600.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 443,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 444,
+   "item": "toast",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 446,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 449,
+   "item": "haddock",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 450,
+   "item": "haddock",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 451,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 452,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 453,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 454,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 455,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 456,
+   "item": "toast",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 457,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 458,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 460,
+   "item": "snack bar",
+   "role": "snack",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 462,
+   "item": "haddock",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 466,
+   "item": "wrap",
+   "role": "starch",
+   "size_qty": 10.0,
+   "size_unit": "each"
+  },
+  {
+   "deal_id": 467,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": 595.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 478,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": 675.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 479,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 483,
+   "item": "bagel",
+   "role": "starch",
+   "size_qty": 4.0,
+   "size_unit": "each"
+  },
+  {
+   "deal_id": 484,
+   "item": "bagel",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 485,
+   "item": "bagel",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 486,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": 383.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 487,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 488,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 489,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": 675.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 490,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 492,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 493,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 496,
+   "item": "granola",
+   "role": "pantry_staple",
+   "size_qty": 340.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 497,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": 650.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 499,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 500,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 501,
+   "item": "bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 502,
+   "item": "english muffin",
+   "role": "starch",
+   "size_qty": 342.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 503,
+   "item": "english muffin",
+   "role": "starch",
+   "size_qty": 342.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 504,
+   "item": "gluten-free bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 505,
+   "item": "gluten-free bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 507,
+   "item": "italian style bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 509,
+   "item": "bavarian rye bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 510,
+   "item": "snack cake",
+   "role": "snack",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 512,
+   "item": "sourdough loaf",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 513,
+   "item": "gluten free bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 515,
+   "item": "xiaobai soft cake",
+   "role": "snack",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 517,
+   "item": "gluten-free bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 518,
+   "item": "breaded poultry",
+   "role": "prepared_meal",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 519,
+   "item": "canned tuna",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 521,
+   "item": "canned tuna",
+   "role": "protein",
+   "size_qty": 600.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 522,
+   "item": "tofu",
+   "role": "protein",
+   "size_qty": 454.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 523,
+   "item": "tofu dessert",
+   "role": "snack",
+   "size_qty": 300.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 524,
+   "item": "tofu",
+   "role": "protein",
+   "size_qty": 350.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 526,
+   "item": "cheese tofu",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 527,
+   "item": "tofu",
+   "role": "protein",
+   "size_qty": 454.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 528,
+   "item": "roasted tofu",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  }
+ ],
  "deal_products": [
   {
    "deal_id": 45,
@@ -4661,9 +5930,9 @@
  "meta": {
   "as_of": "2026-10-16",
   "captured_at": "2026-10-30T00:28:26.996570+00:00",
-  "format_version": 2,
+  "format_version": 3,
   "name": "week-2026-10-16",
-  "notes": "Flipp deals live on 2026-10-16 at M5V3A8, reconstructed from the deal rows' validity windows (rows are kept, not deleted, after expiry). Products/attributes/links are Neon's state at capture time, not as of 2026-10-16: attributes have no history. Re-captured 2026-10-29 after migration 021 and kosher labelling (corrections 205-377) and the animal-byproduct backfill (175-204): every confirmed product has every attribute decided.",
+  "notes": "Flipp deals live on 2026-10-16 at M5V3A8, reconstructed from the deal rows' validity windows (rows are kept, not deleted, after expiry). Products/attributes/links are Neon's state at capture time, not as of 2026-10-16: attributes have no history. Re-captured 2026-10-29 after migration 021 and kosher labelling (corrections 205-377) and the animal-byproduct backfill (175-204): every confirmed product has every attribute decided. v3 (2026-11-23): deal_labels added by the production labeller (hf:openai/gpt-oss-120b, prompt v2).",
   "postal_codes": [
    "M5V3A8"
   ],

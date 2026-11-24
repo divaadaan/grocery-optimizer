@@ -309,24 +309,26 @@ class _FakeDB:
         return _FakeCursor(self.calls)
 
 
-def test_fetch_current_deals_gates_a_restricted_user_before_the_limit():
+def test_fetch_gated_deals_gates_a_restricted_user_in_sql_with_no_cap():
     from app.services.database import DatabaseService
 
     svc = DatabaseService()
     svc.db = _FakeDB()
-    svc.fetch_current_deals("M5V3A8", dietary_restrictions=["vegan"])
+    svc.fetch_gated_deals("M5V3A8", dietary_restrictions=["vegan"])
     query, _ = svc.db.calls[0]
     assert "deal_products" in query
     assert "d.source = ANY" not in query
-    assert query.index("deal_products") < query.index("LIMIT")
+    assert query.index("deal_products") < query.index("ORDER BY d.deal_id")
+    # No ranking and no cap: the trays do the selecting.
+    assert "LIMIT" not in query and "discount_percentage DESC" not in query
 
 
-def test_fetch_current_deals_is_open_for_an_unrestricted_user():
+def test_fetch_gated_deals_is_open_for_an_unrestricted_user():
     from app.services.database import DatabaseService
 
     svc = DatabaseService()
     svc.db = _FakeDB()
-    svc.fetch_current_deals("M5V3A8", dietary_restrictions=[])
+    svc.fetch_gated_deals("M5V3A8", dietary_restrictions=[])
     query, _ = svc.db.calls[0]
     assert "deal_products" not in query
 

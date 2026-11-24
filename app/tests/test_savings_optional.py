@@ -6,7 +6,7 @@ the installed httpx; see CLAUDE.md). No database, no LLM.
 import httpx
 import pytest
 
-from app.agents import graph
+from app.agents.costing import deals_by_id, price_plan
 from app.main import app
 from app.routes import recipes as recipes_route
 from app.routes import shopping_lists as route
@@ -85,13 +85,13 @@ def test_recipe_generation_response_carries_null_savings():
     assert response.model_dump()["estimated_savings"] is None
 
 
-def test_graph_savings_is_none_when_no_cited_deal_has_a_regular_price():
-    state = {"available_deals": [DEAL_NO_REGULAR]}
+def test_plan_savings_is_none_when_no_cited_deal_has_a_regular_price():
+    # The pipeline prices a plan with costing.price_plan (plan_pipeline._finalize).
     recipes = [{"ingredients": [{"name": "penne", "deal_id": 1}]}]
-    assert graph._plan_pricing(state, recipes).estimated_savings is None
+    assert price_plan(recipes, deals_by_id([DEAL_NO_REGULAR])).estimated_savings is None
 
 
-def test_graph_savings_is_a_number_when_a_regular_price_exists():
+def test_plan_savings_is_a_number_when_a_regular_price_exists():
     deal = dict(DEAL_NO_REGULAR, regular_price=2.99)
     recipes = [{"ingredients": [{"name": "penne", "deal_id": 1}]}]
-    assert graph._plan_pricing({"available_deals": [deal]}, recipes).estimated_savings == 1.5
+    assert price_plan(recipes, deals_by_id([deal])).estimated_savings == 1.5

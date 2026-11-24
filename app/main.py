@@ -85,16 +85,17 @@ app = FastAPI(
 
     ## Architecture
 
-    - **Chef Orchestrator**: Plans ingredient groups for optimal reuse
-    - **SousChef Agents**: Generate recipes in parallel
-    - **Nutritionist Agent**: Validates recipes with feedback loop
+    - **Labeller**: tags each ingested deal with an item, role and package size (offline)
+    - **Trays**: code picks this week's anchors, sides and stock-up from the gated deals
+    - **Chef**: plans one dish per meal from the trays the user confirmed
+    - **SousChefs**: write one recipe per dish, in parallel
+    - **Dietary verdict**: deterministic, from curated product attributes
     - **Shopping Optimizer**: Creates efficient shopping lists
 
     ## Tech Stack
 
-    - FastAPI + PostgreSQL (TimescaleDB)
-    - LangGraph for agent orchestration
-    - Ollama with SmolLM models
+    - FastAPI + PostgreSQL
+    - Ollama or Hugging Face models (app/agents/llm_chat.py)
     - MLflow for experiment tracking
     """,
     lifespan=lifespan,
@@ -255,10 +256,10 @@ async def api_info():
         "features": {
             "redis_caching": settings.redis_enabled,
             "cost_tracking": settings.enable_cost_tracking,
-            "ollama_models": {
-                "chef": settings.ollama_chef_model,
-                "sous_chef": settings.ollama_sous_chef_model,
-                "nutritionist": settings.ollama_nutritionist_model
+            "models": {
+                "labeller": settings.llm_labeller_model,
+                "chef": settings.llm_planner_model,
+                "sous_chef": settings.llm_writer_model,
             }
         },
         "limits": {

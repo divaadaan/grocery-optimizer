@@ -25,9 +25,9 @@ requests==2.31.0
 
 pyyaml>=6.0.2
 
-# LangGraph & AI
-# Upper bounds keep pip's resolver sane and match the 0.2-era API the code targets
-langgraph>=0.2.0,<0.3
+# LangChain: only llm_output.invoke_validated (kept for training/) and the ollama
+# exception types llm_errors classifies. The app calls models via app/agents/llm_chat.py.
+
 langchain-core>=0.3.0,<0.4
 langchain-ollama>=0.2.0,<0.3
 

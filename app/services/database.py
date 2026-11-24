@@ -59,70 +59,6 @@ class DatabaseService:
         """Create database connection context manager."""
         return self.db.get_connection()
 
-    def fetch_current_deals(
-        self,
-        postal_code: str,
-        dietary_restrictions: Optional[List[str]] = None,
-    ) -> List[Dict]:
-        """
-        Fetch all current deals for a postal code.
-
-        Query deals table for valid offers, joining with stores.
-
-        ``dietary_restrictions`` is the DIETARY GATE. When the user has any
-        restriction, only deals whose linked products are confirmed and clear
-        the restrictions by their curated attributes are returned
-        (``app/services/deal_gate.py``). This is the only dietary filter on
-        the deal set; the Chef does not re-judge product names.
-
-        Passing ``None`` means "no user context" and returns every deal -
-        callers on the recipe-generation path MUST pass the user's
-        restrictions.
-        """
-
-        query = """
-        SELECT
-            d.deal_id,
-            d.product_name,
-            d.sale_price,
-            d.regular_price,
-            d.discount_percentage,
-            d.source,
-            d.product_id,
-            s.name as store_name,
-            s.store_id,
-            s.chain
-        FROM deals d
-        JOIN stores s ON d.store_id = s.store_id
-        WHERE s.postal_code = %(postal_code)s
-          AND d.valid_until >= CURRENT_DATE
-          AND d.valid_from <= CURRENT_DATE
-        """
-        params: Dict = {"postal_code": postal_code}
-
-        # Filtered in SQL rather than in Python so the LIMIT below is applied
-        # to the *allowed* set. Filtering after the LIMIT could hand a
-        # restricted user an empty deal list while permitted deals sat just
-        # past row 200. Unlinked deals fail the gate's EXISTS and are withheld
-        # — no link is never read as safe.
-        fragment, extra = deal_filter(dietary_restrictions)
-        query += fragment
-        params.update(extra)
-
-        # NULLS LAST matters now that real data exists: ingested deals usually
-        # have no regular_price and therefore no discount_percentage, and
-        # Postgres sorts NULLs FIRST on DESC - which would fill the whole
-        # LIMIT with unmeasurable deals. Cheapest-first is the tie-break.
-        query += """
-        ORDER BY d.discount_percentage DESC NULLS LAST, d.sale_price ASC, d.deal_id
-        LIMIT 200;  -- Cap for performance
-        """
-
-        with self.db.get_cursor() as cursor:
-            cursor.execute(query, params)
-            results = cursor.fetchall()
-            return [_jsonable(dict(row)) for row in results]
-
     def fetch_gated_deals(
         self,
         postal_code: str,
@@ -130,14 +66,19 @@ class DatabaseService:
     ) -> List[Dict]:
         """Every current deal for a postal code that clears the dietary gate.
 
-        The tray builder's input (``app/services/trays.py``). Unlike
-        :meth:`fetch_current_deals` there is no ranking and no cap: the
-        ``discount_percentage`` ranking kept every major chain (whose flyers
-        carry no regular price) out of the old Chef's view, and the trays now
-        do the selecting. Ordered by ``deal_id`` so the result is stable.
+        The tray builder's input (``app/services/trays.py``). There is no
+        ranking and no cap: a ``discount_percentage`` ranking once kept every
+        major chain (whose flyers carry no regular price) out of the Chef's
+        view; the trays do the selecting now. Ordered by ``deal_id`` so the
+        result is stable.
 
         ``dietary_restrictions`` is the DIETARY GATE (``deal_gate.deal_filter``),
-        applied in SQL exactly as in :meth:`fetch_current_deals`.
+        applied in SQL. When the user has any restriction, only deals whose
+        linked products are confirmed and clear the restrictions by their
+        curated attributes are returned; unlinked deals fail the gate's EXISTS
+        and are withheld -- no link is never read as safe. ``None`` means "no
+        user context" and returns every deal; the generation path always
+        passes the user's restrictions.
         """
         query = """
         SELECT
@@ -173,19 +114,19 @@ class DatabaseService:
         """
         Save one generation's recipes, with its provenance, in one transaction.
 
-        ``generation`` (``graph.finalize_meal_plan`` / ``handle_failure``
+        ``generation`` (``plan_pipeline``: ``_finalize`` / ``_fail``
         build it) becomes the ``recipe_generations`` row and its
         ``generation_id`` is stamped on every recipe (migration 022). A failed
         run is ``status='failed'`` with a ``failure_reason`` and no recipes
         (migration 023). ``None`` saves the recipes unlinked, as before 022
         -- no production path does that.
 
-        Each recipe keeps everything the graph produced: ingredients with
+        Each recipe keeps everything the pipeline produced: ingredients with
         their ``deal_id`` / ``product_id`` citations exactly as generated
         (JSONB), the rendered ``instructions`` and the ``instruction_steps``
-        behind them (JSONB), meal_type, cuisine_type, prep time, the
-        Nutritionist's advisory ``nutrition_facts`` / ``health_score``, and
-        its ``dietary_compliance`` verdict (its own column since 023;
+        behind them (JSONB), meal_type, cuisine_type, prep time,
+        ``nutrition_facts`` / ``health_score`` (NULL since approach C dropped
+        the Nutritionist), and its ``dietary_compliance`` verdict (its own column since 023;
         ``allergen_info`` is no longer written).
 
         Returns list of recipe_ids, in input order.

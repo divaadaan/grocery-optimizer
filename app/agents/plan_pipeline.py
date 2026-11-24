@@ -1,8 +1,8 @@
 """Approach C generation: confirmed trays -> dish plan -> one recipe per dish.
 
-``experiments/chef/DESIGN_APPROACH_C.md`` §2, §5-§8. Replaces the LangGraph
-Chef / SousChef / Nutritionist pipeline for the API (the old graph remains only
-for the eval harness until the cleanup PR moves it over).
+``experiments/chef/DESIGN_APPROACH_C.md`` §2, §5-§8. Replaced the LangGraph
+Chef / SousChef / Nutritionist pipeline (removed 2026-11-23); the API and the
+eval harness both run this.
 
 1. **Confirm.** Rebuild the trays from the user's *gated* deals and keep only
    what the user kept (ids no longer offered are dropped and reported, never
@@ -37,7 +37,7 @@ from app.agents.costing import deals_by_id, price_plan
 from app.agents.dietary import CitationCatalog, compliance_report
 from app.agents.dish_planner import DishPlan, PlannedDish
 from app.agents.llm_errors import classify, INFRASTRUCTURE
-from app.agents.sous_chef import RecipeIdFactory, random_recipe_id
+from app.agents.recipe_build import RecipeIdFactory, random_recipe_id
 from app.config import settings
 from app.services import products, trays
 from app.services.deal_labeller import Label
@@ -95,6 +95,41 @@ def confirm_selection(proposal: trays.TrayProposal, kept_deal_ids: Optional[Iter
                      dropped_deal_ids=dropped, dropped_pantry_ids=dropped_pantry)
 
 
+class InMemoryRecipeStore:
+    """A ``recipe_store`` that persists nothing.
+
+    For runs that must not write the database -- tests, including the
+    ``-m llm`` end-to-end test, and dry runs. Ids count up from 1 so they look
+    like what the route expects in ``saved_recipe_ids``.
+
+    Mirrors ``DatabaseService``: ``saved`` holds one entry per recipe (with
+    its ``generation_id``), ``generations`` one provenance dict per generation
+    keyed by ``generation_id`` -- the ``recipe_generations`` row.
+    """
+
+    def __init__(self) -> None:
+        self.saved: List[Dict[str, Any]] = []
+        self.generations: Dict[str, Dict[str, Any]] = {}
+
+    def save_recipes(self, user_id: int, recipes: List[Dict],
+                     generation: Optional[Dict[str, Any]] = None) -> List[int]:
+        generation_id = (generation or {}).get("generation_id")
+        if generation_id is not None:
+            self.generations[generation_id] = {
+                **generation, "user_id": user_id, "num_recipes_saved": len(recipes)}
+        ids = []
+        for recipe in recipes:
+            recipe_id = len(self.saved) + 1
+            self.saved.append({"id": recipe_id, "user_id": user_id,
+                               "generation_id": generation_id, "recipe": recipe})
+            ids.append(recipe_id)
+        return ids
+
+    def generation_recipes(self, generation_id: str) -> List[Dict[str, Any]]:
+        """The recipes one generation saved, in save order."""
+        return [e["recipe"] for e in self.saved if e["generation_id"] == generation_id]
+
+
 @dataclass
 class PlanDeps:
     """Everything external the pipeline touches; defaults are production."""
@@ -105,9 +140,14 @@ class PlanDeps:
     recipe_store: Any = None
     tracker: Any = MLflowLogger
     chat_fn: llm_chat.ChatFn = llm_chat.chat
+    #: Per-role chat functions (the eval harness records each role); default chat_fn.
+    planner_chat_fn: Optional[llm_chat.ChatFn] = None
+    writer_chat_fn: Optional[llm_chat.ChatFn] = None
     planner_spec: Optional[str] = None
     writer_spec: Optional[str] = None
     recipe_ids: RecipeIdFactory = random_recipe_id
+    #: Eval snapshot identity for provenance; None in production.
+    snapshot: Optional[Dict[str, Any]] = None
 
     def resolved(self) -> "PlanDeps":
         from app.services import deal_labeller, recipe_catalog
@@ -123,15 +163,18 @@ class PlanDeps:
             fetch_deal_products=self.fetch_deal_products or recipe_catalog.fetch_deal_products,
             recipe_store=self.recipe_store or db_service,
             tracker=self.tracker, chat_fn=self.chat_fn,
+            planner_chat_fn=self.planner_chat_fn or self.chat_fn,
+            writer_chat_fn=self.writer_chat_fn or self.chat_fn,
             planner_spec=self.planner_spec or settings.llm_planner_model,
             writer_spec=self.writer_spec or settings.llm_writer_model,
-            recipe_ids=self.recipe_ids,
+            recipe_ids=self.recipe_ids, snapshot=self.snapshot,
         )
 
     def models(self) -> Dict[str, Dict[str, str]]:
         out = {}
         for role, spec in (("chef", self.planner_spec), ("sous_chef", self.writer_spec)):
-            provider, name = llm_chat.parse_spec(spec)
+            # Provenance only: the chat call itself validates the spec.
+            provider, _, name = (spec or "").partition(":")
             out[role] = {"provider": provider, "model": name}
         return out
 
@@ -239,13 +282,16 @@ class _Run:
 
     def _log_call(self, agent: str, spec: str, replies: Sequence[llm_chat.Reply],
                   prompt: str, started: float, success: bool,
-                  error: Optional[str] = None) -> None:
+                  error: Optional[str] = None, order: tuple = (0, 0)) -> None:
         duration = time.monotonic() - started
-        provider, name = llm_chat.parse_spec(spec)
+        provider, _, name = (spec or "").partition(":")
         self.deps.tracker.log_agent_call(agent_name=agent, duration=duration, model=name,
                                          success=success, error=error,
                                          usage=_usage(replies), provider=provider)
         self.call_log.append({
+            # (round, dish) -- the log is sorted by it, so parallel SousChefs
+            # finishing in any order give the same log.
+            "order": list(order),
             "agent": agent, "model": spec, "seconds": round(duration, 2),
             "success": success, "error": error, **_usage(replies),
             "truncated_prompt": any(r.truncated_prompt for r in replies),
@@ -295,7 +341,7 @@ class _Run:
             self.plan, replies, prompt = dish_planner.plan_dishes(
                 self.selection.kept, self.selection.pantry, num_meals=self.num_meals,
                 household_size=self.household_size, preferences=self.preferences,
-                spec=spec, chat_fn=self.deps.chat_fn)
+                spec=spec, chat_fn=self.deps.planner_chat_fn)
         except Exception as exc:  # noqa: BLE001 - classified and recorded
             text = self._record_failure("chef", exc)
             replies = getattr(exc, "replies", [])
@@ -304,6 +350,9 @@ class _Run:
             return False
         self._log_call("chef", spec, replies, prompt, started, True)
         self.deps.tracker.log_dict(dish_planner.plan_as_dict(self.plan), "dish_plan.json")
+        if len(self.plan.dishes) < self.num_meals:
+            self.warnings.append(f"The Chef planned {len(self.plan.dishes)} usable dish(es) "
+                                 f"for {self.num_meals} meals")
         return True
 
     def _write_all(self) -> List[_DishOutcome]:
@@ -354,13 +403,14 @@ class _Run:
                 pantry=self.selection.pantry, servings=self.household_size,
                 dietary_restrictions=self.restrictions, preferences=self.preferences,
                 deal_products=deal_products, feedback=feedback, spec=spec,
-                chat_fn=self.deps.chat_fn, recipe_id=self.deps.recipe_ids, agent=agent)
+                chat_fn=self.deps.writer_chat_fn, recipe_id=self.deps.recipe_ids, agent=agent)
         except Exception as exc:  # noqa: BLE001 - classified and recorded
             text = self._record_failure(agent, exc)
-            self._log_call(agent, spec, getattr(exc, "replies", []), "", started, False, text)
+            self._log_call(agent, spec, getattr(exc, "replies", []), "", started, False, text,
+                           order=(o.attempts, o.index))
             o.recipe, o.report, o.error = None, None, text
             return
-        self._log_call(agent, spec, replies, prompt, started, True)
+        self._log_call(agent, spec, replies, prompt, started, True, order=(o.attempts, o.index))
         o.recipe = recipe
         o.report = compliance_report(recipe, self.restrictions, catalog)
         o.error = None if o.report["approved"] else "rejected: " + "; ".join(
@@ -384,7 +434,8 @@ class _Run:
             "dietary_restrictions": list(self.restrictions), "budget": None,
             "budget_period": None, "budget_spent_this_period": None,
             "household_size": self.household_size, "postal_code": self.postal_code,
-            "preferences": self.preferences, "models": self.deps.models(), "snapshot": None,
+            "preferences": self.preferences, "models": self.deps.models(),
+            "snapshot": self.deps.snapshot,
             "mlflow_run_id": self.mlflow_run_id or None,
             "total_cost": total_cost, "estimated_savings": savings,
             "offered_deal_ids": sel.proposal.offered_ids(),
@@ -394,6 +445,7 @@ class _Run:
         }
 
     def _base_result(self, outcomes: Sequence[_DishOutcome]) -> Dict[str, Any]:
+        self.call_log.sort(key=lambda e: e["order"])
         generated = {o.recipe["recipe_id"]: o.recipe for o in outcomes if o.recipe}
         return {
             "generation_id": self.generation_id, "num_meals": self.num_meals,
@@ -404,6 +456,13 @@ class _Run:
             "dish_plan": dish_planner.plan_as_dict(self.plan) if self.plan else None,
             "agent_call_log": self.call_log, "infrastructure_errors": list(self.infrastructure),
             "budget_check": None,
+            # For scorers: every deal the gate passed (kept_deal_ids is the
+            # user's narrowing of the trays), what failed the verdict, passes.
+            "available_deals": list(self.deals),
+            "rejected_recipe_ids": [o.recipe["recipe_id"] for o in outcomes
+                                    if o.recipe is not None and not o.approved],
+            "iteration_count": result_iterations(outcomes),
+            "kept_deal_ids": self.selection.kept_ids(),
         }
 
     def _fail(self, reason: str, outcomes: Sequence[_DishOutcome] = ()) -> Dict[str, Any]:

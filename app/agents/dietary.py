@@ -1,6 +1,7 @@
 """Deterministic dietary-compliance verdict for recipes: a lookup, not a match.
 
-Dietary compliance is decided in **code**, not by the Nutritionist LLM. Every
+Dietary compliance is decided in **code**, never by an LLM (the old
+Nutritionist LLM was advisory-only, then removed with approach C). Every
 model tried (SmolLM2-360M SFT, qwen2.5:1.5b, llama3.1:8b, mistral:7b)
 false-rejected compliant recipes and confabulated violations (ROADMAP item 5,
 2026-07-15), so the LLM is advisory-only and this module owns approve/reject.
@@ -264,7 +265,7 @@ def recipe_violations(
     ``ingredients[*].deal_id`` / ``product_id``; never ``name``."""
     # A label no attribute enforces cannot be shown to be met, so it can never
     # be approved. Recipe generation refuses such a profile up front
-    # (graph.run_recipe_generation); this is the defence in depth that keeps
+    # (plan_pipeline.run_plan_generation); this is the defence in depth that keeps
     # "Approved: ... complies with halal" impossible however we got here.
     out: list[Violation] = [
         Violation("recipe", f"restriction {label}", (),

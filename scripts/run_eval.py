@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """Record or replay one recipe-evaluation run (ROADMAP Track E §3).
 
-``record`` runs a scenario through the real recipe graph against LIVE chat
-models (``LLM_PROVIDER`` / the per-role model settings, or the scenario's
+``record`` runs a scenario through the real generation pipeline against LIVE
+chat models (``LLM_PLANNER_MODEL`` / ``LLM_WRITER_MODEL``, or the scenario's
 ``llm`` block) and writes a run artifact holding every LLM call. It reads no
 database: deals and products come from the scenario's frozen snapshot.
 
@@ -55,7 +55,7 @@ def _record(args: argparse.Namespace) -> int:
     else:
         raise SystemExit(f"{args.scenario} holds {len(scenarios)} scenarios; pick one with --name")
     # Looked up at call time so tests can substitute scripted models.
-    artifact = runner.record(chosen[0], llm_factory=runner.default_llm_factory)
+    artifact = runner.record(chosen[0], chat_factory=runner.default_chat_factory)
     path = runner.write_artifact(artifact, args.out)
     print(f"recorded {chosen[0].name}: {_summary(artifact)}")
     print(f"wrote {path}")

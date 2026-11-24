@@ -2,14 +2,14 @@
 
 * a failed run writes a ``status='failed'`` ``recipe_generations`` row with
   the same provenance a finalized one has, a failure reason, run counts and
-  no recipes -- and a failure to write it never masks the failure itself;
-* recipes persist their ``instruction_steps`` and their Nutritionist verdict
-  in a dedicated ``dietary_compliance`` column, and the readers return both;
+  no recipes (the pipeline side -- a failed audit write never masks the
+  failure -- is in ``test_plan_pipeline``);
+* recipes persist their ``instruction_steps`` and their dietary verdict in a
+  dedicated ``dietary_compliance`` column, and the readers return both;
 * a failed job exposes its ``generation_id``.
 
 No database, no LLM: ``DatabaseService`` runs against the fake cursor of
-``test_recipe_persistence``, and the real graph runs offline on scripted
-models (``test_orchestration_core`` / ``test_graph_offline``).
+``test_recipe_persistence``.
 """
 import re
 import uuid
@@ -17,152 +17,19 @@ from pathlib import Path
 
 import pytest
 
-from app.agents import graph
-from app.agents.deps import InMemoryRecipeStore
 from app.routes import recipes as recipes_route
 from app.services.database import DatabaseService
 from app.services.recipe_jobs import FAILED, COMPLETED
-from app.tests.test_graph_offline import ScriptedChatModel, no_database_no_mlflow  # noqa: F401
-from app.tests.test_orchestration_core import THREE_GROUPS, make_deps, run, sous_reply
 from app.tests.test_recipe_jobs import (  # noqa: F401  (client is a fixture)
     FINAL_STATE, _fake_generation, _install_fake_graph, _poll_until_terminal, client)
 from app.tests.test_recipe_persistence import (
-    GENERATION, RECIPE, NullTracker, _finalize_state, _service)
+    GENERATION, RECIPE, _service)
 
 MIGRATION = Path(__file__).resolve().parents[2] / "migrations" / "023_generation_audit.sql"
 
 
 # --------------------------------------------------------------------------
 # handle_failure -> recipe_store
-# --------------------------------------------------------------------------
-
-def _failed_state(**overrides):
-    state = {
-        **_finalize_state(num_meals=3),
-        "status": "validating",
-        "ingredient_groups": [[{"deal_id": 17}]],
-        "approved_recipe_ids": ["r-1"],
-        "rejected_recipe_ids": ["r-2", "r-3"],
-        "iteration_count": 2,
-        "max_iterations": 2,
-        "total_cost": 7.5,
-        "cost_per_meal": 2.5,
-        "estimated_savings": None,
-        "mlflow_run_id": "run-42",
-        "errors": [],
-    }
-    state["generated_recipes"] = {**state["generated_recipes"],
-                                  "r-2": RECIPE, "r-3": RECIPE}
-    state.update(overrides)
-    return state
-
-
-def test_handle_failure_records_a_failed_generation_with_provenance():
-    store = InMemoryRecipeStore()
-    update = graph.handle_failure(_failed_state(), recipe_store=store,
-                                  tracker=NullTracker())
-
-    assert update["status"] == "failed"
-    assert update["errors"] == ["Unable to generate sufficient approved recipes"]
-    assert "warnings" not in update
-    assert store.saved == []  # no recipes
-
-    gen = store.generations["gen-xyz"]
-    assert gen["status"] == "failed"
-    assert gen["num_recipes_saved"] == 0
-    assert gen["num_meals_requested"] == 3
-    # The same provenance finalize writes.
-    assert gen["dietary_restrictions"] == ["vegetarian"]
-    assert (gen["budget"], gen["budget_period"], gen["budget_spent_this_period"]) == \
-        (60.0, "weekly", 10.0)
-    assert (gen["household_size"], gen["postal_code"]) == (2, "M5V3A8")
-    assert gen["models"] == {"chef": {"provider": "ollama", "model": "big"}}
-    assert gen["snapshot"] is None
-    assert gen["mlflow_run_id"] == "run-42"
-    # There is no plan, so no plan totals -- not the interim aggregate figure.
-    assert gen["total_cost"] is None and gen["estimated_savings"] is None
-    # Run counts and the reason.
-    assert (gen["iteration_count"], gen["num_recipes_generated"],
-            gen["num_recipes_approved"], gen["num_recipes_rejected"]) == (2, 3, 1, 2)
-    assert gen["failure_reason"] == (
-        "Insufficient approved recipes: 1/3 approved after 2 retry iteration(s) "
-        "(max 2), 2 still rejected")
-
-
-def test_planning_failure_reason_carries_the_chef_error():
-    state = _failed_state(status="failed", ingredient_groups=[],
-                          errors=["Chef planning failed: boom"],
-                          approved_recipe_ids=[], generated_recipes={})
-    assert graph.failure_reason(state) == "Planning failed: Chef planning failed: boom"
-
-
-class BrokenStore:
-    def save_recipes(self, *args, **kwargs):
-        raise ConnectionError("SSL connection has been closed unexpectedly")
-
-
-def test_a_failed_audit_write_does_not_mask_the_failure():
-    update = graph.handle_failure(_failed_state(), recipe_store=BrokenStore(),
-                                  tracker=NullTracker())
-    assert update["status"] == "failed"
-    assert update["errors"] == ["Unable to generate sufficient approved recipes"]
-    assert update["warnings"] == [
-        "The failed generation could not be recorded (ConnectionError)"]
-
-
-def test_a_failed_save_in_the_success_path_still_raises():
-    with pytest.raises(ConnectionError):
-        graph.finalize_meal_plan(_finalize_state(num_meals=1),
-                                 recipe_store=BrokenStore(), tracker=NullTracker())
-
-
-def test_finalized_generations_record_run_counts_and_no_failure_reason():
-    store = InMemoryRecipeStore()
-    graph.finalize_meal_plan({**_finalize_state(num_meals=1), "rejected_recipe_ids": []},
-                             recipe_store=store, tracker=NullTracker())
-    gen = store.generations["gen-xyz"]
-    assert gen["status"] == "completed"
-    assert gen["failure_reason"] is None
-    assert (gen["iteration_count"], gen["num_recipes_generated"],
-            gen["num_recipes_approved"], gen["num_recipes_rejected"]) == (0, 1, 1, 0)
-
-
-# --------------------------------------------------------------------------
-# The real graph, offline: both routes into handle_failure persist a row
-# --------------------------------------------------------------------------
-
-def test_real_graph_failed_validation_run_writes_a_failed_row(no_database_no_mlflow):  # noqa: F811
-    # Every SousChef call returns nothing: retries run out with 0 approved.
-    deps = make_deps(THREE_GROUPS, sous=sous_reply(short=99))
-    state = run(deps, num_meals=3)
-
-    assert state["status"] == "failed"
-    uuid.UUID(state["generation_id"])
-    store = deps.recipe_store
-    assert store.saved == []
-    gen = store.generations[state["generation_id"]]
-    assert gen["status"] == "failed"
-    assert gen["num_recipes_saved"] == 0
-    assert gen["num_recipes_generated"] == 0
-    assert gen["iteration_count"] == state["max_iterations"]
-    assert gen["failure_reason"].startswith("Insufficient approved recipes: 0/3")
-    assert gen["models"] == deps.models
-
-
-def test_real_graph_planning_failure_writes_a_failed_row(no_database_no_mlflow):  # noqa: F811
-    deps = make_deps(THREE_GROUPS)
-    deps.chef_llm = ScriptedChatModel(respond=lambda p: "not json at all", prompts=[])
-    state = run(deps, num_meals=3)
-
-    assert state["status"] == "failed"
-    gen = deps.recipe_store.generations[state["generation_id"]]
-    assert gen["status"] == "failed"
-    assert gen["failure_reason"].startswith("Planning failed: Chef planning failed")
-    assert gen["num_recipes_generated"] == 0
-
-
-# --------------------------------------------------------------------------
-# DatabaseService against a fake cursor
 # --------------------------------------------------------------------------
 
 FAILED_GENERATION = {**GENERATION, "status": "failed", "num_recipes_saved": 0,

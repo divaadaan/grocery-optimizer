@@ -133,7 +133,7 @@ def test_markdown_header_and_section_order(variants):
     md = report.render_markdown(variants, STAMP)
     assert "- Generated at: 2026-10-30T12:00:00Z" in md
     assert "- Runs: 4" in md and "- Verdicts: PASS 2 / FAIL 1 / N/A 1" in md
-    assert "a7640869f4" in md
+    assert variants[0].git_sha[:10] in md
     assert md.index("# Recipe") < md.index("## Compliance") < md.index("## Runs") \
         < md.index("## Aggregates")
 
@@ -153,15 +153,17 @@ def test_no_fail_or_na_says_none(base, snap):
     assert "### FAIL (0)\n\nNone." in md and "### N/A (0)\n\nNone." in md
 
 
-def test_budget_is_labelled_lower_bound_with_both_semantics(base, snap):
+def test_cost_is_labelled_lower_bound_with_both_semantics_and_no_budget(base, snap):
     md = report.render_markdown([make_run(base, snap)], STAMP)
-    assert "budget LB per-recipe-sum" in md and "budget LB per-unique-deal" in md
-    assert "lower bounds" in md
+    assert "cost LB per-recipe-sum" in md and "cost LB per-unique-deal" in md
+    assert "lower bounds" in md and "information only" in md
+    assert "budget status" not in md and "not within LB" not in md
 
 
 def test_token_coverage_shown(base, snap):
     md = report.render_markdown([make_run(base, snap)], STAMP)
-    assert "6637 (known for 6/9 calls)" in md
+    total = sum(c["response"]["usage"]["total_tokens"] for c in base["llm_calls"])
+    assert f"{total} (known for 5/5 calls)" in md
 
 
 # --------------------------------------------------------------------------
@@ -175,14 +177,14 @@ def test_null_tokens_and_savings_are_empty_cells_never_zero(base, snap):
     assert row["tokens_known_calls"] == "0"  # a real count, not a missing value
     assert row["chef_provider"] == "ollama" and row["chef_model"] == "qwen-x"
     md = report.render_markdown([run], STAMP)
-    assert "n/a (known for 0/9 calls)" in md
+    assert "n/a (known for 0/5 calls)" in md
     assert "n/a (known for 0/1 runs)" in md  # aggregate savings absent, not $0.00
 
 
 def test_aggregate_savings_sum_only_known(variants):
     a = report.aggregate(variants)
     assert a["savings_known_runs"] == 3
-    assert a["token_calls"] == 36 and a["token_calls_known"] == 18
+    assert a["token_calls"] == 20 and a["token_calls_known"] == 15
 
 
 def test_aggregate_of_all_null_is_none(base, snap):
@@ -224,7 +226,7 @@ def test_mlflow_payload_maps_params_and_metrics(base, snap):
     assert params["chef_model"] == "qwen-x" and params["chef_provider"] == "ollama"
     assert params["snapshot_as_of"] == "2026-07-15"
     assert tags == {"verdict": PASS}
-    assert metrics["citation_validity"] == 1.0 and metrics["llm_calls"] == 9.0
+    assert metrics["citation_validity"] == 1.0 and metrics["llm_calls"] == 5.0
     assert "total_tokens" not in metrics and "savings_vs_regular" not in metrics
     assert all(isinstance(v, float) for v in metrics.values())
     assert "verdict" not in metrics and "scenario" not in metrics

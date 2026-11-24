@@ -167,7 +167,7 @@ class RecipeInfo(BaseModel):
     # ingredient_refs}], agents/instruction_refs.py); null for recipes saved
     # before migration 023.
     instruction_steps: Optional[List[Dict[str, Any]]] = None
-    # The Nutritionist's deterministic compliance verdict {allergen_free,
+    # The deterministic compliance verdict (app/agents/dietary.py) {allergen_free,
     # meets_restrictions, violations}; null for recipes saved before 022.
     dietary_compliance: Optional[Dict[str, Any]] = None
 

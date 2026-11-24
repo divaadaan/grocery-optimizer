@@ -1,4 +1,41 @@
 {
+ "deal_labels": [
+  {
+   "deal_id": 79,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 600.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 80,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 600.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 99,
+   "item": "coconut milk",
+   "role": "dairy",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 430,
+   "item": "sprouted bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 454,
+   "item": "sprouted power bread",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  }
+ ],
  "deal_products": [
   {
    "deal_id": 99,
@@ -115,9 +152,9 @@
  "meta": {
   "as_of": "2026-10-29",
   "captured_at": "2026-10-30T00:28:27.851732+00:00",
-  "format_version": 2,
+  "format_version": 3,
   "name": "sparse5",
-  "notes": "Today's reality: the deals live on the capture date at M5V3A8, two of them unlinked (withheld from any restricted user). Re-captured 2026-10-29 after migration 021 and kosher labelling (corrections 205-377) and the animal-byproduct backfill (175-204): every confirmed product has every attribute decided.",
+  "notes": "Today's reality: the deals live on the capture date at M5V3A8, two of them unlinked (withheld from any restricted user). Re-captured 2026-10-29 after migration 021 and kosher labelling (corrections 205-377) and the animal-byproduct backfill (175-204): every confirmed product has every attribute decided. v3 (2026-11-23): deal_labels added by the production labeller (hf:openai/gpt-oss-120b, prompt v2).",
   "postal_codes": [
    "M5V3A8"
   ],

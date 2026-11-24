@@ -1,8 +1,8 @@
 """Unit tests for the async recipe-generation job API.
 
-Deterministic: the LangGraph workflow is replaced by a fake
-`run_recipe_generation` that reports node events and returns a canned final
-state, so nothing here needs Ollama or the database.
+Deterministic: the generation pipeline is replaced by a fake
+`run_plan_generation` that reports stage events and returns a canned result,
+so nothing here needs Ollama or the database.
 """
 import asyncio
 import threading
@@ -59,41 +59,42 @@ FINAL_STATE = {
     "warnings": ["Only 1/2 recipes approved"],
 }
 
-# The nodes a healthy run emits, in order (3 parallel SousChef tasks).
+# The stages a healthy run reports, in order (plan_pipeline.progress).
 HAPPY_PATH_NODES = [
-    "initialize_chef",
-    "plan_ingredient_groups",
-    "sous_chef_generate",
-    "sous_chef_generate",
-    "sous_chef_generate",
-    "aggregate_recipes",
-    "nutritionist_validate",
+    "confirm_selection",
+    "plan_dishes",
+    "write_recipes",
+    "dietary_verdict",
     "finalize_meal_plan",
 ]
 
 
 # --- stage mapping (pure) ---------------------------------------------------
 
-def test_sous_chef_stage_counts_up_to_three():
-    assert stage_after_node("sous_chef_generate", 1)[0] == "SousChef 2/3 cooking…"
-    assert stage_after_node("sous_chef_generate", 2)[0] == "SousChef 3/3 cooking…"
-
-
-def test_all_sous_chefs_done_moves_to_costing_stage():
-    label, index = stage_after_node("sous_chef_generate", 3)
-    assert label == PIPELINE_STAGES[3]
-    assert index == 4
+def test_each_stage_maps_to_what_is_now_running():
+    assert stage_after_node("confirm_selection") == (PIPELINE_STAGES[1], 2)
+    assert stage_after_node("plan_dishes") == (PIPELINE_STAGES[2], 3)
+    assert stage_after_node("write_recipes") == (PIPELINE_STAGES[4], 5)
+    assert stage_after_node("dietary_verdict") == (PIPELINE_STAGES[5], 6)
 
 
 def test_unknown_node_leaves_stage_alone():
-    assert stage_after_node("some_future_node", 0) is None
+    assert stage_after_node("some_future_node") is None
 
 
 def test_stage_indexes_stay_within_the_pipeline():
     for node in HAPPY_PATH_NODES:
-        stage = stage_after_node(node, 1)
+        stage = stage_after_node(node)
         if stage is not None:
             assert 1 <= stage[1] <= len(PIPELINE_STAGES)
+
+
+def test_stages_match_the_pipelines_progress_calls():
+    import inspect
+    from app.agents import plan_pipeline
+    src = inspect.getsource(plan_pipeline)
+    for node in HAPPY_PATH_NODES + ["handle_failure"]:
+        assert f'progress("{node}")' in src, node
 
 
 # --- registry ---------------------------------------------------------------
@@ -123,12 +124,9 @@ def test_stage_sequence_for_a_happy_path_run():
 
     assert stages == [
         PIPELINE_STAGES[1],
-        "SousChef 1/3 cooking…",
-        "SousChef 2/3 cooking…",
-        "SousChef 3/3 cooking…",
-        PIPELINE_STAGES[3],
+        PIPELINE_STAGES[2],
         PIPELINE_STAGES[4],
-        "Reviewing the Nutritionist's verdicts",
+        PIPELINE_STAGES[5],
         PIPELINE_STAGES[5],
     ]
 
@@ -140,11 +138,11 @@ def test_report_node_advances_stage_only_while_not_terminal():
     assert job.state == RUNNING
     assert job.stage_index == 1
 
-    registry.report_node(job.job_id, "plan_ingredient_groups")
-    assert job.stage == "SousChef 1/3 cooking…"
+    registry.report_node(job.job_id, "plan_dishes")
+    assert job.stage == PIPELINE_STAGES[2]
 
     registry.complete(job.job_id, {"status": "completed"})
-    registry.report_node(job.job_id, "initialize_chef")
+    registry.report_node(job.job_id, "confirm_selection")
     assert job.stage == "Meal plan ready"
 
 
@@ -181,89 +179,6 @@ def test_worker_exception_is_recorded_as_a_failed_job():
     _wait_terminal(registry, job.job_id)
     assert job.state == FAILED
     assert "worker died" in job.error
-
-
-# --- graph streaming seam ---------------------------------------------------
-
-class StubGraph:
-    """Stands in for the compiled LangGraph; records how it was streamed."""
-
-    def __init__(self, events):
-        self._events = events
-        self.stream_modes = []
-
-    def stream(self, state, stream_mode=None):
-        self.stream_modes.append(stream_mode)
-        yield from self._events
-
-
-# Minimal keys for run_recipe_generation's closing summary print.
-STREAMED_FINAL_STATE = {
-    "status": "completed",
-    "generated_recipes": {},
-    "approved_recipe_ids": [],
-    "total_cost": 0.0,
-    "iteration_count": 1,
-}
-
-
-def _run_streamed(monkeypatch, events, **kwargs):
-    from app import main_recipe_generation
-    from app.services import mlflow_logger
-
-    # Default GraphDeps -> the production tracker, which would trace: keep
-    # MLflow (and its tracking-server probe) out of these seam tests.
-    monkeypatch.setattr(mlflow_logger, "_ensure_configured", lambda: False)
-    stub = StubGraph(events)
-    monkeypatch.setattr(main_recipe_generation, "create_recipe_generation_graph",
-                        lambda deps=None: stub)
-    result = main_recipe_generation.run_recipe_generation(
-        user_id=1,
-        postal_code="M5V3A8",
-        budget=50.0,
-        household_size=2,
-        dietary_restrictions=[],
-        num_meals=2,
-        **kwargs,
-    )
-    return stub, result
-
-
-def test_streamed_run_returns_the_last_values_chunk_and_reports_nodes(monkeypatch):
-    """The "values" stream must stand in for invoke()'s return value."""
-    events = [
-        ("values", {"status": "initializing"}),
-        ("updates", {"initialize_chef": {"status": "planning"}}),
-        ("values", {"status": "planning"}),
-        ("updates", {"sous_chef_generate": {}}),
-        ("values", STREAMED_FINAL_STATE),
-    ]
-    seen = []
-    stub, result = _run_streamed(monkeypatch, events, progress_callback=seen.append)
-
-    assert result is STREAMED_FINAL_STATE
-    assert seen == ["initialize_chef", "sous_chef_generate"]
-    assert stub.stream_modes == [["updates", "values"]]
-
-
-def test_streamed_run_works_without_a_progress_callback(monkeypatch):
-    events = [("updates", {"initialize_chef": {}}), ("values", STREAMED_FINAL_STATE)]
-    _, result = _run_streamed(monkeypatch, events)
-    assert result is STREAMED_FINAL_STATE
-
-
-def test_progress_callback_failure_does_not_fail_the_generation(monkeypatch):
-    def angry(node):
-        raise RuntimeError("progress sink exploded")
-
-    events = [("updates", {"initialize_chef": {}}), ("values", STREAMED_FINAL_STATE)]
-    _, result = _run_streamed(monkeypatch, events, progress_callback=angry)
-    assert result is STREAMED_FINAL_STATE
-
-
-def test_a_graph_that_yields_no_state_is_an_error(monkeypatch):
-    with pytest.raises(RuntimeError):
-        _run_streamed(monkeypatch, [("updates", {"initialize_chef": {}})])
 
 
 # --- endpoints --------------------------------------------------------------
@@ -317,7 +232,7 @@ def client(monkeypatch):
 
 
 def _fake_generation(nodes=HAPPY_PATH_NODES, final_state=FINAL_STATE, raises=None):
-    """Build a stand-in for run_recipe_generation that reports `nodes`."""
+    """Build a stand-in for run_plan_generation that reports `nodes`."""
     seen = []
 
     def fake(progress_callback=None, **kwargs):
@@ -426,8 +341,8 @@ def test_status_reports_the_live_stage_while_running(client, monkeypatch):
     release = threading.Event()
 
     def fake(progress_callback=None, **kwargs):
-        progress_callback("initialize_chef")
-        progress_callback("plan_ingredient_groups")
+        progress_callback("confirm_selection")
+        progress_callback("plan_dishes")
         reached_sous_chefs.set()
         release.wait(5)
         return FINAL_STATE
@@ -438,7 +353,7 @@ def test_status_reports_the_live_stage_while_running(client, monkeypatch):
 
     body = client.get(f"/recipes/generate/status/{job_id}").json()
     assert body["state"] == RUNNING
-    assert body["stage"] == "SousChef 1/3 cooking…"
+    assert body["stage"] == PIPELINE_STAGES[2]
     assert body["stage_index"] == 3
     assert body["pipeline"] == list(PIPELINE_STAGES)
     assert body["result"] is None and body["error"] is None

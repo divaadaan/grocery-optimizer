@@ -19,21 +19,23 @@ from app.agents.instruction_refs import (
     structured_steps,
     unreferenced,
 )
+from app.agents.dietary import compliance_report
 from app.agents.llm_output import GeneratedRecipe, RecipeBatch, invoke_validated
-from app.agents.sous_chef import render_instructions, retry_view
+from app.agents.recipe_build import build_recipe, render_instructions
 from app.services import mlflow_logger
 from app.tests.test_cited_compliance import (
-    BUTTER,
     CATALOG,
     COCONUT_MILK,
     DEALS,
     PROPOSED_TOFU,
-    FISH_SAUCE,
-    SALT,
-    _nutritionist,
-    _nutritionist_state,
-    _sous_chef,
 )
+
+
+def _build(model_json, staples=(), deal_products=None):
+    """A stored recipe from one validated model recipe (what dish_writer does)."""
+    model = GeneratedRecipe.model_validate(json.loads(model_json))
+    return build_recipe("sous_chef_1", model, {str(d["deal_id"]): d for d in DEALS},
+                        lambda chef_id, m: "r1", list(staples), deal_products)
 
 
 @pytest.fixture(autouse=True)
@@ -153,57 +155,37 @@ def test_rendering_uses_the_cited_names_not_the_model_names():
         ["Fry Boneless Chicken in Butter."]
 
 
-def test_generate_recipes_stores_rendered_text_and_structured_steps():
-    chef = _sous_chef([json.dumps([{
+def test_built_recipe_stores_rendered_text_and_structured_steps():
+    r = _build(json.dumps({
         "name": "Ratatouille", "servings": 2,
         "ingredients": [{"name": "aubergine", "deal_id": 1},
                         {"name": "sea salt", "product_id": 101}],
-        "instructions": ["Slice {0}.", "Season {0} with {1}."]}])])
-    (r,) = chef.generate_recipes(
-        chef_id="sous_chef_1", ingredient_group=[{"product_name": "E", "deal_id": 1}],
-        target_recipe_count=1, household_size=2, dietary_restrictions=["vegan"],
-        available_deals=DEALS, pantry_staples=[SALT],
-    )
+        "instructions": ["Slice {0}.", "Season {0} with {1}."]}),
+        staples=[{"product_id": 101, "name": "Salt"}])
     assert r["instructions"] == ["Slice EGGPLANT ITALIAN.", "Season EGGPLANT ITALIAN with Salt."]
     assert r["instruction_steps"] == [
         {"template": "Slice {0}.", "ingredient_refs": [0]},
         {"template": "Season {0} with {1}.", "ingredient_refs": [0, 1]},
     ]
-    prompt = chef.llm.calls[0][0].content
-    assert "placeholder {N}" in prompt and "Heat {1} in a pan." in prompt
-
-
-def test_retry_prompt_shows_templates_not_rendered_text():
-    original = {"name": "Old", "ingredients": INGS,
-                "instructions": ["Fry EGGPLANT ITALIAN."],
-                "instruction_steps": [{"template": "Fry {0}.", "ingredient_refs": [0]}]}
-    assert retry_view(original) == {"name": "Old", "ingredients": INGS,
-                                    "instructions": ["Fry {0}."]}
-    legacy = {"name": "Old", "ingredients": [], "instructions": ["Cook."]}
-    assert retry_view(legacy) == legacy
 
 
 # --- compliance still comes from the citation ---------------------------------
 
 def test_vegan_step_referencing_a_non_vegan_citation_fails_compliance():
     """The model names deal 4 (chicken) "tofu" and staple 103 (butter) "olive
-    oil". The rendered step shows the cited names, and the Nutritionist
-    rejects on the cited products' attributes, exactly as before."""
-    chef = _sous_chef([json.dumps([{
+    oil". The rendered step shows the cited names, and the verdict rejects on
+    the cited products' attributes."""
+    r = _build(json.dumps({
         "name": "Tofu Stir-Fry", "servings": 2,
         "ingredients": [{"name": "tofu", "deal_id": 4},
                         {"name": "olive oil", "product_id": 103}],
-        "instructions": ["Fry {0} in {1}."]}])])
-    (r,) = chef.generate_recipes(
-        chef_id="sous_chef_1", ingredient_group=[{"product_name": "C", "deal_id": 4}],
-        target_recipe_count=1, household_size=2, dietary_restrictions=[],
-        available_deals=DEALS, pantry_staples=[SALT, FISH_SAUCE, BUTTER],
-    )
+        "instructions": ["Fry {0} in {1}."]}),
+        staples=[{"product_id": 103, "name": "Butter"}])
     assert r["instructions"] == ["Fry Boneless Chicken in Butter."]
-    update = _nutritionist().validate_recipes(_nutritionist_state([r], ["vegan"]))
-    assert update["rejected_recipe_ids"] == [r["recipe_id"]]
-    feedback = update["validation_results"][r["recipe_id"]]["feedback"]
-    assert "contains_meat" in feedback and "contains_dairy" in feedback
+    report = compliance_report(r, ["vegan"], CATALOG)
+    assert not report["approved"]
+    text = " ".join(report["violations"])
+    assert "contains_meat" in text and "contains_dairy" in text
 
 
 # --- residual risk, pinned on purpose ---------------------------------------
@@ -270,20 +252,13 @@ def test_staples_still_render_their_own_name_beside_a_linked_deal():
     assert out == ["Stir Butter into Coconut Milk."]
 
 
-def test_generate_recipes_renders_canonical_names_from_deal_products():
-    reply = json.dumps([{
+def test_built_recipe_renders_canonical_names_from_deal_products():
+    reply = json.dumps({
         "name": "Curry", "servings": 2,
         "ingredients": [{"name": "coconut", "deal_id": 2}],
-        "instructions": ["Simmer {0}."]}])
-    kwargs = dict(
-        chef_id="sous_chef_1", ingredient_group=[{"product_name": "C", "deal_id": 2}],
-        target_recipe_count=1, household_size=2, dietary_restrictions=[],
-        available_deals=DEALS, pantry_staples=[],
-    )
-    (r,) = _sous_chef([reply]).generate_recipes(
-        **kwargs, deal_products=CATALOG.deal_products)
+        "instructions": ["Simmer {0}."]})
+    r = _build(reply, deal_products=CATALOG.deal_products)
     assert r["instructions"] == ["Simmer Coconut Milk."]
     assert r["instruction_steps"][0]["template"] == "Simmer {0}."
     # Without links (read unavailable) it degrades to the flyer name.
-    (r,) = _sous_chef([reply]).generate_recipes(**kwargs)
-    assert r["instructions"] == ["Simmer AROY-D COCONUT MILK 400 ML."]
+    assert _build(reply)["instructions"] == ["Simmer AROY-D COCONUT MILK 400 ML."]

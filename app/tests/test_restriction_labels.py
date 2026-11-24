@@ -120,7 +120,7 @@ def recipes_client(monkeypatch):
     registry = RecipeJobRegistry()
     monkeypatch.setattr(recipes_route, "job_registry", registry)
     ran = []
-    monkeypatch.setattr(main_recipe_generation, "run_recipe_generation",
+    monkeypatch.setattr(main_recipe_generation, "run_plan_generation",
                         lambda **kw: ran.append(kw))
     app = FastAPI()
     app.include_router(recipes_route.router)
@@ -138,13 +138,17 @@ def test_generation_refuses_a_stored_unsupported_label(recipes_client):
     assert recipes_client.ran == []          # no job, no graph
 
 
-def test_run_recipe_generation_refuses_before_any_work(monkeypatch):
-    def boom(*a, **k):
-        raise AssertionError("the graph must not be built")
+def test_run_plan_generation_refuses_before_any_work():
+    from app.agents.plan_pipeline import PlanDeps
 
-    monkeypatch.setattr(main_recipe_generation, "create_recipe_generation_graph", boom)
+    def boom(*a, **k):
+        raise AssertionError("no work may start for an unsupported label")
+
+    deps = PlanDeps(fetch_deals=boom, fetch_labels=boom, fetch_pantry=boom,
+                    fetch_deal_products=boom, recipe_store=object(), chat_fn=boom,
+                    planner_spec="ollama:x", writer_spec="ollama:y")
     with pytest.raises(products.UnsupportedRestrictionError) as err:
-        main_recipe_generation.run_recipe_generation(
-            user_id=1, postal_code="M5V3A8", budget=50.0, household_size=1,
-            dietary_restrictions=["halal"], num_meals=1)
+        main_recipe_generation.run_plan_generation(
+            user_id=1, postal_code="M5V3A8", household_size=1,
+            dietary_restrictions=["halal"], num_meals=1, deps=deps)
     assert err.value.labels == ["halal"]

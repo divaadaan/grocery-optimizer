@@ -62,22 +62,6 @@ def test_household_meals_and_snapshot_coverage(scenarios):
     assert {"seed27", "week-2026-10-16", "sparse5"} <= {s.snapshot for s in scenarios}
 
 
-def _budget_class(s):
-    per = s.user.budget / (s.user.household_size * s.user.num_meals)
-    return "tight" if per < 3 else "generous" if per > 10 else "mid" if per >= 4 else None
-
-
-def test_budget_classes(scenarios):
-    weekly = [s for s in scenarios if s.user.budget_period == "weekly"]
-    for s in weekly:
-        tags = {"tight", "mid", "generous"} & set(s.name.split("-"))
-        assert len(tags) == 1, s.name
-        assert _budget_class(s) in tags, s.name
-    assert {t for s in weekly for t in s.name.split("-")} >= {"tight", "mid", "generous"}
-    assert any(s.user.budget_period == "monthly" and s.user.budget_spent_this_period > 0
-               for s in scenarios)
-
-
 def test_sparse5_stresses_scarcity(scenarios):
     sparse = [s for s in scenarios if s.snapshot == "sparse5"]
     assert len(sparse) >= 3
@@ -93,7 +77,7 @@ def test_kosher_is_exercised(scenarios):
 
 def _offered(s):
     snap = load_snapshot(s.snapshot)
-    return len(snap.deal_source().fetch_current_deals(
+    return len(snap.deal_source().fetch_gated_deals(
         s.user.postal_code, list(s.user.dietary_restrictions)))
 
 

@@ -35,29 +35,15 @@ class Settings(BaseSettings):
     cache_ttl_recipes: int = Field(default=86400, env="CACHE_TTL_RECIPES")  # 24 hours
     cache_ttl_stores: int = Field(default=604800, env="CACHE_TTL_STORES")  # 7 days
 
-    # LLM provider. Chat models are built only by app/agents/llm_factory.py,
-    # which dispatches on this. "ollama" is the only provider implemented.
-    llm_provider: str = Field(default="ollama", env="LLM_PROVIDER")
-
-    # Ollama
+    # Ollama (for "ollama:<model>" specs; see app/agents/llm_chat.py, which also
+    # sizes num_ctx per prompt -- Ollama otherwise silently truncates).
     ollama_base_url: str = Field(default="http://localhost:11434", env="OLLAMA_BASE_URL")
-    ollama_chef_model: str = Field(default="smollm:1.7b", env="OLLAMA_CHEF_MODEL")
-    ollama_sous_chef_model: str = Field(default="smollm:360m", env="OLLAMA_SOUS_CHEF_MODEL")
-    ollama_nutritionist_model: str = Field(default="smollm:360m", env="OLLAMA_NUTRITIONIST_MODEL")
-    # HTTP timeouts (seconds) for every model call. The Ollama chat client has none by
-    # default, so a hung Ollama would block a run forever and the fail-fast in
-    # app/agents/llm_errors.py (httpx.ReadTimeout/ConnectTimeout) never fires.
+    # HTTP timeouts (seconds) for every model call (app/agents/llm_chat.py), so a
+    # hung model fails fast (llm_errors classifies httpx timeouts as infrastructure).
     # Read is generous: it must cover a cold model load plus the wait for the
     # first streamed chunk (and any pause between chunks).
     llm_connect_timeout_seconds: float = Field(default=5.0, env="LLM_CONNECT_TIMEOUT_SECONDS", gt=0)
     llm_read_timeout_seconds: float = Field(default=600.0, env="LLM_READ_TIMEOUT_SECONDS", gt=0)
-    # Context window sent to Ollama as options.num_ctx. Unset, the server uses its
-    # own default (2048/4096) and silently truncates longer prompts.
-    ollama_num_ctx: int = Field(default=8192, env="OLLAMA_NUM_CTX", gt=0)
-    # Optional global override of every role's output-token cap (options.num_predict).
-    # Unset, each role uses its own default (RoleSpec.num_predict in llm_factory).
-    ollama_num_predict: Optional[int] = Field(default=None, env="OLLAMA_NUM_PREDICT", gt=0)
-
     # MLflow
     mlflow_tracking_uri: str = Field(default="http://localhost:5000", env="MLFLOW_TRACKING_URI")
     mlflow_experiment_name: str = Field(default="grocery-meal-planner", env="MLFLOW_EXPERIMENT_NAME")
@@ -65,9 +51,6 @@ class Settings(BaseSettings):
     # startup probe (app/services/mlflow_logger.py). Empty = the repo's local,
     # gitignored ./mlruns file store; "off" disables tracking instead.
     mlflow_fallback_tracking_uri: str = Field(default="", env="MLFLOW_FALLBACK_TRACKING_URI")
-    # MLflow Tracing of the recipe graph (one trace per generation, with every
-    # LLM prompt/response). Traces hold full prompts: user profile, deal lists.
-    mlflow_tracing: bool = Field(default=True, env="MLFLOW_TRACING")
 
     # Hugging Face
     huggingface_api_key: Optional[str] = Field(default=None, env="HUGGINGFACE_API_KEY")

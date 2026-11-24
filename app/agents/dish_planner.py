@@ -1,7 +1,7 @@
 """Plan the week's dishes from the user's confirmed trays (one LLM call).
 
 Approach C (``experiments/chef/DESIGN_APPROACH_C.md`` §6); replaces
-``ChefOrchestrator.plan_ingredient_groups``. The model sees ~55 short tray rows
+the old ``ChefOrchestrator.plan_ingredient_groups``. The model sees ~55 short tray rows
 the user already confirmed, and returns the dish-first plan the prototype used
 (``experiments/chef/common.py``): each dish names its anchor and side deal ids
 and the pantry product ids it uses, plus stock-up deal ids.
@@ -9,6 +9,10 @@ and the pantry product ids it uses, plus stock-up deal ids.
 Everything the model returns is checked in code (:class:`DishPlan` with a
 validation context): exactly ``num_meals`` dishes, at least one anchor each,
 anchors from the ANCHORS tray, every other id one the user kept or confirmed.
+Stray ids are dropped and recorded (:func:`repair_plan`) rather than failing
+the plan; a dish with no valid anchor is dropped, so a plan can come back with
+fewer than ``num_meals`` dishes (the 60% partial rule then applies). A plan
+with no usable dish is retried once.
 An anchor may serve more than one dish (owner, 2026-11-23). One retry with the
 error, then the run fails. Nothing here judges dietary compliance: the trays
 are already gated, and the recipe verdict is ``app/agents/dietary.py``.
@@ -78,9 +82,11 @@ class PlannedDish(BaseModel):
 
 
 class DishPlan(BaseModel):
-    dishes: List[PlannedDish] = Field(min_length=1)
+    dishes: List[PlannedDish] = Field(min_length=1)   # repair_plan may leave fewer than N
     stock_up_deal_ids: List[int] = Field(default_factory=list)
     notes: str = ""
+    #: Optional-field ids removed by :func:`repair_plan` (recorded, never used).
+    dropped: List[Dict[str, Any]] = Field(default_factory=list)
 
     @field_validator("stock_up_deal_ids", mode="before")
     @classmethod
@@ -98,8 +104,8 @@ class DishPlan(BaseModel):
         if ctx is None:
             return self
         problems = []
-        if len(self.dishes) != ctx["num_meals"]:
-            problems.append(f"expected exactly {ctx['num_meals']} dishes, got {len(self.dishes)}")
+        if len(self.dishes) > ctx["num_meals"]:
+            problems.append(f"expected at most {ctx['num_meals']} dishes, got {len(self.dishes)}")
         for i, dish in enumerate(self.dishes):
             label = f"dish {i + 1} ({dish.name!r})"
             if not dish.name:
@@ -140,15 +146,101 @@ def build_prompt(kept: Dict[str, List[TrayItem]], pantry: Sequence[Dict[str, Any
         rows = "\n".join(tray_row(t) for t in kept[name]) or "(none)"
         sections.append(f"{title} (id | name | price | store | item; comparison):\n{rows}")
     pantry_rows = "\n".join(f"{p['product_id']} | {p['name']}" for p in pantry) or "(none)"
+    n_anchors = len(kept["anchors"])
+    reuse = ""
+    if 0 < n_anchors < num_meals:
+        # A 7B planner otherwise invents dishes around a side to reach the
+        # count (2026-11-23 live check); those dishes are dropped.
+        ids = ", ".join(str(t.deal_id) for t in kept["anchors"])
+        reuse = (f"\nThere are only {n_anchors} ANCHORS for {num_meals} dishes, so REUSE them: "
+                 f"every dish's anchor_deal_ids must be one of [{ids}], and some anchors "
+                 "will appear in more than one dish (cooked a different way).\n")
     return (
         f"{SYSTEM}\n\n"
         f"- Household: {household_size} people\n"
         f"- Plan: {num_meals} dinners\n"
         f"- Preferences: {preferences_text(preferences)}\n\n"
         + "\n\n".join(sections)
-        + f"\n\nPANTRY the user already has (product_id | name; cost $0):\n{pantry_rows}\n\n"
+        + f"\n\nPANTRY the user already has (product_id | name; cost $0):\n{pantry_rows}\n"
+        + reuse + "\n"
         + CONTRACT.format(num_meals=num_meals)
     )
+
+
+def repair_plan(data: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+    """Drop ids the plan may not use from the *optional* fields, recording
+    each in ``dropped`` -- before validation, so a stray side or pantry id
+    costs one ingredient instead of the whole plan.
+
+    Side, pantry and stock-up ids outside what was offered are removed (the
+    2026-11-23 live check: a 7B planner cited a pantry id as a side, or a
+    side as an anchor, in about one run in four). Anchors are never repaired:
+    a kept side cited as an anchor moves to the dish's sides, and a dish left
+    with no ANCHORS id is dropped (recorded) rather than given a protein the
+    model never chose; dishes beyond ``num_meals`` are dropped too. A plan
+    with no usable dish fails validation and goes back to the model. Ids only
+    -- nothing reads a name.
+    """
+    ctx = context[PLAN_CONTEXT_KEY]
+    dropped: List[Dict[str, Any]] = []
+
+    def keep(values, allowed, where):
+        out = []
+        for v in values if isinstance(values, list) else []:
+            try:
+                i = int(str(v).strip())
+            except (TypeError, ValueError):
+                out.append(v)            # let schema validation report it
+                continue
+            if i in allowed:
+                out.append(i)
+            else:
+                dropped.append({"where": where, "id": i})
+        return out
+
+    data = dict(data)
+    dishes = []
+    for n, dish in enumerate(data.get("dishes") or []):
+        if not isinstance(dish, dict):
+            dishes.append(dish)
+            continue
+        dish = dict(dish)
+        anchors = dish.get("anchor_deal_ids")
+        if isinstance(anchors, list):
+            ids = [int(a) for a in anchors if str(a).strip().lstrip("-").isdigit()]
+            good = [a for a in ids if a in ctx["anchors"]]
+            moved = [a for a in ids if a not in ctx["anchors"] and a in ctx["deals"]]
+            if not good:
+                # No ANCHORS id at all: the dish is not built around this
+                # week's protein deals. Drop it rather than assign a protein
+                # the model never chose; the run continues with the rest.
+                dropped.append({"where": f"dish {n + 1}", "id": None,
+                                "reason": "no anchor from ANCHORS",
+                                "name": str(dish.get("name") or "")[:80]})
+                continue
+            dish["anchor_deal_ids"] = good
+            if moved:  # a kept side cited as an anchor: keep it as a side
+                sides = dish.get("side_deal_ids") if isinstance(dish.get("side_deal_ids"), list) else []
+                dish["side_deal_ids"] = list(dict.fromkeys(list(sides) + moved))
+        if "side_deal_ids" in dish:
+            dish["side_deal_ids"] = keep(dish["side_deal_ids"], ctx["deals"],
+                                         f"dish {n + 1} side_deal_ids")
+        if "pantry_product_ids" in dish:
+            dish["pantry_product_ids"] = keep(dish["pantry_product_ids"], ctx["pantry"],
+                                              f"dish {n + 1} pantry_product_ids")
+        dishes.append(dish)
+    if "dishes" in data:
+        extra = dishes[ctx["num_meals"]:]
+        for n, dish in enumerate(extra, start=ctx["num_meals"] + 1):
+            dropped.append({"where": f"dish {n}", "id": None, "reason": "more dishes than meals",
+                            "name": str((dish or {}).get("name") or "")[:80]
+                            if isinstance(dish, dict) else ""})
+        data["dishes"] = dishes[:ctx["num_meals"]]
+    if "stock_up_deal_ids" in data:
+        data["stock_up_deal_ids"] = keep(data["stock_up_deal_ids"], ctx["stock_up"],
+                                         "stock_up_deal_ids")
+    data["dropped"] = dropped
+    return data
 
 
 def plan_dishes(kept: Dict[str, List[TrayItem]], pantry: Sequence[Dict[str, Any]], *,
@@ -165,7 +257,7 @@ def plan_dishes(kept: Dict[str, List[TrayItem]], pantry: Sequence[Dict[str, Any]
     context = plan_context(kept, pantry, num_meals)
     plan, replies = llm_chat.chat_validated(
         chat_fn, spec, [{"role": "user", "content": prompt}],
-        lambda data: DishPlan.model_validate(data, context=context),
+        lambda data: DishPlan.model_validate(repair_plan(data, context), context=context),
         temperature=TEMPERATURE, max_tokens=MAX_TOKENS, json_mode=True)
     return plan, replies, prompt
 

@@ -274,298 +274,58 @@ def test_undecided_byproduct_does_not_affect_a_vegetarian_recipe():
 
 
 def test_honey_is_never_offered_to_a_vegan_sous_chef():
-    from app.agents.sous_chef import offered_staples
+    from app.services.trays import offered_pantry
     staples = [SALT, HONEY, {**UNDECIDED_JAM, "product_id": 105}]
-    assert [s["product_id"] for s in offered_staples(staples, ["vegan"])] == [101]
-    offered = offered_staples(staples, ["vegan", "no_nuts"])
+    assert [s["product_id"] for s in offered_pantry(staples, ["vegan"])] == [101]
+    offered = offered_pantry(staples, ["vegan", "no_nuts"])
     assert [s["product_id"] for s in offered] == [101]
-    assert [s["product_id"] for s in offered_staples(staples, ["vegetarian"])] == [
+    assert [s["product_id"] for s in offered_pantry(staples, ["vegetarian"])] == [
         101, 104, 105]
 
 
+def _curry_dish():
+    from app.agents.dish_planner import PlannedDish
+    return PlannedDish(name="Eggplant curry", anchor_deal_ids=[1])
+
+
 def test_honey_staple_is_absent_from_a_vegan_sous_chef_prompt():
-    chef = _sous_chef([_batch({"name": "Eggplant", "deal_id": 1},
-                              {"name": "Salt", "product_id": 101})])
-    chef.generate_recipes(
-        chef_id="sous_chef_1", ingredient_group=[{"product_name": "E", "deal_id": 1}],
-        target_recipe_count=1, household_size=2, dietary_restrictions=["vegan"],
-        available_deals=DEALS, pantry_staples=[SALT, HONEY],
-    )
-    prompt = chef.llm.calls[0][0].content
-    assert '"product_id": 101' in prompt
-    assert '"product_id": 104' not in prompt and "Honey" not in prompt
+    from app.agents import dish_writer
+    from app.services.trays import offered_pantry
+    pantry = offered_pantry([SALT, HONEY], ["vegan"])
+    prompt = dish_writer.build_prompt(_curry_dish(), [DEALS[0]], [], pantry, servings=2,
+                                      dietary_restrictions=["vegan"])
+    assert "→ product_id 101" in prompt
+    assert "→ product_id 104" not in prompt and "honey" not in prompt.lower()
 
 
 def test_citing_an_unoffered_honey_staple_is_fed_back_to_a_vegan_sous_chef():
-    chef = _sous_chef([
-        _batch({"name": "Eggplant", "deal_id": 1}, {"name": "honey", "product_id": 104}),
-        _batch({"name": "Eggplant", "deal_id": 1}),
-    ])
-    recipes = chef.generate_recipes(
-        chef_id="sous_chef_1", ingredient_group=[{"product_name": "E", "deal_id": 1}],
-        target_recipe_count=1, household_size=2, dietary_restrictions=["vegan"],
-        available_deals=DEALS, pantry_staples=[SALT, HONEY],
-    )
-    assert "cites product_id 104" in chef.llm.calls[1][2].content
-    assert [i.get("product_id") for i in recipes[0]["ingredients"]] == [None]
+    import json as _json
+    from app.agents import dish_writer
+    from app.agents.llm_chat import Reply
+    from app.services.trays import offered_pantry
+
+    def batch(*ingredients):
+        return _json.dumps({"name": "Curry", "servings": 2, "ingredients": list(ingredients),
+                            "instructions": [f"Cook {{{i}}}." for i in range(len(ingredients))]})
+
+    replies = [batch({"name": "Eggplant", "deal_id": 1}, {"name": "honey", "product_id": 104}),
+               batch({"name": "Eggplant", "deal_id": 1})]
+    calls = []
+
+    def chat_fn(spec, messages, **kw):
+        calls.append(messages)
+        return Reply(text=replies[len(calls) - 1])
+
+    recipe, _, _ = dish_writer.write_recipe(
+        _curry_dish(), deals={1: DEALS[0]}, stock_up_ids=[],
+        pantry=offered_pantry([SALT, HONEY], ["vegan"]), servings=2,
+        dietary_restrictions=["vegan"], spec="ollama:m", chat_fn=chat_fn)
+    assert "cites product_id 104" in calls[1][2]["content"]
+    assert [i.get("product_id") for i in recipe["ingredients"]] == [None]
 
 
 # --------------------------------------------------------------------------
-# Nutritionist node
-# --------------------------------------------------------------------------
-
-class _AdvisoryLLM:
-    def invoke(self, messages):
-        class R:
-            content = json.dumps({"approved": False, "health_score": 50})
-        return R()
-
-
-def _nutritionist():
-    from app.agents.nutritionist import Nutritionist
-    n = Nutritionist.__new__(Nutritionist)
-    n.llm = _AdvisoryLLM()
-    return n
-
-
-def _nutritionist_state(recipes, restrictions):
-    return {
-        "generated_recipes": {r["recipe_id"]: r for r in recipes},
-        "validation_results": {},
-        "dietary_restrictions": restrictions,
-        "approved_recipe_ids": [],
-        "rejected_recipe_ids": [],
-        "pantry_staples": [SALT, FISH_SAUCE, BUTTER],
-        "deal_products": dict(CATALOG.deal_products),
-    }
-
-
-def test_nutritionist_verdict_ignores_the_advisory_llm_and_reads_citations():
-    good = {"recipe_id": "a", **_recipe({"name": "eggplant", "deal_id": 1},
-                                        {"name": "salt", "product_id": 101})}
-    bad = {"recipe_id": "b", **_recipe({"name": "Vegetable stock", "product_id": 102})}
-    state = _nutritionist_state([good, bad], ["vegetarian"])
-    update = _nutritionist().validate_recipes(state)
-    assert update["approved_recipe_ids"] == ["a"]
-    assert update["rejected_recipe_ids"] == ["b"]
-    feedback = update["validation_results"]["b"]["feedback"]
-    assert "Vegetable stock" in feedback and "contains_fish" in feedback
-    compliance = update["validation_results"]["b"]["dietary_compliance"]
-    assert set(compliance) == {"allergen_free", "meets_restrictions", "violations"}
-
-
-@pytest.mark.parametrize("restrictions", [["halal"], ["vegetarian", "halal"]])
-def test_nutritionist_never_approves_an_unsupported_restriction(restrictions):
-    recipe = {"recipe_id": "a", **_recipe({"name": "eggplant", "deal_id": 1},
-                                          {"name": "salt", "product_id": 101})}
-    update = _nutritionist().validate_recipes(_nutritionist_state([recipe], restrictions))
-    assert update["approved_recipe_ids"] == []
-    feedback = update["validation_results"]["a"]["feedback"]
-    assert not feedback.startswith("Approved")
-    assert "'halal' is not a supported restriction" in feedback
-
-
-def test_nutritionist_rejects_meat_with_dairy_for_kosher():
-    # deal 4 = chicken (meat), staple 103 = butter (dairy); both not_kosher=False.
-    recipe = {"recipe_id": "a", **_recipe({"name": "chicken", "deal_id": 4},
-                                          {"name": "butter", "product_id": 103})}
-    update = _nutritionist().validate_recipes(_nutritionist_state([recipe], ["kosher"]))
-    assert update["rejected_recipe_ids"] == ["a"]
-    assert "contains_meat with contains_dairy" in \
-        update["validation_results"]["a"]["feedback"]
-
-
-# --------------------------------------------------------------------------
-# SousChef: what is offered, and citation validation in the retry loop
-# --------------------------------------------------------------------------
-
-class _ScriptedLLM:
-    def __init__(self, responses):
-        self.responses = list(responses)
-        self.calls = []
-
-    def invoke(self, messages):
-        self.calls.append(messages)
-
-        class R:
-            content = self.responses.pop(0)
-        return R()
-
-
-def _sous_chef(responses):
-    from app.agents.sous_chef import SousChef
-    chef = SousChef.__new__(SousChef)
-    chef.llm = _ScriptedLLM(responses)
-    return chef
-
-
-def test_offered_deals_resolve_by_id_only_and_drop_the_rest():
-    """An exact product_name with no deal_id is NOT resolved: names collide
-    across stores and never decide anything."""
-    from app.agents.costing import deals_by_id
-    from app.agents.sous_chef import offered_deals
-    group = [
-        {"product_name": "whatever the chef wrote", "deal_id": "1"},
-        {"product_name": "Boneless Chicken", "deal_id": None},
-        {"product_name": "Hallucinated", "deal_id": 999},
-        {"product_name": "dup", "deal_id": 1},
-    ]
-    offered = offered_deals(group, deals_by_id(DEALS))
-    assert [d["deal_id"] for d in offered] == [1]
-    assert offered[0]["product_name"] == "EGGPLANT ITALIAN"  # the deal's own name
-
-
-def test_staples_offered_are_filtered_by_restriction():
-    from app.agents.sous_chef import offered_staples
-    staples = [SALT, FISH_SAUCE, BUTTER, _product(104, "Pending", status="proposed")]
-    assert [s["product_id"] for s in offered_staples(staples, ["vegetarian"])] == [101, 103]
-    assert [s["product_id"] for s in offered_staples(staples, ["vegan"])] == [101]
-    assert [s["product_id"] for s in offered_staples(staples, [])] == [101, 102, 103]
-
-
-def _batch(*ingredients):
-    steps = ["Cook " + " and ".join(f"{{{i}}}" for i in range(len(ingredients))) + "."]
-    return json.dumps([{"name": "Ratatouille", "ingredients": list(ingredients),
-                        "instructions": steps, "servings": 2}])
-
-
-def test_generate_recipes_retries_on_unoffered_citation_and_prices_from_citations():
-    chef = _sous_chef([
-        _batch({"name": "chicken", "deal_id": 4}),                     # not offered
-        _batch({"name": "fish sauce", "product_id": 102}),  # not offered to vegetarian
-        _batch({"name": "Eggplant", "deal_id": 1, "price": 99},
-               {"name": "Coconut milk", "deal_id": "2"},
-               {"name": "Salt", "product_id": 101}),
-    ])
-    recipes = chef.generate_recipes(
-        chef_id="sous_chef_1",
-        ingredient_group=[{"product_name": "Eggplant", "deal_id": 1},
-                          {"product_name": "Coconut", "deal_id": 2}],
-        target_recipe_count=1, household_size=2, dietary_restrictions=["vegetarian"],
-        available_deals=DEALS, pantry_staples=[SALT, FISH_SAUCE, BUTTER],
-    )
-    assert len(chef.llm.calls) == 3
-    prompt = chef.llm.calls[0][0].content
-    assert '"deal_id": 1' in prompt and '"product_id": 101' in prompt
-    assert '"product_id": 102' not in prompt  # fish sauce never offered to a vegetarian
-    assert "cites deal_id 4" in chef.llm.calls[1][2].content
-    assert "cites product_id 102" in chef.llm.calls[2][4].content
-
-    (recipe,) = recipes
-    assert recipe["total_cost"] == round(2.50 + 1.99, 2)
-    ings = recipe["ingredients"]
-    assert [(i.get("deal_id"), i.get("product_id"), i["price"]) for i in ings] == [
-        (1, None, 2.50), (2, None, 1.99), (None, 101, 0.0)
-    ]
-    assert "product_id" not in ings[0] and "deal_id" not in ings[2]
-
-
-def test_generate_recipes_gives_up_after_repeated_uncited_output():
-    chef = _sous_chef([_batch({"name": "Eggplant"})] * 3)
-    recipes = chef.generate_recipes(
-        chef_id="sous_chef_1", ingredient_group=[{"product_name": "E", "deal_id": 1}],
-        target_recipe_count=1, household_size=2, dietary_restrictions=[],
-        available_deals=DEALS, pantry_staples=[],
-    )
-    assert recipes == []
-    assert len(chef.llm.calls) == 3
-
-
-def test_generate_recipes_skips_a_group_with_nothing_citable():
-    chef = _sous_chef([])
-    recipes = chef.generate_recipes(
-        chef_id="sous_chef_1", ingredient_group=[{"product_name": "Ghost", "deal_id": 999}],
-        target_recipe_count=1, household_size=2, dietary_restrictions=[],
-        available_deals=DEALS, pantry_staples=[SALT],
-    )
-    assert recipes == [] and chef.llm.calls == []
-
-
-def test_regenerate_with_feedback_uses_the_same_citation_rules():
-    chef = _sous_chef([
-        json.dumps({"name": "Fixed", "ingredients": [{"name": "Eggplant", "deal_id": 1}],
-                    "instructions": ["Cook {0}."]}),
-    ])
-    recipe = chef.regenerate_with_feedback(
-        chef_id="sous_chef_2", original_recipe={"name": "Old", "ingredients": []},
-        feedback="Rejected: fish sauce has contains_fish",
-        ingredient_group=[{"product_name": "Eggplant", "deal_id": 1}],
-        household_size=2, dietary_restrictions=["vegetarian"],
-        available_deals=DEALS, pantry_staples=[SALT, FISH_SAUCE],
-    )
-    assert recipe["total_cost"] == 2.50
-    prompt = chef.llm.calls[0][0].content
-    assert "contains_fish" in prompt and '"product_id": 101' in prompt
-
-
-def test_sous_chef_prompts_take_the_pantry_list():
-    from app.agents.prompts import PromptTemplates
-    PromptTemplates.SOUS_CHEF_RECIPE_GENERATION.format(
-        ingredients_json="[]", pantry_json="[]", target_recipe_count=1, servings=2,
-        dietary_restrictions="", combination_hints="", preferences="none",
-    )
-    PromptTemplates.SOUS_CHEF_RETRY_WITH_FEEDBACK.format(
-        original_recipe_json="{}", feedback="", ingredients_json="[]", pantry_json="[]",
-        servings=2, dietary_restrictions="", combination_hints="", preferences="none",
-    )
-
-
-# --------------------------------------------------------------------------
-# Graph: catalog loading and savings
-# --------------------------------------------------------------------------
-
-def test_load_recipe_catalog_reads_staples_and_links(monkeypatch):
-    from app.agents import graph
-    seen = {}
-    monkeypatch.setattr(graph.recipe_catalog, "fetch_pantry_staples", lambda: [SALT])
-    monkeypatch.setattr(graph.recipe_catalog, "fetch_deal_products",
-                        lambda ids: seen.setdefault("ids", list(ids)) and {"1": [EGGPLANT]})
-    update = graph.load_recipe_catalog(
-        {"dietary_restrictions": ["vegan"], "available_deals": DEALS[:2]})
-    assert update["pantry_staples"] == [SALT]
-    assert update["deal_products"] == {"1": [EGGPLANT]}
-    assert seen["ids"] == [1, 2]
-    assert "warnings" not in update
-
-
-def test_load_recipe_catalog_reads_links_for_unrestricted_users_too(monkeypatch):
-    """Links give cited deals their canonical names in recipe steps, so the
-    read is not limited to restricted users."""
-    from app.agents import graph
-    monkeypatch.setattr(graph.recipe_catalog, "fetch_pantry_staples", lambda: [])
-    monkeypatch.setattr(graph.recipe_catalog, "fetch_deal_products",
-                        lambda ids: {"1": [EGGPLANT]})
-    update = graph.load_recipe_catalog(
-        {"dietary_restrictions": [], "available_deals": DEALS})
-    assert update["deal_products"] == {"1": [EGGPLANT]}
-
-
-def test_load_recipe_catalog_degrades_without_failing_open(monkeypatch):
-    from app.agents import graph
-
-    def broken(*a):
-        raise RuntimeError('column "assumed_on_hand" does not exist')
-    monkeypatch.setattr(graph.recipe_catalog, "fetch_pantry_staples", broken)
-    monkeypatch.setattr(graph.recipe_catalog, "fetch_deal_products", broken)
-    update = graph.load_recipe_catalog(
-        {"dietary_restrictions": ["vegan"], "available_deals": DEALS})
-    assert update["pantry_staples"] == [] and update["deal_products"] == {}
-    assert len(update["warnings"]) == 2
-
-
-def test_graph_savings_come_from_cited_deals_and_never_invent_a_regular_price():
-    from app.agents import graph
-    state = {"available_deals": DEALS}
-    no_regular = [_recipe({"name": "e", "deal_id": 1}, {"name": "s", "product_id": 101})]
-    assert graph._plan_pricing(state, no_regular).estimated_savings is None
-    with_regular = [_recipe({"name": "c", "deal_id": 2})]
-    assert graph._plan_pricing(state, with_regular).estimated_savings == 0.5
-    # A deal reused by two recipes is bought -- and saved on -- once.
-    assert graph._plan_pricing(state, with_regular * 2).estimated_savings == 0.5
-
-
-# --------------------------------------------------------------------------
-# recipe_catalog reads
+# recipe_catalog reads (what the pipeline's verdict catalog is built from)
 # --------------------------------------------------------------------------
 
 class _Cursor:

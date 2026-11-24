@@ -4,7 +4,7 @@ Approach C (``experiments/chef/DESIGN_APPROACH_C.md`` §4), ported from
 ``experiments/chef/arms/c_trays.py``. Deterministic: same deals and labels in,
 same trays out.
 
-1. Start from the **gated** deal set (``fetch_current_deals`` with the user's
+1. Start from the **gated** deal set (``fetch_gated_deals`` with the user's
    restrictions -- ``deal_gate`` decides dietary access, nothing here does).
 2. Join each deal to its stored label (``deal_labels``). Unlabelled deals never
    reach a tray.

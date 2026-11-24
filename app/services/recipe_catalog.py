@@ -1,7 +1,8 @@
 """Read-only product lookups the recipe pipeline cites against.
 
-Two reads, both run once per generation by the graph's ``load_recipe_catalog``
-node, so the SousChefs and the Nutritionist work from one consistent snapshot:
+Two reads the generation pipeline (``app/agents/plan_pipeline.py``) makes once
+per run, so the SousChefs and the dietary verdict work from one consistent
+snapshot:
 
 * :func:`fetch_pantry_staples` -- confirmed products flagged
   ``assumed_on_hand`` (migration 014). The SousChef may cite these by

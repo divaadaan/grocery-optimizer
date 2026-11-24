@@ -17,7 +17,6 @@ from datetime import datetime, timedelta, timezone
 import httpx
 import pytest
 
-from app.agents.graph import budget_remaining_after
 from app.routes import users as users_route
 from app.services import budget as budget_service
 from app.services.budget import (
@@ -304,30 +303,6 @@ def test_a_user_with_no_period_set_is_treated_as_monthly():
                            load_completed_lists=_loader([]))
     assert status["budget_period"] == MONTHLY
 
-
-# ---------------------------------------------------------------------------
-# What the generation graph does with it
-# ---------------------------------------------------------------------------
-
-def test_budget_remaining_subtracts_prior_spend_as_well_as_this_plan():
-    state = {"budget": 200.0, "budget_spent_this_period": 120.0}
-    assert budget_remaining_after(state, 50.0) == 30.0
-
-
-def test_budget_remaining_goes_negative_when_a_plan_breaks_the_limit():
-    state = {"budget": 100.0, "budget_spent_this_period": 90.0}
-    assert budget_remaining_after(state, 25.0) == -15.0
-
-
-def test_budget_remaining_falls_back_to_the_old_arithmetic_without_the_channel():
-    """A state assembled by an older caller must not raise."""
-    assert budget_remaining_after({"budget": 100.0}, 40.0) == 60.0
-    assert budget_remaining_after({"budget": 100.0, "budget_spent_this_period": None}, 40.0) == 60.0
-
-
-# ---------------------------------------------------------------------------
-# GET /users/{user_id}/budget
-# ---------------------------------------------------------------------------
 
 @pytest.fixture
 def client():

@@ -1,10 +1,10 @@
 """Frozen snapshots (ROADMAP Track E §2): loader, fakes, capture script, and
-the real compiled graph run against every committed snapshot.
+the real generation pipeline run against every committed snapshot.
 
 Deterministic and offline: no network, no LLM, no database. The capture
-script is exercised against a fake cursor; the graph runs use scripted chat
-models that answer from what the prompt actually offered, so they work on any
-snapshot without a per-snapshot script.
+script is exercised against a fake cursor; the pipeline runs use a scripted
+chat function that answers from what each prompt actually offered, so they
+work on any snapshot without a per-snapshot script.
 """
 import copy
 import datetime as dt
@@ -13,8 +13,11 @@ from pathlib import Path
 
 import pytest
 
-from app import main_recipe_generation
+import re
+
+from app.agents import plan_pipeline
 from app.agents.dietary import CitationCatalog, compliance_report
+from app.agents.llm_chat import Reply
 from app.eval import snapshots as snap_mod
 from app.eval.snapshots import (
     FORMAT_VERSION,
@@ -25,7 +28,7 @@ from app.eval.snapshots import (
     snapshot_path,
 )
 from app.services.products import ATTRIBUTES, restrictions_to_attributes
-from app.tests.test_graph_offline import RecordingTracker, ScriptedChatModel
+from app.eval.runner import NullTracker
 from scripts import capture_snapshot as capture_mod
 
 COMMITTED = ("seed27", "week-2026-10-16", "sparse5")
@@ -99,7 +102,13 @@ def mini() -> dict:
             _product(90, "Salt", on_hand=True),
             _product(91, "Proposed Staple", status="proposed", on_hand=True),
         ],
+        "deal_labels": [_label(1, "tofu", "protein"), _label(2, "mixed vegetables", "vegetable"),
+                        _label(4, "honey", "pantry_staple", 500, "g")],
     }
+
+
+def _label(did, item, role, qty=None, unit=None):
+    return {"deal_id": did, "item": item, "role": role, "size_qty": qty, "size_unit": unit}
 
 
 # --------------------------------------------------------------------------
@@ -138,7 +147,7 @@ def test_committed_snapshot_contents():
     assert len(sparse.data["deals"]) == 5
 
 
-@pytest.mark.parametrize("version", [0, 1, 3, "2", None, True])
+@pytest.mark.parametrize("version", [0, 1, 2, 4, "3", None, True])
 def test_unknown_format_version_is_refused(version):
     data = mini()
     data["meta"]["format_version"] = version
@@ -157,17 +166,47 @@ def test_a_v1_snapshot_is_refused_with_the_not_kosher_upgrade_path():
         Snapshot.from_dict(data)
 
 
+def test_a_v2_snapshot_is_refused_with_the_deal_labels_upgrade_path():
+    data = mini()
+    data["meta"]["format_version"] = 2
+    del data["deal_labels"]
+    with pytest.raises(SnapshotError, match="deal_labels"):
+        Snapshot.from_dict(data)
+
+
+def test_labels_load_and_feed_the_tray_builder():
+    snap = Snapshot.from_dict(mini())
+    labels = snap.fetch_labels([1, 2, 3, 4])
+    assert set(labels) == {1, 2, 4}                   # 3 is unlabelled
+    assert labels[4].size_qty == 500 and labels[4].size_unit == "g"
+
+
+@pytest.mark.parametrize("mutate,match", [
+    (lambda d: d["deal_labels"].append(_label(999, "x", "protein")), "deal not in deals"),
+    (lambda d: d["deal_labels"][0].update(role="gadget"), "unknown role"),
+    (lambda d: d["deal_labels"][0].update(size_qty=5), "bad size"),
+    (lambda d: d["deal_labels"][0].update(size_qty=5, size_unit="lb"), "bad size"),
+])
+def test_malformed_labels_are_refused(mutate, match):
+    data = mini()
+    mutate(data)
+    with pytest.raises(SnapshotError, match=match):
+        Snapshot.from_dict(data)
+
+
 def test_committed_snapshots_have_every_attribute_decided():
     """Re-captured 2026-10-29 after kosher labelling: every product in every
     committed snapshot has every attribute decided, and kosher users are
     served only products explicitly not_kosher = false."""
     for name in ("seed27", "week-2026-10-16", "sparse5"):
         snap = load_snapshot(name)
-        assert snap.meta["format_version"] == 2
+        assert snap.meta["format_version"] == FORMAT_VERSION
         for product in snap.data["products"]:
             assert all(product[a] is not None for a in ATTRIBUTES), product["product_id"]
+        # Every committed deal is labelled (2026-11-23 migration to v3).
+        assert set(snap.labels()) == {d["deal_id"] for d in snap.data["deals"]}
         linked = snap.linked_products()
-        for deal in snap.deal_source().fetch_current_deals(snap.postal_codes[0], ["kosher"]):
+        for deal in snap.deal_source().fetch_gated_deals(snap.postal_codes[0], ["kosher"]):
             assert all(p["not_kosher"] is False for p in linked[deal["deal_id"]])
 
 
@@ -192,7 +231,8 @@ def test_missing_field_is_refused(section, field):
         Snapshot.from_dict(data)
 
 
-@pytest.mark.parametrize("section", ["meta", "stores", "deals", "deal_products", "products"])
+@pytest.mark.parametrize("section", ["meta", "stores", "deals", "deal_products", "products",
+                                     "deal_labels"])
 def test_missing_section_is_refused(section):
     data = mini()
     del data[section]
@@ -251,8 +291,8 @@ def test_null_attributes_stay_null_and_fail_closed():
     assert rows["4"][0]["contains_animal_byproduct"] is None
     # And the gate fails closed on it for a vegan, but not for a vegetarian.
     deals = s.deal_source()
-    assert 4 not in {d["deal_id"] for d in deals.fetch_current_deals(POSTAL, ["vegan"])}
-    assert 4 in {d["deal_id"] for d in deals.fetch_current_deals(POSTAL, ["vegetarian"])}
+    assert 4 not in {d["deal_id"] for d in deals.fetch_gated_deals(POSTAL, ["vegan"])}
+    assert 4 in {d["deal_id"] for d in deals.fetch_gated_deals(POSTAL, ["vegetarian"])}
 
 
 # --------------------------------------------------------------------------
@@ -270,7 +310,7 @@ def test_committed_files_are_canonical(name):
 def test_dump_is_order_independent(tmp_path):
     data = mini()
     shuffled = copy.deepcopy(data)
-    for section in ("stores", "deals", "deal_products", "products"):
+    for section in ("stores", "deals", "deal_products", "products", "deal_labels"):
         shuffled[section].reverse()
     shuffled["meta"] = dict(reversed(list(shuffled["meta"].items())))
     assert dump_snapshot(data) == dump_snapshot(shuffled)
@@ -286,18 +326,18 @@ def test_dump_is_order_independent(tmp_path):
 def test_deal_source_gates_on_attributes_orders_and_shapes_like_production():
     deals = Snapshot.from_dict(mini()).deal_source()
 
-    open_ = deals.fetch_current_deals(POSTAL)
-    # discount DESC NULLS LAST, then sale_price ASC, then deal_id.
-    assert [d["deal_id"] for d in open_] == [2, 1, 4, 3, 5]
-    assert list(open_[0]) == list(snap_mod.SERVED_DEAL_KEYS)
+    open_ = deals.fetch_gated_deals(POSTAL)
+    # deal_id order, no ranking, no cap.
+    assert [d["deal_id"] for d in open_] == [1, 2, 3, 4, 5]
     assert open_[0]["store_name"] == "Store A" and open_[0]["chain"] == "a"
+    assert {"unit", "category"} <= set(open_[0])
 
-    veg = [d["deal_id"] for d in deals.fetch_current_deals(POSTAL, ["vegetarian"])]
+    veg = [d["deal_id"] for d in deals.fetch_gated_deals(POSTAL, ["vegetarian"])]
     # 2: contains_meat (despite the name); 3: unlinked; 5: one of its two
     # products is ham -- every linked product must clear.
     assert veg == [1, 4]
     # Unknown label: still behind the gate (linked + confirmed), no attribute.
-    assert [d["deal_id"] for d in deals.fetch_current_deals(POSTAL, ["halal"])] == [2, 1, 4, 5]
+    assert [d["deal_id"] for d in deals.fetch_gated_deals(POSTAL, ["halal"])] == [1, 2, 4, 5]
     assert deals.calls[0] == (POSTAL, None)
 
 
@@ -305,21 +345,13 @@ def test_deal_source_unconfirmed_product_withholds():
     data = mini()
     data["products"][0]["status"] = "proposed"  # Tofu
     deals = Snapshot.from_dict(data).deal_source()
-    assert 1 not in {d["deal_id"] for d in deals.fetch_current_deals(POSTAL, ["vegan"])}
-    assert 1 in {d["deal_id"] for d in deals.fetch_current_deals(POSTAL, [])}
-
-
-def test_deal_source_caps_at_the_production_limit():
-    data = mini()
-    data["deals"] = [_deal(i, f"D{i}", 1.0) for i in range(1, 251)]
-    data["deal_products"] = []
-    out = Snapshot.from_dict(data).deal_source().fetch_current_deals(POSTAL)
-    assert len(out) == snap_mod.DEAL_LIMIT
+    assert 1 not in {d["deal_id"] for d in deals.fetch_gated_deals(POSTAL, ["vegan"])}
+    assert 1 in {d["deal_id"] for d in deals.fetch_gated_deals(POSTAL, [])}
 
 
 def test_deal_source_refuses_an_uncovered_postal_code():
     with pytest.raises(SnapshotError, match="postal code"):
-        Snapshot.from_dict(mini()).deal_source().fetch_current_deals("H2X1Y4", [])
+        Snapshot.from_dict(mini()).deal_source().fetch_gated_deals("H2X1Y4", [])
 
 
 def test_catalog_mirrors_recipe_catalog():
@@ -372,6 +404,8 @@ class FakeCursor:
         elif "FROM products p" in s:
             rows = [r for r in d["products"]
                     if r["product_id"] in params["product_ids"] or r["assumed_on_hand"]]
+        elif "FROM deal_labels l" in s:
+            rows = [r for r in d["deal_labels"] if r["deal_id"] in params["deal_ids"]]
         else:
             raise AssertionError(f"unexpected SQL {s[:80]}")
         self._rows = rows
@@ -397,7 +431,7 @@ def test_capture_issues_only_reads_and_produces_a_valid_snapshot():
     assert loaded.meta["captured_at"] == "2026-10-29T12:00:00+00:00"
     assert loaded.meta["schema_migration"] == "020_ingestion_runs.sql"
     expected = Snapshot.from_dict(mini()).data
-    for section in ("stores", "deals", "deal_products", "products"):
+    for section in ("stores", "deals", "deal_products", "products", "deal_labels"):
         assert loaded.data[section] == expected[section]
 
 
@@ -423,74 +457,68 @@ def test_read_guard_refuses_non_reads(sql):
 
 def test_capture_sql_is_select_only():
     for sql in (capture_mod.DEALS_SQL, capture_mod.STORES_SQL, capture_mod.LINKS_SQL,
-                capture_mod.PRODUCTS_SQL, capture_mod.CLOCK_SQL, capture_mod.MIGRATION_SQL):
+                capture_mod.PRODUCTS_SQL, capture_mod.LABELS_SQL, capture_mod.CLOCK_SQL,
+                capture_mod.MIGRATION_SQL):
         assert sql.lstrip().upper().startswith("SELECT")
         assert ";" not in sql
 
 
 # --------------------------------------------------------------------------
-# The real compiled graph against every committed snapshot
+# The real generation pipeline against every committed snapshot
 # --------------------------------------------------------------------------
 
-def _json_after(prompt: str, header: str):
-    """The JSON value printed right after ``header`` in a prompt."""
-    start = prompt.index(header) + len(header)
-    start = min(i for i in (prompt.find("[", start), prompt.find("{", start)) if i >= 0)
-    value, _ = json.JSONDecoder().raw_decode(prompt, start)
-    return value
+_DEAL_ROW = re.compile(r"^(\d+) \| ", re.M)
+_CITE_DEAL = re.compile(r"→ deal_id (\d+) \(")
+_CITE_STAPLE = re.compile(r"→ product_id (\d+)$", re.M)
 
 
-def _chef_reply(prompt: str) -> str:
-    """Three groups from the deals the prompt actually shows."""
-    offered = _json_after(prompt, "**Available Deals:**")
-    picks = offered[:6]
-    assert picks, "Chef was shown no deals"
-    groups = [[{"product_name": d["product_name"], "quantity_estimate": "1",
-                "deal_id": d["deal_id"]} for d in picks[i::3]] or
-              [{"product_name": picks[0]["product_name"], "quantity_estimate": "1",
-                "deal_id": picks[0]["deal_id"]}]
-              for i in range(3)]
-    return json.dumps({"ingredient_groups": groups, "ingredient_reuse_map": {},
-                       "rationale": "scripted"})
+def _section(prompt: str, header: str, end: str) -> str:
+    start = prompt.index(header)
+    stop = prompt.find(end, start + len(header))
+    return prompt[start:stop if stop >= 0 else None]
 
 
-def _sous_chef_reply(prompt: str) -> str:
-    """One recipe citing every assigned deal plus the first offered staple."""
-    deals = _json_after(prompt, "**Your Assigned Deals (cite each by its deal_id):**")
-    staples = _json_after(prompt, "**Pantry Staples Already On Hand (cite each by its product_id):**")
-    ingredients = [{"name": d.get("product_name") or "deal", "deal_id": d["deal_id"],
-                    "quantity": "1", "unit": "unit"} for d in deals]
-    if staples:
-        ingredients.append({"name": staples[0]["name"],
-                            "product_id": staples[0]["product_id"],
-                            "quantity": "1", "unit": "tsp"})
-    recipe = {"name": "Scripted " + "+".join(str(d["deal_id"]) for d in deals),
-              "meal_type": "dinner", "cuisine_type": "Any", "servings": 2,
-              "estimated_prep_time": "20 minutes", "ingredients": ingredients,
-              "instructions": ["Combine " + ", ".join(
-                  f"{{{i}}}" for i in range(len(ingredients))) + ".", "Cook it."]}
-    return json.dumps({"recipes": [recipe]})
+class ScriptedModel:
+    """A chat function answering from what each prompt shows: the planner
+    gets one dish per anchor (cycling), each with the first side; the writer
+    cites every deal and the first staple it was shown."""
+
+    def __init__(self):
+        self.planner_prompts = []
+        self.writer_prompts = []
+
+    def __call__(self, spec, messages, **kw):
+        prompt = messages[0]["content"]
+        if "home cook planning meals" in prompt:
+            self.planner_prompts.append(prompt)
+            anchors = [int(x) for x in _DEAL_ROW.findall(_section(prompt, "ANCHORS (", "SIDES ("))]
+            sides = [int(x) for x in _DEAL_ROW.findall(_section(prompt, "SIDES (", "STOCK-UP ("))]
+            n = int(re.search(r"exactly (\d+) dishes", prompt).group(1))
+            dishes = [{"name": f"Dish {i}", "anchor_deal_ids": [anchors[i % len(anchors)]],
+                       "side_deal_ids": sides[:1], "pantry_product_ids": []} for i in range(n)]
+            return Reply(text=json.dumps({"dishes": dishes, "stock_up_deal_ids": []}))
+        self.writer_prompts.append(prompt)
+        dish = _section(prompt, "**This dish's ingredients", "**Stock-up")
+        deals = [int(x) for x in _CITE_DEAL.findall(dish)]
+        staples = [int(x) for x in _CITE_STAPLE.findall(_section(prompt, "**Pantry staples",
+                                                                 "**Requirements"))]
+        ings = [{"name": "x", "deal_id": d, "quantity": "1", "unit": "lb"} for d in deals]
+        ings += [{"name": "y", "product_id": p, "quantity": "1", "unit": "tsp"}
+                 for p in staples[:1]]
+        steps = ["Combine " + ", ".join(f"{{{i}}}" for i in range(len(ings))) + "."]
+        return Reply(text=json.dumps({"name": "Scripted", "ingredients": ings,
+                                      "instructions": steps, "servings": 2}))
 
 
-NUTRITIONIST = json.dumps({"approved": False, "feedback": "advisory only",
-                           "nutrition_facts": {"calories_per_serving": 500},
-                           "health_score": "70"})
-
-
-def _deps(snapshot):
-    return snapshot.graph_deps(
-        chef_llm=ScriptedChatModel(respond=_chef_reply, prompts=[]),
-        sous_chef_llm=ScriptedChatModel(respond=_sous_chef_reply, prompts=[]),
-        nutritionist_llm=ScriptedChatModel(respond=lambda p: NUTRITIONIST, prompts=[]),
-        tracker=RecordingTracker(),
-    )
-
-
-def _run(deps, restrictions):
-    return main_recipe_generation.run_recipe_generation(
-        user_id=1, postal_code=POSTAL, budget=80.0, household_size=2,
-        dietary_restrictions=restrictions, num_meals=3,
-        budget_period="week", budget_spent_this_period=0.0, graph_deps=deps)
+def _run(snapshot, restrictions, model=None):
+    model = model or ScriptedModel()
+    tracker = NullTracker()
+    deps = snapshot.plan_deps(chat_fn=model, tracker=tracker,
+                              planner_spec="ollama:p", writer_spec="ollama:w")
+    state = plan_pipeline.run_plan_generation(
+        user_id=1, postal_code=POSTAL, household_size=2,
+        dietary_restrictions=restrictions, num_meals=3, deps=deps)
+    return state, deps, model, tracker
 
 
 def _clears(snapshot, deal_id, restrictions) -> bool:
@@ -505,68 +533,67 @@ def _clears(snapshot, deal_id, restrictions) -> bool:
         for pid in linked)
 
 
-def _shown_to_chef(deps):
-    return {d["deal_id"] for p in deps.chef_llm.prompts
-            for d in _json_after(p, "**Available Deals:**")}
+def _shown_to_planner(model):
+    """Deal ids in the planner's trays (not the pantry list after them)."""
+    return {int(x) for p in model.planner_prompts
+            for x in _DEAL_ROW.findall(_section(p, "ANCHORS (", "PANTRY"))}
 
 
-RUNS = [(name, r) for name in COMMITTED for r in (["vegetarian"], ["vegan"], [])]
+RUNS = [(name, r) for name in ("seed27", "week-2026-10-16") for r in (["vegetarian"], ["vegan"], [])]
 
 
 @pytest.mark.parametrize("name,restrictions", RUNS,
                          ids=[f"{n}-{'+'.join(r) or 'open'}" for n, r in RUNS])
-def test_real_graph_runs_offline_on_snapshot(name, restrictions):
+def test_real_pipeline_runs_offline_on_snapshot(name, restrictions):
     snapshot = load_snapshot(name)
-    deps = _deps(snapshot)
-    state = _run(deps, restrictions)
+    state, deps, model, tracker = _run(snapshot, restrictions)
+    all_ids = {d["deal_id"] for d in snapshot.data["deals"]}
+    gated = {i for i in all_ids if not restrictions or _clears(snapshot, i, restrictions)}
 
+    # The planner was shown only gated deals (the gate ran first).
+    assert _shown_to_planner(model) <= gated
+    if restrictions:
+        assert all_ids - gated, "snapshot should hold a deal this user is refused"
+    if not model.planner_prompts:      # no anchor survives the gate: refused upfront
+        pytest.skip("no anchor for this diet in this snapshot")
     assert state["status"] == "completed", state["errors"]
-    assert deps.deals.calls == [(POSTAL, restrictions)]
     assert len(state["approved_recipe_ids"]) >= 1
 
-    # Gate: the Chef saw exactly the deals the snapshot's attributes clear.
-    all_ids = {d["deal_id"] for d in snapshot.data["deals"]}
-    shown = _shown_to_chef(deps)
-    served = {d["deal_id"] for d in state["available_deals"]}
-    if restrictions:
-        expected = {i for i in all_ids if _clears(snapshot, i, restrictions)}
-        assert served == expected
-        assert all_ids - served, "snapshot should hold a deal this user is refused"
-    else:
-        assert served == all_ids
-    assert shown <= served
-
-    # Every approved recipe cites only served deals / offered staples, and the
+    # Every approved recipe cites only gated deals / offered staples, and the
     # verdict is the deterministic lookup on the snapshot's attributes.
-    catalog = CitationCatalog.from_state(state)
-    staple_ids = {s["product_id"] for s in snapshot.catalog().fetch_pantry_staples()}
+    staples = snapshot.catalog().fetch_pantry_staples()
+    catalog = CitationCatalog(
+        deal_products=snapshot.catalog().fetch_deal_products(all_ids),
+        staples={str(p["product_id"]): p for p in staples})
     for rid in state["approved_recipe_ids"]:
         recipe = state["generated_recipes"][rid]
         for ing in recipe["ingredients"]:
             if ing.get("deal_id") is not None:
-                assert ing["deal_id"] in served
+                assert ing["deal_id"] in gated
             else:
-                assert ing["product_id"] in staple_ids
-        report = compliance_report(recipe, restrictions, catalog)
-        assert report["approved"] is True
+                assert ing["product_id"] in {p["product_id"] for p in staples}
+        assert compliance_report(recipe, restrictions, catalog)["approved"] is True
         assert state["validation_results"][rid]["approved"] is True
-    if restrictions:
-        cited = {int(k) for k in state["deal_products"]}
-        assert cited == served & set(snapshot.linked_products())
 
     # Nothing written anywhere but the in-memory store.
     assert len(deps.recipe_store.saved) == len(state["approved_recipe_ids"])
-    assert deps.tracker.calls[-1] == "finalize_run"
+    assert tracker.calls[-1] == "finalize_run"
 
 
-def test_flipping_a_snapshot_attribute_changes_what_the_graph_serves():
+def test_a_restricted_user_without_any_anchor_is_refused_before_any_model_call():
+    snapshot = load_snapshot("sparse5")    # dairy and starch only: no protein
+    with pytest.raises(plan_pipeline.SelectionError, match="anchor"):
+        _run(snapshot, [])
+
+
+def test_flipping_a_snapshot_attribute_changes_what_the_planner_is_shown():
     """The snapshot's attributes decide, not the deal's name: mark one of
     seed27's vegetarian-served products as meat and its deal disappears from
-    what the Chef is shown; nothing else changes."""
+    the trays; nothing else changes."""
     base = load_snapshot("seed27")
-    before = _deps(base)
-    _run(before, ["vegetarian"])
-    shown_before = {d["deal_id"] for d in before.deals.fetch_current_deals(POSTAL, ["vegetarian"])}
+    gated_before = {d["deal_id"] for d in base.deal_source().fetch_gated_deals(POSTAL, ["vegetarian"])}
+    _, _, before, _ = _run(base, ["vegetarian"])
+    shown_before = _shown_to_planner(before)
 
     victim = sorted(shown_before)[0]
     pid = next(l["product_id"] for l in base.data["deal_products"] if l["deal_id"] == victim)
@@ -575,15 +602,14 @@ def test_flipping_a_snapshot_attribute_changes_what_the_graph_serves():
         if p["product_id"] == pid:
             p["contains_meat"] = True
     flipped = Snapshot.from_dict(data)
-    after = _deps(flipped)
-    state = _run(after, ["vegetarian"])
-
-    served_after = {d["deal_id"] for d in state["available_deals"]}
     affected = {l["deal_id"] for l in base.data["deal_products"] if l["product_id"] == pid}
-    assert victim not in served_after
-    assert served_after == shown_before - affected
-    assert victim not in _shown_to_chef(after)
-    assert state["status"] == "completed", state["errors"]
+    gated_after = {d["deal_id"] for d in flipped.deal_source().fetch_gated_deals(POSTAL, ["vegetarian"])}
+    assert gated_after == gated_before - affected
+    try:
+        _, _, after, _ = _run(flipped, ["vegetarian"])
+    except plan_pipeline.SelectionError:
+        return                           # the victim was the only anchor
+    assert victim not in _shown_to_planner(after)
 
 
 def test_gated_deal_source_has_no_cap_no_ranking_and_carries_unit():
@@ -593,12 +619,3 @@ def test_gated_deal_source_has_no_cap_no_ranking_and_carries_unit():
     out = Snapshot.from_dict(data).deal_source().fetch_gated_deals(POSTAL)
     assert [d["deal_id"] for d in out] == list(range(1, 251))
     assert {"unit", "category", "chain", "store_name"} <= set(out[0])
-
-
-def test_gated_deal_source_applies_the_same_gate():
-    data = mini()
-    deals = Snapshot.from_dict(data).deal_source()
-    for restrictions in ([], ["vegan"], ["vegetarian"], None):
-        gated = {d["deal_id"] for d in deals.fetch_gated_deals(POSTAL, restrictions)}
-        current = {d["deal_id"] for d in deals.fetch_current_deals(POSTAL, restrictions)}
-        assert gated == current

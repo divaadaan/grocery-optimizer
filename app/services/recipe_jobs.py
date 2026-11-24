@@ -20,10 +20,9 @@ Scope of this v1, stated plainly:
   an unguessable uuid4, which is the only thing standing between two users'
   jobs. Revisit together with auth.
 
-Progress comes from LangGraph node-completion events (see
-`app.main_recipe_generation.run_recipe_generation`'s `progress_callback`):
-each finished node advances the job to a label describing the work that is
-now in flight, which is what makes "SousChef 2/3 cooking…" possible.
+Progress comes from the pipeline's stage-completion events (see
+`app.agents.plan_pipeline.run_plan_generation`'s `progress_callback`): each
+finished stage advances the job to a label describing the work now in flight.
 """
 
 from __future__ import annotations
@@ -46,8 +45,8 @@ FAILED = "failed"
 
 TERMINAL_STATES = frozenset({COMPLETED, FAILED})
 
-# The nominal pipeline, used for the coarse "step N of M" indicator. The
-# graph has a retry loop, so a job can revisit step 5 — the index is a
+# The nominal pipeline, used for the coarse "step N of M" indicator. A failed
+# dish is retried once, so a job can revisit step 5 — the index is a
 # checklist position, not a monotonic percentage.
 PIPELINE_STAGES = (
     "Checking the ingredients you kept against this week's deals",
@@ -64,29 +63,18 @@ INITIAL_STAGE = (PIPELINE_STAGES[0], 1)
 #: Stage shown while the job is still queued behind another generation.
 QUEUED_STAGE = ("Queued behind another generation", 0)
 
-# LangGraph emits an update when a node *finishes*, so each entry here is
-# "what is now running", keyed by the node that just completed. Node names
-# must match `app.agents.graph.create_recipe_generation_graph`.
+# The pipeline reports a stage when it *finishes*, so each entry here is
+# "what is now running", keyed by the stage that just completed. Names must
+# match the progress() calls in `app.agents.plan_pipeline`.
 _STAGE_AFTER_NODE: Dict[str, tuple] = {
-    # Approach C (app/agents/plan_pipeline.py)
+    # Approach C stages (app/agents/plan_pipeline.py)
     "confirm_selection": (PIPELINE_STAGES[1], 2),
     "plan_dishes": (PIPELINE_STAGES[2], 3),
     "write_recipes": (PIPELINE_STAGES[4], 5),
     "dietary_verdict": (PIPELINE_STAGES[5], 6),
-    # The old LangGraph pipeline (eval harness only)
-    "initialize_chef": (PIPELINE_STAGES[1], 2),
-    "plan_ingredient_groups": ("SousChef 1/3 cooking…", 3),
-    "aggregate_recipes": (PIPELINE_STAGES[4], 5),
-    "nutritionist_validate": ("Reviewing the Nutritionist's verdicts", 5),
-    "handle_rejections": ("Preparing retries for rejected recipes", 5),
-    "retry_generation": ("Nutritionist re-validates the retried recipes", 5),
     "finalize_meal_plan": (PIPELINE_STAGES[5], 6),
     "handle_failure": ("Generation failed", 6),
 }
-
-#: The fan-out node runs once per SousChef; progress counts completions.
-SOUS_CHEF_NODE = "sous_chef_generate"
-SOUS_CHEF_COUNT = 3
 
 #: Terminal jobs retained before the oldest are evicted.
 MAX_RETAINED_JOBS = 200
@@ -110,11 +98,9 @@ class RecipeJob:
     finished_at: Optional[datetime] = None
     result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
-    # The run's recipe_generations id, once the graph has finished (failed
+    # The run's recipe_generations id, once the pipeline has finished (failed
     # runs have a row too, migration 023).
     generation_id: Optional[str] = None
-    # Completed SousChef tasks, for the "n/3 cooking…" label.
-    sous_chefs_done: int = field(default=0, repr=False)
 
     @property
     def is_terminal(self) -> bool:
@@ -128,19 +114,9 @@ class RecipeJob:
         return max((end - start).total_seconds(), 0.0)
 
 
-def stage_after_node(node: str, sous_chefs_done: int) -> Optional[tuple]:
-    """
-    Map a finished graph node to the (label, pipeline index) now in flight.
-
-    `sous_chefs_done` is the number of SousChef tasks finished *including*
-    this one when `node` is the fan-out node. Returns None for nodes with no
-    user-visible meaning, so the caller leaves the current stage alone.
-    """
-    if node == SOUS_CHEF_NODE:
-        if sous_chefs_done >= SOUS_CHEF_COUNT:
-            # All three are in; the graph moves on to fan-in + costing.
-            return (PIPELINE_STAGES[3], 4)
-        return (f"SousChef {sous_chefs_done + 1}/{SOUS_CHEF_COUNT} cooking…", 3)
+def stage_after_node(node: str) -> Optional[tuple]:
+    """Map a finished pipeline stage to the (label, pipeline index) now in
+    flight; None for stages with no user-visible meaning."""
     return _STAGE_AFTER_NODE.get(node)
 
 
@@ -206,14 +182,12 @@ class RecipeJobRegistry:
             job.stage, job.stage_index = INITIAL_STAGE
 
     def report_node(self, job_id: str, node: str) -> None:
-        """Advance a running job's stage from a finished graph node."""
+        """Advance a running job's stage from a finished pipeline stage."""
         with self._lock:
             job = self._jobs.get(job_id)
             if job is None or job.is_terminal:
                 return
-            if node == SOUS_CHEF_NODE:
-                job.sous_chefs_done += 1
-            stage = stage_after_node(node, job.sous_chefs_done)
+            stage = stage_after_node(node)
             if stage is not None:
                 job.stage, job.stage_index = stage
 
