@@ -418,9 +418,11 @@ class TrayItemInfo(BaseModel):
     role: str
     basis: Literal["lb", "l", "each", "pkg"]
     compare_price: float = Field(..., description="Price on `basis` ($/lb, $/L, $/each or $/package)")
-    median_price: float = Field(..., description="Median across chains on the same basis")
+    median_price: float = Field(..., description="Median across chains on the same basis "
+                                "(for basis pkg: package prices of different sizes, not a comparison)")
     n_chains: int
-    gap: float = Field(..., description="1 - compare_price/median_price; 0 with a single chain")
+    gap: float = Field(..., description="1 - compare_price/median_price; 0 with a single chain "
+                       "and always 0 for basis pkg (package sizes differ)")
 
 
 class PantryItemInfo(BaseModel):

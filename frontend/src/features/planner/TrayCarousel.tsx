@@ -11,7 +11,7 @@ import { formatMoney, humanize } from "../../utils/format";
 export const TRAY_TITLES: Record<TrayName, { title: string; hint: string }> = {
   anchors: {
     title: "Anchors",
-    hint: "This week's protein deals, each the cheapest for its item nearby. Dishes are built around these.",
+    hint: "This week's protein deals, best price per lb, litre or each first. Dishes are built around these.",
   },
   sides: { title: "Sides", hint: "Vegetables, starches, fruit and dairy on sale." },
   stock_up: {
@@ -29,6 +29,8 @@ const BASIS_SUFFIX: Record<TrayItem["basis"], string> = {
 
 function comparison(item: TrayItem): string {
   if (item.n_chains < 2) return "Only chain with it this week";
+  // A bare package price: sizes differ between chains, so no cheapest/median claim.
+  if (item.basis === "pkg") return `Sold by ${item.n_chains} chains (package sizes differ)`;
   const pct = Math.round(item.gap * 100);
   const median = `${formatMoney(item.median_price)}${BASIS_SUFFIX[item.basis]}`;
   return pct > 0

@@ -60,9 +60,42 @@ def test_same_item_on_different_bases_is_not_compared_and_shown_once():
     best = trays._group_best(deals, labels)
     # lb and pkg are separate groups: deal 1 is never compared with 2 and 3
     assert {(t.deal_id, t.basis, t.n_chains) for t in best} == {(1, "lb", 1), (2, "pkg", 2)}
-    # ...but the tray shows the item once: the pkg group ranks first on its gap
+    # ...and the tray shows the item once: the lb row, since a pkg group has
+    # no gap and ranks after every per-unit basis
     p = trays.build_trays(deals, labels)
-    assert [(t.deal_id, t.basis) for t in p.anchors] == [(2, "pkg")]
+    assert [(t.deal_id, t.basis) for t in p.anchors] == [(1, "lb")]
+
+
+def test_pkg_groups_make_no_gap_claim_but_keep_chain_count_and_median():
+    # The live case: a $1.99 skewer against $6.67-$19.99 bags, all per package.
+    deals = [deal(1, 1.99, "A"), deal(2, 6.67, "B"), deal(3, 18.99, "C"), deal(4, 19.99, "D")]
+    labels = {i: L("shrimp", "protein") for i in (1, 2, 3, 4)}
+    (row,) = trays._group_best(deals, labels)
+    assert (row.deal_id, row.basis, row.gap) == (1, "pkg", 0.0)
+    assert (row.n_chains, row.median_price) == (4, 12.83)  # data only, never a claim
+
+
+def test_pkg_rows_rank_after_per_unit_rows_then_by_price():
+    deals = [
+        # pkg groups with big would-be gaps
+        deal(1, 1.0, "A", name="skewer"), deal(2, 20.0, "B"),
+        deal(3, 2.0, "A"), deal(4, 30.0, "B"),
+        # per-unit groups: one with a gap, one single-chain (gap 0)
+        deal(5, 3.0, "A", "lb"), deal(6, 4.0, "B", "lb"),
+        deal(7, 3.6, "C"),
+    ]
+    labels = {1: L("shrimp", "protein"), 2: L("shrimp", "protein"),
+              3: L("tofu", "protein"), 4: L("tofu", "protein"),
+              5: L("pork loin", "protein"), 6: L("pork loin", "protein"),
+              7: L("eggs", "protein", 12.0, "each")}
+    p = trays.build_trays(deals, labels)
+    assert [(t.deal_id, t.basis) for t in p.anchors] == [
+        (5, "lb"),    # gap 0.14
+        (7, "each"),  # gap 0 (one chain), but a per-unit basis
+        (1, "pkg"),   # pkg rows last, cheapest first
+        (3, "pkg"),
+    ]
+    assert [t.gap for t in p.anchors if t.basis == "pkg"] == [0.0, 0.0]
 
 
 def test_roles_decide_the_tray_and_excluded_roles_never_appear():
@@ -125,6 +158,17 @@ def test_tray_row_for_the_planner():
                        basis="lb", compare_price=1.99, median_price=3.49, n_chains=3, gap=0.43)
     assert trays.tray_row(t) == ("7 | CHICKEN THIGHS | $1.99/lb | No Frills | item: chicken "
                                  "thighs; cheapest of 3 chains (median $3.49/lb)")
+
+
+def test_tray_row_for_a_pkg_row_claims_no_comparison():
+    t = trays.TrayItem(deal_id=8, product_name="White Shrimp Skewer", store_name="S", chain="C",
+                       sale_price=1.99, unit=None, item="shrimp", role="protein", basis="pkg",
+                       compare_price=1.99, median_price=6.67, n_chains=5, gap=0.0)
+    row = trays.tray_row(t)
+    assert row.endswith("item: shrimp; sold by 5 chains; package sizes differ, not compared")
+    assert "cheapest" not in row and "median" not in row
+    single = trays.tray_row(trays.TrayItem(**{**t.__dict__, "n_chains": 1}))
+    assert single.endswith("item: shrimp; only chain with it")
 
 
 # ------------------------------------------------------------ pantry + proposal
