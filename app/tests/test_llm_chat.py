@@ -92,9 +92,28 @@ def test_hf_request_shape_and_reply():
     assert seen["url"] == llm_chat.HF_URL
     assert seen["auth"] == "Bearer hf_test"
     assert seen["body"]["model"] == "openai/gpt-oss-120b"
-    assert seen["body"]["response_format"] == {"type": "json_object"}
     assert "chat_template_kwargs" not in seen["body"]
     assert (reply.input_tokens, reply.output_tokens) == (11, 2)
+
+
+@pytest.mark.parametrize("spec, json_object", [
+    ("hf:meta-llama/Llama-3.3-70B-Instruct", True),
+    ("hf:openai/gpt-oss-120b", False),          # degenerates under json_object
+    ("hf:openai/gpt-oss-20b:groq", False),
+])
+def test_hf_json_mode_sends_response_format_except_for_gpt_oss(spec, json_object):
+    bodies = []
+
+    def handler(request):
+        bodies.append(json.loads(request.content))
+        return httpx.Response(200, json={"choices": [{"message": {"content": "{}"}}]})
+
+    llm_chat.chat(spec, [{"role": "user", "content": "hi"}], json_mode=True,
+                  settings=_settings(), client=_client(handler))
+    assert len(bodies) == 1
+    assert ("response_format" in bodies[0]) is json_object
+    if json_object:
+        assert bodies[0]["response_format"] == {"type": "json_object"}
 
 
 def test_hf_qwen3_disables_thinking():

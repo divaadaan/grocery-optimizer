@@ -152,6 +152,21 @@ def _ollama(client, name, messages, temperature, max_tokens, json_mode, seed,
     )
 
 
+def _json_mode_degrades(name: str) -> bool:
+    """Models that get *worse* under ``response_format: json_object``.
+
+    gpt-oss on the HF router as the dish planner (2026-11-24, recorded
+    planner prompts of the live scenario set, temperature 0.4): with
+    ``json_object`` 8/35 replies were unusable -- dish names filled with
+    NBSP / zero-width characters, or reasoning running to ``max_tokens`` --
+    against 0/26 without it, at about half the latency. The labeller
+    (temperature 0) labelled 5/5 batches of 40 fully either way. Every
+    prompt here already asks for JSON only, and every caller parses with
+    :func:`parse_json_object` and validates.
+    """
+    return name.split(":", 1)[0].startswith("openai/gpt-oss-")
+
+
 def _hf(client, name, messages, temperature, max_tokens, json_mode, seed,
         settings: Settings, spec: str) -> Reply:
     token = settings.huggingface_api_key
@@ -165,7 +180,7 @@ def _hf(client, name, messages, temperature, max_tokens, json_mode, seed,
         body["seed"] = seed
     if name.startswith("Qwen/Qwen3"):
         body["chat_template_kwargs"] = {"enable_thinking": False}
-    if json_mode:
+    if json_mode and not _json_mode_degrades(name):
         body["response_format"] = {"type": "json_object"}
     t0 = time.monotonic()
     r = client.post(HF_URL, json=body, headers=headers)
