@@ -217,6 +217,25 @@ export function PlannerPage() {
               <Stat label="Per meal" value={formatMoney(result.cost_per_meal)} />
               <Stat label="Generated in" value={formatDuration(result.generation_time)} />
             </div>
+            {result.partial && result.meals_requested != null && (
+              <div className="banner banner-warning" role="status">
+                <p>
+                  Partial plan: {result.recipes.length} of {result.meals_requested} dishes.
+                  {result.dropped_dishes?.length
+                    ? "Dropped:"
+                    : "The rest could not be written or did not pass the dietary check."}
+                </p>
+                {result.dropped_dishes && result.dropped_dishes.length > 0 && (
+                  <ul>
+                    {result.dropped_dishes.map((d, i) => (
+                      <li key={`${d.name}-${i}`}>
+                        {d.name}: {d.reason}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             {result.warnings.length > 0 && (
               <ul className="warnings">
                 {result.warnings.map((warning) => (

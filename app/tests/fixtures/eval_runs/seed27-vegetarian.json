@@ -446,6 +446,7 @@
    "notes": "scripted",
    "stock_up_deal_ids": []
   },
+  "dropped_dishes": [],
   "errors": [],
   "estimated_savings": 6.8,
   "generated_recipes": {

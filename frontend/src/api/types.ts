@@ -13,7 +13,8 @@ export type Money = number | string;
 export interface UserCreate {
   email: string;
   postal_code: string;
-  budget: number;
+  /** Unused (budget-agnostic product); omitted so the backend default applies. */
+  budget?: number;
   household_size: number;
   dietary_restrictions: string[];
 }
@@ -102,6 +103,30 @@ export interface RecipeInfo {
   created_at: string;
   /** The meal plan (generation) this recipe belongs to; null for legacy rows. */
   generation_id?: string | null;
+  /** Placeholder steps behind `instructions` (the server renders those; display
+   *  `instructions`). Null for recipes saved before migration 023. */
+  instruction_steps?: InstructionStep[] | null;
+  /** Deterministic attribute verdict (app/agents/dietary.py); null for old rows. */
+  dietary_compliance?: DietaryCompliance | null;
+}
+
+export interface InstructionStep {
+  template: string;
+  ingredient_refs: number[];
+}
+
+export interface DroppedDish {
+  name: string;
+  reason: string;
+}
+
+export interface DietaryCompliance {
+  /** Present on freshly generated recipes. */
+  approved?: boolean;
+  violations?: string[];
+  allergen_free?: boolean;
+  meets_restrictions?: boolean;
+  details?: Record<string, unknown>[];
 }
 
 export interface RecipeGenerationPreferences {
@@ -174,6 +199,11 @@ export interface RecipeGenerationResponse {
   warnings: string[];
   /** Identifies this meal plan; the shopping list is built per generation. */
   generation_id?: string | null;
+  /** Dishes requested; partial is true when fewer recipes were approved. */
+  meals_requested?: number | null;
+  partial?: boolean;
+  /** Planned or attempted dishes absent from `recipes`, with the reason. */
+  dropped_dishes?: DroppedDish[];
 }
 
 /** Generation is a background job: POST /recipes/generate returns this. */

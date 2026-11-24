@@ -215,6 +215,12 @@ class PlanBudgetCheck(BaseModel):
     caveats: List[str] = Field(default_factory=list)
 
 
+class DroppedDish(BaseModel):
+    """A planned dish that is not in the plan, and why."""
+    name: str
+    reason: str
+
+
 class RecipeGenerationResponse(BaseModel):
     """Response model for recipe generation."""
     recipes: List[RecipeInfo]
@@ -235,6 +241,8 @@ class RecipeGenerationResponse(BaseModel):
     # when fewer recipes were approved than asked for.
     meals_requested: Optional[int] = None
     partial: bool = False
+    # Dishes planned or attempted but absent from `recipes` (additive).
+    dropped_dishes: List[DroppedDish] = Field(default_factory=list)
     budget_check: Optional[PlanBudgetCheck] = None
 
 
