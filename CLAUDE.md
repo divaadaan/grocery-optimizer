@@ -124,3 +124,11 @@ attributes only. The deal gate stays per product.
 - `ROADMAP.md` is the canonical plan and its shipped-log entries are worth
   reading, but it lags the code. Trust the code, and say so when they disagree.
 - Do not update `ROADMAP.md` from a subagent; the coordinator maintains it.
+
+## Test postal code
+
+The postal code used for live-data runs (ingestion, snapshots, live eval) is
+read from `TEST_POSTAL_CODE` in `.env`; it is not kept in the repo. Pass it to
+commands from there rather than typing it, keep it out of committed files,
+fixtures, file and branch names, commit messages and PR or review text, and
+name new snapshots and scenario files by date (e.g. `live-2026-11-24`).
