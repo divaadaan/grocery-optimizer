@@ -6,14 +6,15 @@ reply:
 * ``fixtures/deal_labeller/gpt_oss_batch.json``, captured 2026-11-23 with
   PROMPT_VERSION v2 over a mixed batch that includes the prototype's
   mislabels: tea, coffee pods, Reese's.
-* ``fixtures/deal_labeller/gpt_oss_batch_v4.json``, captured 2026-11-24 with
-  PROMPT_VERSION v4 over the v2 mislabels: canned and dried legumes as
+* ``fixtures/deal_labeller/gpt_oss_batch_v5.json``, captured 2026-11-24 with
+  PROMPT_VERSION v5 over the v2 mislabels: canned and dried legumes as
   pantry_staple (v2 listed "canned beans" under both protein and
   pantry_staple) and a pomelo inside a run of sugar rows labelled "sugar";
   the regressions a v3 relabel showed (rice and tortillas drifting to starch,
-  a raw shrimp skewer to snack, flour to unknown); plus tofu, eggs (shelved
+  a raw shrimp skewer to snack, flour to unknown) and a v4 relabel showed
+  (protein tortillas as protein); plus tofu, eggs (shelved
   under "Dairy & Eggs") and meat / produce / staple / drink controls.
-  Rows the model labels inconsistently from run to run at v4 (a Reese's /
+  Rows the model labels inconsistently from run to run at v5 (a Reese's /
   Mini Eggs tile, a yogurt-dipped protein bar) are in the batch but not
   asserted; the PR body has the run-to-run notes.
 """
@@ -30,7 +31,7 @@ from app.config import settings
 from app.services import deal_labeller as dl
 
 FIXTURE = Path(__file__).parent / "fixtures" / "deal_labeller" / "gpt_oss_batch.json"
-FIXTURE_V4 = FIXTURE.with_name("gpt_oss_batch_v4.json")
+FIXTURE_V5 = FIXTURE.with_name("gpt_oss_batch_v5.json")
 
 
 def _deal(i, name="Item", **kw):
@@ -141,8 +142,8 @@ def test_recorded_gpt_oss_batch_parses_completely_and_fixes_prototype_mislabels(
     assert all(by_id[i] for i in roles)
 
 
-def test_recorded_v4_batch_labels_legumes_as_protein_and_fruit_as_fruit():
-    rec = json.loads(FIXTURE_V4.read_text())
+def test_recorded_v5_batch_labels_legumes_as_protein_and_fruit_as_fruit():
+    rec = json.loads(FIXTURE_V5.read_text())
     assert rec["prompt_version"] == dl.PROMPT_VERSION
     deals = rec["deals"]
     got = dl.parse_labels(rec["reply_text"], [d["deal_id"] for d in deals])
@@ -159,7 +160,9 @@ def test_recorded_v4_batch_labels_legumes_as_protein_and_fruit_as_fruit():
     # are staples; potatoes are starch (v4 defines starch).
     assert roles[822] == "protein"
     assert {roles[i] for i in (1084, 1088, 1208, 1211, 1212)} == {"pantry_staple"}
-    assert {roles[i] for i in (585, 598)} == {"starch"}
+    assert {roles[i] for i in (585, 598, 700, 704)} == {"starch"}
+    # v4-relabel regression: "protein" in a name is marketing (v5).
+    assert {roles[i] for i in (1059, 1064)} == {"starch"}
     # Controls: no regression on meat, produce, staples or drinks.
     assert roles[740] == "protein"
     assert roles[568] == roles[573] == "vegetable"

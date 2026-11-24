@@ -45,7 +45,7 @@ ROLES = ("protein", "vegetable", "fruit", "starch", "dairy", "pantry_staple",
 UNKNOWN_ROLE = "unknown"
 SIZE_UNITS = ("g", "ml", "each")
 #: Bump when PROMPT changes: rows at an older version are relabelled.
-PROMPT_VERSION = "v4"
+PROMPT_VERSION = "v5"
 BATCH = 40
 MAX_TOKENS = 8000
 ITEM_MAX_LEN = 80
@@ -76,6 +76,8 @@ For each row give:
   legumes (beans, chickpeas, lentils, split peas) whether canned, dried or frozen. A can or bag
   of beans, chickpeas or lentils is ALWAYS protein, never pantry_staple. Eggs are NEVER dairy.
   Raw or frozen meat and seafood stays protein when marinated or on skewers.
+  "Protein" in a product name is marketing, not the role: protein bread, protein tortillas, protein
+  pasta and protein bars keep the role of the food they are (starch, pantry_staple, snack).
   dairy = milk, cheese, yogurt, butter, cream.
   starch = bread, buns, bagels, tortillas, pita, naan, potatoes and sweet potatoes.
   Rice, pasta, noodles, flour and oats are pantry_staple, not starch.
