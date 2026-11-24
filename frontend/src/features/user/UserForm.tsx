@@ -21,7 +21,6 @@ export function UserForm({
 }) {
   const [email, setEmail] = useState(initialUser?.email ?? "");
   const [postalCode, setPostalCode] = useState(initialUser?.postal_code ?? "");
-  const [budget, setBudget] = useState(String(initialUser?.budget ?? 100));
   const [householdSize, setHouseholdSize] = useState(initialUser?.household_size ?? 1);
   const [restrictions, setRestrictions] = useState<string[]>(
     initialUser?.dietary_restrictions ?? [],
@@ -32,7 +31,6 @@ export function UserForm({
     onSubmit({
       email,
       postal_code: postalCode,
-      budget: Number(budget),
       household_size: householdSize,
       dietary_restrictions: restrictions,
     });
@@ -61,17 +59,6 @@ export function UserForm({
         />
       </Field>
       <div className="form-row">
-        <Field label="Weekly budget (CAD)">
-          <input
-            type="number"
-            min={0}
-            max={10000}
-            step="0.01"
-            required
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-          />
-        </Field>
         <Field label="Household size">
           <input
             type="number"

@@ -1,7 +1,22 @@
 import { useState } from "react";
 import { Badge, Card } from "../../components/ui";
 import { formatMoney, humanize } from "../../utils/format";
-import type { RecipeInfo } from "../../api/types";
+import type { DietaryCompliance, RecipeInfo } from "../../api/types";
+
+/** Replace `{N}` placeholders with ingredient N's name. */
+function renderStep(template: string, ingredients: RecipeInfo["ingredients"]): string {
+  return template.replace(/\{(\d+)\}/g, (m, n) => {
+    const name = ingredients[Number(n)]?.name;
+    return name ? String(name) : m;
+  });
+}
+
+function ComplianceBadge({ compliance }: { compliance: DietaryCompliance }) {
+  if (compliance.approved === false || compliance.meets_restrictions === false) {
+    return <Badge tone="warning">Check diet</Badge>;
+  }
+  return <Badge tone="success">Meets your diet</Badge>;
+}
 
 export function RecipeCard({ recipe }: { recipe: RecipeInfo }) {
   const [expanded, setExpanded] = useState(false);
@@ -14,6 +29,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeInfo }) {
           {recipe.name}
           {recipe.meal_type && <Badge tone="accent">{humanize(recipe.meal_type)}</Badge>}
           {recipe.cuisine_type && <Badge>{humanize(recipe.cuisine_type)}</Badge>}
+          {recipe.dietary_compliance && <ComplianceBadge compliance={recipe.dietary_compliance} />}
         </span>
       }
       actions={
@@ -31,6 +47,13 @@ export function RecipeCard({ recipe }: { recipe: RecipeInfo }) {
 
       {expanded && (
         <div className="recipe-details">
+          {recipe.dietary_compliance?.violations && recipe.dietary_compliance.violations.length > 0 && (
+            <ul className="warnings">
+              {recipe.dietary_compliance.violations.map((v) => (
+                <li key={v}>{v}</li>
+              ))}
+            </ul>
+          )}
           <h4>Ingredients</h4>
           <table className="table">
             <thead>
@@ -55,9 +78,11 @@ export function RecipeCard({ recipe }: { recipe: RecipeInfo }) {
 
           <h4>Instructions</h4>
           <ol className="instructions">
-            {recipe.instructions.map((step, i) => (
-              <li key={i}>{step}</li>
-            ))}
+            {recipe.instruction_steps && recipe.instruction_steps.length > 0
+              ? recipe.instruction_steps.map((step, i) => (
+                  <li key={i}>{renderStep(step.template, recipe.ingredients)}</li>
+                ))
+              : recipe.instructions.map((step, i) => <li key={i}>{step}</li>)}
           </ol>
 
           {recipe.nutrition_facts && Object.keys(recipe.nutrition_facts).length > 0 && (

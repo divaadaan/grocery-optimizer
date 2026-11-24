@@ -217,6 +217,15 @@ export function PlannerPage() {
               <Stat label="Per meal" value={formatMoney(result.cost_per_meal)} />
               <Stat label="Generated in" value={formatDuration(result.generation_time)} />
             </div>
+            {result.partial && result.meals_requested != null && (
+              <div className="banner banner-warning" role="status">
+                <p>
+                  Partial plan: {result.recipes.length} of {result.meals_requested} dishes.
+                  The rest could not be written or did not pass the dietary check.
+                  The server does not report which dishes were dropped.
+                </p>
+              </div>
+            )}
             {result.warnings.length > 0 && (
               <ul className="warnings">
                 {result.warnings.map((warning) => (

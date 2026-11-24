@@ -90,7 +90,6 @@ function EditProfile() {
     update.mutate(
       {
         postal_code: data.postal_code,
-        budget: data.budget,
         household_size: data.household_size,
         dietary_restrictions: data.dietary_restrictions,
       },

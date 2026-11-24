@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Badge, Card } from "../../components/ui";
 import { useCurrentUser } from "../user/UserContext";
 import { useApiInfo } from "../../hooks/queries";
-import { formatMoney, humanize } from "../../utils/format";
+import { humanize } from "../../utils/format";
 
 export function HomePage() {
   const { user } = useCurrentUser();
@@ -34,10 +34,6 @@ export function HomePage() {
               <span className="stat-label">Postal code</span>
             </div>
             <div className="stat">
-              <span className="stat-value">{formatMoney(user.budget)}</span>
-              <span className="stat-label">Budget</span>
-            </div>
-            <div className="stat">
               <span className="stat-value">{user.household_size}</span>
               <span className="stat-label">Household</span>
             </div>
@@ -55,7 +51,7 @@ export function HomePage() {
       ) : (
         <Card title="Get started">
           <p className="muted">
-            Create a profile with your postal code, budget, and dietary
+            Create a profile with your postal code and dietary
             restrictions to start planning.
           </p>
           <Link className="button button-primary" to="/setup">
