@@ -6,18 +6,24 @@
    "user": {
     "user_id": 1,
     "postal_code": "M5V3A8",
-    "budget": 80.0,
-    "budget_period": "weekly",
-    "budget_spent_this_period": 0.0,
     "household_size": 2,
-    "dietary_restrictions": ["vegetarian"],
+    "dietary_restrictions": [
+     "vegetarian"
+    ],
     "num_meals": 3,
-    "preferences": {}
+    "preferences": {},
+    "kept_deal_ids": null,
+    "pantry_product_ids": null
    },
    "llm": {
-    "chef": {"provider": "scripted", "model": "chef-script"},
-    "nutritionist": {"provider": "scripted", "model": "nutri-script"},
-    "sous_chef": {"provider": "scripted", "model": "sous-script"}
+    "chef": {
+     "provider": "scripted",
+     "model": "chef-script"
+    },
+    "sous_chef": {
+     "provider": "scripted",
+     "model": "sous-script"
+    }
    },
    "notes": "Replay fixture: recorded with the scripted models in app/tests/test_eval_runner.py, not a live LLM."
   }

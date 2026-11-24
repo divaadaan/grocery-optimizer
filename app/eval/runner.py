@@ -1,21 +1,22 @@
-"""Run one evaluation scenario through the real recipe graph, recording or
-replaying its LLM calls, and write a run artifact.
+"""Run one evaluation scenario through the real generation pipeline, recording
+or replaying its LLM calls, and write a run artifact.
 
 A run is: a :class:`Scenario` (snapshot name + an in-memory user profile +
-optional per-role model choice) -> :class:`GraphDeps` built from the frozen
-snapshot (``app.eval.snapshots``) and wrapped chat models
-(``app.eval.recorder``) -> ``run_recipe_generation`` -> a run artifact.
+optional per-role model choice) -> ``PlanDeps`` built from the frozen
+snapshot (``app.eval.snapshots``) and wrapped chat functions
+(``app.eval.recorder``) -> ``plan_pipeline.run_plan_generation`` -> a run
+artifact.
 
-* ``record`` wraps real chat models in :class:`RecordingLLM`. It needs a live
-  model (the default factory is ``llm_factory.make_llm``); tests pass scripted
-  fakes through ``llm_factory=``.
-* ``replay`` re-runs the artifact's scenario with :class:`ReplayLLM` serving
+* ``record`` wraps real chat functions in :class:`RecordingChat`. It needs a
+  live model (the default factory is ``llm_chat.chat``); tests pass scripted
+  fakes through ``chat_factory=``.
+* ``replay`` re-runs the artifact's scenario with :class:`ReplayChat` serving
   the recorded responses -- no model, no network -- and compares the new
   final state with the recorded one (:func:`compare_artifacts`).
 
 Neither mode touches the database: deals and products come only from the
 snapshot, recipes go to an ``InMemoryRecipeStore``, the tracker is a
-:class:`NullTracker`, and while the graph runs ``Database.initialize`` /
+:class:`NullTracker`, and while the pipeline runs ``Database.initialize`` /
 ``Database.get_connection`` and MLflow's configuration are replaced with
 functions that raise (:func:`offline_guard`).
 
@@ -29,24 +30,25 @@ Scenario format (JSON or YAML; one object, a list, or ``{"scenarios": [...]}``)
       "user": {
         "user_id": 1,                         # default 1; nothing is looked up
         "postal_code": "M5V3A8",
-        "budget": 80.0,                       # period budget (users.budget)
-        "budget_period": "weekly",            # "weekly" | "monthly"
-        "budget_spent_this_period": 0.0,
         "household_size": 2,
         "dietary_restrictions": ["vegetarian"],
         "num_meals": 3,
-        "preferences": {}
+        "preferences": {},
+        "kept_deal_ids": null,                # null = keep every tray item offered
+        "pantry_product_ids": null            # null = every pantry staple offered
       },
       "llm": {                                # optional; omitted role -> settings
-        "chef": {"provider": "ollama", "model": "llama3.1:8b"}
+        "chef": {"provider": "ollama", "model": "qwen2.5:7b"},
+        "sous_chef": {"provider": "hf", "model": "openai/gpt-oss-120b"}
       },
       "notes": null
     }
 
-These are exactly ``run_recipe_generation``'s inputs, minus the callback and
-the deps. Unknown keys are refused.
+These are exactly ``run_plan_generation``'s inputs, minus the callback and
+the deps. Unknown keys are refused (budget fields included: the product is
+budget-agnostic).
 
-Run artifact (``artifact.format_version`` 1) -- what scorers (E4) read
+Run artifact (``artifact.format_version`` 2) -- what scorers (E4) read
 -----------------------------------------------------------------------
 A JSON object, written with sorted keys::
 
@@ -72,16 +74,14 @@ A JSON object, written with sorted keys::
                     latency_s
                   Matching key is (role, request_sha256, occurrence) -- see
                   app/eval/recorder.py for why.
-    final_state   the graph's final RecipeGenerationState as JSON
-                  (``recorder.jsonable``)
+    final_state   the pipeline's result dict as JSON (``recorder.jsonable``)
     state_notes   [{path, note}] for every lossy conversion in final_state
                   (empty for today's state: everything in it is plain JSON)
     tracker_calls tracker method names, in order (no MLflow is touched)
     replayed_from null, or for a replay {created_at, git_sha, mode} of the
                   artifact it replayed
 
-Volatile state: ``agent_call_log[*].timestamp`` / ``.duration`` are
-wall-clock and are ignored by :func:`compare_artifacts`
+Volatile state: ``agent_call_log[*].seconds`` is wall-clock and are ignored by :func:`compare_artifacts`
 (:data:`VOLATILE_STATE_PATHS`). Everything else in the final state is
 reproduced exactly by replay; recipe ids are made deterministic with
 ``recorder.ContentRecipeIds``.
@@ -103,8 +103,8 @@ from app.eval.recorder import (
     ROLES,
     CallLog,
     ContentRecipeIds,
-    RecordingLLM,
-    ReplayLLM,
+    RecordingChat,
+    ReplayChat,
     ReplayLog,
     call_key,
     jsonable,
@@ -115,7 +115,8 @@ from app.eval.snapshots import Snapshot, dump_snapshot, load_snapshot
 
 #: Bump on any change to the artifact layout; :func:`validate_artifact`
 #: refuses other versions.
-ARTIFACT_FORMAT_VERSION = 1
+#: 2 -- approach C: the pipeline's result dict, roles chef + sous_chef.
+ARTIFACT_FORMAT_VERSION = 2
 ARTIFACT_KIND = "recipe-eval-run"
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -123,13 +124,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 #: Final-state paths that are wall-clock and never compared ("*" = any key
 #: or index).
 VOLATILE_STATE_PATHS: Tuple[Tuple[str, ...], ...] = (
-    ("agent_call_log", "*", "timestamp"),
-    ("agent_call_log", "*", "duration"),
-    # A fresh uuid4 per run_recipe_generation call, by design.
+    ("agent_call_log", "*", "seconds"),
+    # A fresh uuid4 per run_plan_generation call, by design.
     ("generation_id",),
-    # Provenance restates the artifact's own top-level ``llm`` / ``snapshot``
-    # (which replay already checks); artifacts recorded before it existed lack it.
-    ("provenance",),
 )
 
 
@@ -149,53 +146,52 @@ class SnapshotDrift(ArtifactError):
 # Scenario
 # --------------------------------------------------------------------------
 
-def _periods() -> Tuple[str, ...]:
-    from app.services.budget import PERIODS
-    return PERIODS
-
-
 @dataclass(frozen=True)
 class RoleModel:
     provider: str
     model: str
 
+    @property
+    def spec(self) -> str:
+        return f"{self.provider}:{self.model}"
+
 
 @dataclass(frozen=True)
 class UserProfile:
     postal_code: str
-    budget: float
     household_size: int
     num_meals: int
     dietary_restrictions: Tuple[str, ...] = ()
-    budget_period: str = "weekly"
-    budget_spent_this_period: float = 0.0
     preferences: Dict[str, Any] = field(default_factory=dict)
     user_id: int = 1
+    kept_deal_ids: Optional[Tuple[int, ...]] = None
+    pantry_product_ids: Optional[Tuple[int, ...]] = None
 
     def run_kwargs(self) -> Dict[str, Any]:
-        """Keyword arguments for ``run_recipe_generation``."""
+        """Keyword arguments for ``run_plan_generation``."""
         return {
             "user_id": self.user_id, "postal_code": self.postal_code,
-            "budget": self.budget, "household_size": self.household_size,
+            "household_size": self.household_size,
             "dietary_restrictions": list(self.dietary_restrictions),
             "num_meals": self.num_meals,
             "preferences": copy.deepcopy(self.preferences),
-            "budget_period": self.budget_period,
-            "budget_spent_this_period": self.budget_spent_this_period,
+            "kept_deal_ids": None if self.kept_deal_ids is None else list(self.kept_deal_ids),
+            "pantry_product_ids": (None if self.pantry_product_ids is None
+                                   else list(self.pantry_product_ids)),
         }
 
 
+_NONE = type(None)
 _USER_FIELDS = {
     # name: (types, required)
     "user_id": ((int,), False),
     "postal_code": ((str,), True),
-    "budget": ((int, float), True),
-    "budget_period": ((str,), False),
-    "budget_spent_this_period": ((int, float), False),
     "household_size": ((int,), True),
     "dietary_restrictions": ((list,), False),
     "num_meals": ((int,), True),
     "preferences": ((dict,), False),
+    "kept_deal_ids": ((list, _NONE), False),
+    "pantry_product_ids": ((list, _NONE), False),
 }
 
 
@@ -242,22 +238,21 @@ class Scenario:
         if not all(isinstance(r, str) and r for r in restrictions):
             raise ScenarioError(f"scenario {name!r}.user.dietary_restrictions: "
                                 "expected a list of non-empty strings")
-        period = user.get("budget_period", "weekly")
-        if period not in _periods():
-            raise ScenarioError(f"scenario {name!r}.user.budget_period: {period!r} not in "
-                                f"{_periods()}")
         for key in ("household_size", "num_meals"):
             if user[key] < 1:
                 raise ScenarioError(f"scenario {name!r}.user.{key}: must be >= 1")
-        if user["budget"] < 0 or user.get("budget_spent_this_period", 0) < 0:
-            raise ScenarioError(f"scenario {name!r}.user: budget figures must be >= 0")
+        ids = {}
+        for key in ("kept_deal_ids", "pantry_product_ids"):
+            value = user.get(key)
+            if value is not None and not all(isinstance(v, int) and not isinstance(v, bool)
+                                             for v in value):
+                raise ScenarioError(f"scenario {name!r}.user.{key}: expected a list of ints")
+            ids[key] = None if value is None else tuple(value)
         profile = UserProfile(
             user_id=user.get("user_id", 1), postal_code=user["postal_code"],
-            budget=float(user["budget"]), budget_period=period,
-            budget_spent_this_period=float(user.get("budget_spent_this_period", 0.0)),
             household_size=user["household_size"],
             dietary_restrictions=tuple(restrictions), num_meals=user["num_meals"],
-            preferences=copy.deepcopy(user.get("preferences", {})))
+            preferences=copy.deepcopy(user.get("preferences", {})), **ids)
 
         llm = {}
         for role, spec in (data.get("llm") or {}).items():
@@ -273,6 +268,8 @@ class Scenario:
     def to_dict(self) -> Dict[str, Any]:
         user = asdict(self.user)
         user["dietary_restrictions"] = list(self.user.dietary_restrictions)
+        for key in ("kept_deal_ids", "pantry_product_ids"):
+            user[key] = None if user[key] is None else list(user[key])
         return {"name": self.name, "snapshot": self.snapshot, "user": user,
                 "llm": {r: asdict(m) for r, m in sorted(self.llm.items())},
                 "notes": self.notes}
@@ -304,7 +301,7 @@ def load_scenarios(path: Path | str) -> List[Scenario]:
 # --------------------------------------------------------------------------
 
 class NullTracker:
-    """``GraphDeps.tracker``: MLflowLogger's interface, recorded by method
+    """``PlanDeps.tracker``: MLflowLogger's interface, recorded by method
     name only, no I/O. ``start_run`` returns ``""`` as a disabled MLflow does."""
 
     def __init__(self) -> None:
@@ -322,9 +319,9 @@ class NullTracker:
 
 @contextlib.contextmanager
 def offline_guard() -> Iterator[None]:
-    """While the graph runs, any database or MLflow access raises.
+    """While the pipeline runs, any database or MLflow access raises.
 
-    A belt over the braces of ``GraphDeps``: if a future node bypasses its
+    A belt over the braces of ``PlanDeps``: if a future stage bypasses its
     injected dependency, an evaluation run fails instead of reading (or
     writing) Neon.
     """
@@ -357,27 +354,22 @@ class _Execution:
     wall_seconds: float
 
 
-def _execute(scenario: Scenario, snapshot: Snapshot, llms: Dict[str, Any],
-             models: Optional[Dict[str, Dict[str, Any]]] = None) -> _Execution:
-    from app import main_recipe_generation
+def _execute(scenario: Scenario, snapshot: Snapshot, chats: Dict[str, Any]) -> _Execution:
+    from app.agents.plan_pipeline import run_plan_generation
 
     tracker = NullTracker()
-    deps = snapshot.graph_deps(
-        chef_llm=llms["chef"], sous_chef_llm=llms["sous_chef"],
-        nutritionist_llm=llms["nutritionist"], tracker=tracker,
-        recipe_ids=ContentRecipeIds(),
-        # Provenance a persisted plan would carry: the models actually used
-        # and this snapshot's identity (production has snapshot=None).
-        models={role: {"provider": (m or {}).get("provider"), "model": (m or {}).get("model")}
-                for role, m in (models or {}).items()},
+    deps = snapshot.plan_deps(
+        planner_chat_fn=chats["chef"], writer_chat_fn=chats["sous_chef"],
+        planner_spec=chats["chef"].spec, writer_spec=chats["sous_chef"].spec,
+        tracker=tracker, recipe_ids=ContentRecipeIds(),
+        # Provenance a persisted plan would carry (production has None).
         snapshot=snapshot_identity(snapshot))
     progress: List[str] = []
     started_at = _utc_now()
     t0 = time.perf_counter()
     with offline_guard():
-        final = main_recipe_generation.run_recipe_generation(
-            **scenario.user.run_kwargs(), progress_callback=progress.append,
-            graph_deps=deps)
+        final = run_plan_generation(**scenario.user.run_kwargs(),
+                                    progress_callback=progress.append, deps=deps)
     wall = time.perf_counter() - t0
     notes: List[Dict[str, str]] = []
     state = jsonable(dict(final), notes)
@@ -412,28 +404,22 @@ def snapshot_identity(snapshot: Snapshot) -> Dict[str, Any]:
             "content_sha256": digest}
 
 
-#: ``(role, RoleModel or None) -> chat model``. ``None``: use settings.
-LLMFactory = Callable[[str, Optional[RoleModel]], Any]
+#: ``(role, RoleModel or None) -> chat function``. ``None``: use settings.
+ChatFactory = Callable[[str, Optional[RoleModel]], Any]
 
 
-def default_llm_factory(role: str, spec: Optional[RoleModel]) -> Any:
-    """A real chat model from ``llm_factory.make_llm``. Needs a live provider."""
-    from app.agents import llm_factory
-    from app.config import settings
-
-    if spec is None:
-        return llm_factory.make_llm(role)
-    setting = llm_factory.ROLES[role].model_setting
-    cfg = settings.model_copy(update={"llm_provider": spec.provider, setting: spec.model})
-    return llm_factory.make_llm(role, settings=cfg)
+def default_chat_factory(role: str, spec: Optional[RoleModel]) -> Any:
+    """The real ``llm_chat.chat``. Needs a live provider."""
+    from app.agents import llm_chat
+    return llm_chat.chat
 
 
-def _resolved_model(role: str, spec: Optional[RoleModel]) -> Tuple[str, str]:
+def resolved_spec(role: str, spec: Optional[RoleModel]) -> str:
+    """The model spec a role runs on: the scenario's, else the setting."""
     if spec is not None:
-        return spec.provider, spec.model
-    from app.agents import llm_factory
+        return spec.spec
     from app.config import settings
-    return settings.llm_provider, llm_factory.model_name(role)
+    return settings.llm_planner_model if role == "chef" else settings.llm_writer_model
 
 
 def _artifact(mode: str, scenario: Scenario, snapshot: Snapshot, llm: Dict[str, Any],
@@ -458,20 +444,19 @@ def _artifact(mode: str, scenario: Scenario, snapshot: Snapshot, llm: Dict[str, 
     }
 
 
-def record(scenario: Scenario, llm_factory: LLMFactory = default_llm_factory,
+def record(scenario: Scenario, chat_factory: ChatFactory = default_chat_factory,
            snapshot: Optional[Snapshot] = None) -> Dict[str, Any]:
-    """Run ``scenario`` against real (``llm_factory``-built) models, recording
+    """Run ``scenario`` against real (``chat_factory``-built) models, recording
     every call. Returns the artifact (validated)."""
     snapshot = snapshot or load_snapshot(scenario.snapshot)
     log = CallLog()
     wrapped = {}
     for role in ROLES:
         spec = scenario.llm.get(role)
-        provider, model = _resolved_model(role, spec)
-        wrapped[role] = RecordingLLM(llm_factory(role, spec), role, log,
-                                     provider=provider, model=model)
+        wrapped[role] = RecordingChat(chat_factory(role, spec), role, log,
+                                      resolved_spec(role, spec))
     llm = {role: wrapped[role].identity for role in ROLES}
-    run = _execute(scenario, snapshot, wrapped, models=llm)
+    run = _execute(scenario, snapshot, wrapped)
     return validate_artifact(_artifact("record", scenario, snapshot, llm, log.calls, run))
 
 
@@ -508,8 +493,9 @@ def replay(artifact: Dict[str, Any] | Path | str, strict: bool = True) -> Replay
             f"{now['content_sha256'][:12]}... now); re-record rather than replay")
 
     log = ReplayLog(recorded["llm_calls"], strict=strict)
-    run = _execute(scenario, snapshot, {role: ReplayLLM(role, log) for role in ROLES},
-                   models=recorded["llm"])
+    chats = {role: ReplayChat(role, log, "{provider}:{model}".format(**recorded["llm"][role]))
+             for role in ROLES}
+    run = _execute(scenario, snapshot, chats)
     log.check()
     served = [dict(copy.deepcopy(e), seq=i) for i, e in enumerate(log.served)]
     replayed = validate_artifact(_artifact(
@@ -732,7 +718,7 @@ def load_artifact(path: Path | str) -> Dict[str, Any]:
 __all__ = [
     "ARTIFACT_FORMAT_VERSION", "ArtifactError", "Difference", "NullTracker", "ReplayResult",
     "RoleModel", "Scenario", "ScenarioError", "SnapshotDrift", "UserProfile",
-    "VOLATILE_STATE_PATHS", "compare_artifacts", "default_llm_factory",
+    "VOLATILE_STATE_PATHS", "compare_artifacts", "default_chat_factory",
     "diff_values", "dump_artifact", "load_artifact", "load_scenarios", "offline_guard",
     "record", "replay", "validate_artifact", "write_artifact",
 ]

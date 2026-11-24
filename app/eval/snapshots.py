@@ -1,4 +1,4 @@
-"""Frozen deal/product snapshots, and the offline graph dependencies built on them.
+"""Frozen deal/product snapshots, and the offline pipeline dependencies built on them.
 
 A snapshot is a versioned JSON file holding everything a recipe-generation
 run reads from the database, captured once (``scripts/capture_snapshot.py``)
@@ -10,13 +10,16 @@ and replayed forever:
 * ``products``       -- every product those rows link, plus every
                         ``assumed_on_hand`` product (the pantry staples), with
                         ``status`` and the curated ``contains_*`` attributes
+* ``deal_labels``    -- the stored ``{item, role, size}`` label of each deal
+                        (``deal_labels``, migration 024), which the tray
+                        builder groups by. Surfacing only; never dietary.
 
-From it :class:`Snapshot` builds the two read dependencies of
-``GraphDeps`` (``app/agents/deps.py``):
+From it :class:`Snapshot` builds the read dependencies of ``PlanDeps``
+(``app/agents/plan_pipeline.py``, via :meth:`Snapshot.plan_deps`):
 
-* :class:`SnapshotDeals`   -> ``GraphDeps.deals`` (``fetch_current_deals``)
-* :class:`SnapshotCatalog` -> ``GraphDeps.catalog`` (``fetch_pantry_staples``,
-  ``fetch_deal_products``)
+* :class:`SnapshotDeals`   -> ``fetch_gated_deals``
+* :meth:`Snapshot.fetch_labels` -> ``deal_labeller.fetch_labels``
+* :class:`SnapshotCatalog` -> ``fetch_pantry_staples``, ``fetch_deal_products``
 
 Compliance is decided from the same curated attributes as production.
 ``SnapshotDeals`` applies the dietary gate with
@@ -24,8 +27,8 @@ Compliance is decided from the same curated attributes as production.
 (``compliant_product_filter``), clause for clause: an unrestricted user sees
 every deal; otherwise a deal needs at least one linked product and every
 linked product must be ``confirmed`` and clear the restrictions. The
-catalog's rows go to the same ``product_allows`` the Nutritionist's
-deterministic verdict uses. No name is read to decide anything.
+catalog's rows go to the same ``product_allows`` the deterministic recipe
+verdict (``app/agents/dietary.py``) uses. No name is read to decide anything.
 
 Validation is strict and loud: an unknown ``format_version``, a missing or
 unexpected field, a wrongly typed value, a dangling reference or a deal that
@@ -56,13 +59,13 @@ from app.services.products import ATTRIBUTES, deal_allows
 #: since no product had a kosher decision when they were captured, and it
 #: fails closed). Any other v1 file must be re-captured or migrated the same
 #: way.
-FORMAT_VERSION = 2
+#: 3 -- adds the ``deal_labels`` section (approach C trays, migration 024).
+#: v2 files are refused: re-capture, or label their deals and add the section
+#: (the committed v2 files were migrated that way, 2026-11-23).
+FORMAT_VERSION = 3
 
 #: Where the committed snapshots live.
 SNAPSHOT_DIR = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "snapshots"
-
-#: ``DatabaseService.fetch_current_deals`` caps its result at this many rows.
-DEAL_LIMIT = 200
 
 _INT = (int,)
 _NUM = (int, float)
@@ -130,10 +133,13 @@ PRODUCT_FIELDS: dict[str, tuple[tuple, bool]] = {
     **{attr: (_BOOL, True) for attr in ATTRIBUTES},
 }
 
-#: The keys ``DatabaseService.fetch_current_deals`` returns, in its order.
-SERVED_DEAL_KEYS = ("deal_id", "product_name", "sale_price", "regular_price",
-                    "discount_percentage", "source", "product_id", "store_name",
-                    "store_id", "chain")
+DEAL_LABEL_FIELDS: dict[str, tuple[tuple, bool]] = {
+    "deal_id": (_INT, False),
+    "item": (_STR, False),
+    "role": (_STR, False),
+    "size_qty": (_NUM, True),
+    "size_unit": (_STR, True),
+}
 
 #: The product keys ``recipe_catalog`` selects.
 CATALOG_PRODUCT_KEYS = ("product_id", "canonical_name", "category", "status", *ATTRIBUTES)
@@ -143,6 +149,7 @@ _SECTIONS = {
     "deals": (DEAL_FIELDS, ("deal_id",)),
     "deal_products": (DEAL_PRODUCT_FIELDS, ("deal_id", "product_id")),
     "products": (PRODUCT_FIELDS, ("product_id",)),
+    "deal_labels": (DEAL_LABEL_FIELDS, ("deal_id",)),
 }
 
 
@@ -212,8 +219,11 @@ def validate(data: Any) -> dict:
         hint = ""
         if version == 1 and not isinstance(version, bool):
             hint = (" -- v1 predates products.not_kosher (migration 021): add "
-                    "\"not_kosher\": null to every product and set format_version "
-                    "2, or re-capture")
+                    "\"not_kosher\": null to every product, add deal_labels and set "
+                    "format_version 3, or re-capture")
+        elif version == 2 and not isinstance(version, bool):
+            hint = (" -- v2 predates deal_labels (migration 024): label the deals, add "
+                    "the deal_labels section and set format_version 3, or re-capture")
         raise SnapshotError(
             f"meta.format_version: unsupported {version!r} (this loader reads "
             f"{FORMAT_VERSION}){hint}")
@@ -265,6 +275,16 @@ def validate(data: Any) -> dict:
             raise SnapshotError(f"{where}: deal not in deals")
         if link["product_id"] not in products:
             raise SnapshotError(f"{where}: product not in products")
+    from app.services.deal_labeller import ROLES, SIZE_UNITS, UNKNOWN_ROLE
+    for lab in out["deal_labels"]:
+        where = f"deal_labels {lab['deal_id']}"
+        if lab["deal_id"] not in deal_ids:
+            raise SnapshotError(f"{where}: deal not in deals")
+        if lab["role"] not in (*ROLES, UNKNOWN_ROLE):
+            raise SnapshotError(f"{where}: unknown role {lab['role']!r}")
+        if (lab["size_qty"] is None) != (lab["size_unit"] is None) or (
+                lab["size_unit"] is not None and lab["size_unit"] not in SIZE_UNITS):
+            raise SnapshotError(f"{where}: bad size {lab['size_qty']!r} {lab['size_unit']!r}")
     return out
 
 
@@ -303,7 +323,7 @@ def load_snapshot(source: Path | str) -> "Snapshot":
 
 
 # --------------------------------------------------------------------------
-# The snapshot and its GraphDeps fakes
+# The snapshot and its PlanDeps fakes
 # --------------------------------------------------------------------------
 
 @dataclass(frozen=True)
@@ -353,30 +373,39 @@ class Snapshot:
     def catalog(self) -> "SnapshotCatalog":
         return SnapshotCatalog(self)
 
-    def graph_deps(self, **overrides):
-        """``GraphDeps`` reading this snapshot instead of the database.
+    def labels(self) -> dict:
+        """``deal_id`` -> :class:`~app.services.deal_labeller.Label`."""
+        from app.services.deal_labeller import Label
+        return {lab["deal_id"]: Label(item=lab["item"], role=lab["role"],
+                                      size_qty=lab["size_qty"], size_unit=lab["size_unit"])
+                for lab in self.data["deal_labels"]}
 
-        ``deals`` and ``catalog`` come from the snapshot and ``recipe_store``
-        defaults to an :class:`InMemoryRecipeStore` (an evaluation run must not
-        write); everything else is ``GraphDeps``' default unless overridden.
+    def fetch_labels(self, deal_ids: Iterable) -> dict:
+        """``deal_labeller.fetch_labels`` over the snapshot."""
+        labels = self.labels()
+        return {int(i): labels[int(i)] for i in deal_ids if int(i) in labels}
+
+    def plan_deps(self, **overrides):
+        """``PlanDeps`` reading this snapshot instead of the database.
+
+        Deals (gated), labels, pantry staples and deal links come from the
+        snapshot; ``recipe_store`` defaults to an :class:`InMemoryRecipeStore`
+        (an evaluation run must not write). Overrides win.
         """
-        from app.agents.deps import GraphDeps, InMemoryRecipeStore
+        from app.agents.plan_pipeline import InMemoryRecipeStore, PlanDeps
 
-        fields = {"deals": self.deal_source(), "catalog": self.catalog(),
+        deals, catalog = self.deal_source(), self.catalog()
+        fields = {"fetch_deals": deals.fetch_gated_deals, "fetch_labels": self.fetch_labels,
+                  "fetch_pantry": catalog.fetch_pantry_staples,
+                  "fetch_deal_products": catalog.fetch_deal_products,
                   "recipe_store": InMemoryRecipeStore(), **overrides}
-        return GraphDeps(**fields)
-
-
-def _served_order(deal: dict):
-    # ORDER BY d.discount_percentage DESC NULLS LAST, d.sale_price ASC, d.deal_id
-    disc = deal["discount_percentage"]
-    return (disc is None, -(disc or 0), deal["sale_price"], deal["deal_id"])
+        return PlanDeps(**fields)
 
 
 class SnapshotDeals:
-    """``GraphDeps.deals``: ``DatabaseService.fetch_current_deals`` over a snapshot.
+    """``DatabaseService.fetch_gated_deals`` over a snapshot.
 
-    Same filter, gate, order, cap and row shape as the SQL, with the snapshot's
+    Same filter, gate, order and row shape as the SQL, with the snapshot's
     ``as_of`` standing in for ``CURRENT_DATE``. A postal code the snapshot does
     not cover raises rather than returning ``[]``: production would answer
     "no deals", but in an evaluation that is a mis-wired scenario, not a
@@ -386,12 +415,6 @@ class SnapshotDeals:
     def __init__(self, snapshot: Snapshot):
         self.snapshot = snapshot
         self.calls: list[tuple[str, Optional[list]]] = []
-
-    def fetch_current_deals(self, postal_code: str,
-                            dietary_restrictions: Optional[Iterable[str]] = None) -> list[dict]:
-        served, stores = self._served(postal_code, dietary_restrictions)
-        served.sort(key=_served_order)
-        return self._rows(served[:DEAL_LIMIT], stores)
 
     def _served(self, postal_code: str, dietary_restrictions: Optional[Iterable[str]]
                 ) -> tuple[list[dict], dict]:
@@ -458,7 +481,7 @@ def _catalog_row(product: dict) -> dict:
 
 
 class SnapshotCatalog:
-    """``GraphDeps.catalog``: the ``recipe_catalog`` module over a snapshot."""
+    """The ``recipe_catalog`` module over a snapshot."""
 
     def __init__(self, snapshot: Snapshot):
         self.snapshot = snapshot

@@ -29,22 +29,19 @@ Scorers
   curated attributes with the production authority
   (:func:`app.agents.dietary.recipe_violations` over
   ``RESTRICTION_ATTRIBUTES`` / ``product_allows``), never from the run's own
-  Nutritionist verdict, which is only compared against
-  (``agreement``). NULL attributes fail closed. A restriction label the
+  verdict, which is only compared against (``agreement``). NULL attributes fail closed. A restriction label the
   attribute map cannot express scores ``NA``, never ``PASS``. No ingredient
   or deal name is read.
-* :func:`score_budget` -- plan cost vs the scenario's spend limit. A **lower
-  bound**: one deal unit per citation, no quantity, household size or
-  multi-buy semantics. Reported both as the per-recipe sum and per unique
-  deal across the plan. Production's ``total_cost`` is per unique deal (owner
-  decision, Track C); recordings made before that summed per recipe.
+* :func:`score_cost` -- what the plan costs, for information only (the
+  product is budget-agnostic, owner 2026-11-23). A **lower bound**: one deal
+  unit per citation, no quantity, household size or multi-buy semantics.
+  Reported both as the per-recipe sum and per unique deal across the plan
+  (production's ``total_cost`` is per unique deal).
 * :func:`score_on_sale` -- deal vs staple citations, deals used / offered,
   and savings vs regular price -- ``None`` (absent) when no used deal carries
   a regular price, never a fabricated 0.
 * :func:`score_diversity` -- pairwise Jaccard of the plan's cited deal-id
-  sets. Recipe-level and chef-independent on purpose: ``chef_id`` -> recipe
-  assignment can swap on replay when two Chef groups are identical
-  (``app/eval/recorder.py``).
+  sets. Recipe-level and chef-independent on purpose.
 * :func:`score_latency_tokens` -- per role and total, from ``llm_calls``.
   Unreported token counts stay ``None``; coverage is reported.
 
@@ -52,13 +49,14 @@ Verdict
 -------
 ``FAIL`` if compliance fails or the run is structurally incomplete (not
 ``completed``, or fewer approved recipes than requested); otherwise ``NA`` if
-any restriction could not be scored; otherwise ``PASS``. Budget, citations,
+any restriction could not be scored; otherwise ``PASS``. Cost, citations,
 diversity etc. are reported, never gating.
 """
 from __future__ import annotations
 
 import inspect
 import json
+import re
 from collections import Counter
 from dataclasses import asdict, dataclass, field
 from itertools import combinations
@@ -70,18 +68,21 @@ from app.eval.snapshots import Snapshot, SnapshotDeals
 
 #: Bump on any change to the RunScore layout or to a metric's definition.
 #: 2: ``structural.instructions`` (instruction-step ingredient references).
-SCORE_SCHEMA_VERSION = 2
+#: 3: approach C -- ``budget`` replaced by ``cost`` (no limit, no status);
+#:    roles chef + sous_chef; chat-style (user/assistant) retry conversations.
+SCORE_SCHEMA_VERSION = 3
 
 PASS, FAIL, NA = "PASS", "FAIL", "NA"
 
 #: Cost equality tolerance (cents rounding in ``costing.price_recipe``).
 _COST_EPS = 0.005
 
-#: Prompt headers the SousChef prompts print the offered deals / staples
-#: under (``app/agents/prompts.py``); used to rebuild the per-call citation
-#: context when checking a last-attempt response. Tested against the templates.
-ASSIGNED_DEALS_HEADER = "**Your Assigned Deals (cite each by its deal_id):**"
-STAPLES_HEADER = "**Pantry Staples Already On Hand (cite each by its product_id):**"
+#: How the per-dish SousChef prompt lists what it may cite
+#: (``app/agents/dish_writer.deal_line`` / ``pantry_line``); used to rebuild
+#: the per-call citation context when checking a last-attempt response.
+#: Tested against the writer's own output.
+DEAL_CITE_RE = re.compile(r"→ deal_id (\d+) \(")
+STAPLE_CITE_RE = re.compile(r"→ product_id (\d+)$", re.M)
 
 
 class ScoringError(ValueError):
@@ -145,7 +146,7 @@ def _view(artifact: Mapping[str, Any], snapshot: Snapshot) -> _View:
     products = {str(p["product_id"]): p for p in data["products"]}
     staples = {k: p for k, p in products.items()
                if p["status"] == "confirmed" and p["assumed_on_hand"]}
-    offered = SnapshotDeals(snapshot).fetch_current_deals(
+    offered = SnapshotDeals(snapshot).fetch_gated_deals(
         user["postal_code"], user.get("dietary_restrictions") or [])
     return _View(
         artifact=artifact, snapshot=snapshot, state=state,
@@ -187,15 +188,19 @@ def _round(x: Optional[float], n: int = 2) -> Optional[float]:
 # 1. Structural reliability
 # --------------------------------------------------------------------------
 
+_USER = ("user", "human")
+_ASSISTANT = ("assistant", "ai")
+
+
 def _max_attempts() -> int:
-    from app.agents.llm_output import invoke_validated
-    return inspect.signature(invoke_validated).parameters["max_attempts"].default
+    from app.agents.llm_chat import chat_validated
+    return inspect.signature(chat_validated).parameters["max_attempts"].default
 
 
 def _attempt(call: Mapping[str, Any]) -> int:
-    """1-based attempt within ``invoke_validated``: the prompt, then one
+    """1-based attempt within ``chat_validated``: the prompt, then one
     (bad reply, correction) pair per earlier attempt."""
-    return sum(1 for m in call["request"]["messages"] if m.get("type") == "human")
+    return sum(1 for m in call["request"]["messages"] if m.get("type") in _USER)
 
 
 def _msgs(messages: Sequence[Mapping[str, Any]]) -> str:
@@ -206,12 +211,12 @@ def _msgs(messages: Sequence[Mapping[str, Any]]) -> str:
 def attempt_chains(calls: Sequence[Mapping[str, Any]]) -> List[Dict[str, Any]]:
     """Mark each call ``terminal`` or not: a call is non-terminal when a later
     call of the same role continues its conversation (its messages, then this
-    call's reply as an ``ai`` message, then a correction). Identical calls are
+    call's reply as an ``assistant`` message, then a correction). Identical calls are
     matched one-for-one. Returns ``[{seq, role, attempt, terminal}]``."""
     continuations: Counter = Counter()
     for c in calls:
         m = c["request"]["messages"]
-        if len(m) >= 3 and m[-2].get("type") == "ai":
+        if len(m) >= 3 and m[-2].get("type") in _ASSISTANT:
             continuations[(c["role"], _msgs(m[:-2]), json.dumps(m[-2].get("content")))] += 1
     out = []
     for c in calls:
@@ -225,40 +230,34 @@ def attempt_chains(calls: Sequence[Mapping[str, Any]]) -> List[Dict[str, Any]]:
     return out
 
 
-def _json_after(text: str, header: str) -> Any:
-    start = text.index(header) + len(header)
-    starts = [i for i in (text.find("[", start), text.find("{", start)) if i >= 0]
-    value, _ = json.JSONDecoder().raw_decode(text, min(starts))
-    return value
-
-
 def _last_attempt_valid(call: Mapping[str, Any]) -> Optional[bool]:
-    """Would ``invoke_validated`` have accepted this reply? ``None`` when it
-    cannot be decided offline (a SousChef prompt whose offered ids can't be
-    read back)."""
+    """Would ``chat_validated`` have accepted this reply? Planner replies are
+    checked against the plan schema (not the offered ids, which the scorer's
+    citation checks cover); SousChef replies against the recipe schema and
+    the ids the prompt listed. ``None`` when a SousChef prompt's ids can't be
+    read back."""
     from pydantic import ValidationError
 
     from app.agents import llm_output as lo
+    from app.agents.dish_planner import DishPlan
+    from app.agents.llm_chat import parse_json_object
 
-    try:
-        data = json.loads(call["response"]["content"])
-    except (TypeError, json.JSONDecodeError):
+    data = parse_json_object((call["response"] or {}).get("content") or "")
+    if data is None:
         return False
-    schema = {"chef": lo.ChefPlan, "sous_chef": lo.RecipeBatch,
-              "nutritionist": lo.NutritionistVerdict}[call["role"]]
     context = None
     if call["role"] == "sous_chef":
         prompt = call["request"]["messages"][0].get("content") or ""
-        try:
-            deals = _json_after(prompt, ASSIGNED_DEALS_HEADER)
-            staples = _json_after(prompt, STAPLES_HEADER)
-            context = lo.citation_context([d["deal_id"] for d in deals],
-                                          [s["product_id"] for s in staples])
-        except (ValueError, KeyError, TypeError):
-            context = None
+        deals = DEAL_CITE_RE.findall(prompt)
+        staples = STAPLE_CITE_RE.findall(prompt)
+        if deals or staples:
+            context = lo.citation_context(deals, staples)
     try:
-        schema.model_validate(data, context=context)
-    except ValidationError:
+        if call["role"] == "chef":
+            DishPlan.model_validate(data)
+        else:
+            lo.RecipeBatch.model_validate(data, context=context)
+    except (ValidationError, ValueError):
         return False
     if call["role"] == "sous_chef" and context is None:
         return None
@@ -303,7 +302,7 @@ def score_structural(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[st
                     stats["unverified_invocations"] += 1
         roles[role] = stats
 
-    log = Counter(f"{e.get('agent')}:{e.get('action')}"
+    log = Counter(f"{e.get('agent')}:{'ok' if e.get('success') else 'failed'}"
                   for e in state.get("agent_call_log") or [] if isinstance(e, dict))
     return {
         "status": state.get("status"),
@@ -332,7 +331,8 @@ def score_instructions(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[
 
     ``render_mismatches`` re-renders each template with the cited names from
     the snapshot (a deal's linked product ``canonical_name`` per
-    ``deal_cited_name``, else its ``product_name``; staple ``canonical_name``) and
+    ``deal_cited_name``, else its label ``item``, else its ``product_name``;
+    staple ``canonical_name``) and
     counts recipes whose stored ``instructions`` differ: a check on the
     rendering pipeline, not on the words. Literal food words typed into step
     text are *not* detected and cannot be without name matching, which is
@@ -346,7 +346,12 @@ def score_instructions(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[
         deal_cited_name, parse_step, render_step, step_problems, unreferenced)
 
     v = _view(artifact, snapshot)
-    names = {"deal": {k: deal_cited_name(d.get("product_name") or "", v.linked.get(k, []))
+    labels = snapshot.labels()
+    # As dish_writer renders: a deal's linked product canonical name, else its
+    # label item, else the flyer text (display only).
+    names = {"deal": {k: deal_cited_name(
+                          (labels[int(k)].item if int(k) in labels else None)
+                          or d.get("product_name") or "", v.linked.get(k, []))
                       for k, d in v.deals.items()},
              "product": {k: p.get("canonical_name") or "" for k, p in v.products.items()}}
     structured = steps = refs = invalid = no_ref = mismatched = 0
@@ -504,7 +509,7 @@ def score_compliance(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[st
         per_recipe.append({"recipe_id": rid, "compliant": not found, "violations": found})
     compliant = sum(r["compliant"] for r in per_recipe)
 
-    # Agreement with the run's recorded (Nutritionist, deterministic) verdicts,
+    # Agreement with the run's recorded (deterministic) verdicts,
     # over every validated recipe, approved or not.
     recipes = v.state.get("generated_recipes") or {}
     disagreements, compared = [], 0
@@ -550,7 +555,7 @@ def score_compliance(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[st
 # 4. Budget (lower bound)
 # --------------------------------------------------------------------------
 
-BUDGET_CAVEATS = (
+COST_CAVEATS = (
     "lower bound: one deal unit per cited ingredient",
     "ignores ingredient quantity and household size",
     "ignores per-item vs multi-buy pricing (deal_products.price_is_per_item)",
@@ -558,13 +563,9 @@ BUDGET_CAVEATS = (
 )
 
 
-def score_budget(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[str, Any]:
+def score_cost(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[str, Any]:
+    """What the plan costs (information only; the product is budget-agnostic)."""
     v = _view(artifact, snapshot)
-    user = artifact["scenario"]["user"]
-    limit = float(user["budget"])
-    spent = float(user.get("budget_spent_this_period") or 0.0)
-    available = limit - spent
-
     per_recipe = []
     unpriced = 0
     for rid, recipe in zip(v.plan_ids, v.plan):
@@ -578,32 +579,15 @@ def score_budget(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[str, A
     recipe_sum = round(sum(r["cost"] for r in per_recipe), 2)
     unique = {d for r in v.plan for d in _recipe_deals(r) if d in v.deals}
     unique_sum = round(sum(float(v.deals[d]["sale_price"]) for d in unique), 2)
-
-    if unique_sum > available + _COST_EPS:
-        status = "over"                       # over under either semantics
-    elif recipe_sum > available + _COST_EPS:
-        status = "over_per_recipe_sum_only"   # depends on the pending decision
-    else:
-        status = "within_lower_bound"         # not proof of being within
     recorded = v.state.get("total_cost")
     return {
         "lower_bound": True,
-        "caveats": list(BUDGET_CAVEATS),
-        "budget": limit,
-        "budget_period": user.get("budget_period"),
-        "spent_this_period": spent,
-        "available": round(available, 2),
+        "caveats": list(COST_CAVEATS),
         "cost_per_recipe_sum": recipe_sum,
         "cost_per_unique_deal": unique_sum,
         "per_recipe": per_recipe,
         "unpriced_citations": unpriced,
-        "status": status,
-        "headroom_per_recipe_sum": round(available - recipe_sum, 2),
-        "headroom_per_unique_deal": round(available - unique_sum, 2),
         "recorded_total_cost": recorded,
-        "recorded_matches_per_recipe_sum": (
-            None if not isinstance(recorded, (int, float))
-            else abs(float(recorded) - recipe_sum) <= _COST_EPS),
         "recorded_matches_per_unique_deal": (
             None if not isinstance(recorded, (int, float))
             else abs(float(recorded) - unique_sum) <= _COST_EPS),
@@ -732,7 +716,7 @@ class RunScore:
     structural: Dict[str, Any]
     citations: Dict[str, Any]
     compliance: Dict[str, Any]
-    budget: Dict[str, Any]
+    cost: Dict[str, Any]
     on_sale: Dict[str, Any]
     diversity: Dict[str, Any]
     latency_tokens: Dict[str, Any]
@@ -747,7 +731,7 @@ class RunScore:
                           ensure_ascii=False, allow_nan=False)
 
     def summary_row(self) -> Dict[str, Any]:
-        s, c, k, b = self.structural, self.citations, self.compliance, self.budget
+        s, c, k, b = self.structural, self.citations, self.compliance, self.cost
         o, d, t = self.on_sale, self.diversity, self.latency_tokens["total"]
         return {
             "scenario": self.run["scenario"], "snapshot": self.run["snapshot"],
@@ -766,7 +750,6 @@ class RunScore:
             "citation_validity": c["validity_rate"], "invalid_citations": c["invalid"],
             "cost_per_recipe_sum_lb": b["cost_per_recipe_sum"],
             "cost_per_unique_deal_lb": b["cost_per_unique_deal"],
-            "budget_available": b["available"], "budget_status": b["status"],
             "deal_share": o["deal_share"], "deals_used": o["deals_used"],
             "deals_offered": o["deals_offered"], "savings_vs_regular": o["savings_vs_regular"],
             "mean_jaccard": d["mean_jaccard"], "max_jaccard": d["max_jaccard"],
@@ -819,7 +802,7 @@ def score_run(artifact: Mapping[str, Any], snapshot: Optional[Snapshot] = None) 
         structural=structural,
         citations=score_citations(artifact, snapshot),
         compliance=compliance,
-        budget=score_budget(artifact, snapshot),
+        cost=score_cost(artifact, snapshot),
         on_sale=score_on_sale(artifact, snapshot),
         diversity=score_diversity(artifact, snapshot),
         latency_tokens=score_latency_tokens(artifact, snapshot),
@@ -827,9 +810,9 @@ def score_run(artifact: Mapping[str, Any], snapshot: Optional[Snapshot] = None) 
 
 
 __all__ = [
-    "ASSIGNED_DEALS_HEADER", "BUDGET_CAVEATS", "CITATION_KINDS", "FAIL", "NA", "PASS",
-    "RunScore", "SCORE_SCHEMA_VERSION", "STAPLES_HEADER", "ScoringError",
-    "attempt_chains", "classify_citation", "score_budget", "score_citations",
+    "COST_CAVEATS", "CITATION_KINDS", "DEAL_CITE_RE", "FAIL", "NA", "PASS",
+    "RunScore", "SCORE_SCHEMA_VERSION", "STAPLE_CITE_RE", "ScoringError",
+    "attempt_chains", "classify_citation", "score_cost", "score_citations",
     "score_compliance", "score_diversity", "score_instructions",
     "score_latency_tokens", "score_on_sale", "score_run", "score_structural",
     "verify_snapshot",

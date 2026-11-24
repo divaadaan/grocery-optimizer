@@ -1,4 +1,195 @@
 {
+ "deal_labels": [
+  {
+   "deal_id": 1,
+   "item": "chicken breast",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 2,
+   "item": "broccoli",
+   "role": "vegetable",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 3,
+   "item": "penne pasta",
+   "role": "pantry_staple",
+   "size_qty": 454.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 4,
+   "item": "tomato sauce",
+   "role": "pantry_staple",
+   "size_qty": 650.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 5,
+   "item": "ground beef",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 6,
+   "item": "eggs",
+   "role": "protein",
+   "size_qty": 12.0,
+   "size_unit": "each"
+  },
+  {
+   "deal_id": 7,
+   "item": "milk",
+   "role": "dairy",
+   "size_qty": 2000.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 8,
+   "item": "spinach",
+   "role": "vegetable",
+   "size_qty": 312.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 9,
+   "item": "salmon",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 10,
+   "item": "sweet potato",
+   "role": "starch",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 11,
+   "item": "basmati rice",
+   "role": "pantry_staple",
+   "size_qty": 1000.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 12,
+   "item": "red bell pepper",
+   "role": "vegetable",
+   "size_qty": 1.0,
+   "size_unit": "each"
+  },
+  {
+   "deal_id": 13,
+   "item": "greek yogurt",
+   "role": "dairy",
+   "size_qty": 650.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 14,
+   "item": "cheddar cheese",
+   "role": "dairy",
+   "size_qty": 400.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 15,
+   "item": "banana",
+   "role": "fruit",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 16,
+   "item": "carrot",
+   "role": "vegetable",
+   "size_qty": 907.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 17,
+   "item": "russet potato",
+   "role": "starch",
+   "size_qty": 2268.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 18,
+   "item": "yellow onion",
+   "role": "vegetable",
+   "size_qty": 1361.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 19,
+   "item": "whole wheat bread",
+   "role": "starch",
+   "size_qty": 675.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 20,
+   "item": "pork chops",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 21,
+   "item": "canned tomatoes",
+   "role": "pantry_staple",
+   "size_qty": 796.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 22,
+   "item": "spaghetti",
+   "role": "pantry_staple",
+   "size_qty": 900.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 23,
+   "item": "chicken thigh",
+   "role": "protein",
+   "size_qty": null,
+   "size_unit": null
+  },
+  {
+   "deal_id": 24,
+   "item": "avocado",
+   "role": "fruit",
+   "size_qty": 1.0,
+   "size_unit": "each"
+  },
+  {
+   "deal_id": 25,
+   "item": "quinoa",
+   "role": "pantry_staple",
+   "size_qty": 500.0,
+   "size_unit": "g"
+  },
+  {
+   "deal_id": 26,
+   "item": "olive oil",
+   "role": "pantry_staple",
+   "size_qty": 750.0,
+   "size_unit": "ml"
+  },
+  {
+   "deal_id": 27,
+   "item": "tofu",
+   "role": "protein",
+   "size_qty": 350.0,
+   "size_unit": "g"
+  }
+ ],
  "deal_products": [
   {
    "deal_id": 1,
@@ -627,9 +818,9 @@
  "meta": {
   "as_of": "2026-07-15",
   "captured_at": "2026-10-30T00:28:26.147499+00:00",
-  "format_version": 2,
+  "format_version": 3,
   "name": "seed27",
-  "notes": "The 27 M5V3A8 deals from scripts/seed_sample_data.sql (source='seed'), as they live in Neon with their curated product links; seeded valid 2026-07-15..2026-07-21. Products/attributes/links are Neon's state at capture time. Re-captured 2026-10-29 after migration 021 and kosher labelling (corrections 205-377) and the animal-byproduct backfill (175-204): every confirmed product has every attribute decided.",
+  "notes": "The 27 M5V3A8 deals from scripts/seed_sample_data.sql (source='seed'), as they live in Neon with their curated product links; seeded valid 2026-07-15..2026-07-21. Products/attributes/links are Neon's state at capture time. Re-captured 2026-10-29 after migration 021 and kosher labelling (corrections 205-377) and the animal-byproduct backfill (175-204): every confirmed product has every attribute decided. v3 (2026-11-23): deal_labels added by the production labeller (hf:openai/gpt-oss-120b, prompt v2).",
   "postal_codes": [
    "M5V3A8"
   ],

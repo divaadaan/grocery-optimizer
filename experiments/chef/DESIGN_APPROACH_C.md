@@ -340,9 +340,17 @@ PR 1's Neon step writes to the database.
   are intersected with freshly rebuilt trays. Ids no longer offered are dropped and reported as a
   warning, never trusted. No kept anchor fails the job with the reason. Omitting either field
   means "keep everything offered", so the API works before the carousel exists.
-- **The old LangGraph pipeline still exists, for the eval harness only.** The API uses
-  `app/agents/plan_pipeline.py`. Moving the harness over and deleting the old Chef, Nutritionist
-  and graph is the cleanup PR.
+- **The old LangGraph pipeline is gone (PR 5).** The API and the eval harness both run
+  `app/agents/plan_pipeline.py`. Eval snapshots are format v3 and carry `deal_labels`; the
+  recorder wraps the plain `chat()` interface; run artifacts are format v2; the scorers report
+  cost instead of a budget (score schema v3). `prompts.PromptTemplates` and the old
+  `llm_output` schemas stay only because `training/` imports them.
+- **Planner repairs instead of failing (PR 5, from live checks).** Stray side / pantry /
+  stock-up ids are dropped and recorded; a kept side cited as an anchor moves to the sides; a
+  dish with no ANCHORS id is dropped, never given a protein the model didn't choose. A plan can
+  therefore come back short of `num_meals`, and the 60% partial rule applies. When there are
+  fewer anchors than meals, the prompt says so and lists the anchor ids to reuse.
+- **SIDES quota (PR #64):** vegetable 12, starch 5, fruit 4, dairy 4; one row per item per tray.
 - **Display names come from citations.** Each ingredient is shown as the cited staple's name or
   the deal's label `item`, and steps render the same way. The model's wording is kept as
   `written_as`. Display only.

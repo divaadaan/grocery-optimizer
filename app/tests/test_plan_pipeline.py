@@ -172,7 +172,7 @@ def test_plan_validation_accepts_a_good_plan_and_anchor_reuse():
 
 
 @pytest.mark.parametrize("mutate,needle", [
-    (lambda p: p["dishes"].pop(), "exactly 2 dishes"),
+    (lambda p: p["dishes"].append(dict(p["dishes"][0])), "at most 2 dishes"),
     (lambda p: p["dishes"][0].update(anchor_deal_ids=[4]), "are not ANCHORS"),
     (lambda p: p["dishes"][0].update(side_deal_ids=[8]), "were not offered"),
     (lambda p: p["dishes"][0].update(pantry_product_ids=[999]), "not in the pantry"),
@@ -369,3 +369,170 @@ def test_steps_render_deals_by_label_item():
     # deal 1 links one confirmed product, so its canonical name wins
     assert recipe["instructions"] == ["Brown chicken thighs."]
     assert recipe["ingredients"][0]["price"] == 1.99
+
+
+# ------------------------------------------------------------ robustness
+
+def _happy_model():
+    return Model(PLAN, {"Chicken with potatoes": [recipe_json("Chicken", [1, 5], [50])],
+                        "Tofu broccoli stir-fry": [recipe_json("Tofu", [3, 4], [51])]})
+
+
+def test_a_failing_progress_callback_never_fails_the_generation():
+    deps = plan_pipeline.PlanDeps(
+        fetch_deals=lambda pc, r: [dict(d) for d in DEALS],
+        fetch_labels=lambda ids: {i: LABELS[i] for i in ids if i in LABELS},
+        fetch_pantry=lambda: [dict(s) for s in STAPLES],
+        fetch_deal_products=lambda ids: DEAL_PRODUCTS, recipe_store=Store(),
+        tracker=Tracker(), chat_fn=_happy_model(), planner_spec="ollama:p",
+        writer_spec="ollama:w")
+
+    def angry(stage):
+        raise RuntimeError("progress sink exploded")
+
+    result = plan_pipeline.run_plan_generation(
+        user_id=7, postal_code="L4G3E8", household_size=2, dietary_restrictions=[],
+        num_meals=2, deps=deps, progress_callback=angry)
+    assert result["status"] == "completed"
+
+
+class BrokenStore:
+    def save_recipes(self, *a, **k):
+        raise RuntimeError("neon is down")
+
+
+def test_a_failed_audit_write_does_not_mask_the_failure():
+    model = Model(PLAN, {}, plan_replies=["{nope", "{nope"])
+    result = run(model, store=BrokenStore())
+    assert result["status"] == "failed"
+    assert any("could not be recorded" in w for w in result["warnings"])
+
+
+def test_a_failed_save_in_the_success_path_still_raises():
+    with pytest.raises(RuntimeError, match="neon is down"):
+        run(_happy_model(), store=BrokenStore())
+
+
+def test_one_generation_id_per_run_reaches_the_store():
+    store = Store()
+    result = plan_pipeline.run_plan_generation(
+        user_id=7, postal_code="L4G3E8", household_size=2, dietary_restrictions=[],
+        num_meals=2, deps=plan_pipeline.PlanDeps(
+            fetch_deals=lambda pc, r: [dict(d) for d in DEALS],
+            fetch_labels=lambda ids: {i: LABELS[i] for i in ids if i in LABELS},
+            fetch_pantry=lambda: [dict(s) for s in STAPLES],
+            fetch_deal_products=lambda ids: DEAL_PRODUCTS, recipe_store=store,
+            tracker=Tracker(), chat_fn=_happy_model(), planner_spec="ollama:p",
+            writer_spec="ollama:w"))
+    import uuid as _uuid
+    _uuid.UUID(result["generation_id"])
+    assert store.saved[0][2]["generation_id"] == result["generation_id"]
+
+
+def test_the_call_log_is_ordered_by_round_and_dish_not_completion():
+    result = run(_happy_model())
+    assert [e["agent"] for e in result["agent_call_log"]] == ["chef", "sous_chef_1", "sous_chef_2"]
+
+
+# ------------------------------------------------------------ live (-m llm)
+
+@pytest.mark.llm
+def test_live_pipeline_on_a_frozen_snapshot():
+    """End to end against the configured live models (LLM_PLANNER_MODEL /
+    LLM_WRITER_MODEL) on the committed week-2026-10-16 snapshot. Nothing is
+    written: the snapshot's PlanDeps use an in-memory store. Deselected from
+    the oracle; run with ``pytest -m llm``."""
+    from app.config import settings
+    from app.eval.runner import NullTracker
+    from app.eval.snapshots import load_snapshot
+
+    snapshot = load_snapshot("week-2026-10-16")
+    deps = snapshot.plan_deps(tracker=NullTracker(), planner_spec=settings.llm_planner_model,
+                              writer_spec=settings.llm_writer_model)
+    result = plan_pipeline.run_plan_generation(
+        user_id=1, postal_code="M5V3A8", household_size=2,
+        dietary_restrictions=["vegetarian"], num_meals=3, deps=deps)
+    assert result["status"] == "completed", result["errors"]
+    assert len(result["approved_recipe_ids"]) >= 2
+    gated = {d["deal_id"] for d in result["available_deals"]}
+    for rid in result["approved_recipe_ids"]:
+        recipe = result["generated_recipes"][rid]
+        assert result["validation_results"][rid]["dietary_compliance"]["approved"]
+        assert all(i.get("deal_id") in gated or i.get("product_id") is not None
+                   for i in recipe["ingredients"])
+
+
+def test_stray_optional_ids_are_dropped_and_recorded_not_fatal():
+    ctx, _ = _ctx()
+    plan = json.loads(json.dumps(PLAN))
+    plan["dishes"][0]["side_deal_ids"] = [5, 8, 999]          # 8: chips (never offered)
+    plan["dishes"][1]["pantry_product_ids"] = [51, 77]
+    plan["stock_up_deal_ids"] = [6, 4]                       # 4 is a side, not stock-up
+    fixed = dish_planner.DishPlan.model_validate(dish_planner.repair_plan(plan, ctx),
+                                                 context=ctx)
+    assert fixed.dishes[0].side_deal_ids == [5]
+    assert fixed.dishes[1].pantry_product_ids == [51]
+    assert fixed.stock_up_deal_ids == [6]
+    assert {(d["where"], d["id"]) for d in fixed.dropped} == {
+        ("dish 1 side_deal_ids", 8), ("dish 1 side_deal_ids", 999),
+        ("dish 2 pantry_product_ids", 77), ("stock_up_deal_ids", 4)}
+
+
+def test_a_dish_without_a_valid_anchor_is_dropped_never_given_one():
+    ctx, _ = _ctx()
+    plan = json.loads(json.dumps(PLAN))
+    plan["dishes"][0]["anchor_deal_ids"] = [4]                # broccoli: a side
+    fixed = dish_planner.DishPlan.model_validate(dish_planner.repair_plan(plan, ctx),
+                                                 context=ctx)
+    assert [d.name for d in fixed.dishes] == ["Tofu broccoli stir-fry"]
+    assert fixed.dropped[0]["where"] == "dish 1" and fixed.dropped[0]["reason"].startswith("no anchor")
+
+
+def test_a_side_cited_beside_a_real_anchor_moves_to_the_sides():
+    ctx, _ = _ctx()
+    plan = json.loads(json.dumps(PLAN))
+    plan["dishes"][1]["anchor_deal_ids"] = [3, 4]
+    fixed = dish_planner.DishPlan.model_validate(dish_planner.repair_plan(plan, ctx),
+                                                 context=ctx)
+    assert fixed.dishes[1].anchor_deal_ids == [3] and fixed.dishes[1].side_deal_ids == [4]
+
+
+def test_extra_dishes_are_dropped_and_no_usable_dish_is_retried():
+    ctx, _ = _ctx()
+    plan = json.loads(json.dumps(PLAN))
+    plan["dishes"].append(dict(plan["dishes"][0], name="Third"))
+    fixed = dish_planner.DishPlan.model_validate(dish_planner.repair_plan(plan, ctx),
+                                                 context=ctx)
+    assert len(fixed.dishes) == 2 and fixed.dropped[-1]["reason"] == "more dishes than meals"
+    bad = {"dishes": [dict(PLAN["dishes"][0], anchor_deal_ids=[4])]}
+    with pytest.raises(ValueError):
+        dish_planner.DishPlan.model_validate(dish_planner.repair_plan(bad, ctx), context=ctx)
+
+
+def test_a_plan_short_of_dishes_runs_and_says_so():
+    plan = json.loads(json.dumps(PLAN))
+    plan["dishes"][1]["anchor_deal_ids"] = [4]
+    model = Model(plan, {"Chicken with potatoes": [recipe_json("Chicken", [1, 5], [50])]})
+    result = run(model)
+    assert any("planned 1 usable dish" in w for w in result["warnings"])
+    assert result["status"] == "failed"   # 1 approved of 2 meals < 60%
+    assert len(result["generated_recipes"]) == 1
+    # With 3 meals a short plan of 2 good dishes is a partial (2/3 >= 60%).
+    plan3 = json.loads(json.dumps(PLAN))
+    plan3["dishes"].append(dict(PLAN["dishes"][0], name="Anchorless", anchor_deal_ids=[4]))
+    model3 = Model(plan3, {"Chicken with potatoes": [recipe_json("C", [1, 5], [50])],
+                           "Tofu broccoli stir-fry": [recipe_json("T", [3, 4], [51])]})
+    partial = run(model3, num_meals=3)
+    assert partial["status"] == "completed" and len(partial["approved_recipe_ids"]) == 2
+    assert any("Only 2/3" in w for w in partial["warnings"])
+
+
+def test_a_plan_with_a_stray_side_still_runs():
+    plan = json.loads(json.dumps(PLAN))
+    plan["dishes"][0]["side_deal_ids"] = [5, 999]
+    model = Model(plan, {"Chicken with potatoes": [recipe_json("Chicken", [1, 5], [50])],
+                         "Tofu broccoli stir-fry": [recipe_json("Tofu", [3, 4], [51])]})
+    result = run(model)
+    assert result["status"] == "completed"
+    assert result["dish_plan"]["dropped"] == [{"where": "dish 1 side_deal_ids", "id": 999}]
+    assert len(model.prompts) == 3                           # no planner retry

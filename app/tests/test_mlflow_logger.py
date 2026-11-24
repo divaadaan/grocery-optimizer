@@ -1,8 +1,8 @@
 """MLflow logging: one run per generation across threads, honest tokens.
 
 A fake ``mlflow`` module records what the logger does. Nothing reaches a
-tracking server. The graph-level test drives the real LangGraph run (its
-parallel SousChef tasks execute on pool threads) with the real
+tracking server. The pipeline-level test drives the real generation pipeline
+(its per-dish SousChefs execute on pool threads) with the real
 ``MLflowLogger`` as tracker.
 """
 import json
@@ -13,9 +13,6 @@ from contextvars import copy_context
 from types import SimpleNamespace
 
 import pytest
-from langchain_core.messages import AIMessage
-
-from app.agents.llm_usage import MeteredLLM
 from app.services import mlflow_logger
 from app.services.mlflow_logger import MLflowLogger, generation_scope
 
@@ -88,8 +85,7 @@ def fake_mlflow(monkeypatch):
 
 
 MODELS = {"chef": {"provider": "ollama", "model": "big"},
-          "sous_chef": {"provider": "ollama", "model": "mid"},
-          "nutritionist": {"provider": "ollama", "model": "small"}}
+          "sous_chef": {"provider": "ollama", "model": "mid"}}
 
 
 def _start(gid="gen-1"):
@@ -123,7 +119,7 @@ def test_pool_thread_calls_land_in_the_generation_run(fake_mlflow):
     assert run["params"]["generation_id"] == "gen-1"
     assert run["params"]["model_chef"] == "big"
     assert run["params"]["provider_sous_chef"] == "ollama"
-    assert run["params"]["model_nutritionist"] == "small"
+    assert "model_nutritionist" not in run["params"]
     assert run["status"] == "FINISHED"
 
 
@@ -197,62 +193,13 @@ def test_tracking_failure_is_swallowed(monkeypatch, fake_mlflow):
 
 
 # --------------------------------------------------------------------------
-# MeteredLLM
+# The real pipeline: per-dish SousChefs on pool threads
 # --------------------------------------------------------------------------
 
-class Replies:
-    def __init__(self, *responses):
-        self.responses = list(responses)
-
-    def invoke(self, messages):
-        return self.responses.pop(0)
-
-
-def test_metered_llm_sums_reported_usage_across_retries():
-    llm = MeteredLLM(Replies(
-        AIMessage(content="bad", usage_metadata={"input_tokens": 10, "output_tokens": 2,
-                                                 "total_tokens": 12}),
-        AIMessage(content="ok", usage_metadata={"input_tokens": 20, "output_tokens": 3,
-                                                "total_tokens": 23})))
-    llm.invoke([]), llm.invoke([])
-    assert llm.usage == {"input_tokens": 30, "output_tokens": 5, "total_tokens": 35}
-
-
-def test_metered_llm_reports_nothing_when_usage_absent_or_partial():
-    assert MeteredLLM(Replies()).usage is None
-    none = MeteredLLM(Replies(AIMessage(content="x")))
-    none.invoke([])
-    assert none.usage is None
-    partial = MeteredLLM(Replies(
-        AIMessage(content="a", usage_metadata={"input_tokens": 1, "output_tokens": 1,
-                                               "total_tokens": 2}),
-        AIMessage(content="b")))
-    partial.invoke([]), partial.invoke([])
-    assert partial.usage is None  # an undercount is not reported as a count
-
-
-# --------------------------------------------------------------------------
-# The real graph: parallel SousChefs on LangGraph's pool threads
-# --------------------------------------------------------------------------
-
-class WithUsage:
-    """Wraps a scripted chat model; every reply reports provider usage."""
-
-    def __init__(self, inner, tokens):
-        self.inner = inner
-        self.tokens = tokens
-
-    def invoke(self, messages):
-        reply = self.inner.invoke(messages)
-        return AIMessage(content=reply.content,
-                         usage_metadata={"input_tokens": self.tokens,
-                                         "output_tokens": 1,
-                                         "total_tokens": self.tokens + 1})
-
-
-def test_real_graph_run_logs_into_exactly_one_run(fake_mlflow, monkeypatch):
+def test_real_pipeline_run_logs_into_exactly_one_run(fake_mlflow, monkeypatch):
+    from app.agents import plan_pipeline
     from app.db.database import Database
-    from app.tests.test_graph_offline import _run, make_deps
+    from app.tests import test_plan_pipeline as tp
 
     def no_db(*a, **k):
         raise AssertionError("touched the database")
@@ -260,10 +207,8 @@ def test_real_graph_run_logs_into_exactly_one_run(fake_mlflow, monkeypatch):
     monkeypatch.setattr(Database, "initialize", no_db)
     monkeypatch.setattr(Database, "get_connection", no_db)
 
-    deps = make_deps()
-    deps.tracker = MLflowLogger
-    deps.chef_llm = WithUsage(deps.chef_llm, 100)
-    deps.sous_chef_llm = WithUsage(deps.sous_chef_llm, 40)
+    model = tp.Model(tp.PLAN, {"Chicken with potatoes": [tp.recipe_json("C", [1, 5], [50])],
+                               "Tofu broccoli stir-fry": [tp.recipe_json("T", [3, 4], [51])]})
     threads = set()
     real = MLflowLogger.log_agent_call
 
@@ -272,22 +217,31 @@ def test_real_graph_run_logs_into_exactly_one_run(fake_mlflow, monkeypatch):
         return real(**kw)
 
     monkeypatch.setattr(MLflowLogger, "log_agent_call", staticmethod(spy))
+    deps = plan_pipeline.PlanDeps(
+        fetch_deals=lambda pc, r: [dict(d) for d in tp.DEALS],
+        fetch_labels=lambda ids: {i: tp.LABELS[i] for i in ids if i in tp.LABELS},
+        fetch_pantry=lambda: [dict(x) for x in tp.STAPLES],
+        fetch_deal_products=lambda ids: tp.DEAL_PRODUCTS,
+        recipe_store=plan_pipeline.InMemoryRecipeStore(), tracker=MLflowLogger,
+        chat_fn=model, planner_spec="ollama:big", writer_spec="ollama:mid")
+    result = plan_pipeline.run_plan_generation(
+        user_id=1, postal_code="L4G3E8", household_size=2, dietary_restrictions=[],
+        num_meals=2, deps=deps)
 
-    state = _run(deps)
-
-    assert state["status"] == "completed", state["errors"]
-    # The agent calls really came from more than one thread (the pool).
+    assert result["status"] == "completed", result["errors"]
+    # The writers really ran on pool threads, not the caller's thread.
     assert len(threads) >= 2
     assert len(fake_mlflow.runs) == 1, list(fake_mlflow.runs)
     (run_id, run), = fake_mlflow.runs.items()
-    assert state["mlflow_run_id"] == run_id
-    assert run["tags"]["generation_id"] == state["generation_id"]
+    assert run["tags"]["generation_id"] == result["generation_id"]
     assert run["status"] == "FINISHED"
     metrics = run["metrics"]
-    assert metrics["chef_orchestrator_total_tokens"] == [101]
-    for i in (1, 2, 3):
-        assert metrics[f"sous_chef_{i}_total_tokens"] == [41]
+    assert metrics["chef_total_tokens"] == [150]
+    for i in (1, 2):
+        assert metrics[f"sous_chef_{i}_total_tokens"] == [120]
     assert "final_recipe_count" in metrics
-    assert "approved_recipes.json" in run["artifacts"]
-    uuid.UUID(state["generation_id"])
+    for artifact in ("approved_recipes.json", "dish_plan.json", "agent_call_log.json"):
+        assert artifact in run["artifacts"]
+    assert run["params"]["model_chef"] == "big" and run["params"]["provider_sous_chef"] == "ollama"
+    uuid.UUID(result["generation_id"])
     json.dumps(run["params"])  # plain values

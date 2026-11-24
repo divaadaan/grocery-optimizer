@@ -12,7 +12,7 @@ The output contract is the existing recipe schema
 (``citation_context``), and instructions write ingredients as ``{N}``
 placeholders. Validation failures go back to the model once. Building the
 stored recipe (prices from citations, rendered steps) reuses
-``sous_chef._to_recipe``.
+``recipe_build.build_recipe``.
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from app.agents.dish_planner import PlannedDish
 from app.agents.llm_output import GeneratedRecipe, RecipeBatch, citation_context
 from app.agents.prompts import combination_rule_hints, hint_lines, preferences_text
 from app.agents.state import Recipe
-from app.agents.sous_chef import RecipeIdFactory, _to_recipe, random_recipe_id
+from app.agents.recipe_build import RecipeIdFactory, build_recipe, random_recipe_id
 
 MAX_TOKENS = 2048
 TEMPERATURE = 0.7
@@ -155,7 +155,7 @@ def write_recipe(dish: PlannedDish, *, deals: Mapping[int, Mapping[str, Any]],
     # by its label item, else the flyer text (display only).
     shown = [{**d, "product_name": d.get("item") or d.get("product_name", "")}
              for d in own + stock]
-    recipe = _to_recipe(agent, model, deals_by_id(shown), recipe_id, staples,
+    recipe = build_recipe(agent, model, deals_by_id(shown), recipe_id, staples,
                         deal_products)
     name_from_citations(recipe, {d["deal_id"]: d for d in own + stock}, staples)
     return recipe, replies, prompt

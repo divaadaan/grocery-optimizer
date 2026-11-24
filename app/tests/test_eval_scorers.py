@@ -77,34 +77,36 @@ def set_restrictions(artifact, labels):
 def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
     score = score_run(base_artifact, base_snapshot)
     assert score.verdict == PASS and score.verdict_reasons == []
-    assert score.schema_version == scorers.SCORE_SCHEMA_VERSION == 2
+    assert score.schema_version == scorers.SCORE_SCHEMA_VERSION == 3
     row = score.summary_row()
     assert row == {
         "scenario": "seed27-vegetarian", "snapshot": "seed27", "verdict": "PASS",
         "status": "completed", "recipes_approved": 3, "recipes_requested": 3,
-        "schema_retries": 2, "schema_failures": 0,
+        "schema_retries": 1, "schema_failures": 0,
         "instruction_steps": 6, "instruction_invalid_refs": 0,
         "unreferenced_ingredients": 0, "unstructured_instructions": 0,
         "compliance_gate": "PASS", "compliance_rate": 1.0, "verdict_disagreements": 0,
         "unsupported_restrictions": "",
         "citation_validity": 1.0, "invalid_citations": 0,
-        "cost_per_recipe_sum_lb": 7.14, "cost_per_unique_deal_lb": 7.14,
-        "budget_available": 80.0, "budget_status": "within_lower_bound",
-        "deal_share": 0.6667, "deals_used": 6, "deals_offered": 22,
-        "savings_vs_regular": 5.8, "mean_jaccard": 0.0, "max_jaccard": 0.0,
-        "llm_calls": 9, "llm_seconds": row["llm_seconds"], "total_tokens": 6637,
-        "tokens_known_calls": 6,
+        # tofu (deal 27) anchors two dishes: charged twice per recipe, once per plan
+        "cost_per_recipe_sum_lb": 15.64, "cost_per_unique_deal_lb": 13.15,
+        "deal_share": 0.6667, "deals_used": 5, "deals_offered": 22,
+        "savings_vs_regular": 6.8, "mean_jaccard": 0.1111, "max_jaccard": 0.3333,
+        "llm_calls": 5, "llm_seconds": row["llm_seconds"],
+        "total_tokens": row["total_tokens"], "tokens_known_calls": 5,
     }
     assert row["llm_seconds"] == pytest.approx(base_artifact["timing"]["llm_seconds"], abs=1e-5)
+    assert row["total_tokens"] == sum(c["response"]["usage"]["total_tokens"]
+                                      for c in base_artifact["llm_calls"])
 
     s = score.structural
     assert s["schema"]["sous_chef"] == {
-        "calls": 5, "invocations": 3, "retries": 2, "retried_invocations": 2,
+        "calls": 4, "invocations": 3, "retries": 1, "retried_invocations": 1,
         "failed_invocations": 0, "unverified_invocations": 0, "call_errors": 0}
     assert s["schema"]["chef"]["invocations"] == 1 and s["schema"]["chef"]["retries"] == 0
-    assert s["schema"]["nutritionist"]["invocations"] == 3
-    assert s["agent_call_log"] == {"Chef_Orchestrator:plan_ingredient_groups": 1,
-                                   "Nutritionist:validate_recipe": 3}
+    assert set(s["schema"]) == {"chef", "sous_chef"}
+    assert s["agent_call_log"] == {"chef:ok": 1, "sous_chef_1:ok": 1, "sous_chef_2:ok": 1,
+                                   "sous_chef_3:ok": 1}
     assert s["instructions"] == {
         "recipes": 3, "structured_recipes": 3, "unstructured_recipes": 0,
         "steps": 6, "references": 9, "invalid_references": 0,
@@ -116,21 +118,20 @@ def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
     assert k["required_attributes"] == ["contains_fish", "contains_meat"]
     assert k["agreement"] == {"compared": 3, "agree": 3, "disagreements": []}
     assert k["served_deals_failing_gate"] == []
-    assert score.budget["recorded_matches_per_recipe_sum"] is True
-    assert score.budget["recorded_matches_per_unique_deal"] is True  # no deal reused
-    assert score.budget["lower_bound"] is True
-    assert score.on_sale["regular_price_coverage"] == "regular price known for 6/6 deals used"
-    assert score.on_sale["used_deal_ids"] == [3, 12, 15, 16, 21, 22]
+    assert score.cost["recorded_matches_per_unique_deal"] is True
+    assert score.cost["lower_bound"] is True
+    assert "budget" not in score.to_dict()
+    assert score.on_sale["regular_price_coverage"] == "regular price known for 5/5 deals used"
+    assert score.on_sale["used_deal_ids"] == [6, 15, 17, 18, 27]
     lt = score.latency_tokens
-    assert lt["roles"]["nutritionist"]["tokens"]["total_tokens"] == {"sum": None, "known": 0}
-    assert lt["roles"]["chef"]["tokens"]["total_tokens"] == {"sum": 1931, "known": 1}
-    assert lt["total"]["token_coverage"] == "tokens known for 6/9 calls"
+    assert lt["roles"]["chef"]["tokens"]["total_tokens"]["known"] == 1
+    assert lt["total"]["token_coverage"] == "tokens known for 5/5 calls"
 
 
 def test_run_score_is_json_serialisable(base_artifact, base_snapshot):
     score = score_run(base_artifact, base_snapshot)
     data = json.loads(score.to_json())
-    assert data["schema_version"] == 2 and data["kind"] == "recipe-eval-score"
+    assert data["schema_version"] == 3 and data["kind"] == "recipe-eval-score"
     assert data == score.to_dict()
 
 
@@ -143,7 +144,7 @@ def test_snapshot_hash_mismatch_is_refused(art, snap_data):
     with pytest.raises(SnapshotDrift):
         score_run(art, Snapshot.from_dict(snap_data))
     with pytest.raises(SnapshotDrift):
-        scorers.score_budget(art, Snapshot.from_dict(snap_data))
+        scorers.score_cost(art, Snapshot.from_dict(snap_data))
 
 
 # --------------------------------------------------------------------------
@@ -193,11 +194,13 @@ def test_unconfirmed_linked_product_fails_closed(art, snap_data):
 def test_kosher_is_scored_not_na(art, base_snapshot, snap_data):
     """kosher is enforceable since migration 021: scored like any other label."""
     set_restrictions(art, ["kosher"])
-    # seed27's not_kosher is null throughout (undecided): fails closed.
+    # seed27's tofu (deal 27, two of the three dishes) is not kosher.
     k = scorers.score_compliance(art, base_snapshot)
     assert k["supported_restrictions"] == ["kosher"] and k["unsupported_restrictions"] == []
     assert k["required_attributes"] == ["not_kosher"]
-    assert k["gate"] == FAIL and k["compliant_recipes"] == 0
+    assert k["gate"] == FAIL and k["compliant_recipes"] == 1
+    assert [r["violations"] for r in k["recipes"] if not r["compliant"]] == [
+        [{"citation": "deal 27", "attributes": ["not_kosher"]}]] * 2
 
     for p in snap_data["products"]:
         p["not_kosher"] = False
@@ -246,11 +249,17 @@ def test_unrestricted_run_passes_vacuously(art, base_snapshot):
 
 
 def test_vegan_restriction_reads_byproduct_and_dairy(art, base_snapshot):
-    # Recompute from attributes, not from the run's verdict: penne / spaghetti
-    # clear vegan in seed27, so this plan stays compliant; butter would not.
+    # Recompute from attributes, not from the run's verdict (it was vegetarian):
+    # the eggs dish fails vegan; without the eggs the plan clears; butter would not.
     set_restrictions(art, ["vegan"])
+    k = scorers.score_compliance(art, base_snapshot)
+    assert k["gate"] == FAIL
+    assert [r["violations"] for r in k["recipes"] if not r["compliant"]] == [
+        [{"citation": "deal 6", "attributes": ["contains_egg"]}]]
+    eggs_dish = plan(art)[1]
+    eggs_dish["ingredients"] = [i for i in eggs_dish["ingredients"] if i.get("deal_id") != 6]
     assert scorers.score_compliance(art, base_snapshot)["gate"] == PASS
-    plan(art)[1]["ingredients"].append({"name": "x", "product_id": 142})   # butter
+    eggs_dish["ingredients"].append({"name": "x", "product_id": 142})   # butter
     k = scorers.score_compliance(art, base_snapshot)
     assert k["gate"] == FAIL
     assert [r["violations"] for r in k["recipes"] if not r["compliant"]] == [
@@ -277,12 +286,8 @@ def _rename_everything(artifact, snapshot_data):
             ing["name"] = "vegetarian tofu, definitely no meat"
     for d in st["available_deals"]:
         d["product_name"] = "beef pork chicken"
-    for rows in st["deal_products"].values():
-        for p in rows:
-            p["canonical_name"] = "salmon"
-    for p in st["pantry_staples"]:
-        p["canonical_name"] = "lard"
-    st["deal_index"] = {f"renamed-{i}": v for i, v in enumerate(st["deal_index"].values())}
+    for lab in snapshot_data["deal_labels"]:
+        lab["item"] = "vegan tofu"
     return rebind(artifact, snapshot_data)
 
 
@@ -292,7 +297,7 @@ def test_compliance_never_reads_names(art, snap_data, base_snapshot, variant):
         plan(art)[0]["ingredients"].append({"name": "Tofu", "deal_id": 23})   # chicken thighs
     if variant == "null":
         for p in snap_data["products"]:
-            if p["product_id"] == 155:                                      # red peppers
+            if p["product_id"] == 169:                                      # russet potatoes
                 p["contains_meat"] = None
     before_snap = rebind(art, copy.deepcopy(snap_data))
     before = scorers.score_compliance(art, before_snap)
@@ -346,40 +351,31 @@ def test_double_citation_checks_both_halves(art, base_snapshot):
 
 
 # --------------------------------------------------------------------------
-# Budget
+# Cost (information only)
 # --------------------------------------------------------------------------
 
-def test_budget_over_limit(art, base_snapshot):
-    art["scenario"]["user"]["budget"] = 5.0
-    b = scorers.score_budget(art, base_snapshot)
-    assert b["status"] == "over" and b["headroom_per_unique_deal"] == -2.14
-    assert b["lower_bound"] is True and b["caveats"] == list(scorers.BUDGET_CAVEATS)
-    # Budget never gates the verdict; it is reported.
+def test_cost_is_reported_and_never_gates(art, base_snapshot):
+    b = scorers.score_cost(art, base_snapshot)
+    assert b["lower_bound"] is True and b["caveats"] == list(scorers.COST_CAVEATS)
+    assert set(b) >= {"cost_per_recipe_sum", "cost_per_unique_deal", "per_recipe"}
+    assert not {"budget", "available", "status"} & set(b)   # budget-agnostic
     assert score_run(art, base_snapshot).verdict == PASS
 
 
-def test_budget_spent_this_period_reduces_the_limit(art, base_snapshot):
-    art["scenario"]["user"]["budget_spent_this_period"] = 75.0
-    b = scorers.score_budget(art, base_snapshot)
-    assert b["available"] == 5.0 and b["status"] == "over"
-
-
-def test_budget_per_recipe_sum_vs_unique_deal(art, base_snapshot):
+def test_cost_per_recipe_sum_vs_unique_deal(art, base_snapshot):
     first = plan(art)[0]
     for r in plan(art)[1:]:
         r["ingredients"] = copy.deepcopy(first["ingredients"])
-    b = scorers.score_budget(art, base_snapshot)
-    assert b["cost_per_unique_deal"] == 2.18
-    assert b["cost_per_recipe_sum"] == 6.54
-    assert b["recorded_matches_per_recipe_sum"] is False   # state was not re-costed
-    art["scenario"]["user"]["budget"] = 4.0
-    assert scorers.score_budget(art, base_snapshot)["status"] == "over_per_recipe_sum_only"
+    b = scorers.score_cost(art, base_snapshot)
+    assert b["cost_per_unique_deal"] == 5.48            # tofu 2.49 + potatoes 2.99
+    assert b["cost_per_recipe_sum"] == 16.44
+    assert b["recorded_matches_per_unique_deal"] is False   # state was not re-costed
 
 
-def test_budget_prices_from_the_snapshot_and_counts_unpriced(art, base_snapshot):
+def test_cost_prices_from_the_snapshot_and_counts_unpriced(art, base_snapshot):
     plan(art)[0]["ingredients"].append({"name": "x", "deal_id": 9999})
-    b = scorers.score_budget(art, base_snapshot)
-    assert b["unpriced_citations"] == 1 and b["cost_per_recipe_sum"] == 7.14
+    b = scorers.score_cost(art, base_snapshot)
+    assert b["unpriced_citations"] == 1 and b["cost_per_recipe_sum"] == 15.64
 
 
 # --------------------------------------------------------------------------
@@ -392,8 +388,8 @@ def test_null_regular_price_makes_savings_absent(art, snap_data):
     o = scorers.score_on_sale(art, rebind(art, snap_data))
     assert o["savings_vs_regular"] is None
     assert o["regular_price_known"] == 0
-    assert o["regular_price_coverage"] == "regular price known for 0/6 deals used"
-    assert o["deals_used"] == 6 and o["deal_share"] == 0.6667
+    assert o["regular_price_coverage"] == "regular price known for 0/5 deals used"
+    assert o["deals_used"] == 5 and o["deal_share"] == 0.6667
 
 
 def test_partial_regular_price_sums_only_known(art, snap_data):
@@ -401,7 +397,7 @@ def test_partial_regular_price_sums_only_known(art, snap_data):
         if d["deal_id"] == 15:              # bananas: 0.99 - 0.69
             d["regular_price"] = None
     o = scorers.score_on_sale(art, rebind(art, snap_data))
-    assert o["savings_vs_regular"] == 5.5 and o["regular_price_known"] == 5
+    assert o["savings_vs_regular"] == 6.5 and o["regular_price_known"] == 4
 
 
 # --------------------------------------------------------------------------
@@ -419,11 +415,13 @@ def test_identical_recipes_have_jaccard_one(art, base_snapshot):
 
 
 def test_diversity_is_independent_of_plan_order(art, base_snapshot):
-    plan(art)[1]["ingredients"].append({"name": "x", "deal_id": 15})
+    plan(art)[1]["ingredients"].append({"name": "x", "deal_id": 17})
     a = scorers.score_diversity(art, base_snapshot)
     art["final_state"]["approved_recipe_ids"].reverse()
     assert scorers.score_diversity(art, base_snapshot) == a
-    assert a["max_jaccard"] == pytest.approx(1 / 4, abs=1e-4)
+    # {27,17} vs {27,15} share tofu: 1/3; {6,18,17} vs {27,17}: 1/4
+    assert a["max_jaccard"] == pytest.approx(1 / 3, abs=1e-4)
+    assert sorted(p["jaccard"] for p in a["pairs"]) == [0.0, 0.25, 0.3333]
 
 
 # --------------------------------------------------------------------------
@@ -435,7 +433,7 @@ def test_null_tokens_stay_null(art, base_snapshot):
         c["response"]["usage"] = None
     lt = scorers.score_latency_tokens(art, base_snapshot)
     assert lt["total"]["tokens"]["total_tokens"] == {"sum": None, "known": 0}
-    assert lt["total"]["token_coverage"] == "tokens known for 0/9 calls"
+    assert lt["total"]["token_coverage"] == "tokens known for 0/5 calls"
     assert score_run(art, base_snapshot).summary_row()["total_tokens"] is None
 
 
@@ -444,7 +442,7 @@ def test_partially_reported_usage_fields(art, base_snapshot):
     chef["response"]["usage"]["output_tokens"] = None
     t = scorers.score_latency_tokens(art, base_snapshot)["roles"]["chef"]["tokens"]
     assert t["output_tokens"] == {"sum": None, "known": 0}
-    assert t["input_tokens"] == {"sum": 1800, "known": 1}
+    assert t["input_tokens"] == {"sum": chef["response"]["usage"]["input_tokens"], "known": 1}
 
 
 # --------------------------------------------------------------------------
@@ -454,8 +452,9 @@ def test_partially_reported_usage_fields(art, base_snapshot):
 def test_attempt_chains_on_the_fixture(base_artifact):
     chains = scorers.attempt_chains(base_artifact["llm_calls"])
     sous = [c for c in chains if c["role"] == "sous_chef"]
+    # One dish's first reply was not JSON: that call continues into attempt 2.
     assert sorted((c["attempt"], c["terminal"]) for c in sous) == [
-        (1, False), (1, False), (1, True), (2, True), (2, True)]
+        (1, False), (1, True), (1, True), (2, True)]
 
 
 def test_partial_plan_fails_structurally(art, base_snapshot):
@@ -478,12 +477,13 @@ def test_plan_naming_a_missing_recipe_is_refused(art, base_snapshot):
         score_run(art, base_snapshot)
 
 
-def test_prompt_headers_match_the_sous_chef_templates():
-    from app.agents.prompts import PromptTemplates
-    for template in (PromptTemplates.SOUS_CHEF_RECIPE_GENERATION,
-                     PromptTemplates.SOUS_CHEF_RETRY_WITH_FEEDBACK):
-        assert scorers.ASSIGNED_DEALS_HEADER in template
-        assert scorers.STAPLES_HEADER in template
+def test_citation_patterns_match_the_sous_chef_prompt_lines():
+    from app.agents.dish_writer import deal_line, pantry_line
+    line = deal_line({"deal_id": 27, "product_name": "Tofu Firm", "sale_price": 2.49,
+                      "item": "tofu"})
+    assert scorers.DEAL_CITE_RE.findall(line) == ["27"]
+    assert scorers.STAPLE_CITE_RE.findall(pantry_line({"product_id": 139, "name": "Flour"})) \
+        == ["139"]
 
 
 def test_exhausted_schema_retries_count_as_failures():
@@ -493,17 +493,17 @@ def test_exhausted_schema_retries_count_as_failures():
 
     def factory(role, spec):
         if role == "sous_chef":
-            return ter.ConversationModel(respond=lambda t: "never JSON", usage=False)
+            return ter.scripted_chat(lambda t: "never JSON")
         return ter.scripted_factory(role, spec)
 
-    artifact = runner.record(ter.scenario(), llm_factory=factory)
+    artifact = runner.record(ter.scenario(), chat_factory=factory)
     score = score_run(artifact)
     sous = score.structural["schema"]["sous_chef"]
     attempts = score.structural["max_attempts"]
-    # 3 initial SousChefs, then each of the 2 retry iterations tops up the
-    # 3-recipe shortfall across the 3 groups (graph.retry_generation).
-    assert sous["invocations"] == 9 and sous["failed_invocations"] == 9
-    assert sous["calls"] == 9 * attempts and sous["retries"] == 9 * (attempts - 1)
+    # 3 dishes, each written once and retried once (plan_pipeline: one retry
+    # round per failed dish), each invocation exhausting its attempts.
+    assert sous["invocations"] == 6 and sous["failed_invocations"] == 6
+    assert sous["calls"] == 6 * attempts and sous["retries"] == 6 * (attempts - 1)
     assert score.structural["completed"] is False
     assert score.verdict == FAIL
 
@@ -514,17 +514,17 @@ def test_citation_violation_on_last_attempt_is_a_failure():
     from app.tests import test_eval_runner as ter
 
     def bad_citation(texts):
-        reply = json.loads(ter.sous_chef_reply(texts))
-        reply["recipes"][0]["ingredients"].append({"name": "x", "deal_id": 9999})
+        reply = json.loads(ter.sous_chef_reply([texts[0]]))
+        reply["ingredients"].append({"name": "x", "deal_id": 9999})
         return json.dumps(reply)
 
     def factory(role, spec):
         if role == "sous_chef":
-            return ter.ConversationModel(respond=bad_citation)
+            return ter.scripted_chat(bad_citation)
         return ter.scripted_factory(role, spec)
 
-    score = score_run(runner.record(ter.scenario(), llm_factory=factory))
-    assert score.structural["schema"]["sous_chef"]["failed_invocations"] == 9  # + 2 top-ups
+    score = score_run(runner.record(ter.scenario(), chat_factory=factory))
+    assert score.structural["schema"]["sous_chef"]["failed_invocations"] == 6
     assert score.structural["schema"]["sous_chef"]["unverified_invocations"] == 0
 
 
@@ -538,11 +538,11 @@ def test_cli_summary_and_json(capsys, tmp_path, base_artifact):
     assert score_eval.main([str(FIXTURE)]) == 0
     out = capsys.readouterr().out
     assert out.startswith("seed27-vegetarian [seed27]: PASS")
-    assert "tokens known for 6/9 calls" in out and "lower bound $7.14" in out
+    assert "tokens known for 5/5 calls" in out and "lower bound $15.64" in out
 
     assert score_eval.main([str(FIXTURE), "--json"]) == 0
     data = json.loads(capsys.readouterr().out)
-    assert data["verdict"] == PASS and data["schema_version"] == 2
+    assert data["verdict"] == PASS and data["schema_version"] == 3
 
     bad = copy.deepcopy(base_artifact)
     plan(bad)[0]["ingredients"].append({"name": "x", "deal_id": 1})

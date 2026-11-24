@@ -115,9 +115,9 @@ def _run_generation_job(job_id: str, user: dict, request: RecipeGenerationReques
     """
     import time
 
-    # Imported here (not at module scope) so the agent/LangGraph stack is
-    # only pulled in when a generation actually runs, and so tests can patch
-    # the module attribute.
+    # Imported here (not at module scope) so the agent stack is only pulled
+    # in when a generation actually runs, and so tests can patch the module
+    # attribute.
     from app import main_recipe_generation
 
     job_registry.mark_running(job_id)
@@ -274,8 +274,8 @@ async def get_generation_status(job_id: str) -> RecipeGenerationJobStatus:
     Poll a recipe-generation job.
 
     Returns the job `state` (`pending`, `running`, `completed`, `failed`), the
-    current `stage` (a real LangGraph pipeline stage, e.g. "SousChef 2/3
-    cooking…") and, once terminal, either `result` (the full meal plan,
+    current `stage` (a real pipeline stage, e.g. "The Chef plans one dish
+    per meal") and, once terminal, either `result` (the full meal plan,
     including persisted `recipe_id`s) or `error`.
 
     Jobs are held in memory by the API process: they are lost on restart, and

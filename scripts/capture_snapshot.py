@@ -3,9 +3,10 @@
 
 Writes everything a recipe-generation run reads from Postgres -- the deals
 live at ``--as-of`` for ``--postal-code``, their stores, their
-``deal_products`` links, the linked products and every pantry staple, with
+``deal_products`` links, the linked products and every pantry staple, plus
+the deals' ``deal_labels`` rows, with
 the curated ``contains_*`` attributes -- to a canonical, versioned JSON file
-that ``app.eval.snapshots`` loads into offline ``GraphDeps`` fakes.
+that ``app.eval.snapshots`` loads into offline ``PlanDeps`` fakes.
 
 Read-only, three ways over:
 
@@ -48,6 +49,7 @@ sys.path.insert(0, REPO)
 
 from app.eval.snapshots import (  # noqa: E402
     DEAL_FIELDS,
+    DEAL_LABEL_FIELDS,
     DEAL_PRODUCT_FIELDS,
     FORMAT_VERSION,
     PRODUCT_FIELDS,
@@ -121,6 +123,13 @@ WHERE p.product_id = ANY(%(product_ids)s) OR p.assumed_on_hand
 ORDER BY p.product_id
 """
 
+LABELS_SQL = f"""
+SELECT {_columns('l', DEAL_LABEL_FIELDS)}
+FROM deal_labels l
+WHERE l.deal_id = ANY(%(deal_ids)s)
+ORDER BY l.deal_id
+"""
+
 CLOCK_SQL = "SELECT transaction_timestamp() AT TIME ZONE 'UTC' AS captured_at"
 MIGRATION_SQL = "SELECT max(filename) AS latest FROM schema_migrations"
 
@@ -141,6 +150,9 @@ def capture(cur, *, name: str, as_of: dt.date, postal_codes: list[str],
     links = _read(cur, LINKS_SQL, {"deal_ids": deal_ids})
     products = _read(cur, PRODUCTS_SQL,
                      {"product_ids": sorted({l["product_id"] for l in links})})
+    # Unlabelled deals are captured without a label, as production sees them
+    # (they never reach a tray). Needs migration 024.
+    labels = _read(cur, LABELS_SQL, {"deal_ids": deal_ids})
 
     if isinstance(captured_at, dt.datetime) and captured_at.tzinfo is None:
         captured_at = captured_at.replace(tzinfo=dt.timezone.utc)
@@ -159,6 +171,7 @@ def capture(cur, *, name: str, as_of: dt.date, postal_codes: list[str],
         "deals": _rows(deals, DEAL_FIELDS),
         "deal_products": _rows(links, DEAL_PRODUCT_FIELDS),
         "products": _rows(products, PRODUCT_FIELDS),
+        "deal_labels": _rows(labels, DEAL_LABEL_FIELDS),
     }
 
 

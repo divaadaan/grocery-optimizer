@@ -87,8 +87,7 @@ _SUMMARY_REST = [
     "schema_failures", "instruction_steps", "instruction_invalid_refs",
     "unreferenced_ingredients", "unstructured_instructions", "compliance_gate", "compliance_rate", "verdict_disagreements",
     "unsupported_restrictions", "citation_validity", "invalid_citations",
-    "cost_per_recipe_sum_lb", "cost_per_unique_deal_lb", "budget_available",
-    "budget_status", "deal_share", "deals_used", "deals_offered", "savings_vs_regular",
+    "cost_per_recipe_sum_lb", "cost_per_unique_deal_lb", "deal_share", "deals_used", "deals_offered", "savings_vs_regular",
     "mean_jaccard", "max_jaccard", "llm_calls", "llm_seconds", "total_tokens",
     "tokens_known_calls",
 ]
@@ -173,7 +172,6 @@ def aggregate(runs: Sequence[ReportRun]) -> Dict[str, Any]:
         "jaccard_max": _max([r["max_jaccard"] for r in rows]),
         "cost_per_recipe_sum_lb_mean": _mean([r["cost_per_recipe_sum_lb"] for r in rows]),
         "cost_per_unique_deal_lb_mean": _mean([r["cost_per_unique_deal_lb"] for r in rows]),
-        "over_budget": sum(r["budget_status"] != "within_lower_bound" for r in rows),
         "savings_sum": _sum_known(sav),
         "savings_known_runs": sum(s is not None for s in sav),
         "latency_sum": secs,
@@ -272,7 +270,7 @@ def _compliance_section(runs: Sequence[ReportRun]) -> List[str]:
 def _runs_table(runs: Sequence[ReportRun]) -> List[str]:
     header = ["scenario", "snapshot", "config", "verdict", "approved", "compliance",
               "citation validity", "instruction refs", "deal share", "jaccard mean/max",
-              "budget LB per-recipe-sum", "budget LB per-unique-deal", "budget status",
+              "cost LB per-recipe-sum", "cost LB per-unique-deal",
               "savings", "llm s", "tokens"]
     rows = []
     for r in runs:
@@ -284,7 +282,6 @@ def _runs_table(runs: Sequence[ReportRun]) -> List[str]:
             _pct(s["deal_share"]),
             f"{_num(s['mean_jaccard'])}/{_num(s['max_jaccard'])}",
             _money(s["cost_per_recipe_sum_lb"]), _money(s["cost_per_unique_deal_lb"]),
-            f"{s['budget_status']} (avail {_money(s['budget_available'])})",
             _money(s["savings_vs_regular"]), _num(s["llm_seconds"], 3),
             _tokens(s["total_tokens"], s["tokens_known_calls"], s["llm_calls"]),
         ])
@@ -294,8 +291,8 @@ def _runs_table(runs: Sequence[ReportRun]) -> List[str]:
 def _agg_table(title: str, key_name: str, groups: Mapping[str, Sequence[ReportRun]]) -> List[str]:
     header = [key_name, "runs", "PASS/FAIL/N/A", "pass rate", "citation validity (mean)",
               "deal share (mean)", "jaccard mean (mean)", "jaccard max (max)",
-              "budget LB per-recipe-sum (mean)", "budget LB per-unique-deal (mean)",
-              "not within LB", "savings (sum, known runs)", "llm s (sum)", "llm s (mean/run)",
+              "cost LB per-recipe-sum (mean)", "cost LB per-unique-deal (mean)",
+              "savings (sum, known runs)", "llm s (sum)", "llm s (mean/run)",
               "tokens (sum)"]
     rows = []
     for key in sorted(groups):
@@ -305,7 +302,6 @@ def _agg_table(title: str, key_name: str, groups: Mapping[str, Sequence[ReportRu
             _pct(a["citation_validity_mean"]), _pct(a["deal_share_mean"]),
             _num(a["jaccard_mean"]), _num(a["jaccard_max"]),
             _money(a["cost_per_recipe_sum_lb_mean"]), _money(a["cost_per_unique_deal_lb_mean"]),
-            a["over_budget"],
             f"{_money(a['savings_sum'])} (known for {a['savings_known_runs']}/{a['runs']} runs)",
             _num(a["latency_sum"], 3), _num(a["latency_mean"], 3),
             _tokens(a["tokens_sum"], a["token_calls_known"], a["token_calls"]),
@@ -340,7 +336,8 @@ def render_markdown(runs: Sequence[ReportRun], generated_at: str) -> str:
     out += _compliance_section(runs)
     out += ["## Runs", ""]
     out += _runs_table(runs)
-    out += ["", "Budget columns are **lower bounds** (one deal unit per cited ingredient; "
+    out += ["", "Cost columns are information only (the product is budget-agnostic) and "
+            "**lower bounds** (one deal unit per cited ingredient; "
             "ignores quantity, household size, multi-buy pricing; pantry staples cost 0). "
             "Both cost semantics are shown: *per-recipe-sum* charges a deal reused across "
             "recipes once per recipe; *per-unique-deal* charges each deal once (the "

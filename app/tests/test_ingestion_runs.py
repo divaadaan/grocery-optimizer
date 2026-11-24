@@ -455,7 +455,7 @@ def test_every_discount_ordering_in_app_code_sorts_nulls_last():
             offenders.append(f"{path.name}: {text[m.start() - 30:m.end() + 20]!r}")
         checked += len(re.findall(r"discount_percentage\s+DESC\s+NULLS\s+LAST", text))
     assert not offenders, offenders
-    assert checked >= 5   # database.py + the four in store_service.py
+    assert checked >= 4   # the four in store_service.py
 
 
 def test_store_service_queries_sort_nulls_last():

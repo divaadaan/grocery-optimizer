@@ -22,7 +22,7 @@ import psycopg.errors
 import pytest
 
 from app.agents import dietary
-from app.agents.sous_chef import offered_staples
+from app.services.trays import offered_pantry
 from app.main import app
 from app.services import product_identity, products
 
@@ -837,7 +837,7 @@ def test_recipe_checker_rejects_a_merged_product():
 
 def test_sous_chef_is_not_offered_a_merged_staple():
     merged = {**_merged_row(), "contains_dairy": False}
-    assert offered_staples([merged], ["vegan"]) == []
+    assert offered_pantry([merged], ["vegan"]) == []
 
 
 class _OneRowCursor:

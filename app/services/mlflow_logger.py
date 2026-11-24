@@ -1,56 +1,37 @@
-"""MLflow tracking for recipe generation: one MLflow run (and one trace) per
-generation.
+"""MLflow tracking for recipe generation: one MLflow run per generation.
 
 Best-effort observability: configured lazily on first use, and a tracking
 failure never takes down -- or stalls -- the recipe workflow.
 
 One run per generation, across threads
 --------------------------------------
-LangGraph runs nodes on pool threads (the three SousChefs in parallel), and
-MLflow's fluent API keeps the active run *per thread*. Logging through it from
-a thread that never called ``mlflow.start_run`` silently started a fresh run:
-every SousChef call became an orphan run. So nothing here uses the fluent
-active run. Every call goes through ``MlflowClient`` with an explicit
+The pipeline writes each dish's recipe on a pool thread, and MLflow's fluent
+API keeps the active run *per thread*, so logging through it from a worker
+thread would silently start an orphan run. Nothing here uses the fluent
+active run: every call goes through ``MlflowClient`` with an explicit
 ``run_id``, looked up from a :class:`_RunScope`:
 
-* ``run_recipe_generation`` opens :func:`generation_scope` around the graph.
-  The scope lives in a ``ContextVar``, and LangGraph copies the caller's
-  context into every task it runs, so all nodes of one generation, on any
-  thread, see the same scope object -- and concurrent generations each see
-  their own.
-* ``start_run`` (the Chef's first node) creates the run and stores its id on
-  that shared scope object; every later call logs to it.
+* ``plan_pipeline.run_plan_generation`` opens :func:`generation_scope`. The
+  scope lives in a ``ContextVar``, and the pipeline runs each worker in a copy
+  of its context, so every stage of one generation, on any thread, sees the
+  same scope object -- and concurrent generations each see their own.
+* ``start_run`` creates the run and stores its id on that shared scope
+  object; every later call logs to it.
 * A call with no run to log to is skipped. It never creates one.
 
-Tokens are logged only as the provider reported them (``usage_metadata``,
-via ``app.agents.llm_usage``); a count the provider did not report is not
-logged. The old ``*_tokens`` metric was ``len(raw)`` -- characters -- and is
-gone.
+Tokens are logged only as the provider reported them; a count the provider
+did not report is not logged.
 
-Tracing (one trace per generation)
-----------------------------------
-:func:`generation_trace` wraps the graph run in a root span
-(``recipe_generation``) and hands back an ``MlflowLangchainTracer`` to pass as
-the graph's ``callbacks``. LangChain propagates callbacks through the config
-LangGraph gives every task -- including the ``Send`` fan-out's SousChef
-threads -- and the tracer parents each span by the OTel context the task
-copied from its caller (or the LangChain ``parent_run_id``), never by thread.
-So every node, and inside it every chat-model call (full prompt, raw
-response, provider usage, latency), lands in the *one* trace. It is an
-explicit callback rather than ``mlflow.langchain.autolog()``: autolog patches
-LangChain process-wide, which would also trace eval replays and tests that
-never asked for it.
+What a run holds
+----------------
+Per-agent duration and token metrics and model tags (``log_agent_call``),
+``dish_plan.json`` (the validated plan), final metrics, and in
+``finalize_run`` the approved recipes and ``agent_call_log.json`` -- every
+LLM call's full prompt and replies.
 
-The trace is linked to the generation's run (``mlflow.sourceRun`` metadata,
-which is what the run page's Traces tab searches by) and tagged with
-``generation_id``; the run gets a ``trace_request_id`` tag back. The run is
-created inside the graph (``start_run``), after the trace has started, so the
-link is written just before the root span closes.
-
-**Privacy:** traces (and ``chef_plan.json``) hold full prompts -- the user's
-dietary profile, budget, preferences and the served deal lists. Fine for the
-local file store; think before pointing ``MLFLOW_TRACKING_URI`` at a shared
-server (or set ``MLFLOW_TRACING=false``).
+**Privacy:** ``agent_call_log.json`` holds full prompts -- the user's dietary
+profile, preferences and the offered deals. Fine for the local file store;
+think before pointing ``MLFLOW_TRACKING_URI`` at a shared server.
 
 Outages never block generation
 ------------------------------
@@ -305,7 +286,7 @@ class MLflowLogger:
         """
         scope = _scope.get()
         if scope is None:
-            # No generation_scope (a node driven outside run_recipe_generation):
+            # No generation_scope (a stage driven outside run_plan_generation):
             # bind one here. It reaches only this context, never other threads.
             scope = _RunScope(generation_id=generation_id)
             _scope.set(scope)
@@ -367,85 +348,12 @@ class MLflowLogger:
 
     @staticmethod
     @_best_effort()
-    def log_ingredient_groups(groups: List[List[Dict]], reuse_map: Dict[str, int],
-                              plan: Optional[Dict[str, Any]] = None):
-        """Log the Chef's ingredient groups and, if given, its whole plan.
-
-        ``plan`` (built by ``ChefOrchestrator.plan_ingredient_groups``) is
-        logged as ``chef_plan.json``: the model's raw selections, what
-        ``_restrict_to_served_deals`` dropped and why, what it backfilled
-        into which group, the final (merged) groups, and how many served
-        deals the prompt showed vs. were available.
-
-        Models routinely return an empty ``ingredient_reuse_map`` (the
-        schema defaults it to ``{}``). This used to evaluate
-        ``max({}.values())``, raise ``ValueError`` before logging anything,
-        and -- swallowed by ``_best_effort`` -- record nothing at all, groups
-        included. Reuse metrics are now logged only when there is a map to
-        summarise.
-        """
-        run_id = _current_run_id()
-        if run_id is None:
-            return
-        reuse_map = reuse_map or {}
-        metrics: Dict[str, float] = {"ingredient_groups_count": len(groups)}
-        if groups:
-            metrics["avg_ingredients_per_group"] = sum(len(g) for g in groups) / len(groups)
-        metrics["total_unique_ingredients"] = len(reuse_map)
-        if reuse_map:
-            metrics["max_ingredient_reuse"] = max(reuse_map.values())
-            metrics["avg_ingredient_reuse"] = sum(reuse_map.values()) / len(reuse_map)
-        if plan:
-            metrics["chef_selections_dropped"] = len(plan.get("dropped") or [])
-            metrics["chef_selections_backfilled"] = len(plan.get("backfilled") or [])
-            for key in ("served_deals_available", "served_deals_in_prompt"):
-                if isinstance(plan.get(key), int):
-                    metrics[f"chef_{key}"] = plan[key]
-        _log_metrics(run_id, metrics)
-
-        _client.log_dict(run_id, reuse_map, "ingredient_reuse_map.json")
-        _client.log_dict(run_id, plan if plan else {"final_groups": groups},
-                         "chef_plan.json")
-
-    @staticmethod
-    @_best_effort()
     def log_dict(data: Any, artifact_file: str):
         """Log one JSON artifact (e.g. ``dish_plan.json``) into the run."""
         run_id = _current_run_id()
         if run_id is None:
             return
         _client.log_dict(run_id, data, artifact_file)
-
-    @staticmethod
-    @_best_effort()
-    def log_validation_results(validation_results: Dict[str, Any]):
-        """Log Nutritionist validation metrics."""
-        run_id = _current_run_id()
-        if run_id is None:
-            return
-        approved = sum(1 for r in validation_results.values() if r["approved"])
-        rejected = len(validation_results) - approved
-
-        avg_health_score = (
-            sum(r["health_score"] for r in validation_results.values())
-            / len(validation_results)
-        ) if validation_results else 0
-
-        _log_metrics(run_id, {
-            "recipes_validated": len(validation_results),
-            "recipes_approved": approved,
-            "recipes_rejected": rejected,
-            "approval_rate": approved / len(validation_results) if validation_results else 0,
-            "avg_health_score": avg_health_score
-        })
-
-        # Log rejection reasons
-        rejection_reasons = [
-            r["feedback"] for r in validation_results.values() if not r["approved"]
-        ]
-        if rejection_reasons:
-            _client.log_text(run_id, "\n---\n".join(rejection_reasons),
-                             "rejection_reasons.txt")
 
     @staticmethod
     @_best_effort()
@@ -489,114 +397,3 @@ class MLflowLogger:
 
         status = "FINISHED" if state.get("status") == "completed" else "FAILED"
         _client.set_terminated(run_id, status=status)
-
-
-# --------------------------------------------------------------------------
-# Tracing
-# --------------------------------------------------------------------------
-
-def _make_tracer() -> Any:
-    """MLflow's LangChain tracer, plus provider token usage on each LLM span.
-
-    The stock tracer serializes the ``LLMResult`` without the message's
-    ``usage_metadata``, so the counts are copied onto the span as a
-    ``token_usage`` attribute -- provider-reported only, like the run's
-    ``*_tokens`` metrics (absent when the provider reported none).
-    """
-    from mlflow.langchain.langchain_tracer import MlflowLangchainTracer  # noqa: PLC0415
-
-    from app.agents.llm_usage import response_usage  # noqa: PLC0415
-
-    class _UsageTracer(MlflowLangchainTracer):
-        def on_llm_end(self, response, *, run_id, **kwargs):
-            try:
-                usage = _generation_usage(response, response_usage)
-                if usage:
-                    self._get_span_by_run_id(run_id).set_attribute("token_usage", usage)
-            except Exception as e:  # observability only
-                print(f"[MLflow] recording token usage on a span failed (ignored): {e}")
-            return super().on_llm_end(response, run_id=run_id, **kwargs)
-
-    return _UsageTracer()
-
-
-def _generation_usage(response: Any, response_usage: Any) -> Dict[str, int]:
-    """Summed provider counts over the result's messages; a key only when
-    every message reported it (``llm_usage.MeteredLLM``'s rule)."""
-    per_message = [response_usage(getattr(gen, "message", None))
-                   for gens in (getattr(response, "generations", None) or [])
-                   for gen in gens]
-    out: Dict[str, int] = {}
-    for key in _TOKEN_KEYS:
-        values = [u[key] for u in per_message]
-        if values and all(v is not None for v in values):
-            out[key] = sum(values)
-    return out
-
-
-def _link_trace(request_id: str, scope: _RunScope) -> None:
-    """Tag the still-open trace with the generation, point it at the run,
-    and point the run back at it."""
-    if scope.generation_id:
-        mlflow.update_current_trace(tags={"generation_id": scope.generation_id})
-    if not scope.run_id or scope.tripped or not _available:
-        return
-    from mlflow.tracing.constant import TraceMetadataKey  # noqa: PLC0415
-    from mlflow.tracing.trace_manager import InMemoryTraceManager  # noqa: PLC0415
-
-    # Metadata set before the root span ends is merged into the stored
-    # TraceInfo at end_trace; the run page's Traces tab filters on it.
-    with InMemoryTraceManager.get_instance().get_trace(request_id) as trace:
-        if trace is not None:
-            trace.info.request_metadata[TraceMetadataKey.SOURCE_RUN] = scope.run_id
-    _client.set_tag(scope.run_id, "trace_request_id", request_id)
-
-
-@contextlib.contextmanager
-def generation_trace(scope: _RunScope, enabled: bool = True) -> Iterator[List[Any]]:
-    """Trace one generation. Yields the LangChain callbacks to run the graph
-    with: ``[]`` -- and nothing else happens -- when ``enabled`` is false,
-    ``MLFLOW_TRACING`` is off or MLflow is unavailable. Otherwise opens the
-    ``recipe_generation`` root span, so every graph span joins one trace,
-    and links that trace to the generation's run before closing it.
-
-    Never raises for a tracking reason; an exception from the graph itself
-    propagates unchanged (the trace is then recorded with status ERROR).
-    """
-    span_cm = span = None
-    callbacks: List[Any] = []
-    if enabled and settings.mlflow_tracing and not scope.tripped:
-        try:
-            if _ensure_configured():
-                span_cm = mlflow.start_span(name="recipe_generation", span_type="CHAIN")
-                span = span_cm.__enter__()
-                if scope.generation_id:
-                    span.set_attribute("generation_id", scope.generation_id)
-                callbacks = [_make_tracer()]
-        except Exception as e:
-            print(f"[MLflow] tracing unavailable (ignored): {e}")
-            if span is not None:
-                with contextlib.suppress(Exception):
-                    span_cm.__exit__(None, None, None)
-            span_cm = span = None
-            callbacks = []
-
-    if span_cm is None:
-        yield callbacks
-        return
-
-    exc_info: tuple = (None, None, None)
-    try:
-        yield callbacks
-    except BaseException as e:
-        exc_info = (type(e), e, e.__traceback__)
-        raise
-    finally:
-        try:
-            _link_trace(span.request_id, scope)
-        except Exception as e:
-            print(f"[MLflow] linking trace to run failed (ignored): {e}")
-        try:
-            span_cm.__exit__(*exc_info)
-        except Exception as e:
-            print(f"[MLflow] closing trace failed (ignored): {e}")
