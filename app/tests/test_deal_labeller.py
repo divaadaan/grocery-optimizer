@@ -1,9 +1,17 @@
 """``app/services/deal_labeller.py``: parsing, retry, fail-fast, persistence.
 
 Deterministic: the model is a fake ``chat_fn`` or a recorded gpt-oss-120b
-reply (``fixtures/deal_labeller/gpt_oss_batch.json``, captured 2026-11-23 with
-PROMPT_VERSION v2 over a mixed batch that includes the prototype's
-mislabels: tea, coffee pods, Reese's).
+reply:
+
+* ``fixtures/deal_labeller/gpt_oss_batch.json``, captured 2026-11-23 with
+  PROMPT_VERSION v2 over a mixed batch that includes the prototype's
+  mislabels: tea, coffee pods, Reese's.
+* ``fixtures/deal_labeller/gpt_oss_batch_v3.json``, captured 2026-11-24 with
+  PROMPT_VERSION v3 over the v2 mislabels: canned and dried legumes as
+  pantry_staple (v2 listed "canned beans" under both protein and
+  pantry_staple) and a pomelo inside a run of sugar rows labelled "sugar",
+  plus tofu, eggs (shelved under "Dairy & Eggs") and meat / produce / staple /
+  drink / candy controls.
 """
 import json
 import threading
@@ -18,6 +26,7 @@ from app.config import settings
 from app.services import deal_labeller as dl
 
 FIXTURE = Path(__file__).parent / "fixtures" / "deal_labeller" / "gpt_oss_batch.json"
+FIXTURE_V3 = FIXTURE.with_name("gpt_oss_batch_v3.json")
 
 
 def _deal(i, name="Item", **kw):
@@ -126,6 +135,36 @@ def test_recorded_gpt_oss_batch_parses_completely_and_fixes_prototype_mislabels(
     assert got[1208].size_qty == 9070.0 and got[1208].size_unit == "g"
     assert "pantry_staple" not in {roles[i] for i in (1302, 1303, 1304, 1305, 1316, 1339)}
     assert all(by_id[i] for i in roles)
+
+
+def test_recorded_v3_batch_labels_legumes_as_protein_and_fruit_as_fruit():
+    rec = json.loads(FIXTURE_V3.read_text())
+    assert rec["prompt_version"] == dl.PROMPT_VERSION
+    deals = rec["deals"]
+    got = dl.parse_labels(rec["reply_text"], [d["deal_id"] for d in deals])
+    assert set(got) == {d["deal_id"] for d in deals}
+    roles = {i: lab.role for i, lab in got.items()}
+    # v2 mislabels, asserted by id in the recorded batch: canned beans, mixed
+    # bean tiles and dried chickpeas were pantry_staple; the pomelo was sugar.
+    legumes = (647, 648, 1133, 1174, 1175, 1176)
+    assert {roles[i] for i in legumes} == {"protein"}
+    assert got[1224].role == "fruit" and got[1224].item != "sugar"
+    # Plant proteins and eggs stay protein; eggs on a "Dairy & Eggs" shelf are not dairy.
+    assert {roles[i] for i in (1266, 1267, 1268, 1269, 1272, 902, 906, 907, 910)} == {"protein"}
+    # Controls: no regression on meat, produce, staples, drinks or candy.
+    assert roles[740] == "protein"
+    assert roles[568] == roles[573] == "vegetable"
+    assert {roles[i] for i in (1199, 1208, 1222, 1223, 1225, 1226, 1227, 1228, 1229)} == {
+        "pantry_staple"}
+    assert {roles[i] for i in (1360, 1390)} == {"beverage"}
+    assert roles[1263] == "snack"
+
+
+def test_prompt_lists_legumes_only_under_protein():
+    lines = dl.PROMPT.splitlines()
+    staple = next(i for i, l in enumerate(lines) if l.strip().startswith("pantry_staple ="))
+    # the staple rule names legumes only to exclude them (v2 listed canned beans as a staple)
+    assert "canned beans" not in " ".join(lines[staple:staple + 3])
 
 
 # ------------------------------------------------------------ batching / retry
