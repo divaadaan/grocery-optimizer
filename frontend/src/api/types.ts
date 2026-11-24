@@ -103,8 +103,8 @@ export interface RecipeInfo {
   created_at: string;
   /** The meal plan (generation) this recipe belongs to; null for legacy rows. */
   generation_id?: string | null;
-  /** Placeholder steps behind `instructions`; template uses `{N}` = ingredients[N].
-   *  Null for recipes saved before migration 023. */
+  /** Placeholder steps behind `instructions` (the server renders those; display
+   *  `instructions`). Null for recipes saved before migration 023. */
   instruction_steps?: InstructionStep[] | null;
   /** Deterministic attribute verdict (app/agents/dietary.py); null for old rows. */
   dietary_compliance?: DietaryCompliance | null;
@@ -113,6 +113,11 @@ export interface RecipeInfo {
 export interface InstructionStep {
   template: string;
   ingredient_refs: number[];
+}
+
+export interface DroppedDish {
+  name: string;
+  reason: string;
 }
 
 export interface DietaryCompliance {
@@ -197,6 +202,8 @@ export interface RecipeGenerationResponse {
   /** Dishes requested; partial is true when fewer recipes were approved. */
   meals_requested?: number | null;
   partial?: boolean;
+  /** Planned or attempted dishes absent from `recipes`, with the reason. */
+  dropped_dishes?: DroppedDish[];
 }
 
 /** Generation is a background job: POST /recipes/generate returns this. */

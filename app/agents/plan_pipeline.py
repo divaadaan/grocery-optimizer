@@ -444,6 +444,14 @@ class _Run:
             "dish_plan": dish_planner.plan_as_dict(self.plan) if self.plan else None,
         }
 
+    def _dropped_dishes(self, outcomes: Sequence[_DishOutcome]) -> List[Dict[str, str]]:
+        """Dishes the planner repair dropped plus written dishes that failed."""
+        out = [{"name": d.get("name") or "(unnamed dish)", "reason": d["reason"]}
+               for d in (self.plan.dropped if self.plan else []) if d.get("reason")]
+        out += [{"name": o.dish.name, "reason": o.error or "not approved"}
+                for o in outcomes if not o.approved]
+        return out
+
     def _base_result(self, outcomes: Sequence[_DishOutcome]) -> Dict[str, Any]:
         self.call_log.sort(key=lambda e: e["order"])
         generated = {o.recipe["recipe_id"]: o.recipe for o in outcomes if o.recipe}
@@ -456,6 +464,7 @@ class _Run:
             "dish_plan": dish_planner.plan_as_dict(self.plan) if self.plan else None,
             "agent_call_log": self.call_log, "infrastructure_errors": list(self.infrastructure),
             "budget_check": None,
+            "dropped_dishes": self._dropped_dishes(outcomes),
             # For scorers: every deal the gate passed (kept_deal_ids is the
             # user's narrowing of the trays), what failed the verdict, passes.
             "available_deals": list(self.deals),

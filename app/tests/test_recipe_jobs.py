@@ -57,6 +57,8 @@ FINAL_STATE = {
     "cost_per_meal": 4.25,
     "estimated_savings": 1.5,
     "warnings": ["Only 1/2 recipes approved"],
+    "num_meals": 2,
+    "dropped_dishes": [{"name": "Tofu Curry", "reason": "no anchor from ANCHORS"}],
 }
 
 # The stages a healthy run reports, in order (plan_pipeline.progress).
@@ -317,10 +319,13 @@ def test_completed_job_carries_the_full_generation_response(client, monkeypatch)
     assert set(result) == {
         "recipes", "total_cost", "cost_per_meal", "estimated_savings",
         "generation_time", "status", "warnings", "generation_id",
-        "meals_requested", "partial", "budget_check",
+        "meals_requested", "partial", "dropped_dishes", "budget_check",
     }
     assert result["status"] == "completed"
     assert result["warnings"] == ["Only 1/2 recipes approved"]
+    assert result["partial"] is True and result["meals_requested"] == 2
+    assert result["dropped_dishes"] == [
+        {"name": "Tofu Curry", "reason": "no anchor from ANCHORS"}]
     assert float(result["total_cost"]) == 4.25
     assert len(result["recipes"]) == 1
 

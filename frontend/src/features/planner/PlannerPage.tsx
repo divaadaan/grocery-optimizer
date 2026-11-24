@@ -221,9 +221,19 @@ export function PlannerPage() {
               <div className="banner banner-warning" role="status">
                 <p>
                   Partial plan: {result.recipes.length} of {result.meals_requested} dishes.
-                  The rest could not be written or did not pass the dietary check.
-                  The server does not report which dishes were dropped.
+                  {result.dropped_dishes?.length
+                    ? "Dropped:"
+                    : "The rest could not be written or did not pass the dietary check."}
                 </p>
+                {result.dropped_dishes && result.dropped_dishes.length > 0 && (
+                  <ul>
+                    {result.dropped_dishes.map((d, i) => (
+                      <li key={`${d.name}-${i}`}>
+                        {d.name}: {d.reason}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
             {result.warnings.length > 0 && (

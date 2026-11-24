@@ -3,14 +3,6 @@ import { Badge, Card } from "../../components/ui";
 import { formatMoney, humanize } from "../../utils/format";
 import type { DietaryCompliance, RecipeInfo } from "../../api/types";
 
-/** Replace `{N}` placeholders with ingredient N's name. */
-function renderStep(template: string, ingredients: RecipeInfo["ingredients"]): string {
-  return template.replace(/\{(\d+)\}/g, (m, n) => {
-    const name = ingredients[Number(n)]?.name;
-    return name ? String(name) : m;
-  });
-}
-
 function ComplianceBadge({ compliance }: { compliance: DietaryCompliance }) {
   if (compliance.approved === false || compliance.meets_restrictions === false) {
     return <Badge tone="warning">Check diet</Badge>;
@@ -78,11 +70,9 @@ export function RecipeCard({ recipe }: { recipe: RecipeInfo }) {
 
           <h4>Instructions</h4>
           <ol className="instructions">
-            {recipe.instruction_steps && recipe.instruction_steps.length > 0
-              ? recipe.instruction_steps.map((step, i) => (
-                  <li key={i}>{renderStep(step.template, recipe.ingredients)}</li>
-                ))
-              : recipe.instructions.map((step, i) => <li key={i}>{step}</li>)}
+            {recipe.instructions.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
           </ol>
 
           {recipe.nutrition_facts && Object.keys(recipe.nutrition_facts).length > 0 && (

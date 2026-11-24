@@ -311,6 +311,9 @@ def test_partial_plan_at_sixty_percent():
     assert result["status"] == "completed"   # job status; the row says partial
     assert len(result["approved_recipe_ids"]) == 3
     assert any("Only 3/5" in w for w in result["warnings"])
+    # The two dishes whose writer never produced a recipe are reported by name.
+    assert [d["name"] for d in result["dropped_dishes"]] == ["Dish 3", "Dish 4"]
+    assert all(d["reason"] for d in result["dropped_dishes"])
 
 
 def test_infrastructure_failure_fails_fast_without_retries():
@@ -525,6 +528,8 @@ def test_a_plan_short_of_dishes_runs_and_says_so():
     partial = run(model3, num_meals=3)
     assert partial["status"] == "completed" and len(partial["approved_recipe_ids"]) == 2
     assert any("Only 2/3" in w for w in partial["warnings"])
+    # The planner-repair drop is reported with its reason.
+    assert {"name": "Anchorless", "reason": "no anchor from ANCHORS"} in partial["dropped_dishes"]
 
 
 def test_a_plan_with_a_stray_side_still_runs():

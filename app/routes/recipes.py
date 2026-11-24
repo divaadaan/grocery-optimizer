@@ -104,6 +104,7 @@ def _build_generation_response(
         meals_requested=result.get("num_meals"),
         partial=(result.get("num_meals") is not None
                  and len(recipes) < result["num_meals"]),
+        dropped_dishes=result.get("dropped_dishes") or [],
         budget_check=result.get("budget_check") or None,
     )
 
