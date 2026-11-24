@@ -541,3 +541,71 @@ def test_a_plan_with_a_stray_side_still_runs():
     assert result["status"] == "completed"
     assert result["dish_plan"]["dropped"] == [{"where": "dish 1 side_deal_ids", "id": 999}]
     assert len(model.prompts) == 3                           # no planner retry
+
+
+# ------------------------------------------------------------ SousChef repair
+
+def with_uncited(recipe_text, name="mushrooms", value="N/A"):
+    """A writer reply with one extra ingredient that cites nothing, written
+    into a list in the first step (the live 2026-11-24 shape)."""
+    data = json.loads(recipe_text)
+    data["ingredients"].append({"name": name, "deal_id": value, "quantity": "8", "unit": "oz"})
+    n = len(data["ingredients"]) - 1
+    data["instructions"][0] = data["instructions"][0].rstrip(".") + f" and {{{n}}}."
+    return json.dumps(data)
+
+
+def test_an_uncited_ingredient_is_repaired_without_a_retry_and_recorded():
+    tofu = with_uncited(recipe_json("Tofu", [3, 4], [51]))
+    model = Model(PLAN, {"Chicken with potatoes": [recipe_json("Chicken", [1, 5], [50])],
+                         "Tofu broccoli stir-fry": [tofu]})
+    result = run(model)
+    assert result["status"] == "completed" and result["dropped_dishes"] == []
+    writer = [m for s, m in model.prompts if "**The dish:** Tofu" in m[0]["content"]]
+    assert len(writer) == 1 and len(writer[0]) == 1          # no retry, no second round
+    recipe = next(r for r in result["generated_recipes"].values() if r["name"] == "Tofu")
+    assert [i.get("deal_id") or i.get("product_id") for i in recipe["ingredients"]] == [3, 4, 51]
+    assert recipe["repairs"][0] == {"kind": "dropped_ingredient", "index": 3,
+                                    "name": "mushrooms", "deal_id": "N/A", "product_id": None}
+    entry = next(e for e in result["agent_call_log"] if e["agent"] == "sous_chef_2")
+    assert entry["success"] and entry["repairs"] == recipe["repairs"]
+    assert "repairs" not in next(e for e in result["agent_call_log"]
+                                 if e["agent"] == "sous_chef_1")
+
+
+def test_a_repaired_recipe_still_gets_the_dietary_verdict():
+    # The (fake) gate lets the chicken through for a vegan user; the repair
+    # drops only the uncited ingredient, and the verdict on the cited
+    # products still rejects the chicken. An uncited "vegan" name never helps.
+    plan = {"dishes": [{"name": "Tofu bowl", "anchor_deal_ids": [3], "side_deal_ids": [1, 4],
+                        "pantry_product_ids": [50]}], "stock_up_deal_ids": []}
+    bad = with_uncited(recipe_json("Tofu", [3, 1], [50]), name="vegan cheese")
+    model = Model(plan, {"Tofu bowl": [bad, recipe_json("Tofu", [3, 4], [50])]})
+    result = run(model, restrictions=["vegan"], num_meals=1)
+    assert result["status"] == "completed"
+    writer = [m[0]["content"] for s, m in model.prompts if "**The dish:** Tofu bowl" in
+              m[0]["content"]]
+    assert len(writer) == 2 and "was rejected" in writer[1] and "chicken thighs" in writer[1]
+    first = next(e for e in result["agent_call_log"] if e["order"] == [1, 0])
+    assert first["success"] and first["repairs"]             # repaired, then rejected
+    recipe = result["generated_recipes"][result["approved_recipe_ids"][0]]
+    assert {i.get("deal_id") for i in recipe["ingredients"]} == {3, 4, None}
+
+
+def test_an_unrepairable_reply_is_retried_with_the_exact_problem():
+    # No anchor cited (the live kosher curry): not repaired, and the retry
+    # names the out-of-range placeholder pydantic would have hidden.
+    data = json.loads(recipe_json("Tofu", [4], [51, 50]))
+    data["ingredients"].append({"name": "chickpeas", "deal_id": "", "quantity": "1"})
+    data["instructions"].append("Serve {0} over {5}.")
+    model = Model(PLAN, {"Chicken with potatoes": [recipe_json("Chicken", [1, 5], [50])],
+                         "Tofu broccoli stir-fry": [json.dumps(data),
+                                                    recipe_json("Tofu", [3, 4], [51])]})
+    result = run(model)
+    assert result["status"] == "completed"
+    retry = next(m for s, m in model.prompts
+                 if "**The dish:** Tofu" in m[0]["content"] and len(m) == 3)
+    text = retry[2]["content"]
+    assert "ingredient 3 'chickpeas' cites no listed id" in text
+    assert "step 4 uses {5}, but there are only 4 ingredients" in text
+    assert "errors.pydantic.dev" not in text

@@ -77,12 +77,12 @@ def set_restrictions(artifact, labels):
 def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
     score = score_run(base_artifact, base_snapshot)
     assert score.verdict == PASS and score.verdict_reasons == []
-    assert score.schema_version == scorers.SCORE_SCHEMA_VERSION == 3
+    assert score.schema_version == scorers.SCORE_SCHEMA_VERSION == 4
     row = score.summary_row()
     assert row == {
         "scenario": "seed27-vegetarian", "snapshot": "seed27", "verdict": "PASS",
         "status": "completed", "recipes_approved": 3, "recipes_requested": 3,
-        "schema_retries": 1, "schema_failures": 0,
+        "schema_retries": 1, "schema_failures": 0, "writer_repairs": 0,
         "instruction_steps": 6, "instruction_invalid_refs": 0,
         "unreferenced_ingredients": 0, "unstructured_instructions": 0,
         "compliance_gate": "PASS", "compliance_rate": 1.0, "verdict_disagreements": 0,
@@ -131,7 +131,7 @@ def test_fixture_scores_are_pinned(base_artifact, base_snapshot):
 def test_run_score_is_json_serialisable(base_artifact, base_snapshot):
     score = score_run(base_artifact, base_snapshot)
     data = json.loads(score.to_json())
-    assert data["schema_version"] == 3 and data["kind"] == "recipe-eval-score"
+    assert data["schema_version"] == 4 and data["kind"] == "recipe-eval-score"
     assert data == score.to_dict()
 
 
@@ -542,7 +542,7 @@ def test_cli_summary_and_json(capsys, tmp_path, base_artifact):
 
     assert score_eval.main([str(FIXTURE), "--json"]) == 0
     data = json.loads(capsys.readouterr().out)
-    assert data["verdict"] == PASS and data["schema_version"] == 3
+    assert data["verdict"] == PASS and data["schema_version"] == 4
 
     bad = copy.deepcopy(base_artifact)
     plan(bad)[0]["ingredients"].append({"name": "x", "deal_id": 1})
@@ -618,3 +618,31 @@ def test_legacy_artifact_without_instruction_steps_is_unstructured(base_artifact
     assert i["steps"] is None and i["unreferenced_ingredients"] is None
     row = score_run(a, base_snapshot).summary_row()
     assert row["instruction_steps"] is None and row["unstructured_instructions"] == 3
+
+
+# --------------------------------------------------------------------------
+# SousChef repair: scored as the pipeline accepted it
+# --------------------------------------------------------------------------
+
+def _writer_call(reply):
+    prompt = ("**The dish:** Tofu bowl\n(x)\n\n"
+              "- tofu → deal_id 27 (Tofu Firm, $2.49)\n- spinach → deal_id 8 (Baby Spinach, $3)\n"
+              "- olive oil → product_id 50\n- salt → product_id 51\n")
+    return {"role": "sous_chef", "request": {"messages": [{"type": "human", "content": prompt}]},
+            "response": {"content": json.dumps(reply)}, "error": None}
+
+
+def test_a_repaired_writer_reply_counts_as_valid_and_is_counted(base_artifact, base_snapshot):
+    reply = {"name": "Tofu bowl", "ingredients": [
+        {"name": "tofu", "deal_id": 27}, {"name": "spinach", "deal_id": 8},
+        {"name": "oil", "product_id": 50}, {"name": "mushrooms", "deal_id": "N/A"}],
+        "instructions": ["Fry {0} in {2}.", "Add {1} and {3}."]}
+    anchors = {"Tofu bowl": [27]}
+    assert scorers._last_attempt_valid(_writer_call(reply), anchors) is True
+    assert scorers._last_attempt_valid(_writer_call(reply), {"Tofu bowl": [9]}) is False
+    reply["ingredients"][3]["deal_id"] = 999  # not offered: never repaired
+    assert scorers._last_attempt_valid(_writer_call(reply), anchors) is False
+
+    a = copy.deepcopy(base_artifact)
+    a["final_state"]["agent_call_log"][1]["repairs"] = [{"kind": "dropped_ingredient"}]
+    assert score_run(a, base_snapshot).summary_row()["writer_repairs"] == 1
