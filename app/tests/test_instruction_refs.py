@@ -20,7 +20,8 @@ from app.agents.instruction_refs import (
     unreferenced,
 )
 from app.agents.dietary import compliance_report
-from app.agents.llm_output import GeneratedRecipe, RecipeBatch, invoke_validated
+from app.agents.llm_chat import Reply, chat_validated
+from app.agents.llm_output import GeneratedRecipe, RecipeBatch
 from app.agents.recipe_build import build_recipe, render_instructions
 from app.services import mlflow_logger
 from app.tests.test_cited_compliance import (
@@ -121,22 +122,18 @@ def test_unreferenced_ingredient_is_reported_not_rejected():
 
 
 def test_bad_reference_goes_back_to_the_model_and_retry_succeeds():
-    class LLM:
-        def __init__(self):
-            self.calls = []
-            self.replies = [json.dumps([recipe("Fry {7}.")]), json.dumps([recipe("Fry {0}.")])]
+    replies = [json.dumps({"recipes": [recipe("Fry {7}.")]}),
+               json.dumps({"recipes": [recipe("Fry {0}.")]})]
+    calls = []
 
-        def invoke(self, messages):
-            self.calls.append(messages)
+    def chat(spec, messages, **params):
+        calls.append(messages)
+        return Reply(text=replies[len(calls) - 1])
 
-            class R:
-                content = self.replies.pop(0)
-            return R()
-
-    llm = LLM()
-    batch, _ = invoke_validated(llm, "prompt", RecipeBatch)
+    batch, _ = chat_validated(chat, "ollama:m", [{"role": "user", "content": "prompt"}],
+                              RecipeBatch.model_validate)
     assert batch.recipes[0].instructions == ["Fry {0}."]
-    assert "index(es) [7]" in llm.calls[1][-1].content
+    assert "index(es) [7]" in calls[1][-1]["content"]
 
 
 def test_step_problems_agree_with_the_schema():

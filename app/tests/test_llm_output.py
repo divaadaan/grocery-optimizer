@@ -1,20 +1,13 @@
-"""Unit tests for Pydantic validation/coercion of agent LLM output and the
-validate-and-retry invoke helper. No LLM or DB required."""
+"""Unit tests for Pydantic validation/coercion of the SousChef's recipe
+output, and its validate-and-retry through ``llm_chat.chat_validated``. No
+LLM or DB required."""
 import json
 
 import pytest
 from pydantic import ValidationError
 
-from app.agents.llm_output import (
-    ChefPlan,
-    GeneratedRecipe,
-    LLMOutputError,
-    NutritionistVerdict,
-    RecipeBatch,
-    citation_context,
-    invoke_validated,
-    raw_output_report,
-)
+from app.agents.llm_chat import Reply, chat_validated
+from app.agents.llm_output import GeneratedRecipe, RecipeBatch, citation_context
 
 VALID_RECIPE = {
     "name": "Tomato Basil Pasta",
@@ -26,21 +19,16 @@ VALID_RECIPE = {
 }
 
 
-class FakeResponse:
-    def __init__(self, content):
-        self.content = content
-
-
-class FakeLLM:
-    """Replays canned responses; records the message lists it was invoked with."""
+class FakeChat:
+    """A chat function replaying canned replies; records each conversation."""
 
     def __init__(self, responses):
         self.responses = list(responses)
         self.calls = []
 
-    def invoke(self, messages):
+    def __call__(self, spec, messages, **params):
         self.calls.append(messages)
-        return FakeResponse(self.responses.pop(0))
+        return Reply(text=self.responses.pop(0))
 
 
 # --- RecipeBatch shape coercion ------------------------------------------
@@ -161,7 +149,7 @@ def test_offered_citations_pass_with_context():
 
 
 def test_membership_is_not_checked_without_context():
-    """The training/ dataset gate validates without per-call ids; only the
+    """Without a context (no per-call ids), only the
     structural one-citation rule applies there."""
     batch = RecipeBatch.model_validate(_recipe_with({"name": "Pasta", "deal_id": 999}))
     assert batch.recipes[0].ingredients[0].deal_id == 999
@@ -169,108 +157,13 @@ def test_membership_is_not_checked_without_context():
 
 def test_bad_citation_goes_back_to_the_model_and_retry_succeeds():
     ctx = citation_context(deal_ids=[3], product_ids=[])
-    bad = json.dumps([_recipe_with({"name": "Beef", "deal_id": 5})])
-    uncited = json.dumps([_recipe_with({"name": "Pasta"})])
-    good = json.dumps([_recipe_with({"name": "Pasta", "deal_id": 3})])
-    llm = FakeLLM([bad, uncited, good])
-    batch, raw = invoke_validated(llm, "prompt", RecipeBatch, context=ctx)
-    assert raw == good
-    assert len(llm.calls) == 3
-    first_feedback = llm.calls[1][2].content
-    assert "cites deal_id 5" in first_feedback and "Valid deal_ids: [3]" in first_feedback
-    assert "no citation" in llm.calls[2][4].content
-
-
-# --- ChefPlan -------------------------------------------------------------
-
-def _group(*names):
-    return [{"product_name": n, "quantity_estimate": "1", "deal_id": i}
-            for i, n in enumerate(names)]
-
-
-def test_chef_plan_valid():
-    plan = ChefPlan.model_validate({
-        "ingredient_groups": [
-            _group("Tofu Firm"), _group("Pasta Penne"), _group("Rice Basmati"),
-        ],
-        "ingredient_reuse_map": {"Tomato Sauce": "2"},  # string count coerced
-        "rationale": "spread the staples",
-    })
-    assert len(plan.ingredient_groups) == 3
-    assert plan.ingredient_reuse_map["Tomato Sauce"] == 2
-
-
-def test_chef_plan_rejects_wrong_group_count():
-    with pytest.raises(ValidationError):
-        ChefPlan.model_validate({"ingredient_groups": [_group("Tofu"), _group("Rice")]})
-
-
-def test_chef_plan_rejects_empty_group():
-    with pytest.raises(ValidationError):
-        ChefPlan.model_validate({"ingredient_groups": [_group("Tofu"), [], _group("Rice")]})
-
-
-# --- NutritionistVerdict ----------------------------------------------------
-
-def test_verdict_requires_approved():
-    with pytest.raises(ValidationError):
-        NutritionistVerdict.model_validate({"feedback": "looks fine"})
-
-
-def test_verdict_defaults_and_coercion():
-    verdict = NutritionistVerdict.model_validate(
-        {"approved": "false", "health_score": "85"}
-    )
-    assert verdict.approved is False
-    assert verdict.health_score == 85.0
-    assert verdict.nutrition_facts == {}
-    assert verdict.dietary_compliance == {}
-
-
-# --- invoke_validated retry loop --------------------------------------------
-
-def test_invoke_validated_first_try():
-    llm = FakeLLM([json.dumps([VALID_RECIPE])])
-    batch, raw = invoke_validated(llm, "prompt", RecipeBatch)
-    assert len(batch.recipes) == 1
-    assert raw == json.dumps([VALID_RECIPE])
-    assert len(llm.calls) == 1
-
-
-def test_invoke_validated_retries_with_error_feedback():
-    llm = FakeLLM(["not json {", json.dumps({"approved": True, "feedback": "ok"})])
-    verdict, _raw = invoke_validated(llm, "prompt", NutritionistVerdict)
-    assert verdict.approved is True
-    assert len(llm.calls) == 2
-    # Retry conversation carries the bad response and the parse error back
-    retry_messages = llm.calls[1]
-    assert retry_messages[1].content == "not json {"
-    assert "invalid" in retry_messages[2].content
-
-
-def test_invoke_validated_exhausts_attempts():
-    llm = FakeLLM(["{}", "{}", "{}"])
-    with pytest.raises(LLMOutputError):
-        invoke_validated(llm, "prompt", NutritionistVerdict, max_attempts=3)
-    assert len(llm.calls) == 3
-
-
-def test_llm_output_error_carries_raw_attempts():
-    """On exhaustion the raw model responses that never validated are attached
-    to the exception (and the report helper renders them) so callers can report
-    exactly what the model emitted."""
-    llm = FakeLLM(['{"a": 1}', '{"b": 2}', '{"c": 3}'])
-    with pytest.raises(LLMOutputError) as excinfo:
-        invoke_validated(llm, "prompt", NutritionistVerdict, max_attempts=3)
-    err = excinfo.value
-    assert err.raw_attempts == ['{"a": 1}', '{"b": 2}', '{"c": 3}']
-    assert err.last_raw == '{"c": 3}'
-    report = raw_output_report(err)
-    assert '{"a": 1}' in report and '{"c": 3}' in report
-    assert "attempt 3/3" in report
-
-
-def test_raw_output_report_truncates_long_output():
-    err = LLMOutputError("boom", raw_attempts=["x" * 5000])
-    report = raw_output_report(err, max_chars=100)
-    assert "+4900 chars" in report
+    bad = json.dumps({"recipes": [_recipe_with({"name": "Beef", "deal_id": 5})]})
+    good = json.dumps({"recipes": [_recipe_with({"name": "Pasta", "deal_id": 3})]})
+    chat = FakeChat([bad, good])
+    batch, replies = chat_validated(
+        chat, "ollama:m", [{"role": "user", "content": "prompt"}],
+        lambda data: RecipeBatch.model_validate(data, context=ctx))
+    assert replies[-1].text == good and len(chat.calls) == 2
+    feedback = chat.calls[1][2]["content"]
+    assert "cites deal_id 5" in feedback and "Valid deal_ids: [3]" in feedback
+    assert batch.recipes[0].ingredients[0].deal_id == 3

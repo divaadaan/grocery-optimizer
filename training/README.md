@@ -5,11 +5,11 @@ SFT pipeline for the recipe agents.
 - **Step 1 — `reproduce_paper/`**: reproduces arXiv 2502.02028 — fine-tuning
   SmolLM models on Food.com recipe generation. Teaches recipe *form*; shown not
   to move the dietary/allergen failure mode (see `ROADMAP.md` item 5).
-- **Step 2 — `data_app/`**: builds an app-targeted SFT dataset rendered through
-  the app's *actual* `PromptTemplates` and validated through its *actual*
-  Pydantic schemas, targeting the failure modes found in verification
-  (structured-JSON output, dietary-restriction compliance, nutritionist false
-  rejections). See "Step 2" below.
+- **Step 2 — `data_app/` (removed 2026-11-23)**: built an app-targeted SFT
+  dataset through the old Chef / SousChef / Nutritionist prompts and schemas.
+  Those agents were replaced by approach C (`experiments/chef/DESIGN_APPROACH_C.md`)
+  and dietary compliance is a deterministic lookup, so `data_app/` was retired
+  with them. It is in git history (last on `main` before the retirement PR).
 
 Rules of the split with `app/`:
 
@@ -120,8 +120,10 @@ python -m training.reproduce_paper.compare_eval DIR_A DIR_B ...    # explicit ev
   compliant recipes by hallucinating violations). ~360M params are simply
   undersized for this judgment. **No further SmolLM SFT is planned** — the next
   attempt is a more capable base, `qwen2.5:1.5b-instruct`, evaluated *untuned*
-  through `evaluate_app.py --ollama-model` (see `data_app/NEXT_STEPS.md`). The
-  paper-repro scaffold (`reproduce_paper/`) remains as reference.
+  through `evaluate_app.py --ollama-model`. That was superseded too: the app
+  moved off small fine-tuned models (2026-10-15) and onto approach C
+  (2026-11-23), and `data_app/` was removed. The paper-repro scaffold
+  (`reproduce_paper/`) remains as reference.
 
 ## Export to Ollama
 
@@ -168,126 +170,11 @@ Greedy `evaluate.py` can show a repetition loop; Ollama's default sampling
 (`repeat_penalty 1.1` + temperature) tames it. For tighter control, bake a
 Modelfile (`PARAMETER repeat_penalty 1.3`, `repeat_last_n 64`, `num_predict 256`).
 
-## Step 2 — app-targeted dataset (`data_app/`)
+## Step 2 — app-targeted dataset (retired)
 
-Renders training examples through the app's real prompts
-(`app.agents.prompts.PromptTemplates`) and validates every completion through
-the app's real Pydantic schemas (`app.agents.llm_output`: `ChefPlan`,
-`RecipeBatch`, `NutritionistVerdict`) at build time — so train-time inputs match
-inference byte-for-byte and no malformed completion can enter the corpus. The
-import direction is training → app (the one the split rule allows); the schemas
-import with just `pydantic` (the `langchain_core` import in `llm_output.py` is
-lazy), which is why `pydantic` is in `requirements.txt`.
-
-Hybrid labelling, one strategy per failure mode:
-
-- **`chef_plan`** (programmatic): prompt shows *all* deals incl. chicken/beef/
-  salmon; completion groups only the dietary-compliant ones into 3 complementary
-  sets, with a rationale that states the exclusion. Zero label noise — the direct
-  fix for `test_chef_groups_respect_vegetarian_restriction`.
-- **`nutritionist_verdict`** (programmatic): REJECT recipes containing a
-  forbidden ingredient (hard guards) + APPROVE compliant recipes incl. the
-  minimal 2-ingredient control phi4-mini false-rejects (the over-strictness fix).
-- **`sous_chef_recipe`** (distilled): recipe prose distilled from `qwen2.5:7b`
-  via Ollama, kept only if it validates through `RecipeBatch` *and* passes a
-  forbidden-term rule check.
-
-Seed deals + the vegetarian forbidden list come from
-`app/tests/fixtures/nutritionist_cases.json` — the same fixture the acceptance
-tests read, so data and tests can't drift (enforced by an assertion in
-`seed_catalog.load_fixture`).
-
-```bash
-# Offline (programmatic tasks only — no Ollama needed):
-python -m training.data_app.build_app_dataset --no-distill
-
-# Full build incl. distillation. From WSL, point --base-url at the
-# network-exposed Windows Ollama (gateway IP, same as .env's OLLAMA_BASE_URL):
-python -m training.data_app.build_app_dataset --base-url http://172.18.128.1:11434
-```
-
-Writes 80/10/10 `train`/`validation`/`test.jsonl` (stratified by task) of
-conversational records — `{task, prompt: [user turn], completion: [assistant
-turn], meta}` — a combined `app_sft.jsonl`, and `dataset_stats.json` to
-`training/data/app/`. A completion that fails its schema is dropped and counted,
-never written. The prompt/completion are message lists (not raw strings) because
-the app serves these agents via `ChatOllama` with a single `HumanMessage`, so the
-training format mirrors inference once the chat template is applied (see Step 2
-training below).
-
-### Training on the app dataset
-
-`train_sft.py` consumes these records via `dataset_format: conversational`: it
-keeps TRL's `prompt`/`completion` columns, applies the model's chat template, and
-masks everything up to the assistant header so loss falls only on the completion
-(it never learns to echo the big `deals_json` blob in the prompt). It prints the
-masked/trained token split of a sample and aborts if `max_length` truncates the
-whole completion away. Requires an **Instruct** base — base SmolLM has no chat
-template.
-
-```bash
-python -m training.reproduce_paper.train_sft \
-    --config training/reproduce_paper/configs/smollm-360m-app-qlora.yaml --smoke
-python -m training.reproduce_paper.train_sft \
-    --config training/reproduce_paper/configs/smollm-360m-app-qlora.yaml   # ~10 min locally
-python -m training.reproduce_paper.train_sft \
-    --config training/reproduce_paper/configs/smollm-135m-app-full.yaml
-```
-
-These configs set `max_length: 4224` (chef prompt+completion tops ~4.1k tokens —
-a smaller cap right-truncates the completion away) with gradient checkpointing
-and batch 1, so they fit the 8 GB 4060 without a rental. Use a **SmolLM2** base,
-not v1 — v1's 2048-token context can't hold the ~2.8k-token chef prompts and RoPE
-extrapolates them into garbage (falling loss won't reveal it).
-
-### Inspecting what the model actually generates
-
-A loss that falls does **not** prove the model learned the format — check the
-generations. `generate_app.py` runs a tuned model over the held-out split and
-writes the prompt / generation / reference plus per-task JSON-validity (and chef
-dietary-violation) to disk, and streams the same to stdout:
-
-```bash
-python -m training.data_app.generate_app --model training/runs/smollm-360m-app-qlora
-python -m training.data_app.generate_app --model training/runs/smollm-360m-app-qlora \
-    --task chef_plan --temperature 0.7        # one task, with sampling
-```
-
-The base is auto-detected from `adapter_config.json` (or pass `--base`). Output
-lands in `<model>/eval_app/{generations.jsonl,generations.txt}`.
-
-### Deterministic task eval (Phase 3)
-
-`evaluate_app.py` scores the held-out split and reports the acceptance-bar
-metrics ported from `app/tests/test_nutritionist_regression.py`: per-task
-JSON-validity, chef dietary-violation rate (the `forbidden_terms` assertion over
-parsed `ingredient_groups`), and the nutritionist confusion matrix +
-false-rejection rate — plus a would_pass proxy for each of the two `xfail` tests.
-
-```bash
-# intrinsic (local adapter, greedy):
-python -m training.data_app.evaluate_app --model training/runs/smollm-360m-app-qlora
-
-# app-faithful (served via Ollama, format=json + app temps) — predicts the xfail
-# flip, and the way to eval an untuned base-swap candidate:
-python -m training.data_app.evaluate_app --ollama-model qwen2.5:1.5b-instruct \
-    --base-url http://172.18.128.1:11434
-```
-
-Writes `metrics.json` + `report.txt`. `generate_app.py` is the qualitative
-companion (full prompt/generation/reference dumps); `evaluate_app.py` is the
-aggregate scorer. **A loss that falls, or even valid JSON, does not mean the task
-is solved** — the first 360M eval was 6/6 valid JSON on the nutritionist yet
-false-rejected 100% of compliant recipes. See `data_app/NEXT_STEPS.md`.
-
-## Known divergences from the paper
-
-- `<|startoftext|>` is a literal string, not a registered special token (see
-  `formatting.py` docstring for why).
-- LoRA alpha is unstated in the paper; we use 16 (2×r).
-- Small-scale epoch count is unstated; the 135M config uses 3.
-- Decoding params for evaluation are unstated; we use greedy decoding.
-- Per-device batch 8 × grad-accum 4 is our reading of the paper's
-  "batch size 32, gradient accumulation 4".
-- We start with the SmolLM family only (skipping GPT-2/T5/Phi-2), since SmolLM
-  is the model family we plan to serve.
+`data_app/` rendered examples through the app's old `PromptTemplates` and
+validated them with the old `ChefPlan` / `RecipeBatch` / `NutritionistVerdict`
+schemas. Both the agents and those schemas are gone from `app/`, and the
+`*-app-*` configs in `reproduce_paper/configs/` only make sense with a dataset it
+built. Recover it from git history if the track is ever revived; it would need
+rewriting against `app/agents/dish_planner.py` / `dish_writer.py` first.
