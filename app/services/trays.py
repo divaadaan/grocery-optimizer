@@ -11,7 +11,10 @@ same trays out.
 3. Normalise each price to a comparable basis: $/lb for weight, $/L for
    volume, $/each for counts, else $/package.
 4. Group by ``(role, item, basis)``. Keep each group's cheapest deal and how it
-   compares with the median across chains (the loss-leader signal).
+   compares with the median across chains (the loss-leader signal). A bare
+   package price (basis ``pkg``) is not a like-for-like comparison -- a $2
+   skewer is not a bargain next to a $19 bag -- so ``pkg`` groups get gap 0
+   and make no "below median" claim (owner, 2026-11-24).
 5. Fill three trays:
 
    ========  ====================================  ====
@@ -22,6 +25,7 @@ same trays out.
    ========  ====================================  ====
 
    Biggest cross-chain gap first, then the more reliable basis, then cheapest.
+   With gap 0, every ``pkg`` row sorts after every $/lb, $/L and $/each row.
    prepared_meal, snack, beverage, non_food and unknown never reach a tray.
 
 Items are compared by exact equality of the stored ``item`` label -- data
@@ -153,7 +157,9 @@ def _group_best(deals: Iterable[Dict[str, Any]], labels: Dict[int, Label]
             per_chain.setdefault(d.get("chain") or d.get("store_name") or "?", price)
         n = len(per_chain)
         median = statistics.median(per_chain.values())
-        gap = 1 - cmp_price / median if n >= 2 and median > 0 else 0.0
+        # pkg: packages of different sizes, so no gap (median kept as data only)
+        comparable = basis != "pkg" and n >= 2 and median > 0
+        gap = 1 - cmp_price / median if comparable else 0.0
         best.append(TrayItem(
             deal_id=int(top["deal_id"]), product_name=top.get("product_name") or "",
             store_name=top.get("store_name"), chain=top.get("chain"),
@@ -253,7 +259,12 @@ def tray_row(t: TrayItem, name_len: int = 70) -> str:
     if len(name) > name_len:
         name = name[: name_len - 1] + "…"
     price = f"${t.sale_price:.2f}" + (f"/{t.unit}" if t.unit else "")
-    per = {"lb": "/lb", "l": "/L", "each": " each", "pkg": " per pkg"}[t.basis]
-    cmp_ = (f"cheapest of {t.n_chains} chains (median ${t.median_price:.2f}{per})"
-            if t.n_chains >= 2 else "only chain with it")
+    if t.n_chains < 2:
+        cmp_ = "only chain with it"
+    elif t.basis == "pkg":
+        # Package sizes differ, so no cheapest / median claim (see _group_best).
+        cmp_ = f"sold by {t.n_chains} chains; package sizes differ, not compared"
+    else:
+        per = {"lb": "/lb", "l": "/L", "each": " each"}[t.basis]
+        cmp_ = f"cheapest of {t.n_chains} chains (median ${t.median_price:.2f}{per})"
     return f"{t.deal_id} | {name} | {price} | {t.chain or t.store_name} | item: {t.item}; {cmp_}"

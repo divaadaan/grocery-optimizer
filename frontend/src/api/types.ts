@@ -164,7 +164,8 @@ export interface TrayItem {
   compare_price: number;
   median_price: number;
   n_chains: number;
-  /** 1 - compare_price / median_price; 0 when only one chain has it. */
+  /** 1 - compare_price / median_price; 0 when only one chain has it, and
+   *  always 0 for basis "pkg" (package sizes differ, so no comparison). */
   gap: number;
 }
 

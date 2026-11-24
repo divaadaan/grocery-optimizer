@@ -45,7 +45,7 @@ ROLES = ("protein", "vegetable", "fruit", "starch", "dairy", "pantry_staple",
 UNKNOWN_ROLE = "unknown"
 SIZE_UNITS = ("g", "ml", "each")
 #: Bump when PROMPT changes: rows at an older version are relabelled.
-PROMPT_VERSION = "v5"
+PROMPT_VERSION = "v6"
 BATCH = 40
 MAX_TOKENS = 8000
 ITEM_MAX_LEN = 80
@@ -79,23 +79,37 @@ For each row give:
   "Protein" in a product name is marketing, not the role: protein bread, protein tortillas, protein
   pasta and protein bars keep the role of the food they are (starch, pantry_staple, snack).
   dairy = milk, cheese, yogurt, butter, cream.
-  starch = bread, buns, bagels, tortillas, pita, naan, potatoes and sweet potatoes.
+  starch = bread, buns, bagels, tortillas, pita, naan, potatoes and sweet potatoes. Potatoes and
+  sweet potatoes of every kind (russet, mini, yellow, orange) are ALWAYS starch, never vegetable.
   Rice, pasta, noodles, flour and oats are pantry_staple, not starch.
   pantry_staple = shelf-stable COOKING basics only: pasta, rice, flour, sugar, oil, canned tomatoes,
   stock, spices. Legumes, tea, coffee, coffee pods, candy, chocolate, drinks and snacks are
   NEVER pantry_staple.
   fruit = fresh or frozen fruit, including citrus (pomelo too) and melons. Fruit is NEVER sugar or
-  pantry_staple, even when a variety name contains a word like "sugar" or "honey" (a "Honeycrisp"
-  apple or a "Sugar Baby" watermelon is fruit; the item is the fruit, "apple", "watermelon").
+  pantry_staple, even when a variety name contains or starts with a word like "sugar" or "honey"
+  (a "Honeycrisp" apple, a "Sugar Baby" watermelon or a "Sugar Red Honey" pomelo is fruit; the
+  item is the fruit, "apple", "watermelon", "pomelo").
   Label each row on its own: neighbouring rows are often different things.
   beverage = anything you drink, including tea, coffee and juice. snack = chips, cookies, candy,
   chocolate, bars (protein bars too); a chocolate or candy shaped or flavoured like a food is
   still snack (peanut butter cups are snack, not peanut butter).
   prepared_meal = ready-to-eat or heat-and-serve dishes.
   non_food = anything that is not food.
-- "size_qty" and "size_unit": the package size if the row states it, converted to one of
-  "g", "ml" or "each" (1.36 kg -> 1360 g; 12 x 355 mL -> 4260 ml; dozen eggs -> 12 each).
-  Use null for both when the row does not state a size, or when the price is per lb / per kg.
+- "size_qty" and "size_unit": the package size if the row states it, converted to
+  one of "g", "ml" or "each". Sizes are often after a comma or in brackets, in capitals, or with a
+  decimal comma (1,4 KG = 1.4 kg).
+  Weight or volume: 1.36 kg -> 1360 g; 750 ML -> 750 ml; 2L -> 2000 ml; (3lb) -> 1361 g.
+  Multipack: the total. 12 x 355 mL -> 4260 ml; 6 x 100 g -> 600 g. Weight or volume wins over a
+  count when the row gives both.
+  Count only: a count of pieces is "each", for any food. dozen eggs -> 12 each; 18 pcs / 18 PACK /
+  18pcs / 30'S -> 18, 18, 18, 30 each; peppers 4 pk / romaine 3pk / tortillas 6PK -> 4, 3, 6 each.
+  A range or a list of sizes (294-454 G, 227/250 G, 650-750 g): the SMALLEST size. The one price
+  covers every size, and only the smallest gives a per-unit price true for all of them
+  (294-454 G -> 294 g; 227/250 G -> 227 g).
+  Not sizes: shrimp counts per lb (21/25, 26-30 PER LB, 51/70, (8/12)), fat percentages (2%).
+  Several products on one row: the size given for the item you named.
+  Use null for both when the row states no size (never guess one from the kind of product), or
+  when the price is per lb / per kg / per 100 g.
 Return ONLY a JSON object, no comments, exactly like this example:
 {{"labels": [{{"id": 123, "item": "chicken thighs", "role": "protein", "size_qty": null, "size_unit": null}}, {{"id": 124, "item": "dry pasta", "role": "pantry_staple", "size_qty": 900, "size_unit": "g"}}]}}
 One entry per row below.

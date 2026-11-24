@@ -17,6 +17,14 @@ reply:
   Rows the model labels inconsistently from run to run at v5 (a Reese's /
   Mini Eggs tile, a yogurt-dipped protein bar) are in the batch but not
   asserted; the PR body has the run-to-run notes.
+* ``fixtures/deal_labeller/gpt_oss_batch_v6.json``, captured 2026-11-24 with
+  PROMPT_VERSION v6 over the v5 batch plus package-size cases: egg counts
+  ("30'S", "18 pcs", "180Pcs", "18 PACK"), ranges and size lists
+  ("294-454 G", "315-700 G", "227/250 G", "650-750 g" -> the smallest),
+  multipacks ("6X200 ML", "2x150g") and produce packs ("4 pk", "3pk"), and
+  shrimp counts per lb ("21/25", "26-30 PER LB") that are not sizes. The
+  Reese's / Mini Eggs tile and the olive oil role (condiment or
+  pantry_staple) still vary run to run and are not asserted.
 """
 import json
 import threading
@@ -32,6 +40,7 @@ from app.services import deal_labeller as dl
 
 FIXTURE = Path(__file__).parent / "fixtures" / "deal_labeller" / "gpt_oss_batch.json"
 FIXTURE_V5 = FIXTURE.with_name("gpt_oss_batch_v5.json")
+FIXTURE_V6 = FIXTURE.with_name("gpt_oss_batch_v6.json")
 
 
 def _deal(i, name="Item", **kw):
@@ -142,9 +151,9 @@ def test_recorded_gpt_oss_batch_parses_completely_and_fixes_prototype_mislabels(
     assert all(by_id[i] for i in roles)
 
 
-def test_recorded_v5_batch_labels_legumes_as_protein_and_fruit_as_fruit():
-    rec = json.loads(FIXTURE_V5.read_text())
-    assert rec["prompt_version"] == dl.PROMPT_VERSION
+@pytest.mark.parametrize("fixture", [FIXTURE_V5, FIXTURE_V6], ids=["v5", "v6"])
+def test_recorded_batch_labels_legumes_as_protein_and_fruit_as_fruit(fixture):
+    rec = json.loads(fixture.read_text())
     deals = rec["deals"]
     got = dl.parse_labels(rec["reply_text"], [d["deal_id"] for d in deals])
     assert set(got) == {d["deal_id"] for d in deals}
@@ -169,6 +178,36 @@ def test_recorded_v5_batch_labels_legumes_as_protein_and_fruit_as_fruit():
     assert {roles[i] for i in (1222, 1223, 1225, 1226, 1227, 1228, 1229)} == {"pantry_staple"}
     assert roles[1199] in {"pantry_staple", "condiment"}  # olive oil: either is STOCK-UP
     assert {roles[i] for i in (1360, 1390)} == {"beverage"}
+
+
+def test_recorded_v6_batch_extracts_counts_ranges_and_multipacks():
+    rec = json.loads(FIXTURE_V6.read_text())
+    assert rec["prompt_version"] == dl.PROMPT_VERSION
+    got = dl.parse_labels(rec["reply_text"], [d["deal_id"] for d in rec["deals"]])
+    assert set(got) == {d["deal_id"] for d in rec["deals"]}
+    size = {i: (lab.size_qty, lab.size_unit) for i, lab in got.items()}
+    # Egg counts: priced per package, a dozen never compared per egg.
+    assert size[897] == (30.0, "each")    # NO NAME MEDIUM EGG, 30'S
+    assert size[901] == (18.0, "each")    # 18 pcs
+    assert size[903] == (180.0, "each")   # 180Pcs
+    assert size[906] == size[909] == (18.0, "each")  # 18 PACK, 18pcs
+    # A range or a list of sizes at one price: the smallest.
+    assert size[823] == (294.0, "g")      # 294-454 G
+    assert size[845] == (315.0, "g")      # 315-700 G
+    assert size[962] == (227.0, "g")      # 227/250 G
+    assert size[944] == (650.0, "g")      # 650-750 g
+    assert size[647] == (540.0, "ml")     # 540/796 ML
+    # Multipacks: the total.
+    assert size[855] == (1200.0, "ml")    # 6X200 ML
+    assert size[1266] == (300.0, "g")     # 2x150g
+    assert size[665] == (4.0, "each") and size[675] == (3.0, "each")  # 4 pk, 3pk
+    # Shrimp counts per lb are not sizes.
+    assert size[842] == (380.0, "g")      # 21/25 380g
+    assert size[801] == (1360.0, "g")     # 26-30 PER LB, 1.36 KG
+    # No size stated: none guessed.
+    assert size[895] == size[902] == size[822] == (None, None)
+    # Potatoes stay starch (noisy at v5 and in early v6 drafts).
+    assert {got[i].role for i in (585, 598, 700, 704)} == {"starch"}
 
 
 def test_prompt_lists_legumes_only_under_protein():
