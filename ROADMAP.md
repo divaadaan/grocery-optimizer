@@ -1,10 +1,10 @@
 # Development Roadmap
 
-Canonical plan, last revised 2026-11-23 (evening; originally 2026-06-12).
+Canonical plan, last revised 2026-11-24 (originally 2026-06-12).
 Dated `*Shipped:*` / `*Progress:*` entries below are historical records — the
 test counts inside them were true when written and are deliberately not
-rewritten. Current suite on `main`: **1530 passed, 1 deselected**
-(`pytest -m "not llm"`, after the 2026-11-23 evening PRs).
+rewritten. Current suite on `main`: **1537 passed, 1 deselected**
+(`pytest -m "not llm"`, after #72; 1539 with #73).
 
 **Where we are (2026-11-23, end of day):** recipe generation was rebuilt as
 **approach C** (`experiments/chef/DESIGN_APPROACH_C.md`, accepted by the owner
@@ -18,8 +18,8 @@ with the code or with this section, this section and the code win.
 
 1. **Label** (offline, after every ingestion): `app/services/deal_labeller.py`
    gives each deal `{item, role, package size}` with `hf:openai/gpt-oss-120b`,
-   in batches of 40. Stored in `deal_labels` (migration 024). Labels decide only
-   what is *surfaced*, never dietary access.
+   in batches of 40 (prompt v5 from #73). Stored in `deal_labels` (migration
+   024). Labels decide only what is *surfaced*, never dietary access.
 2. **Gate** (unchanged): `fetch_gated_deals` + `deal_gate.deal_filter` in SQL.
    No ranking, no cap.
 3. **Trays** (code): `app/services/trays.py` builds ANCHORS (proteins, 15),
@@ -52,35 +52,114 @@ meeting the user's dietary restrictions. Cost is reported (a lower bound), never
 a constraint or a gate. Savings stays secondary and degrades to absent, never a
 fabricated number. (`CLAUDE.md` *Product framing* carries the same wording.)
 
-### Next up (2026-11-24)
+### Next up (2026-11-25)
 
-1. **Dish count on the 7B planner.** With fewer anchors than meals,
-   `qwen2.5:7b` often plans a dish around a side; it is dropped, so ~40% of
-   live runs give 2/3 dishes (12/12 runs completed, 7 full). First try a
-   stronger planner (`LLM_PLANNER_MODEL=hf:openai/gpt-oss-120b`, which planned
-   well in the prototypes), then re-measure on the live scenario set below.
-2. **Product linking is the bottleneck for restricted users.** Only 45 of 916
-   live L4G3E8 deals link to a confirmed product, so the gate leaves a
-   vegetarian 1 anchor and a kosher user none. Run the propose → review →
-   confirm flow (`product_proposer`, `/admin/products`) over the unmapped names
-   that reach the trays first (anchors and sides), per the labelling rules.
-3. **Live evaluation baseline.** `eval/scenarios/live-2026-11-23.json` over the
-   snapshot `l4g3e8-2026-11-23` (916 real deals). Record and score it after each
-   pipeline or model change; the first baseline is below.
-4. **Frontend for the new response fields.** `meals_requested`, `partial`,
-   `instruction_steps`, `dietary_compliance` are returned but not typed or
-   shown; show the partial-plan warning and which dishes were dropped. The user
-   form still asks for a weekly budget, which nothing uses now: remove it or
-   relabel it as optional.
-5. **Tray quality.** An anchor compared per package can rank high just for a
-   small package (sizes cover 269/916 deals); add the price-history signal
-   (`price_baseline.discount_vs_typical_sale`) once 4+ weeks of snapshots
-   exist.
-6. **Follow-ups:** the Flipp search terms still include `tea`, `coffee` and
-   `orange juice` (owner: leave for now); an exception raised before the
-   pipeline's failure path still leaves no `recipe_generations` row; no API
-   endpoint looks up a failed generation; legacy `recipes.allergen_info` values
-   are still stored.
+1. **SousChef output validation is now what loses dishes.** The planner drops
+   none: 0 dishes dropped by plan repair in 21 runs on either planner (#72's
+   measurements, and the 2026-11-24 baseline below). Every lost dish failed
+   `dish_writer` validation twice. The two failure shapes seen: a step
+   placeholder past the end of the ingredient list (`{12}` with 11
+   ingredients), and an uncited ingredient written as `deal_id: "N/A"`.
+   Options: feed the exact validation error back on the retry, repair the
+   output in code where that is safe (drop an uncited ingredient and its
+   placeholders), or give the writer fewer ingredients per dish.
+2. **Tray quality.**
+   - A deal compared per package can look like a bargain only because its
+     package is small. The current top unrestricted anchor is a $1.99 shrimp
+     skewer showing a "70% gap" against bagged shrimp. Owner decision: give
+     per-package groups no gap, or rank them after $/lb, $/L and $/each.
+   - Add the price-history signal (`price_baseline.discount_vs_typical_sale`)
+     once 4+ weeks of snapshots exist.
+3. **Labeller follow-ups (proposed in #73, not applied).**
+   - Prepared seafood dishes (dumplings, stir-fry kits) come out `protein`
+     when batched with raw seafood. A first prepared-dish rule also pushed raw
+     skewers to `prepared_meal`, so it needs another round.
+   - JUST Egg still gets item "egg" and groups with real eggs.
+   - Item names drift run to run: salmon was 1 item in some relabels and 4 in
+     others.
+4. **Cost spread.** Identical runs differ up to 2× in cost lower bound: vegan
+   $23 vs $50, unrestricted m7 $45 vs $72. Cost is reported only, but check
+   whether that comes from anchor choice or from per-package pricing.
+5. **Restricted anchors are still few.** Vegan has 5 and vegetarian 7, against
+   15 unrestricted. 260 names for the test postal code remain unmapped; most
+   are non-tray roles. Re-run the linking pass after the next ingestion.
+6. **Follow-ups:**
+   - A generation's `status` is `completed` even when it is partial; consumers
+     should read `partial`.
+   - `dietary_compliance` has two shapes: rows backfilled by migration 023 lack
+     `approved`.
+   - `budget_check` and the user budget fields still exist in the backend.
+   - The Flipp search terms still include `tea`, `coffee` and `orange juice`
+     (owner: leave for now).
+   - An exception raised before the pipeline's failure path still leaves no
+     `recipe_generations` row.
+   - No API endpoint looks up a failed generation.
+   - Legacy `recipes.allergen_info` values are still stored.
+
+**Owner decisions (2026-11-24):**
+- The postal code used for live data is read from `TEST_POSTAL_CODE` in `.env`
+  (`CLAUDE.md` *Test postal code*). New snapshots and scenario files that
+  contain it stay untracked.
+- Neon writes for the linking pass and the corrections below were approved in
+  advance.
+- Plain canned beans contain no meat. The generic Heinz beans line goes to a
+  separate meat-flagged `baked beans` product.
+- The planner default stays local `qwen2.5:7b`. `hf:openai/gpt-oss-120b` is
+  the tested hosted option (`.env.example`). If it becomes the default, raise
+  the planner's 3000-token cap.
+- The weekly-budget input is removed from the UI. The backend still accepts
+  the field.
+
+**Shipped 2026-11-24** (Neon, owner-approved, reviewer
+`claude-review-2026-11-24`: 646 aliases confirmed, products 175 → 313;
+corrections 378 `canned beans` meat → false, 379 `protein bagels` animal
+by-product → true, 380 `non-dairy creamer` renamed `plant-based creamer`; all
+916 current deals for the test postal code relabelled at prompt v5):
+- **#69** `CLAUDE.md`: read the test postal code from `.env`.
+- **#70** Frontend types and display for `meals_requested`, `partial`,
+  `dietary_compliance` and the new `dropped_dishes: [{name, reason}]` response
+  field; the weekly-budget input removed; steps shown from the server-rendered
+  `instructions`.
+- **#71** Linking pass over the deal names that reach the trays
+  (`scripts/apply_product_review.py`, draft in `probe/2026-11-24/`). Deals
+  linked for the test postal code: 37 → 644 of 916.
+- **#72** `llm_chat` sends no `response_format: json_object` to gpt-oss on HF.
+  With JSON mode it produced unusable output in 8 of 35 planner calls and
+  caused the labeller's whitespace loops (v3 relabel: 9 retries and 156 deals
+  unlabelled; v4: 0 and 0). Measurement: the planner drops no dishes on either
+  model.
+- **#73** Labeller prompt v5. It removes the v2 contradiction ("canned beans"
+  listed under pantry_staple), so legumes and plant proteins are `protein`. It
+  also defines `starch`, says fruit is never sugar, and treats "protein" in a
+  product name as marketing.
+
+  Trays (anchors / sides / stock-up), before → after:
+
+  | Diet | Before | After |
+  |---|---|---|
+  | Vegetarian | 4/25/15 | 7/25/15 |
+  | Vegan | 2/25/15 | 5/25/15 |
+  | Kosher | 4/25/8 | 9/25/8 (inflated by 4 salmon items) |
+  | Unrestricted | 15/25/15 | 15/25/15 |
+
+**Live baseline (2026-11-24, `qwen2.5:7b` planner + writer, 7 scenarios × 2):**
+**12 PASS / 2 FAIL.** Compliance and citation validity were 100% on every run.
+The snapshot `live-2026-11-24` (916 deals, 791 links, v5 labels) and its
+scenario file contain the test postal code, so they stay untracked in
+`eval/recordings/2026-11-24-baseline/`, with the report in `report/report.md`.
+
+| Scenario | Run 1 | Run 2 |
+|---|---|---|
+| unrestricted hh2 m5 | FAIL (4/5) | PASS |
+| unrestricted hh4 m7 | PASS | PASS |
+| vegetarian hh2 m3 | PASS | PASS |
+| pescatarian hh1 m3 | PASS | PASS |
+| gluten-free hh2 m3 | PASS | PASS |
+| vegan hh2 m3 (new) | PASS | PASS |
+| kosher hh2 m3 (new) | PASS | FAIL (2/3) |
+
+Both FAILs are writer validation failures (Next up item 1). The vegetarian
+scenario, which failed on 2026-11-23, passes in both runs.
 
 **Owner decisions (2026-11-23):**
 - Approach C, built as specified in the design doc; the old pipeline replaced,
