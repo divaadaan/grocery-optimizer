@@ -282,7 +282,8 @@ class _Run:
 
     def _log_call(self, agent: str, spec: str, replies: Sequence[llm_chat.Reply],
                   prompt: str, started: float, success: bool,
-                  error: Optional[str] = None, order: tuple = (0, 0)) -> None:
+                  error: Optional[str] = None, order: tuple = (0, 0),
+                  repairs: Optional[List[Dict[str, Any]]] = None) -> None:
         duration = time.monotonic() - started
         provider, _, name = (spec or "").partition(":")
         self.deps.tracker.log_agent_call(agent_name=agent, duration=duration, model=name,
@@ -296,6 +297,9 @@ class _Run:
             "success": success, "error": error, **_usage(replies),
             "truncated_prompt": any(r.truncated_prompt for r in replies),
             "prompt": prompt, "replies": [r.text for r in replies],
+            # What dish_writer's safe repair removed from the accepted reply
+            # (recipe_repair); only present when a repair fired.
+            **({"repairs": repairs} if repairs else {}),
         })
 
     def _record_failure(self, agent: str, exc: BaseException) -> str:
@@ -410,7 +414,8 @@ class _Run:
                            order=(o.attempts, o.index))
             o.recipe, o.report, o.error = None, None, text
             return
-        self._log_call(agent, spec, replies, prompt, started, True, order=(o.attempts, o.index))
+        self._log_call(agent, spec, replies, prompt, started, True, order=(o.attempts, o.index),
+                       repairs=recipe.get("repairs"))
         o.recipe = recipe
         o.report = compliance_report(recipe, self.restrictions, catalog)
         o.error = None if o.report["approved"] else "rejected: " + "; ".join(

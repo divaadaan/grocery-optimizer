@@ -70,7 +70,9 @@ from app.eval.snapshots import Snapshot, SnapshotDeals
 #: 2: ``structural.instructions`` (instruction-step ingredient references).
 #: 3: approach C -- ``budget`` replaced by ``cost`` (no limit, no status);
 #:    roles chef + sous_chef; chat-style (user/assistant) retry conversations.
-SCORE_SCHEMA_VERSION = 3
+#: 4: ``structural.writer_repairs``; a SousChef reply counts as valid when
+#:    ``dish_writer.accept_reply`` accepts it (after the safe repair).
+SCORE_SCHEMA_VERSION = 4
 
 PASS, FAIL, NA = "PASS", "FAIL", "NA"
 
@@ -230,16 +232,34 @@ def attempt_chains(calls: Sequence[Mapping[str, Any]]) -> List[Dict[str, Any]]:
     return out
 
 
-def _last_attempt_valid(call: Mapping[str, Any]) -> Optional[bool]:
+def _dish_anchors(state: Mapping[str, Any]) -> Dict[str, List[int]]:
+    """Dish name -> its anchor deal ids, from the run's validated dish plan
+    (what the SousChef's repair checks the anchor against)."""
+    out: Dict[str, List[int]] = {}
+    for dish in ((state.get("dish_plan") or {}).get("dishes") or []):
+        if isinstance(dish, dict) and dish.get("name"):
+            out.setdefault(str(dish["name"]), []).extend(
+                int(a) for a in dish.get("anchor_deal_ids") or [])
+    return out
+
+
+_DISH_RE = re.compile(r"\*\*The dish:\*\* (.*)\n")
+
+
+def _last_attempt_valid(call: Mapping[str, Any],
+                        anchors: Optional[Mapping[str, Sequence[int]]] = None
+                        ) -> Optional[bool]:
     """Would ``chat_validated`` have accepted this reply? Planner replies are
     checked against the plan schema (not the offered ids, which the scorer's
-    citation checks cover); SousChef replies against the recipe schema and
-    the ids the prompt listed. ``None`` when a SousChef prompt's ids can't be
-    read back."""
+    citation checks cover); SousChef replies exactly as the pipeline accepts
+    them (``dish_writer.accept_reply``: the recipe schema and the ids the
+    prompt listed, after the safe repair). ``None`` when a SousChef prompt's
+    ids can't be read back."""
     from pydantic import ValidationError
 
     from app.agents import llm_output as lo
     from app.agents.dish_planner import DishPlan
+    from app.agents.dish_writer import accept_reply
     from app.agents.llm_chat import parse_json_object
 
     data = parse_json_object((call["response"] or {}).get("content") or "")
@@ -255,8 +275,11 @@ def _last_attempt_valid(call: Mapping[str, Any]) -> Optional[bool]:
     try:
         if call["role"] == "chef":
             DishPlan.model_validate(data)
+        elif context is None:
+            lo.RecipeBatch.model_validate(data)
         else:
-            lo.RecipeBatch.model_validate(data, context=context)
+            dish = _DISH_RE.search(prompt)
+            accept_reply(data, context, (anchors or {}).get(dish.group(1) if dish else "", []))
     except (ValidationError, ValueError):
         return False
     if call["role"] == "sous_chef" and context is None:
@@ -273,6 +296,7 @@ def score_structural(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[st
     max_attempts = _max_attempts()
     calls = artifact["llm_calls"]
     chains = {c["seq"]: c for c in attempt_chains(calls)}
+    anchors = _dish_anchors(state)
 
     roles = {}
     for role in ROLES:
@@ -295,7 +319,7 @@ def score_structural(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[st
             if c["error"] is not None:
                 stats["failed_invocations"] += 1
             elif ch["attempt"] >= max_attempts:
-                ok = _last_attempt_valid(c)
+                ok = _last_attempt_valid(c, anchors)
                 if ok is False:
                     stats["failed_invocations"] += 1
                 elif ok is None:
@@ -316,6 +340,9 @@ def score_structural(artifact: Mapping[str, Any], snapshot: Snapshot) -> Dict[st
         "max_attempts": max_attempts,
         "schema": roles,
         "agent_call_log": dict(sorted(log.items())),
+        # SousChef replies accepted only after dish_writer's safe repair.
+        "writer_repairs": sum(1 for e in state.get("agent_call_log") or []
+                              if isinstance(e, dict) and e.get("repairs")),
         "errors": list(state.get("errors") or []),
         "warnings": list(state.get("warnings") or []),
         "instructions": score_instructions(artifact, snapshot),
@@ -740,6 +767,7 @@ class RunScore:
             "recipes_requested": s["recipes_requested"],
             "schema_retries": sum(r["retries"] for r in s["schema"].values()),
             "schema_failures": sum(r["failed_invocations"] for r in s["schema"].values()),
+            "writer_repairs": s["writer_repairs"],
             "instruction_steps": s["instructions"]["steps"],
             "instruction_invalid_refs": s["instructions"]["invalid_references"],
             "unreferenced_ingredients": s["instructions"]["unreferenced_ingredients"],

@@ -1,0 +1,83 @@
+{
+  "about": "Hand-made SousChef replies in the two shapes that lost dishes in the 2026-11-24 live baseline (qwen2.5:7b). Structure, step wording and placeholder mistakes are copied from the recorded replies; ids are re-mapped onto the seed27 snapshot (deals) and made-up staple product ids, so nothing here comes from live data.",
+  "offered": {"deal_ids": [27, 12, 8, 26, 9, 10, 11], "product_ids": [50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60]},
+  "cases": {
+    "uncited_na": {
+      "about": "Dish named after an ingredient that was not offered (mushrooms); the model wrote deal_id \"N/A\" and repeated it on every retry.",
+      "anchor_deal_ids": [27],
+      "reply": {"name": "Tofu and Mushroom Stir-Fry", "meal_type": "dinner", "cuisine_type": "Asian",
+        "ingredients": [
+          {"name": "tofu", "deal_id": 27, "quantity": "1", "unit": "block"},
+          {"name": "olive oil", "product_id": 50, "quantity": "2", "unit": "tbsp"},
+          {"name": "mushrooms", "deal_id": "N/A", "quantity": "8", "unit": "oz"},
+          {"name": "spinach", "deal_id": 8, "quantity": "4", "unit": "oz"},
+          {"name": "garlic", "product_id": 51, "quantity": "2", "unit": "cloves"},
+          {"name": "soy sauce", "product_id": 52, "quantity": "2", "unit": "tbsp"},
+          {"name": "fish sauce", "product_id": 53, "quantity": "1", "unit": "tbsp"},
+          {"name": "black pepper", "product_id": 54, "quantity": "1/4", "unit": "tsp"},
+          {"name": "salt", "product_id": 55, "quantity": "1/8", "unit": "tsp"},
+          {"name": "dried basil", "product_id": 56, "quantity": "1/2", "unit": "tsp"},
+          {"name": "dried oregano", "product_id": 57, "quantity": "1/2", "unit": "tsp"}],
+        "instructions": [
+          "Cut {0} into cubes and marinate with {3}, {4}, {7}, {8}, and {9} for 10 minutes.",
+          "Heat {1} in a wok or large pan over medium-high heat.",
+          "Add {2}, stir-fry for 2-3 minutes.",
+          "Add {0} and {5}, {6}, and {9}, stir-fry for 3-4 minutes until well combined and heated through.",
+          "Add {7} and {8}, toss to coat.",
+          "Serve immediately."],
+        "estimated_prep_time": 20, "servings": 2}
+    },
+    "out_of_range": {
+      "about": "Placeholders past the end of the list ({11}, {12} with 11 ingredients) plus an ingredient with an empty deal_id, as in the kosher curry's second round. Here the anchor (salmon, deal 9) is cited.",
+      "anchor_deal_ids": [9],
+      "reply": {"name": "Salmon and Spinach Curry with Sweet Potatoes", "meal_type": "dinner", "cuisine_type": "Indian",
+        "ingredients": [
+          {"name": "chickpeas", "deal_id": "", "quantity": "1", "unit": "can"},
+          {"name": "sweet potato", "deal_id": 10, "quantity": "2", "unit": "lbs"},
+          {"name": "spinach", "deal_id": 8, "quantity": "6", "unit": "oz"},
+          {"name": "onion", "product_id": 58, "quantity": "1", "unit": "medium"},
+          {"name": "garlic", "product_id": 51, "quantity": "2", "unit": "cloves"},
+          {"name": "ground cumin", "product_id": 59, "quantity": "1", "unit": "tsp"},
+          {"name": "salmon", "deal_id": 9, "quantity": "1", "unit": "lb"},
+          {"name": "honey", "product_id": 60, "quantity": "2", "unit": "tbsp"},
+          {"name": "olive oil", "product_id": 50, "quantity": "2", "unit": "tbsp"},
+          {"name": "chili flakes", "product_id": 57, "quantity": "1", "unit": "tsp"},
+          {"name": "salt", "product_id": 55, "quantity": "1", "unit": "tsp"}],
+        "instructions": [
+          "Heat {8} in a pan over medium heat.",
+          "{0} the {9} in {8} and cook until softened, about 5 minutes.",
+          "Add {1} and {2}, and cook for 2 minutes.",
+          "Stir in {3}, {4}, {5}, {6}, and {7} until well combined.",
+          "Add enough water to cover the vegetables, bring to a boil, then simmer for 15 minutes.",
+          "Add {10} and cook for another 5 minutes.",
+          "Serve {11} over {12}."],
+        "estimated_prep_time": 30, "servings": 2}
+    },
+    "out_of_range_no_anchor": {
+      "about": "The live kosher curry as it was: the planner anchored a 'chickpea curry' on salmon and the reply never cites the salmon. Repairable placeholders, but no anchor: the repair is refused.",
+      "anchor_deal_ids": [9],
+      "reply": {"name": "Chickpea and Spinach Curry with Sweet Potatoes", "meal_type": "dinner", "cuisine_type": "Indian",
+        "ingredients": [
+          {"name": "chickpeas", "product_id": 53, "quantity": "1", "unit": "can"},
+          {"name": "sweet potato", "deal_id": 10, "quantity": "2", "unit": "lbs"},
+          {"name": "spinach", "deal_id": 8, "quantity": "6", "unit": "oz"},
+          {"name": "onion", "product_id": 58, "quantity": "1", "unit": "medium"},
+          {"name": "garlic", "product_id": 51, "quantity": "2", "unit": "cloves"},
+          {"name": "ground cumin", "product_id": 59, "quantity": "1", "unit": "tsp"},
+          {"name": "ground cinnamon", "product_id": 56, "quantity": "1", "unit": "tsp"},
+          {"name": "honey", "product_id": 60, "quantity": "2", "unit": "tbsp"},
+          {"name": "olive oil", "product_id": 50, "quantity": "2", "unit": "tbsp"},
+          {"name": "chili flakes", "product_id": 57, "quantity": "1", "unit": "tsp"},
+          {"name": "salt", "product_id": 55, "quantity": "1", "unit": "tsp"}],
+        "instructions": [
+          "Heat {8} in a pan over medium heat.",
+          "{0} the {9} in {8} and cook until softened, about 5 minutes.",
+          "Add {1} and {2}, and cook for 2 minutes.",
+          "Stir in {3}, {4}, {5}, {6}, and {7} until well combined.",
+          "Add enough water to cover the vegetables and chickpeas, bring to a boil, then reduce heat and simmer for 15 minutes.",
+          "Add {10} and cook for another 5 minutes until spinach is wilted.",
+          "Serve {1} and {2} over {12}."],
+        "estimated_prep_time": 30, "servings": 2}
+    }
+  }
+}

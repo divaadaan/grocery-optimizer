@@ -10,21 +10,33 @@ The output contract is the existing recipe schema
 (``app/agents/llm_output.GeneratedRecipe``): every ingredient cites a
 ``deal_id`` or a staple ``product_id`` from what this call was shown
 (``citation_context``), and instructions write ingredients as ``{N}``
-placeholders. Validation failures go back to the model once. Building the
-stored recipe (prices from citations, rendered steps) reuses
+placeholders. A reply that fails validation is first repaired in code
+where that is provably safe (``recipe_repair``: an uncited ingredient or an
+out-of-range placeholder is removed, never replaced); otherwise it goes back
+to the model once with every problem stated concretely. Building the stored
+recipe (prices from citations, rendered steps) reuses
 ``recipe_build.build_recipe``.
 """
 from __future__ import annotations
 
+import logging
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from app.agents import llm_chat
 from app.agents.costing import deals_by_id
 from app.agents.dish_planner import PlannedDish
-from app.agents.llm_output import GeneratedRecipe, RecipeBatch, citation_context
+from app.agents import recipe_repair
+from app.agents.llm_output import (
+    CITATION_CONTEXT_KEY,
+    GeneratedRecipe,
+    RecipeBatch,
+    citation_context,
+)
 from app.agents.prompts import combination_rule_hints, hint_lines, preferences_text
 from app.agents.state import Recipe
 from app.agents.recipe_build import RecipeIdFactory, build_recipe, random_recipe_id
+
+logger = logging.getLogger(__name__)
 
 MAX_TOKENS = 2048
 TEMPERATURE = 0.7
@@ -51,7 +63,8 @@ PROMPT = """You are a SousChef writing one practical, delicious home recipe.
   you do not have to use all of them.
 - EVERY ingredient must cite exactly one source: "deal_id" for a deal above, OR "product_id" for a
   pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an
-  ingredient is not listed (e.g. lemon), leave it out; never cite a different item's id.
+  ingredient is not listed (e.g. lemon), leave it out, even when the dish name mentions it;
+  never cite a different item's id, and never write "N/A", null or an empty id.
 - "name" is the plain ingredient name a cook would write (use the deal's "item" when given, e.g.
   "chicken thighs", not the flyer text); costs are computed for you.
 - Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its
@@ -144,10 +157,10 @@ def write_recipe(dish: PlannedDish, *, deals: Mapping[int, Mapping[str, Any]],
     context = citation_context([d["deal_id"] for d in own + stock],
                                [p["product_id"] for p in pantry])
 
-    def validate(data: Dict[str, Any]) -> GeneratedRecipe:
-        return RecipeBatch.model_validate(data, context=context).recipes[0]
+    def validate(data: Dict[str, Any]) -> Tuple[GeneratedRecipe, List[Dict[str, Any]]]:
+        return accept_reply(data, context, dish.anchor_deal_ids, agent=agent)
 
-    model, replies = llm_chat.chat_validated(
+    (model, repairs), replies = llm_chat.chat_validated(
         chat_fn, spec, [{"role": "user", "content": prompt}], validate,
         temperature=TEMPERATURE, max_tokens=MAX_TOKENS, json_mode=True)
     staples = [{"product_id": int(p["product_id"]), "name": p["name"]} for p in pantry]
@@ -158,7 +171,48 @@ def write_recipe(dish: PlannedDish, *, deals: Mapping[int, Mapping[str, Any]],
     recipe = build_recipe(agent, model, deals_by_id(shown), recipe_id, staples,
                         deal_products)
     name_from_citations(recipe, {d["deal_id"]: d for d in own + stock}, staples)
+    if repairs:
+        recipe["repairs"] = repairs  # type: ignore[typeddict-unknown-key]
     return recipe, replies, prompt
+
+
+def accept_reply(data: Any, context: Mapping[str, Any], anchor_deal_ids: Sequence[int],
+                 *, agent: str = "sous_chef"
+                 ) -> Tuple[GeneratedRecipe, List[Dict[str, Any]]]:
+    """``(validated recipe, repairs)`` for one parsed reply, or ``ValueError``
+    carrying the feedback the model sees on its retry.
+
+    The reply is validated as written first. Only if that fails is the safe
+    repair tried (``recipe_repair``), and the repaired reply must then pass
+    the same validation, citations included. Shared with the eval scorer so
+    the two agree on which replies were accepted."""
+    try:
+        return RecipeBatch.model_validate(data, context=context).recipes[0], []
+    except (ValueError, TypeError) as exc:  # pydantic ValidationError is a ValueError
+        error = exc
+    fix = recipe_repair.repair_reply(data, anchor_deal_ids)
+    if fix.data is not None:
+        try:
+            model = RecipeBatch.model_validate(fix.data, context=context).recipes[0]
+        except (ValueError, TypeError) as exc:
+            logger.info("[%s] repair did not validate: %s", agent,
+                        recipe_repair.clean_schema_error(str(exc))[:300])
+        else:
+            logger.warning("[%s] repaired reply: %s", agent, fix.repairs)
+            return model, fix.repairs
+    elif fix.refused:
+        logger.info("[%s] repair refused: %s", agent, fix.refused)
+    raise ValueError(retry_feedback(data, error, context))
+
+
+def retry_feedback(data: Any, error: BaseException, context: Mapping[str, Any]) -> str:
+    """Every concrete problem in the reply, each with what to do about it;
+    the schema's own message (without pydantic's links) when none applies."""
+    allowed_deals, allowed_products = context.get(CITATION_CONTEXT_KEY, (None, None))
+    problems = recipe_repair.reply_problems(data, allowed_deals, allowed_products)
+    if not problems:
+        return recipe_repair.clean_schema_error(str(error))
+    return "the recipe has these problems:\n" + "\n".join(f"- {p}" for p in problems)
 
 
 def name_from_citations(recipe: Dict[str, Any], deals: Mapping[int, Mapping[str, Any]],

@@ -1,13 +1,13 @@
 {
  "artifact": {
-  "created_at": "2026-11-24T00:20:34+00:00",
+  "created_at": "2026-11-24T21:21:01+00:00",
   "format_version": 2,
   "kind": "recipe-eval-run",
   "mode": "record"
  },
  "code": {
   "git_dirty": true,
-  "git_sha": "fbba753da7060747ad23efd6731f13a26da1cae3"
+  "git_sha": "eae6ea74aeec93b37c36a77f9b57cd725e433e8b"
  },
  "final_state": {
   "agent_call_log": [
@@ -33,59 +33,59 @@
    {
     "agent": "sous_chef_1",
     "error": null,
-    "input_tokens": 715,
+    "input_tokens": 736,
     "model": "scripted:sous-script",
     "order": [
      1,
      0
     ],
     "output_tokens": 90,
-    "prompt": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 1\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- tofu → deal_id 27 (Tofu Firm, $2.49/350g)\n- russet potato → deal_id 17 (Potatoes Russet, $2.99/5lb bag)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out; never cite a different item's id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
+    "prompt": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 1\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- tofu → deal_id 27 (Tofu Firm, $2.49/350g)\n- russet potato → deal_id 17 (Potatoes Russet, $2.99/5lb bag)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out, even when the dish name mentions it;\n  never cite a different item's id, and never write \"N/A\", null or an empty id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
     "replies": [
      "{\"name\": \"Dish 1 (27+17)\", \"meal_type\": \"dinner\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"x\", \"deal_id\": 27, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"x\", \"deal_id\": 17, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"y\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Combine {0}, {1}, {2}.\", \"Cook it.\"]}"
     ],
     "seconds": 0.0,
     "success": true,
-    "total_tokens": 805,
+    "total_tokens": 826,
     "truncated_prompt": false
    },
    {
     "agent": "sous_chef_2",
     "error": null,
-    "input_tokens": 1488,
+    "input_tokens": 1529,
     "model": "scripted:sous-script",
     "order": [
      1,
      1
     ],
     "output_tokens": 98,
-    "prompt": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 2\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- eggs → deal_id 6 (Eggs Large, $4.99/12 count)\n- yellow onion → deal_id 18 (Onions Yellow, $1.99/3lb bag)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out; never cite a different item's id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
+    "prompt": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 2\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- eggs → deal_id 6 (Eggs Large, $4.99/12 count)\n- yellow onion → deal_id 18 (Onions Yellow, $1.99/3lb bag)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out, even when the dish name mentions it;\n  never cite a different item's id, and never write \"N/A\", null or an empty id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
     "replies": [
      "Sure! Here is a recipe: (not JSON)",
      "{\"name\": \"Dish 2 (6+18)\", \"meal_type\": \"dinner\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"x\", \"deal_id\": 6, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"x\", \"deal_id\": 18, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"y\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Combine {0}, {1}, {2}.\", \"Cook it.\"]}"
     ],
     "seconds": 0.0,
     "success": true,
-    "total_tokens": 1586,
+    "total_tokens": 1627,
     "truncated_prompt": false
    },
    {
     "agent": "sous_chef_3",
     "error": null,
-    "input_tokens": 710,
+    "input_tokens": 731,
     "model": "scripted:sous-script",
     "order": [
      1,
      2
     ],
     "output_tokens": 90,
-    "prompt": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 3\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- tofu → deal_id 27 (Tofu Firm, $2.49/350g)\n- banana → deal_id 15 (Bananas, $0.69/lb)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out; never cite a different item's id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
+    "prompt": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 3\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- tofu → deal_id 27 (Tofu Firm, $2.49/350g)\n- banana → deal_id 15 (Bananas, $0.69/lb)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out, even when the dish name mentions it;\n  never cite a different item's id, and never write \"N/A\", null or an empty id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
     "replies": [
      "{\"name\": \"Dish 3 (27+15)\", \"meal_type\": \"dinner\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"x\", \"deal_id\": 27, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"x\", \"deal_id\": 15, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"y\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Combine {0}, {1}, {2}.\", \"Cook it.\"]}"
     ],
     "seconds": 0.0,
     "success": true,
-    "total_tokens": 800,
+    "total_tokens": 821,
     "truncated_prompt": false
    }
   ],
@@ -610,7 +610,7 @@
     "total_cost": 5.48
    }
   },
-  "generation_id": "d6e04800-7cfa-45ce-bb98-1f02a4a41373",
+  "generation_id": "4f231956-063c-4ff7-b275-929a64a51ef5",
   "infrastructure_errors": [],
   "iteration_count": 1,
   "kept_deal_ids": [
@@ -690,7 +690,7 @@
  "llm_calls": [
   {
    "error": null,
-   "latency_s": 9.241899897460826e-05,
+   "latency_s": 0.00010276900138705969,
    "model": {
     "class": "__main__.scripted_chat.chef_reply",
     "model": "chef-script",
@@ -728,7 +728,7 @@
   },
   {
    "error": null,
-   "latency_s": 0.0001132889992732089,
+   "latency_s": 9.596900054020807e-05,
    "model": {
     "class": "__main__.scripted_chat.sous_chef_reply",
     "model": "sous-script",
@@ -743,12 +743,12 @@
    "request": {
     "messages": [
      {
-      "content": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 1\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- tofu → deal_id 27 (Tofu Firm, $2.49/350g)\n- russet potato → deal_id 17 (Potatoes Russet, $2.99/5lb bag)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out; never cite a different item's id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
+      "content": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 1\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- tofu → deal_id 27 (Tofu Firm, $2.49/350g)\n- russet potato → deal_id 17 (Potatoes Russet, $2.99/5lb bag)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out, even when the dish name mentions it;\n  never cite a different item's id, and never write \"N/A\", null or an empty id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
       "type": "user"
      }
     ]
    },
-   "request_sha256": "58cf38ffae45ee0a70e77621c598ad11e2f45089cb077c6d5d3e12d92c85eb48",
+   "request_sha256": "7fe165882e7b269d21af58ea50056397bfd3c165a1193efefbc7e9fb3f04eba7",
    "response": {
     "content": "{\"name\": \"Dish 1 (27+17)\", \"meal_type\": \"dinner\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"x\", \"deal_id\": 27, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"x\", \"deal_id\": 17, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"y\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Combine {0}, {1}, {2}.\", \"Cook it.\"]}",
     "response_metadata": {
@@ -756,9 +756,9 @@
      "truncated_prompt": false
     },
     "usage": {
-     "input_tokens": 715,
+     "input_tokens": 736,
      "output_tokens": 90,
-     "total_tokens": 805
+     "total_tokens": 826
     }
    },
    "role": "sous_chef",
@@ -766,7 +766,7 @@
   },
   {
    "error": null,
-   "latency_s": 1.967999924090691e-05,
+   "latency_s": 2.028900053119287e-05,
    "model": {
     "class": "__main__.scripted_chat.sous_chef_reply",
     "model": "sous-script",
@@ -781,12 +781,12 @@
    "request": {
     "messages": [
      {
-      "content": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 2\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- eggs → deal_id 6 (Eggs Large, $4.99/12 count)\n- yellow onion → deal_id 18 (Onions Yellow, $1.99/3lb bag)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out; never cite a different item's id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
+      "content": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 2\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- eggs → deal_id 6 (Eggs Large, $4.99/12 count)\n- yellow onion → deal_id 18 (Onions Yellow, $1.99/3lb bag)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out, even when the dish name mentions it;\n  never cite a different item's id, and never write \"N/A\", null or an empty id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
       "type": "user"
      }
     ]
    },
-   "request_sha256": "87b3db4fe2019a270308016e01799791eae0ed391eef0bffe4cc2d217dd3c950",
+   "request_sha256": "7e529d00048064bef196e972d0cadba8840fcfd0c1a6c8f7d937532f95dfa207",
    "response": {
     "content": "Sure! Here is a recipe: (not JSON)",
     "response_metadata": {
@@ -794,9 +794,9 @@
      "truncated_prompt": false
     },
     "usage": {
-     "input_tokens": 715,
+     "input_tokens": 736,
      "output_tokens": 8,
-     "total_tokens": 723
+     "total_tokens": 744
     }
    },
    "role": "sous_chef",
@@ -804,7 +804,7 @@
   },
   {
    "error": null,
-   "latency_s": 3.685000046971254e-05,
+   "latency_s": 3.9410002500517294e-05,
    "model": {
     "class": "__main__.scripted_chat.sous_chef_reply",
     "model": "sous-script",
@@ -819,7 +819,7 @@
    "request": {
     "messages": [
      {
-      "content": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 2\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- eggs → deal_id 6 (Eggs Large, $4.99/12 count)\n- yellow onion → deal_id 18 (Onions Yellow, $1.99/3lb bag)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out; never cite a different item's id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
+      "content": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 2\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- eggs → deal_id 6 (Eggs Large, $4.99/12 count)\n- yellow onion → deal_id 18 (Onions Yellow, $1.99/3lb bag)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out, even when the dish name mentions it;\n  never cite a different item's id, and never write \"N/A\", null or an empty id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
       "type": "user"
      },
      {
@@ -832,7 +832,7 @@
      }
     ]
    },
-   "request_sha256": "6980dfd9e9da135aa10b311e2542c7fe71646269be2059e32ec48f5d8958720a",
+   "request_sha256": "2839391ee285d617c44bac6346eb9724fbedbdf28523e64948f4bc0dadc1d0d1",
    "response": {
     "content": "{\"name\": \"Dish 2 (6+18)\", \"meal_type\": \"dinner\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"x\", \"deal_id\": 6, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"x\", \"deal_id\": 18, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"y\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Combine {0}, {1}, {2}.\", \"Cook it.\"]}",
     "response_metadata": {
@@ -840,9 +840,9 @@
      "truncated_prompt": false
     },
     "usage": {
-     "input_tokens": 773,
+     "input_tokens": 793,
      "output_tokens": 90,
-     "total_tokens": 863
+     "total_tokens": 883
     }
    },
    "role": "sous_chef",
@@ -850,7 +850,7 @@
   },
   {
    "error": null,
-   "latency_s": 3.418900087126531e-05,
+   "latency_s": 3.4058997698593885e-05,
    "model": {
     "class": "__main__.scripted_chat.sous_chef_reply",
     "model": "sous-script",
@@ -865,12 +865,12 @@
    "request": {
     "messages": [
      {
-      "content": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 3\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- tofu → deal_id 27 (Tofu Firm, $2.49/350g)\n- banana → deal_id 15 (Bananas, $0.69/lb)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out; never cite a different item's id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
+      "content": "You are a SousChef writing one practical, delicious home recipe.\n\n**The dish:** Dish 3\n(scripted)\n\n**This dish's ingredients bought this week** (ingredient → the deal_id to cite):\n- tofu → deal_id 27 (Tofu Firm, $2.49/350g)\n- banana → deal_id 15 (Bananas, $0.69/lb)\n\n**Stock-up items also bought this week** (optional; ingredient → deal_id):\n(none)\n\n**Pantry staples already on hand** (ingredient → the product_id to cite):\n- all-purpose flour → product_id 139\n- baking powder → product_id 134\n- baking soda → product_id 132\n- black pepper → product_id 144\n- brown sugar → product_id 124\n- butter → product_id 142\n- chili flakes → product_id 126\n- cornstarch → product_id 131\n- dijon mustard → product_id 141\n- dried basil → product_id 125\n- dried oregano → product_id 137\n- garlic → product_id 135\n- garlic powder → product_id 136\n- granulated sugar → product_id 140\n- ground cinnamon → product_id 147\n- ground cumin → product_id 145\n- honey → product_id 150\n- olive oil → product_id 146\n- paprika → product_id 149\n- salt → product_id 130\n- soy sauce → product_id 128\n- vegetable oil → product_id 127\n- water → product_id 129\n- white vinegar → product_id 138\n- yellow onion → product_id 133\n\n**Requirements:**\n- Servings: 2\n- Dietary restrictions: vegetarian\n- Preferences: none\n- Build the recipe around the dish's main ingredient. Use the listed ingredients that suit the dish;\n  you do not have to use all of them.\n- EVERY ingredient must cite exactly one source: \"deal_id\" for a deal above, OR \"product_id\" for a\n  pantry staple. Find the ingredient's own line above and copy the id written on THAT line. If an\n  ingredient is not listed (e.g. lemon), leave it out, even when the dish name mentions it;\n  never cite a different item's id, and never write \"N/A\", null or an empty id.\n- \"name\" is the plain ingredient name a cook would write (use the deal's \"item\" when given, e.g.\n  \"chicken thighs\", not the flyer text); costs are computed for you.\n- Oil, salt, spices and other pantry staples you use are ingredients too: list each one with its\n  product_id and refer to it by placeholder, never by typing it in a step.\n\n**Instruction format:**\n- Write EVERY ingredient in \"instructions\" as a placeholder {N}, where N is that ingredient's\n  0-based position in \"ingredients\" ({0} is the first ingredient, {1} the second, ...).\n- Never type an ingredient or food name in a step; use its placeholder.\n- Use no other curly braces in the steps. Every ingredient should appear in at least one step.\n\n**Output format (one JSON object, no comments, no code fences):**\n{\"name\": \"Recipe Name\", \"meal_type\": \"dinner\", \"cuisine_type\": \"Italian\", \"ingredients\": [{\"name\": \"chicken thighs\", \"deal_id\": 123, \"quantity\": \"1.5\", \"unit\": \"lb\"}, {\"name\": \"olive oil\", \"product_id\": 45, \"quantity\": \"2\", \"unit\": \"tbsp\"}], \"instructions\": [\"Heat {1} in a pan.\", \"Brown {0} for 6 minutes a side.\"], \"estimated_prep_time\": 30, \"servings\": 2}",
       "type": "user"
      }
     ]
    },
-   "request_sha256": "4dcb36139ad66e9bfd1686e5e15df9323f7dfe92e574180ee7c16296dd9065e5",
+   "request_sha256": "5e3bad8145226192cbc9d491014c9fa2dac385a34dbcbb247af2c317c74fb1ed",
    "response": {
     "content": "{\"name\": \"Dish 3 (27+15)\", \"meal_type\": \"dinner\", \"servings\": 2, \"estimated_prep_time\": \"20 minutes\", \"ingredients\": [{\"name\": \"x\", \"deal_id\": 27, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"x\", \"deal_id\": 15, \"quantity\": \"1\", \"unit\": \"lb\"}, {\"name\": \"y\", \"product_id\": 139, \"quantity\": \"1\", \"unit\": \"tsp\"}], \"instructions\": [\"Combine {0}, {1}, {2}.\", \"Cook it.\"]}",
     "response_metadata": {
@@ -878,9 +878,9 @@
      "truncated_prompt": false
     },
     "usage": {
-     "input_tokens": 710,
+     "input_tokens": 731,
      "output_tokens": 90,
-     "total_tokens": 800
+     "total_tokens": 821
     }
    },
    "role": "sous_chef",
@@ -931,9 +931,9 @@
  },
  "state_notes": [],
  "timing": {
-  "llm_seconds": 0.0002964269988297019,
-  "started_at": "2026-11-24T00:20:34+00:00",
-  "wall_seconds": 0.0037820529978489503
+  "llm_seconds": 0.0002924960026575718,
+  "started_at": "2026-11-24T21:21:01+00:00",
+  "wall_seconds": 0.0036715089991048444
  },
  "tracker_calls": [
   "start_run",

@@ -84,7 +84,7 @@ def sort_runs(runs: Iterable[ReportRun]) -> List[ReportRun]:
 # summary_row keys other than scenario/snapshot, in the scorer's order.
 _SUMMARY_REST = [
     "verdict", "status", "recipes_approved", "recipes_requested", "schema_retries",
-    "schema_failures", "instruction_steps", "instruction_invalid_refs",
+    "schema_failures", "writer_repairs", "instruction_steps", "instruction_invalid_refs",
     "unreferenced_ingredients", "unstructured_instructions", "compliance_gate", "compliance_rate", "verdict_disagreements",
     "unsupported_restrictions", "citation_validity", "invalid_citations",
     "cost_per_recipe_sum_lb", "cost_per_unique_deal_lb", "deal_share", "deals_used", "deals_offered", "savings_vs_regular",
