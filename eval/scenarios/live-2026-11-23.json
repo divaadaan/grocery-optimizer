@@ -1,0 +1,63 @@
+{
+  "scenarios": [
+    {
+      "name": "live1123-unrestricted-hh2-m5",
+      "snapshot": "l4g3e8-2026-11-23",
+      "user": {
+        "postal_code": "L4G3E8",
+        "household_size": 2,
+        "num_meals": 5
+      },
+      "notes": "The owner's profile: no restrictions, couple, five dinners. 15/25/15 trays."
+    },
+    {
+      "name": "live1123-unrestricted-hh4-m7",
+      "snapshot": "l4g3e8-2026-11-23",
+      "user": {
+        "postal_code": "L4G3E8",
+        "household_size": 4,
+        "num_meals": 7
+      },
+      "notes": "Family week: more meals than the planner usually varies across; checks anchor variety."
+    },
+    {
+      "name": "live1123-vegetarian-hh2-m3",
+      "snapshot": "l4g3e8-2026-11-23",
+      "user": {
+        "postal_code": "L4G3E8",
+        "household_size": 2,
+        "num_meals": 3,
+        "dietary_restrictions": [
+          "vegetarian"
+        ]
+      },
+      "notes": "Thin trays: only tofu clears as an anchor (45/916 deals are product-linked), so the one anchor must serve every dish."
+    },
+    {
+      "name": "live1123-pescatarian-hh1-m3",
+      "snapshot": "l4g3e8-2026-11-23",
+      "user": {
+        "postal_code": "L4G3E8",
+        "household_size": 1,
+        "num_meals": 3,
+        "dietary_restrictions": [
+          "pescatarian"
+        ]
+      },
+      "notes": "Two anchors (tofu, canned tuna) for three dishes."
+    },
+    {
+      "name": "live1123-glutenfree-hh2-m3",
+      "snapshot": "l4g3e8-2026-11-23",
+      "user": {
+        "postal_code": "L4G3E8",
+        "household_size": 2,
+        "num_meals": 3,
+        "dietary_restrictions": [
+          "gluten_free"
+        ]
+      },
+      "notes": "Three anchors incl. chicken breast; gluten is the attribute most often NULL-closed."
+    }
+  ]
+}

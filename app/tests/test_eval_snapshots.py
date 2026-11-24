@@ -31,7 +31,7 @@ from app.services.products import ATTRIBUTES, restrictions_to_attributes
 from app.eval.runner import NullTracker
 from scripts import capture_snapshot as capture_mod
 
-COMMITTED = ("seed27", "week-2026-10-16", "sparse5")
+COMMITTED = ("seed27", "week-2026-10-16", "sparse5", "l4g3e8-2026-11-23")
 POSTAL = "M5V3A8"
 
 
@@ -127,7 +127,7 @@ def test_committed_snapshots_load_and_describe_themselves(name):
     meta = s.meta
     assert meta["name"] == name
     assert meta["format_version"] == FORMAT_VERSION
-    assert meta["postal_codes"] == [POSTAL]
+    assert meta["postal_codes"] == (["L4G3E8"] if name.startswith("l4g3e8") else [POSTAL])
     dt.date.fromisoformat(meta["as_of"])
     dt.datetime.fromisoformat(meta["captured_at"])
     assert meta["source"] and meta["notes"]
@@ -145,6 +145,12 @@ def test_committed_snapshot_contents():
 
     sparse = load_snapshot("sparse5")
     assert len(sparse.data["deals"]) == 5
+
+    # The first live capture: the owner's postal code, every deal labelled.
+    live = load_snapshot("l4g3e8-2026-11-23")
+    assert live.as_of == dt.date(2026, 11, 23) and live.data["meta"]["source"] == "neon"
+    assert len(live.data["deals"]) == 916
+    assert set(live.labels()) == {d["deal_id"] for d in live.data["deals"]}
 
 
 @pytest.mark.parametrize("version", [0, 1, 2, 4, "3", None, True])
@@ -198,7 +204,7 @@ def test_committed_snapshots_have_every_attribute_decided():
     """Re-captured 2026-10-29 after kosher labelling: every product in every
     committed snapshot has every attribute decided, and kosher users are
     served only products explicitly not_kosher = false."""
-    for name in ("seed27", "week-2026-10-16", "sparse5"):
+    for name in COMMITTED:
         snap = load_snapshot(name)
         assert snap.meta["format_version"] == FORMAT_VERSION
         for product in snap.data["products"]:
