@@ -89,9 +89,9 @@ export function HomePage() {
 
       {info.data && (
         <p className="muted small">
-          Models — chef: {info.data.features.ollama_models.chef} · sous chef:{" "}
-          {info.data.features.ollama_models.sous_chef} · nutritionist:{" "}
-          {info.data.features.ollama_models.nutritionist} ({info.data.environment})
+          Models — chef: {info.data.features.models?.chef ?? "?"} · sous chef:{" "}
+          {info.data.features.models?.sous_chef ?? "?"} · labeller:{" "}
+          {info.data.features.models?.labeller ?? "?"} ({info.data.environment})
         </p>
       )}
     </div>
