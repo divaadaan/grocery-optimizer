@@ -254,10 +254,11 @@ export interface ApiInfo {
   features: {
     redis_caching: boolean;
     cost_tracking: boolean;
-    ollama_models: {
+    /** Model spec per role, e.g. "ollama:qwen2.5:7b" (approach C). */
+    models: {
+      labeller: string;
       chef: string;
       sous_chef: string;
-      nutritionist: string;
     };
   };
   limits: Record<string, string>;
