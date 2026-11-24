@@ -1,0 +1,4474 @@
+[
+ {
+  "i": 1,
+  "name": "IFC Frozen Raw Argentina Shrimp",
+  "role": "protein",
+  "item": "argentinian shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 2,
+  "name": "Ocean Prime Wild Raw Argentinian Shrimp Frozen 454 g or Tilapia Fillets Frozen 908 g",
+  "role": "protein",
+  "item": "argentinian shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 3,
+  "name": "OLD EL PASO BEANS, TORTILLA, TACO SHELLS OR SAUCE",
+  "role": "protein",
+  "item": "beans",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 4,
+  "name": "Green Ocean Organic Raw Black Tiger Shrimp",
+  "role": "protein",
+  "item": "black tiger shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 5,
+  "name": "HUA YANG BLACK TIGER SHRIMP",
+  "role": "protein",
+  "item": "black tiger shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 6,
+  "name": "PC® RAW BLACK TIGER SHRIMP 400 G OR SEA SALT AND MALT VINEGAR HADDock BITES 454 G FROZEN",
+  "role": "protein",
+  "item": "black tiger shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 7,
+  "name": "PC® RAW BLACK TIGER SHRIMP, 400 G OR SEA SALT AND MALT VINEGAR HADDOCK BITES, 454 G",
+  "role": "protein",
+  "item": "black tiger shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 8,
+  "name": "PC® RAW BLACK TIGER SHRIMP, 400 G OR SEA SALT AND MALT VINEGAR HADDock BITES, 454 G",
+  "role": "protein",
+  "item": "black tiger shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 9,
+  "name": "Raw Frozen Black Tiger Shrimp Easy Peel IQF",
+  "role": "protein",
+  "item": "black tiger shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 10,
+  "name": "HIGH LINER BREADED OR BATTERED FISH 350-700 G OR SHRIMP 317/310G",
+  "role": "protein",
+  "item": "breaded fish",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 11,
+  "name": "BLUEWATER BREADED SHRIMP OR FISH FILLETS",
+  "role": "protein",
+  "item": "breaded shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 12,
+  "name": "IRRESISTIBLE BREADED CALAMARI VALUE PACK",
+  "role": "protein",
+  "item": "calamari",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 13,
+  "name": "AIR-CHILLED Split Chicken Breasts",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 14,
+  "name": "BONELESS SKINLESS CHICKEN BREAST",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 15,
+  "name": "BREADED CHICKEN BREAST CUTLETS VALUE PACK BONELESS SKINLESS",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 16,
+  "name": "CHICKEN BREAST VALUE PACK (FRESH, BONELESS)",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 17,
+  "name": "CHICKEN BREASTS, 4 KG",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 18,
+  "name": "COMPLIMENTS Fresh AIR-CHILLED Bone-In Chicken Breast Halves",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 19,
+  "name": "FRESH BONELESS SKINLESS CHICKEN BREAST",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 20,
+  "name": "Fresh Boneless, Skinless Chicken Breast",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 21,
+  "name": "Fresh Chicken Breast Boneless",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 22,
+  "name": "Fresh Ontario Chicken Breast",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 23,
+  "name": "MARCANGELO ASADO CHICKEN BREAST ROAST",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 24,
+  "name": "MARCANGELO CHICKEN BREAST PORTIONS, 300 g",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 25,
+  "name": "MARVID CHICKEN BREAST",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 26,
+  "name": "Maple Leaf Prime Raised Without Antibiotics Chicken Breast Fillets or Thin Sliced",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 27,
+  "name": "Maple Leaf Prime raised without antibiotics 3-piece boneless skinless chicken breasts",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 28,
+  "name": "STUFFED CHICKEN BREAST",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 29,
+  "name": "SUFRA® HALAL CHICKEN BREASTS, 3'S, UP TO 645 G",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 30,
+  "name": "Yorkshire Valley Farms Organic Boneless/Skinless Chicken Breast",
+  "role": "protein",
+  "item": "chicken breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 31,
+  "name": "Fresh Boneless & Skinless Chicken Breast Cutlets",
+  "role": "protein",
+  "item": "chicken breast cutlet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 32,
+  "name": "PC® BLUE MENU® CHICKEN BREAST CUTLETS, UP TO 590 G",
+  "role": "protein",
+  "item": "chicken breast cutlet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 33,
+  "name": "AIR-CHILLED Chicken Drumsticks or Thighs",
+  "role": "protein",
+  "item": "chicken thigh",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 34,
+  "name": "CHICKEN THIGHS",
+  "role": "protein",
+  "item": "chicken thigh",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 35,
+  "name": "CHICKEN THIGHS, 6.59/KG",
+  "role": "protein",
+  "item": "chicken thigh",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 36,
+  "name": "Maple Leaf Prime Raised Without Antibiotics Chicken Thighs Or Drumsticks",
+  "role": "protein",
+  "item": "chicken thigh",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 37,
+  "name": "NORWEGIAN COLDWATER SHRIMP",
+  "role": "protein",
+  "item": "coldwater shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 38,
+  "name": "COMPLIMENTS Newfoundland Cooked Wild Cold Water Shrimp",
+  "role": "protein",
+  "item": "cooked shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 39,
+  "name": "Farm Boy™ Cooked Shrimp",
+  "role": "protein",
+  "item": "cooked shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 40,
+  "name": "SEASOUL COOKED SHRIMP OR SEAJOY COOKED SEAWEED SALAD OR MACKEREL FILLET",
+  "role": "protein",
+  "item": "cooked shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 41,
+  "name": "SEASOUL COOKED SHRIMP OR SEAJOY SEAWEED SALAD OR MACKEREL FILLET",
+  "role": "protein",
+  "item": "cooked shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 42,
+  "name": "CHINA MAID SALTED DUCK EGG YOLK, 144G",
+  "role": "protein",
+  "item": "duck egg yolk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 43,
+  "name": "18 pcs Extra Large White Eggs",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 44,
+  "name": "BURNBRAE FARMS OMEGA 3 EGGS (LARGE), 18pcs",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 45,
+  "name": "Burnbrae Farms Solar Free Range Eggs or Green Valley Free Range Eggs",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 46,
+  "name": "COMPLIMENTS Large Omega-3 Eggs",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 47,
+  "name": "Con.Free-Run Omega3 Brown Egg",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 48,
+  "name": "Free Run Large Brown Eggs",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 49,
+  "name": "GRADE A LARGE WHITE EGGS, 18 PACK",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 50,
+  "name": "GRAY.RIDGE Large Size Brown Eggs",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 51,
+  "name": "Gray Ridge Large White Eggs",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 52,
+  "name": "Great Value organic free-run large brown eggs",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 53,
+  "name": "JUST EGG",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 54,
+  "name": "NO NAME® MEDIUM EGG, 30'S",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 55,
+  "name": "SELECTION LARGE EGGS",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 56,
+  "name": "White Eggs XL 180Pcs",
+  "role": "protein",
+  "item": "egg",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 57,
+  "name": "LIFE SMART EGG WHITES",
+  "role": "protein",
+  "item": "egg whites",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 58,
+  "name": "STIR-FRIED FISH CAKE, MAPO TOFU",
+  "role": "protein",
+  "item": "fish cake",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 59,
+  "name": "HIGH LINER FROZEN FISH FILLETS, STICKS, BURGERS OR SHRIMP, 315-700 G",
+  "role": "protein",
+  "item": "frozen fish fillet",
+  "chains": 3,
+  "deals": 3
+ },
+ {
+  "i": 60,
+  "name": "GARLIC SHRIMP",
+  "role": "protein",
+  "item": "garlic shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 61,
+  "name": "CONTINENTAL MEDIUM GROUND KOSHER BEEF",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 2,
+  "deals": 3
+ },
+ {
+  "i": 62,
+  "name": "Fresh Extra Lean Ground Beef",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 63,
+  "name": "Fresh Regular Ground Beef",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 64,
+  "name": "Fresh, Never Frozen 100% Canadian Ground Beef Patties",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 65,
+  "name": "GRASS FED LEAN GROUND BEEF, 450 G",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 66,
+  "name": "GRASS FED LEAN GROUND BEEF, 900 G",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 67,
+  "name": "Ground In-Store Daily Lean Ground Beef",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 68,
+  "name": "LEAN GROUND BEEF & PORK",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 69,
+  "name": "LEAN GROUND BEEF FAMILY PACK",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 70,
+  "name": "LIFE SMART NATURALIA GRASS FED LEAN GROUND BEEF",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 71,
+  "name": "MEDIUM GRASS FED GROUND BEEF",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 72,
+  "name": "Thomas Farms Organic Grass Fed & Grass Finished Lean Ground Beef",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 73,
+  "name": "Your Fresh Market™ medium ground beef",
+  "role": "protein",
+  "item": "ground beef",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 74,
+  "name": "Fu Yang Frozen Shrimp Head On",
+  "role": "protein",
+  "item": "head on shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 75,
+  "name": "A+ Tiger shrimp headless",
+  "role": "protein",
+  "item": "headless shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 76,
+  "name": "T.G Headless Shrimp(8/12)",
+  "role": "protein",
+  "item": "headless shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 77,
+  "name": "THAI GOLD Frozen Shrimp Headless 21/25",
+  "role": "protein",
+  "item": "headless shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 78,
+  "name": "Thailand Frozen Shrimp Headless 21/25 380g",
+  "role": "protein",
+  "item": "headless shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 79,
+  "name": "RAW PACIFIC SHRIMP, 26-30 PER LB, 1.36 KG",
+  "role": "protein",
+  "item": "pacific shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 80,
+  "name": "IRRESISTIBLES POPCORN SHRIMP",
+  "role": "protein",
+  "item": "popcorn shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 81,
+  "name": "BONELESS PORK CHOPS OR ROASTS",
+  "role": "protein",
+  "item": "pork chop",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 82,
+  "name": "Black Pepper Pork Chop",
+  "role": "protein",
+  "item": "pork chop",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 83,
+  "name": "FRESH BONE-IN PORK COMBINATION CHOPS",
+  "role": "protein",
+  "item": "pork chop",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 84,
+  "name": "RWA Pork Chop Value Pack",
+  "role": "protein",
+  "item": "pork chop",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 85,
+  "name": "Salt Peper Pork Chop",
+  "role": "protein",
+  "item": "pork chop",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 86,
+  "name": "VINCE'S OWN BREADED PORK CUTLETS",
+  "role": "protein",
+  "item": "pork cutlets",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 87,
+  "name": "BONELESS PORK LOIN CHOPS VALUE PACK OR ROAST CENTRE CUT",
+  "role": "protein",
+  "item": "pork loin",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 88,
+  "name": "Fresh Boneless Pork Shoulder Butt Chops or Roast",
+  "role": "protein",
+  "item": "pork shoulder",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 89,
+  "name": "PORK SHOULDER BLADE ROAST OR VALUE PACK CHOPS",
+  "role": "protein",
+  "item": "pork shoulder",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 90,
+  "name": "Boneless Pork Sirloin Chops",
+  "role": "protein",
+  "item": "pork sirloin",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 91,
+  "name": "Boneless Pork Sirloin Chops or Roasts",
+  "role": "protein",
+  "item": "pork sirloin",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 92,
+  "name": "PORK SIRLOIN CHOPS OR ROAST",
+  "role": "protein",
+  "item": "pork sirloin",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 93,
+  "name": "AQUASTAR WILD SOCKEYE SALMON FILLETS",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 94,
+  "name": "ATLANTIC SALMON FILLET",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 95,
+  "name": "Coho Salmon Fillets",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 96,
+  "name": "FRESH ATLANTIC SALMON FILLETS",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 3,
+  "deals": 3
+ },
+ {
+  "i": 97,
+  "name": "Fresh Atlantic Salmon Fillets",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 98,
+  "name": "Fresh Organic Atlantic Salmon Fillet",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 99,
+  "name": "Fresh Organic Atlantic Salmon Fillets",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 100,
+  "name": "Fresh Salmon Fillet",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 101,
+  "name": "KY ATL. SALMON SKINON FILLET, 454 G",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 102,
+  "name": "Land-Raised Fresh Atlantic Salmon Fillets",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 103,
+  "name": "Nature's Sustainable Selections Organic Scottish Salmon Fillets",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 104,
+  "name": "Ocean Jewel Atlantic Salmon Fillets Value Pack",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 105,
+  "name": "Your Fresh Market™ coho salmon fillet",
+  "role": "protein",
+  "item": "salmon fillet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 106,
+  "name": "IRRESISTIBLE BACON WRAPPED OR BREADED SCALLOP MEDALLIONS",
+  "role": "protein",
+  "item": "scallop medallions",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 107,
+  "name": "IRRESISTIBLE BREADED SCALLOP MEDALLIONS",
+  "role": "protein",
+  "item": "scallop medallions",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 108,
+  "name": "MARINA DEL RAY WILD ARGENTINIAN SHRIMP, 20-30 PER LB, 300 G",
+  "role": "protein",
+  "item": "shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 109,
+  "name": "Ocean Jewel Frozen Argentinian Shrimp",
+  "role": "protein",
+  "item": "shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 110,
+  "name": "ROCK HARBOUR SHRIMP RINGS",
+  "role": "protein",
+  "item": "shrimp ring",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 111,
+  "name": "Shrimp Ring",
+  "role": "protein",
+  "item": "shrimp ring",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 112,
+  "name": "White Shrimp Skewer",
+  "role": "protein",
+  "item": "shrimp skewer",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 113,
+  "name": "SEAQUEST® SURIMI, 227 G, PACIFIC WHITE RAW, 51/70 PER LB OR COOKED, 61/90 PER LB SHRIMP, 160 G OR YELLOWFIN TUNA STEAK, 92 G",
+  "role": "protein",
+  "item": "surimi",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 114,
+  "name": "LIFE SMART TOFU",
+  "role": "protein",
+  "item": "tofu",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 115,
+  "name": "MAPO TOFU",
+  "role": "protein",
+  "item": "tofu",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 116,
+  "name": "SUPERIOR TOFU / ORGANIC TOFU, 454G",
+  "role": "protein",
+  "item": "tofu",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 117,
+  "name": "Soyganic Organic Soft Tofu 2x150g pkg or Soyganic Organic Medium Firm Tofu 454g pkg or Soyganic Organic Extra Firm Tofu 350g pkg",
+  "role": "protein",
+  "item": "tofu",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 118,
+  "name": "TJ FENG YE TOFU FIVE SPICE BEAN CURD, 380g",
+  "role": "protein",
+  "item": "tofu",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 119,
+  "name": "COMPLIMENTS Roasted or Smoked Turkey Breast or Cooked or Smoked Chicken Breast",
+  "role": "protein",
+  "item": "turkey breast",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 120,
+  "name": "Ecuador White Shrimp",
+  "role": "protein",
+  "item": "white shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 121,
+  "name": "IRRESISTIBLES PACIFIC WHITE SHRIMP",
+  "role": "protein",
+  "item": "white shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 122,
+  "name": "PC® PACIFIC WHITE SHRIMP, 400 G",
+  "role": "protein",
+  "item": "white shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 123,
+  "name": "PC® Pacific White Shrimp",
+  "role": "protein",
+  "item": "white shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 124,
+  "name": "Pre Frozen White Shrimp Head On",
+  "role": "protein",
+  "item": "white shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 125,
+  "name": "Previously Frozen White Shrimp 20/30",
+  "role": "protein",
+  "item": "white shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 126,
+  "name": "White Shrimp Head On",
+  "role": "protein",
+  "item": "white shrimp",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 127,
+  "name": "COMPLIMENTS Fresh AIR-CHILLED Whole Chicken, Drumsticks or Bone-In Chicken Thighs",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 128,
+  "name": "Fresh Whole Chicken",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 129,
+  "name": "Healthy Planet Organic Whole Chicken (3.5lb)",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 130,
+  "name": "KOSHER FRESH WHOLE CHICKEN",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 131,
+  "name": "Maple Leaf Prime Raised Without Antibiotics Whole Chicken",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 132,
+  "name": "Nature's Kitchen Nature's Emporium BBQ Organic Whole Chicken",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 133,
+  "name": "PC® WHOLE CHICKEN",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 134,
+  "name": "PRIME RAISED WITHOUT ANTIBIOTICS FRESH WHOLE CHICKEN",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 135,
+  "name": "SUFRA HALAL WHOLE CHICKEN",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 136,
+  "name": "SUFRA® HALAL WHOLE CHICKEN",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 137,
+  "name": "SUFRA® HALAL WHOLE CHICKEN, UP TO 1.8 KG",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 138,
+  "name": "Whole Roasted Chicken",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 139,
+  "name": "Yorkshire Valley Farms Fresh Organic Whole Chicken",
+  "role": "protein",
+  "item": "whole chicken",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 140,
+  "name": "BEETS OR FARMER'S MARKET™ CARROTS",
+  "role": "vegetable",
+  "item": "beet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 141,
+  "name": "BEETS, FARMER'S MARKET™ CARROTS OR FARMER'S MARKET™ YELLOW ONIONS, 10 LB",
+  "role": "vegetable",
+  "item": "beet",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 142,
+  "name": "Sweet Bell Peppers 4 pk Product of Mexico",
+  "role": "vegetable",
+  "item": "bell pepper",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 143,
+  "name": "CROWN BROCCOLI",
+  "role": "vegetable",
+  "item": "broccoli",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 144,
+  "name": "Crown Broccoli",
+  "role": "vegetable",
+  "item": "broccoli",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 145,
+  "name": "Brussels Sprouts or Broccoli Bunches",
+  "role": "vegetable",
+  "item": "brussels sprout",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 146,
+  "name": "BELLE GROVE BUTTON MUSHROOMS",
+  "role": "vegetable",
+  "item": "button mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 147,
+  "name": "CARROTS OR YELLOW ONIONS",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 148,
+  "name": "COMPLIMENTS Carrots or Onions",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 149,
+  "name": "Carrot",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 150,
+  "name": "Chinese Carrot",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 151,
+  "name": "Compliments Carrots or Onions 3 lb Product of Canada, Canada No. 1, 1.36 kg",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 152,
+  "name": "FARMER'S MARKET™ CARROTS OR YELLOW ONIONS, 3 LB BAG",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 3,
+  "deals": 3
+ },
+ {
+  "i": 153,
+  "name": "Fresh Carrot in Box 22lb",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 154,
+  "name": "Fresh Mini Carrots",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 155,
+  "name": "Fresh Organic Carrots",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 156,
+  "name": "Orange or Multicolour Baby Carrots",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 157,
+  "name": "Organic Carrots",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 158,
+  "name": "Organic Carrots (2lb)",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 159,
+  "name": "Red Carrots",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 160,
+  "name": "SWEET NANTES CARROTS",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 161,
+  "name": "Your Fresh Market™ Carrots",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 162,
+  "name": "Your Fresh Market™ carrot",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 163,
+  "name": "Your Fresh Market™ carrots or yellow onions",
+  "role": "vegetable",
+  "item": "carrot",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 164,
+  "name": "CELERY STALKS $3 EA., OR HONEYCRISP APPLES, $3 LB. 6.61/KG",
+  "role": "vegetable",
+  "item": "celery",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 165,
+  "name": "CELERY STALKS, OR HONEYCRISP APPLES",
+  "role": "vegetable",
+  "item": "celery",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 166,
+  "name": "PC® Bistro Cocktail Tomatoes on the Vine",
+  "role": "vegetable",
+  "item": "cocktail tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 167,
+  "name": "PC MUSHROOMS WHOLE CREMINI OR WHITE, 454 G",
+  "role": "vegetable",
+  "item": "cremini mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 168,
+  "name": "Cubed butternut squash or sweet potatoes",
+  "role": "vegetable",
+  "item": "cubed butternut squash",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 169,
+  "name": "FARMER'S MARKET MINI CUCUMBERS, PKG OF 6 OR YELLOW ONIONS, 3 LB BAG",
+  "role": "vegetable",
+  "item": "cucumber",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 170,
+  "name": "MINI CUCUMBERS AND SWEET CHERRY TOMATOES",
+  "role": "vegetable",
+  "item": "cucumber",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 171,
+  "name": "MINI CUCUMBERS OR SWEET CHERRY TOMATOES",
+  "role": "vegetable",
+  "item": "cucumber",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 172,
+  "name": "COMPLIMENTS Frozen Vegetables",
+  "role": "vegetable",
+  "item": "frozen vegetables",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 173,
+  "name": "GREEN GIANT FROZEN VEGETABLES",
+  "role": "vegetable",
+  "item": "frozen vegetables",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 174,
+  "name": "GREEN GIANT VALLEY SELECTIONS OR FROZEN VEGETABLES, 400-705 G",
+  "role": "vegetable",
+  "item": "frozen vegetables",
+  "chains": 3,
+  "deals": 3
+ },
+ {
+  "i": 175,
+  "name": "PARDES FARMS FROZEN VEGETABLES, 680 G",
+  "role": "vegetable",
+  "item": "frozen vegetables",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 176,
+  "name": "Green Onion",
+  "role": "vegetable",
+  "item": "green onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 177,
+  "name": "Green Onions or Cilantro Product of USA or Mexico",
+  "role": "vegetable",
+  "item": "green onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 178,
+  "name": "Harvest Fresh Chopped Kale or Spinach",
+  "role": "vegetable",
+  "item": "kale",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 179,
+  "name": "VISION GREENS LETTUCE",
+  "role": "vegetable",
+  "item": "lettuce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 180,
+  "name": "113 g Haven Greens lettuce blend",
+  "role": "vegetable",
+  "item": "lettuce blend",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 181,
+  "name": "PC® LETTUCE TRIO",
+  "role": "vegetable",
+  "item": "lettuce trio",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 182,
+  "name": "PC® LITTLE GEMS™ MINI MIXED, RED AND YELLOW POTATOES, 680 G",
+  "role": "vegetable",
+  "item": "mini potato",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 183,
+  "name": "PC® LITTLE GEMS™ MINI MIXED, RED OR YELLOW POTATOES, 680 G",
+  "role": "vegetable",
+  "item": "mini potato",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 184,
+  "name": "PC® LITTLE GEMS™ RED, YELLOW OR MIXED MINI POTATOES, 680 G",
+  "role": "vegetable",
+  "item": "mini potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 185,
+  "name": "The Little Potato Company Mini Potatoes",
+  "role": "vegetable",
+  "item": "mini potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 186,
+  "name": "Mediterranean Blend - Radicchio, Escarole and Endive, Red Leaf Blend - Red and Green Leaf, Romaine or Garden Salad Blend - Iceberg and/or Boston and Romaine",
+  "role": "vegetable",
+  "item": "mixed greens",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 187,
+  "name": "Ferma Frozen 3 Way Mixed Vegetables 750g",
+  "role": "vegetable",
+  "item": "mixed vegetables",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 188,
+  "name": "NATURALLY IMPERFECT™ MUSHROOMS, 680 G",
+  "role": "vegetable",
+  "item": "mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 189,
+  "name": "Chinese Okra/Broccoli Crown",
+  "role": "vegetable",
+  "item": "okra",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 190,
+  "name": "6 YELLOW ONIONS PRODUCT OF ONTARIO CANADA NO.1 GRADE 10 LB RED ONIONS PRODUCT OF ONTARIO CANADA NO.1 GRADE 3 LB",
+  "role": "vegetable",
+  "item": "onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 191,
+  "name": "Gold Onion in Bag 50lb",
+  "role": "vegetable",
+  "item": "onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 192,
+  "name": "ONTARIO COOKING ONIONS",
+  "role": "vegetable",
+  "item": "onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 193,
+  "name": "Ontario Grown Cooking Onion",
+  "role": "vegetable",
+  "item": "onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 194,
+  "name": "Organic Red Onion (3lb)",
+  "role": "vegetable",
+  "item": "onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 195,
+  "name": "Organic Yellow Onions (2lb)",
+  "role": "vegetable",
+  "item": "onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 196,
+  "name": "Purple Onion(Bag)",
+  "role": "vegetable",
+  "item": "onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 197,
+  "name": "Red Onions",
+  "role": "vegetable",
+  "item": "onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 198,
+  "name": "Red or Spanish Onions",
+  "role": "vegetable",
+  "item": "onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 199,
+  "name": "YELLOW ONIONS OR RED ONIONS",
+  "role": "vegetable",
+  "item": "onion",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 200,
+  "name": "Holborne Organic Oyster or Shiitake Mushrooms",
+  "role": "vegetable",
+  "item": "oyster mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 201,
+  "name": "ORGANIC KING OYSTER MUSHROOM (BABY)",
+  "role": "vegetable",
+  "item": "oyster mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 202,
+  "name": "10 lb bagged russet potatoes",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 203,
+  "name": "Breakfast Potatoes",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 204,
+  "name": "FARMER'S MARKET™ RUSSET POTATOES, 10 LB",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 205,
+  "name": "Longo's Fresh Red or White Potatoes",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 206,
+  "name": "NATURALLY IMPERFECT™ POTATO, 15 LB",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 207,
+  "name": "ONTARIO YUKON GOLD, WHITE OR RED POTATOES",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 208,
+  "name": "Ontario Grown Red, White or Yukon Gold Potatoes",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 209,
+  "name": "RED, RUSSET OR YELLOW POTATOES",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 210,
+  "name": "RUSSET POTATOES",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 211,
+  "name": "The Little Potato Co. red potatoes",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 212,
+  "name": "The Little Potato Co. red, yellow or trio potatoes",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 213,
+  "name": "WHITE, YELLOW-FLESH, RED OR RUSSET POTATOES",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 214,
+  "name": "White Potatoes",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 215,
+  "name": "Your Fresh Market™ all-purpose potatoes",
+  "role": "vegetable",
+  "item": "potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 216,
+  "name": "ANDY BOY ROMAINE HEARTS",
+  "role": "vegetable",
+  "item": "romaine heart",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 217,
+  "name": "Andy Boy Romaine Hearts",
+  "role": "vegetable",
+  "item": "romaine heart",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 218,
+  "name": "ROMAINE HEARTS 3pk PC SALAD KIT",
+  "role": "vegetable",
+  "item": "romaine heart",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 219,
+  "name": "Romaine Hearts",
+  "role": "vegetable",
+  "item": "romaine heart",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 220,
+  "name": "Seafood Mushroom",
+  "role": "vegetable",
+  "item": "seafood mushroom",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 221,
+  "name": "PC® ORGANICS SHITAKI MUSHROOM, 100 G",
+  "role": "vegetable",
+  "item": "shiitake mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 222,
+  "name": "COMPLIMENTS ORGANIC Sliced White or Cremini Mushrooms",
+  "role": "vegetable",
+  "item": "sliced mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 223,
+  "name": "PC® SLICED OR WHOLE, WHITE OR CREMINI MUSHROOMS OR BROCCOLI CROWNS, 227 G",
+  "role": "vegetable",
+  "item": "sliced mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 224,
+  "name": "Head on Spinach",
+  "role": "vegetable",
+  "item": "spinach",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 225,
+  "name": "Whole Spinach / Chinese Broccoli",
+  "role": "vegetable",
+  "item": "spinach",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 226,
+  "name": "FARMER'S MARKET™ SWEET PEPPERS, PKG OF 4 OR PC® LITTLE BEAUTS VARIETY TOMATOES, 567 G",
+  "role": "vegetable",
+  "item": "sweet pepper",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 227,
+  "name": "Fresh Wild Wonders Gourmet Medley Tomatoes",
+  "role": "vegetable",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 228,
+  "name": "GREENHOUSE TOMATOES ON THE VINE OR BRUSSELS SPROUTS",
+  "role": "vegetable",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 229,
+  "name": "Ontario Homegrown Greenhouse Tomatoes on the Vine",
+  "role": "vegetable",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 230,
+  "name": "PC® BALANCIA MID-SIZE TOMATOES ON THE VINE",
+  "role": "vegetable",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 231,
+  "name": "PC® Solerama San Marzano-Type Roma Tomatoes",
+  "role": "vegetable",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 232,
+  "name": "227 g whole white mushrooms",
+  "role": "vegetable",
+  "item": "white mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 233,
+  "name": "Longo's Fresh Whole White or Cremini Mushrooms",
+  "role": "vegetable",
+  "item": "white mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 234,
+  "name": "WHOLE WHITE OR CREMINI MUSHROOMS",
+  "role": "vegetable",
+  "item": "white mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 235,
+  "name": "AMBROSIA APPLES OR SWEET POTATOES",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 236,
+  "name": "Ambrosia Apple",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 237,
+  "name": "Ambrosia Apple 5LB",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 238,
+  "name": "FARMER'S MARKET ROYAL GALA or MCINTOSH APPLES, 4 LB BAG",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 239,
+  "name": "FARMER'S MARKET™ GALA OR MCINTOSH™ APPLES, 4 LB",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 240,
+  "name": "FARMER'S MARKET™ MCINTOSH OR AMBROSIA APPLES, 4 LB",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 241,
+  "name": "FARMER'S MARKET™ MCINTOSH OR AMBROSIA APPLES, 4LB",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 242,
+  "name": "Fresh Apples",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 243,
+  "name": "Fresh Apples Russet",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 244,
+  "name": "Fresh Honeycrisp Apples",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 245,
+  "name": "Fresh Kissabel Rouge Apples",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 246,
+  "name": "GALA, McINTOSH, RED DELICIOUS, CORTLAND OR AMBROSIA APPLES OR AVOCADOS",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 247,
+  "name": "GOLDEN DELICIOUS APPLE",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 248,
+  "name": "GOLDEN DELICIOUS APPLES",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 249,
+  "name": "Gala or Ambrosia Apples",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 250,
+  "name": "HONEYCRISP APPLES",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 251,
+  "name": "LARGE GALA APPLES",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 252,
+  "name": "Longo's Fresh Royal Gala Apples",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 253,
+  "name": "ONTARIO FUJI APPLE",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 254,
+  "name": "ONTARIO MCINTOSH OR GALA APPLES",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 255,
+  "name": "ORGANIC RED DELICIOUS APPLES",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 256,
+  "name": "Ontario Grown Cortland Apples",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 257,
+  "name": "Organic Cosmic Crisp Apples",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 258,
+  "name": "Organic Gala Apples",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 259,
+  "name": "Premium Sweetango Apple",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 260,
+  "name": "Your Fresh Market™ Gala apples",
+  "role": "fruit",
+  "item": "apple",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 261,
+  "name": "NO NAME® FRUIT, 398 ML OR APPLE SAUCE, 620 ML",
+  "role": "fruit",
+  "item": "fruit",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 262,
+  "name": "COCKTAIL TOMATOES, 454 G",
+  "role": "fruit",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 263,
+  "name": "Fresh Heirloom Tomatoes",
+  "role": "fruit",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 264,
+  "name": "HEIRLOOM TOMATO",
+  "role": "fruit",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 265,
+  "name": "Heirloom Tomatoes",
+  "role": "fruit",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 266,
+  "name": "Longo's Curato San Marzano Tomatoes",
+  "role": "fruit",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 267,
+  "name": "Tomatoes on the Vine Product of Canada or Mexico 5.49/kg",
+  "role": "fruit",
+  "item": "tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 268,
+  "name": "Dempster's Protein Bagels, Bread, & Tortillas",
+  "role": "starch",
+  "item": "bagels",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 269,
+  "name": "Ace Bakery Bread or Ciabatta Rolls Selected Varieties 525-595 g",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 270,
+  "name": "Artisan Breads",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 271,
+  "name": "BREAD, 675 G",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 272,
+  "name": "Bread",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 273,
+  "name": "COCONUT BREAD QUINOA WHEAT BREAD, 320g/ 400g",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 274,
+  "name": "COUNTRY HARVEST BREAD 600-650 G OR FARMHOUSE BREAD 675 G",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 275,
+  "name": "COUNTRY HARVEST BREAD, 600-650 G OR FARMHOUSE BREAD, 675 G",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 276,
+  "name": "Country Harvest bread",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 277,
+  "name": "D'ITALIANO BREAD AND BUNS",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 278,
+  "name": "Dark or Winnipeg-Style Light Rye Bread 450 g",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 279,
+  "name": "FRONT STREET BAKERY GRAIN BREAD",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 280,
+  "name": "FRONT STREET BAKERY MINI CALABRESE BREAD",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 281,
+  "name": "LITTLE NORTHERN BAKEHOUSE BREAD",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 282,
+  "name": "MONTREAL KOSHER CHALLAH BREAD",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 283,
+  "name": "PROMISE GLUTEN-FREE BREAD, BUNS, PITAS OR NAAN, 240 - 480 G",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 284,
+  "name": "RUDOLPH'S RYE BREAD",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 285,
+  "name": "SCHAR GLUTEN FREE BREADS AND ROLLS",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 286,
+  "name": "VILLAGGIO BREAD BUNS 600-675 G & DEMPSTER'S BAGELS",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 287,
+  "name": "VILLAGGIO BREAD, BUNS OR DEMPSTER'S BAGELS",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 288,
+  "name": "VILLAGGIO BREAD, BUNS, DEMPSTER'S BAGELS",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 289,
+  "name": "Whole Grain, Protein or Fibre Bread",
+  "role": "starch",
+  "item": "bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 290,
+  "name": "NATURAL BAKERY CANADIAN RYE BREAD, 500 G",
+  "role": "starch",
+  "item": "bread,rye bread",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 291,
+  "name": "Calabrese Bread",
+  "role": "starch",
+  "item": "calabrese bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 292,
+  "name": "NEW! Cheesy Garlic Pull-apart Bread",
+  "role": "starch",
+  "item": "cheesy garlic pull-apart bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 293,
+  "name": "Cubed sweet potatoes",
+  "role": "starch",
+  "item": "cubed sweet potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 294,
+  "name": "English Muffins 6 pk, COMPLIMENTS Grain Bread 600 g or RUDOLPH'S Bavarian Market Bread 500 g",
+  "role": "starch",
+  "item": "english muffins",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 295,
+  "name": "CAVENDISH FARMS FLAVOUR CRISP FRIES (750g), PC FLATBREAD or FROZEN VEGETABLES",
+  "role": "starch",
+  "item": "frozen fries",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 296,
+  "name": "Dempster's Grain Breads",
+  "role": "starch",
+  "item": "grain bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 297,
+  "name": "Orange Sweet Potatoes",
+  "role": "starch",
+  "item": "orange sweet potato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 298,
+  "name": "PROMISE GLUTEN FREE PITA, BREADS OR BUNS",
+  "role": "starch",
+  "item": "pita",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 299,
+  "name": "Raisin or Cinnamon Raisin Bread",
+  "role": "starch",
+  "item": "raisin bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 300,
+  "name": "Natural Bakery rye bread",
+  "role": "starch",
+  "item": "rye bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 301,
+  "name": "Starsky's Signature Slavic Bread",
+  "role": "starch",
+  "item": "slavic bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 302,
+  "name": "D'ITALIANO Slice Bread",
+  "role": "starch",
+  "item": "slice bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 303,
+  "name": "Wonder and D'Italiano Sliced Bread",
+  "role": "starch",
+  "item": "sliced bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 304,
+  "name": "Longo's Sliced Country Everything Sourdough Bread",
+  "role": "starch",
+  "item": "sourdough bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 305,
+  "name": "Joseph's Bakery Tortilla, Pita or Lavash Bread",
+  "role": "starch",
+  "item": "tortilla",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 306,
+  "name": "SELECTION 7\" TORTILLAS OR SANTOSH NAAN",
+  "role": "starch",
+  "item": "tortillas",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 307,
+  "name": "White or 100% Whole Wheat Bread",
+  "role": "starch",
+  "item": "white bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 308,
+  "name": "White, Whole Wheat, Texas Toast or Sandwich Bread",
+  "role": "starch",
+  "item": "white bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 309,
+  "name": "Monsieur Gustav Cheese Assorted Varieties 120-170 g, Olivieri Pasta Twin Pack 450-500 g or Skillet Gnocchi 280 g",
+  "role": "dairy",
+  "item": "assorted cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 310,
+  "name": "Our Finest 35% triple cream brie cheese",
+  "role": "dairy",
+  "item": "brie cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 311,
+  "name": "Saint André Triple Cream Brie Cheese",
+  "role": "dairy",
+  "item": "brie cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 312,
+  "name": "Butter Sticks salted or unsalted",
+  "role": "dairy",
+  "item": "butter",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 313,
+  "name": "COMPLIMENTS Salted or Unsalted Butter",
+  "role": "dairy",
+  "item": "butter",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 314,
+  "name": "Gay Lea butter",
+  "role": "dairy",
+  "item": "butter",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 315,
+  "name": "Gay Lea salted butter",
+  "role": "dairy",
+  "item": "butter",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 316,
+  "name": "LACTANTIA BUTTER, 454 G",
+  "role": "dairy",
+  "item": "butter",
+  "chains": 3,
+  "deals": 3
+ },
+ {
+  "i": 317,
+  "name": "Longo's Essentials Country Churned Butter",
+  "role": "dairy",
+  "item": "butter",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 318,
+  "name": "SAVÖR BUTTER",
+  "role": "dairy",
+  "item": "butter",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 319,
+  "name": "BEATRICE BUTTER MILK",
+  "role": "dairy",
+  "item": "buttermilk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 320,
+  "name": "BALDERSON CHEDDAR",
+  "role": "dairy",
+  "item": "cheddar cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 321,
+  "name": "BALDERSON CHEDDAR CHEESE",
+  "role": "dairy",
+  "item": "cheddar cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 322,
+  "name": "Balderson Cheddar Cheese",
+  "role": "dairy",
+  "item": "cheddar cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 323,
+  "name": "CASTELLO CHEDDAR",
+  "role": "dairy",
+  "item": "cheddar cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 324,
+  "name": "CHEDDAR CHEESE, 1.35 KG",
+  "role": "dairy",
+  "item": "cheddar cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 325,
+  "name": "Nature's Emporium Grass Fed Organic Cheddar",
+  "role": "dairy",
+  "item": "cheddar cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 326,
+  "name": "Our Finest Mature West Country Farmhouse Cheddar Cheese",
+  "role": "dairy",
+  "item": "cheddar cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 327,
+  "name": "Our Finest mature 9-month cheddar",
+  "role": "dairy",
+  "item": "cheddar cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 328,
+  "name": "Smoked, Spicy Jalapeño or Garlic & Chive Cheddar",
+  "role": "dairy",
+  "item": "cheddar cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 329,
+  "name": "Welsh Cheddar",
+  "role": "dairy",
+  "item": "cheddar cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 330,
+  "name": "Riviera Coconut Milk Kefir",
+  "role": "dairy",
+  "item": "coconut kefir",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 331,
+  "name": "Condensed Milk",
+  "role": "dairy",
+  "item": "condensed milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 332,
+  "name": "VINAMILK SWEETENED CONDENSED MILK, 300ML",
+  "role": "dairy",
+  "item": "condensed milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 333,
+  "name": "CASTELLO CREAM CHEESE RINGS",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 334,
+  "name": "Farm Boy™ Cream Cheese",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 335,
+  "name": "Fromager d'Affinois Triple Cream Cheese",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 336,
+  "name": "GIVAT CREAM CHEESE",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 337,
+  "name": "Kraft Philadelphia Cream Cheese or Dips",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 338,
+  "name": "LACTANTIA CREAM CHEESE PRODUCT",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 339,
+  "name": "Lactantia cream cheese",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 340,
+  "name": "NO NAME® CREAM CHEESE, 227/250 G",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 341,
+  "name": "PC® LACTOSE FREE SPREADABLE CREAM CHEESE PRODUCT, 227 g",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 342,
+  "name": "PHILADELPHIA CREAM CHEESE PRODUCT, 227/250 G",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 343,
+  "name": "Philadelphia Cream Cheese",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 344,
+  "name": "Philadelphia Cream Cheese 340 g",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 345,
+  "name": "TRE STELLE CREAM CHEESE",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 346,
+  "name": "TRE STELLE LACTOSE-FREE CREAM CHEESE, 200 G",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 347,
+  "name": "TRE STELLE LACTOSE-FREE GARLIC AND CHIVES CREAM CHEESE, 200 G",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 348,
+  "name": "TRE STELLE® HERBS & SPICES CREAM CHEESE, 200 G",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 349,
+  "name": "TRE STELLE® HERBS & SPICES CREAM CHEESE, 200 g",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 350,
+  "name": "TRE STELLE® LACTOSE-FREE CREAM CHEESE, 200 G",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 351,
+  "name": "TRE STELLE® LIGHT CREAM CHEESE, 200 G",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 352,
+  "name": "TRE STELLE® LIGHT CREAM CHEESE, 200 g",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 353,
+  "name": "TRE STELLE® ORIGINAL CREAM CHEESE, 200 G",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 354,
+  "name": "Tre Stelle Cream Cheese 200 g",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 355,
+  "name": "Tre Stelle Cream Cheese Spread",
+  "role": "dairy",
+  "item": "cream cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 356,
+  "name": "Imported Emmental Cheese, Medium Cheddar Cheese or Imported Aged Cheddar Cheese",
+  "role": "dairy",
+  "item": "emmental cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 357,
+  "name": "BINGGRAE FLAVOURED MILK DRINK, 200MLX6",
+  "role": "dairy",
+  "item": "flavoured milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 358,
+  "name": "NEILSON MILKSHAKE OR MILK 2 GO FLAVOURED MILK, 310 ML",
+  "role": "dairy",
+  "item": "flavoured milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 359,
+  "name": "LIBERTÉ GREEK, 650/750 G OR MÉDITERRANÉE, 900 G YOGURT",
+  "role": "dairy",
+  "item": "greek yogurt",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 360,
+  "name": "Liberté Greek Yogurt 650-750 g",
+  "role": "dairy",
+  "item": "greek yogurt",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 361,
+  "name": "OIKOS GREEK OR ACTIVIA FIBRE+ YOGURT, 4X95/100 G",
+  "role": "dairy",
+  "item": "greek yogurt",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 362,
+  "name": "OLYMPIC GREEK OR KREMA YOGOURT",
+  "role": "dairy",
+  "item": "greek yogurt",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 363,
+  "name": "Oikos Greek Yogurt",
+  "role": "dairy",
+  "item": "greek yogurt",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 364,
+  "name": "Oikos or Liberté Greek Yogourt",
+  "role": "dairy",
+  "item": "greek yogurt",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 365,
+  "name": "Olympic Organic Greek Yogurt",
+  "role": "dairy",
+  "item": "greek yogurt",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 366,
+  "name": "TWO GOOD GREEK YOGOURT",
+  "role": "dairy",
+  "item": "greek yogurt",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 367,
+  "name": "Ice Milk",
+  "role": "dairy",
+  "item": "ice milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 368,
+  "name": "LACTANTIA LACTOSE FREE MILK 2 L PHILADELPHIA CREAM CHEESE PRODUCT 340 G",
+  "role": "dairy",
+  "item": "lactose free milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 369,
+  "name": "LACTANTIA MARGARINE OR CREAM CHEESE",
+  "role": "dairy",
+  "item": "margarine",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 370,
+  "name": "Beatrice Milk",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 371,
+  "name": "LACTANTIA PURFILTRE MILK",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 372,
+  "name": "LACTANTIA PURFILTRE MILK 2 L OR CREAM 473 ML - 1 L",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 373,
+  "name": "Lactantia UltraPur Milk",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 374,
+  "name": "MILK 2GO MILK, 6X200 ML",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 3,
+  "deals": 3
+ },
+ {
+  "i": 375,
+  "name": "NEILSON TRUTASTE 1%, 2% OR SKIM MILK, 4 L",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 376,
+  "name": "NEILSON TRUTASTE MICROFILTERED MILK, 4 L",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 377,
+  "name": "NEILSON ULTRA FILTERED MILK, 1 L",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 378,
+  "name": "Natrel Fine-Filtered Milk 3.25%, 2%, 1%, Skim 2L, Creamers 1L or Sealtest Chocolate Milk 2L",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 379,
+  "name": "Natrel Milk Series",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 380,
+  "name": "ORGANIC MEADOW MILK",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 381,
+  "name": "Organic Meadow Organic Milk",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 382,
+  "name": "ULTRAFILTERED MILK, 1 L",
+  "role": "dairy",
+  "item": "milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 383,
+  "name": "PC® OR BLUE MENU® SLICED CHEESE, 500 G, PC® DOUBLE CREAM BRIE, 450 G, CHICKEN BREAST STRIPS OR BITES, 300/375 G OR MASTRO GENOA SALAMI CHUB, 600 G",
+  "role": "dairy",
+  "item": "sliced cheese",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 384,
+  "name": "PC SWEETENED CONDENSED (300mL) or CARNATION EVAPORATED (354mL) MILK",
+  "role": "dairy",
+  "item": "sweetened condensed milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 385,
+  "name": "Sweetened Condensed Milk",
+  "role": "dairy",
+  "item": "sweetened condensed milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 386,
+  "name": "Le Grand Vegan Butter Organic",
+  "role": "dairy",
+  "item": "vegan butter",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 387,
+  "name": "DANONE ACTIVIA YOGURT TUB (650g) or NO NAME CREAM CHEESE (227g - 250g)",
+  "role": "dairy",
+  "item": "yogurt",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 388,
+  "name": "SURAJ® AGED BASMATI RICE, 8 LB",
+  "role": "pantry_staple",
+  "item": "aged basmati rice",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 389,
+  "name": "Unico Arborio Rice",
+  "role": "pantry_staple",
+  "item": "arborio rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 390,
+  "name": "COUNTRY HARVEST BAGELS",
+  "role": "pantry_staple",
+  "item": "bagel",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 391,
+  "name": "COUNTRY HARVEST BAGELS, 450 G",
+  "role": "pantry_staple",
+  "item": "bagel",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 392,
+  "name": "DEMPSTER'S BAGELS",
+  "role": "pantry_staple",
+  "item": "bagel",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 393,
+  "name": "FRONT STREET BAKERY BAGELS",
+  "role": "pantry_staple",
+  "item": "bagel",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 394,
+  "name": "MACABEE KOSHER PIZZA BAGELS, 1.3 KG",
+  "role": "pantry_staple",
+  "item": "bagel",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 395,
+  "name": "MACABEE MINI PIZZA BAGELS",
+  "role": "pantry_staple",
+  "item": "bagel",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 396,
+  "name": "CHALO! Basmati Rice",
+  "role": "pantry_staple",
+  "item": "basmati rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 397,
+  "name": "TILDA BASMATI RICE",
+  "role": "pantry_staple",
+  "item": "basmati rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 398,
+  "name": "BEN'S ORIGINAL BISTRO EXPRESS RICE",
+  "role": "pantry_staple",
+  "item": "bistro express rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 399,
+  "name": "Broya Bone Broth Chicken Turmeric & Ginger",
+  "role": "pantry_staple",
+  "item": "bone broth",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 400,
+  "name": "BOTAN CALROSE RICE, 15LB",
+  "role": "pantry_staple",
+  "item": "calrose rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 401,
+  "name": "Heinz beans or pasta",
+  "role": "pantry_staple",
+  "item": "canned beans",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 402,
+  "name": "Primo canned beans",
+  "role": "pantry_staple",
+  "item": "canned beans",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 403,
+  "name": "SELECTION CANNED BEANS",
+  "role": "pantry_staple",
+  "item": "canned beans",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 404,
+  "name": "CHEF BOYARDEE CANNED PASTA",
+  "role": "pantry_staple",
+  "item": "canned pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 405,
+  "name": "Knorr Chicken Broth Mix",
+  "role": "pantry_staple",
+  "item": "chicken broth mix",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 406,
+  "name": "Dunya Chickpeas 2Kg",
+  "role": "pantry_staple",
+  "item": "chickpeas",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 407,
+  "name": "T&T ORGANIC COCONUT CREAM/ MILK, 398ml",
+  "role": "pantry_staple",
+  "item": "coconut cream",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 408,
+  "name": "AROY-D COCONUT MILK",
+  "role": "pantry_staple",
+  "item": "coconut milk",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 409,
+  "name": "AROY-D Coconut Milk",
+  "role": "pantry_staple",
+  "item": "coconut milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 410,
+  "name": "COMPLIMENTS Coconut Milk",
+  "role": "pantry_staple",
+  "item": "coconut milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 411,
+  "name": "Coconut Milk",
+  "role": "pantry_staple",
+  "item": "coconut milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 412,
+  "name": "ROOSTER® COCONUT MILK, 398 ML",
+  "role": "pantry_staple",
+  "item": "coconut milk",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 413,
+  "name": "MASECA INSTANT CORN MASA FLOUR, 1.8 KG",
+  "role": "pantry_staple",
+  "item": "corn masa flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 414,
+  "name": "Muir Glen Organic Crushed or Diced Tomatoes",
+  "role": "pantry_staple",
+  "item": "crushed tomatoes",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 415,
+  "name": "Kingo Dried Mushroom",
+  "role": "pantry_staple",
+  "item": "dried mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 416,
+  "name": "SY Dried Mushroom",
+  "role": "pantry_staple",
+  "item": "dried mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 417,
+  "name": "Foojoy Dried Shiitake Mushroom",
+  "role": "pantry_staple",
+  "item": "dried shiitake mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 418,
+  "name": "PRIME DELIGHTS Premium Dried Shiitake Mushroom",
+  "role": "pantry_staple",
+  "item": "dried shiitake mushroom",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 419,
+  "name": "BOB'S RED MILL FLOUR",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 2
+ },
+ {
+  "i": 420,
+  "name": "BRAR'S DESI STYLE DURUM FLOUR, 20 LB",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 421,
+  "name": "DURUM ATTA FLOUR, 9.07 KG",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 3,
+  "deals": 3
+ },
+ {
+  "i": 422,
+  "name": "FIVE ROSES OR ROBIN HOOD FLOUR",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 423,
+  "name": "Five Roses flour",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 424,
+  "name": "Five Roses or Robin Hood Flour 5 kg",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 425,
+  "name": "Flour",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 426,
+  "name": "Hatynka Wheat Flour Extra Class",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 427,
+  "name": "ROBIN HOOD OR FIVE ROSES FLOUR",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 428,
+  "name": "ROBIN HOOD or FIVE ROSES Flour",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 429,
+  "name": "Robin Hood flour",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 430,
+  "name": "Robin Hood or Five Roses Flour",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 431,
+  "name": "SELECTION FLOUR",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 432,
+  "name": "WHOLE WHEAT FLOUR, 9.07 KG",
+  "role": "pantry_staple",
+  "item": "flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 433,
+  "name": "COMPLIMENTS Family Size Fresh Pasta",
+  "role": "pantry_staple",
+  "item": "fresh pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 434,
+  "name": "O SOLE MIO FRESH PASTA",
+  "role": "pantry_staple",
+  "item": "fresh pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 435,
+  "name": "Rana Fresh Pasta",
+  "role": "pantry_staple",
+  "item": "fresh pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 436,
+  "name": "ZIGGY'S® FRESH PASTA TWIN PACKS, 600 G",
+  "role": "pantry_staple",
+  "item": "fresh pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 437,
+  "name": "ZIGGY'S® FRESH PASTA, TWIN PACKS, 600 G",
+  "role": "pantry_staple",
+  "item": "fresh pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 438,
+  "name": "ZIGGY'S® FRESH PASTA, TWIN PACKS,600 G",
+  "role": "pantry_staple",
+  "item": "fresh pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 439,
+  "name": "Gluten Free Pasta 340 g or Protein+ Pasta 340 g",
+  "role": "pantry_staple",
+  "item": "gluten free pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 440,
+  "name": "Y&Y Glutinous Rice Flour",
+  "role": "pantry_staple",
+  "item": "glutinous rice flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 441,
+  "name": "Stoked Oats Superfood Granola 300 g",
+  "role": "pantry_staple",
+  "item": "granola",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 442,
+  "name": "Nature's Path Hot Oatmeal",
+  "role": "pantry_staple",
+  "item": "hot oatmeal",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 443,
+  "name": "COMPLIMENTS Instant Oatmeal",
+  "role": "pantry_staple",
+  "item": "instant oatmeal",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 444,
+  "name": "One Degree Organic & Gluten Free Protein Instant Oatmeal",
+  "role": "pantry_staple",
+  "item": "instant oatmeal",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 445,
+  "name": "PC INSTANT OATMEAL",
+  "role": "pantry_staple",
+  "item": "instant oatmeal",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 446,
+  "name": "Quaker Instant Protein Oatmeal",
+  "role": "pantry_staple",
+  "item": "instant oatmeal",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 447,
+  "name": "DAINTY Jasmine Rice",
+  "role": "pantry_staple",
+  "item": "jasmine rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 448,
+  "name": "LUNDBERG JASMINE RICE",
+  "role": "pantry_staple",
+  "item": "jasmine rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 449,
+  "name": "NEW TREASURE LONG GRAIN PARBOILED RICE, 8 KG",
+  "role": "pantry_staple",
+  "item": "long grain parboiled rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 450,
+  "name": "SELECTION LONG GRAIN OR PARBOILED RICE",
+  "role": "pantry_staple",
+  "item": "long grain rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 451,
+  "name": "COMPLIMENTS Long Grain White Rice",
+  "role": "pantry_staple",
+  "item": "long grain white rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 452,
+  "name": "SEKKA MEDIUM GRAIN RICE 40 LB",
+  "role": "pantry_staple",
+  "item": "medium grain rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 453,
+  "name": "SEKKA Premium Medium Grain Rice",
+  "role": "pantry_staple",
+  "item": "medium grain rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 454,
+  "name": "Sekka Medium Grain Rice",
+  "role": "pantry_staple",
+  "item": "medium grain rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 455,
+  "name": "MAILAODA Mushroom Egg Noodles",
+  "role": "pantry_staple",
+  "item": "mushroom egg noodles",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 456,
+  "name": "Homestyle Oat Bran, Mountain Grain, 7 Grain or Low Fat Multigrain Bread",
+  "role": "pantry_staple",
+  "item": "oat bran",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 457,
+  "name": "Protein Oat Cereal Mountain Maple",
+  "role": "pantry_staple",
+  "item": "oat cereal",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 458,
+  "name": "Quaker Oat Flour 700g pkg or Muffin or Cookie Mix 900g pkg",
+  "role": "pantry_staple",
+  "item": "oat flour",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 459,
+  "name": "BOB'S RED MILL OATMEAL",
+  "role": "pantry_staple",
+  "item": "oatmeal",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 460,
+  "name": "STOKED OATS ORGANIC GLUTEN-FREE OATS",
+  "role": "pantry_staple",
+  "item": "oats",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 461,
+  "name": "Stoked Oats Oats with Flax & Chia 500 g",
+  "role": "pantry_staple",
+  "item": "oats",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 462,
+  "name": "Four Trees by Phoeapolis Olive Oil Extra Virgin Organic",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 2
+ },
+ {
+  "i": 463,
+  "name": "Four Trees by Phoeapolis Olive Oil Extra Virgin Organic 250 mL",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 464,
+  "name": "GARCIA DE LA CRUZ EXTRA VIRGIN OLIVE OIL",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 465,
+  "name": "IRRESISTIBLE EXTRA VIRGIN OLIVE OIL",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 466,
+  "name": "KRITI GOLD'S EXTRA VIRGIN OLIVE OIL, 750 ML",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 467,
+  "name": "LIV 99 EXTRA VIRGIN OLIVE OIL",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 468,
+  "name": "Longo's Curato Organic Italian Extra Virgin Olive Oil",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 469,
+  "name": "Longo's Curato Sicilian Extra Virgin Olive Oil",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 470,
+  "name": "Longo's Curato Toscano Extra Virgin Olive Oil",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 471,
+  "name": "MAISON ORPHÉE EXTRA VIRGIN OLIVE OIL",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 472,
+  "name": "MAMA ROSA'S OLIVE POMACE OIL",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 473,
+  "name": "Mastro Extra Virgin Olive Oil",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 474,
+  "name": "NO NAME® OLIVE OIL, 750 mL",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 475,
+  "name": "OLIVE POMACE OIL 3L",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 476,
+  "name": "Olive Oil",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 477,
+  "name": "PC SPLENDIDO COLD PRESSED EXTRA VIRGIN OLIVE OIL",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 478,
+  "name": "TERRA DELYSSA VIRGIN OLIVE OIL, 1 L",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 479,
+  "name": "Terra Delyssa Organic Extra Virgin Olive Oil",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 480,
+  "name": "ZETA KOSHER EXTRA VIRGIN OLIVE OIL, 750 ML",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 2,
+  "deals": 3
+ },
+ {
+  "i": 481,
+  "name": "Zenolive Organic Extra Virgin Olive Oil",
+  "role": "pantry_staple",
+  "item": "olive oil",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 482,
+  "name": "MULTI PASSATA OR TOMATOES",
+  "role": "pantry_staple",
+  "item": "passata",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 483,
+  "name": "Mutti Passata Strained Tomatoes",
+  "role": "pantry_staple",
+  "item": "passata",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 484,
+  "name": "ASIF PASTA OR COUSCOUS",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 485,
+  "name": "BARILLA JUMBO SHELLS OR LASAGNE PASTA, 255 - 454 G",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 486,
+  "name": "Barilla Pasta 340-410g pkg or Annie's Mac & Cheese 156-170g pkg",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 487,
+  "name": "DELVERDE PASTA, 250-450 G",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 488,
+  "name": "DELVERDE PASTA, 250-450 g",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 489,
+  "name": "DI MARTINO PASTA",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 490,
+  "name": "Divella Pasta",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 491,
+  "name": "Farm Boy™ Pasta",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 492,
+  "name": "LIVIVA PASTA",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 493,
+  "name": "Longo's Pasta",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 494,
+  "name": "MOLISANA PASTA OR PASSATA",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 2
+ },
+ {
+  "i": 495,
+  "name": "NO NAME (900g) or PC (375g - 454g) PASTA",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 496,
+  "name": "PASTA, 9.07 KG",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 497,
+  "name": "Pasta",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 498,
+  "name": "Primo pasta",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 499,
+  "name": "SELECTION PASTA",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 500,
+  "name": "Time Wise Pasta",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 501,
+  "name": "ZIGGY'S® PASTA, 350/360 g or RESER'S SALADS, 425/454 g",
+  "role": "pantry_staple",
+  "item": "pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 502,
+  "name": "Bertolli Pasta Sauce",
+  "role": "pantry_staple",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 503,
+  "name": "CLASSICO PASTA SAUCE, 218-600 ML",
+  "role": "pantry_staple",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 504,
+  "name": "GEFEN PASTA OR PIZZA SAUCE",
+  "role": "pantry_staple",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 505,
+  "name": "Highland Farms Country Kitchen Pasta Sauce",
+  "role": "pantry_staple",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 506,
+  "name": "PASTA OR PIZZA SAUCE, 2.84 L",
+  "role": "pantry_staple",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 507,
+  "name": "FATSO PEANUT BUTTER",
+  "role": "pantry_staple",
+  "item": "peanut butter",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 508,
+  "name": "PC® BLUE MENU® PEANUT BUTTER, 750 G",
+  "role": "pantry_staple",
+  "item": "peanut butter",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 509,
+  "name": "Stoked Oats Quick or Steel Cut Oats",
+  "role": "pantry_staple",
+  "item": "quick oats",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 510,
+  "name": "Stoked Oats Run of the Mill Quick Oats 810 g",
+  "role": "pantry_staple",
+  "item": "quick oats",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 511,
+  "name": "PASTA TAVOLA RAVIOLI",
+  "role": "pantry_staple",
+  "item": "ravioli",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 512,
+  "name": "CHA'S RICE",
+  "role": "pantry_staple",
+  "item": "rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 513,
+  "name": "JASMINE RICE, 18.1 KG",
+  "role": "pantry_staple",
+  "item": "rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 514,
+  "name": "Minute Rice",
+  "role": "pantry_staple",
+  "item": "rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 515,
+  "name": "NO NAME® LONG GRAIN RICE, 2 KG",
+  "role": "pantry_staple",
+  "item": "rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 516,
+  "name": "Sekka Rice 6.8 kg",
+  "role": "pantry_staple",
+  "item": "rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 517,
+  "name": "THE RICE STUFF RICE",
+  "role": "pantry_staple",
+  "item": "rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 518,
+  "name": "Tilda Pure Basmati Rice",
+  "role": "pantry_staple",
+  "item": "rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 519,
+  "name": "S.B. Rice Flakes",
+  "role": "pantry_staple",
+  "item": "rice flakes",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 520,
+  "name": "JOVIAL RICE PASTA",
+  "role": "pantry_staple",
+  "item": "rice pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 521,
+  "name": "ERAWAN RICE STICK, 454G",
+  "role": "pantry_staple",
+  "item": "rice stick",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 522,
+  "name": "ONLY OATS ROLLED OATS",
+  "role": "pantry_staple",
+  "item": "rolled oats",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 523,
+  "name": "Dempster's Sandwich Bread 600g pkg, Tortillas 7\", Hot Dog or Hamburger Buns or English Muffins 6-8 pack",
+  "role": "pantry_staple",
+  "item": "sandwich bread",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 524,
+  "name": "Liviva Shirataki Pasta w/Oat Fibre Organic 400 g",
+  "role": "pantry_staple",
+  "item": "shirataki pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 525,
+  "name": "Liviva\tShirataki Instant Rice GF 120 g",
+  "role": "pantry_staple",
+  "item": "shirataki rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 526,
+  "name": "CJO ORGANIC CANE SUGAR/ CANE SUGAR DARK",
+  "role": "pantry_staple",
+  "item": "sugar",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 527,
+  "name": "LANTIC SUGAR, 1 KG",
+  "role": "pantry_staple",
+  "item": "sugar",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 528,
+  "name": "NATIVE ORGANIC CANE SUGAR",
+  "role": "pantry_staple",
+  "item": "sugar",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 529,
+  "name": "Redpath Granulated Sugar",
+  "role": "pantry_staple",
+  "item": "sugar",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 530,
+  "name": "Redpath Sugar",
+  "role": "pantry_staple",
+  "item": "sugar",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 531,
+  "name": "Redpath sugar",
+  "role": "pantry_staple",
+  "item": "sugar",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 532,
+  "name": "Sugar Red Honey Pomelo",
+  "role": "pantry_staple",
+  "item": "sugar",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 533,
+  "name": "Orsini Sundried Tomato Halves",
+  "role": "pantry_staple",
+  "item": "sun-dried tomato",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 534,
+  "name": "T&T Sweet Potato Vermicelli",
+  "role": "pantry_staple",
+  "item": "sweet potato vermicelli",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 535,
+  "name": "TC Sweet Potato Vermicelli",
+  "role": "pantry_staple",
+  "item": "sweet potato vermicelli",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 536,
+  "name": "GOLDEN ROYAL OX THAI HOM MALI RICE 18LBS",
+  "role": "pantry_staple",
+  "item": "thai hom mali rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 537,
+  "name": "JASMINE GOLD THAI JASMINE RICE, 8 kg",
+  "role": "pantry_staple",
+  "item": "thai jasmine rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 538,
+  "name": "BFREE PROTEIN TORTILLAS",
+  "role": "pantry_staple",
+  "item": "tortilla",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 539,
+  "name": "CASA MENDOSA OR WONDER TORTILLAS",
+  "role": "pantry_staple",
+  "item": "tortilla",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 540,
+  "name": "DEMPSTER'S TORTILLAS ORIGINAL, 10PK",
+  "role": "pantry_staple",
+  "item": "tortilla",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 541,
+  "name": "DEMPSTERS PROTEIN TORTILLAS, 6PK",
+  "role": "pantry_staple",
+  "item": "tortilla",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 542,
+  "name": "Dempster's 10\" Tortilla Original or Whole Wheat",
+  "role": "pantry_staple",
+  "item": "tortilla",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 543,
+  "name": "Farm Boy™ 8\" Tortillas",
+  "role": "pantry_staple",
+  "item": "tortilla",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 544,
+  "name": "Tortillas",
+  "role": "pantry_staple",
+  "item": "tortilla",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 545,
+  "name": "Divella Tri-Colour Pasta 500 g",
+  "role": "pantry_staple",
+  "item": "tri-colour pasta",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 546,
+  "name": "BEI DA HUANG PREMIUM WUCHANG RICE, 5kg",
+  "role": "pantry_staple",
+  "item": "wuchang rice",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 547,
+  "name": "PC® GUACAMOLE 227-228 G, SALSA 300 G/430 ML OR GARDEN FRESH TORTILLA CHIPS 397 G",
+  "role": "condiment",
+  "item": "guacamole",
+  "chains": 3,
+  "deals": 3
+ },
+ {
+  "i": 548,
+  "name": "Smucker's Jam 500mL jar or Smucker's No Sugar Added Jam 310mL jam or Jif Peanut Butter 1kg jar",
+  "role": "condiment",
+  "item": "jam",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 549,
+  "name": "ELMHURST NON-DAIRY CREAMERS, 750 ML",
+  "role": "condiment",
+  "item": "non-dairy creamer",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 550,
+  "name": "CARBONE PASTA SAUCE",
+  "role": "condiment",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 551,
+  "name": "Classico Pasta Sauce",
+  "role": "condiment",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 552,
+  "name": "PC® PASTA SAUCE, 1.8 L",
+  "role": "condiment",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 553,
+  "name": "Primo Pasta Sauce 680 mL",
+  "role": "condiment",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 554,
+  "name": "Rao's Pasta Sauce",
+  "role": "condiment",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 555,
+  "name": "SELECTION PASTA SAUCE",
+  "role": "condiment",
+  "item": "pasta sauce",
+  "chains": 2,
+  "deals": 2
+ },
+ {
+  "i": 556,
+  "name": "VINCE'S OWN PENNE RIGATE & PASTA SAUCE",
+  "role": "condiment",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 557,
+  "name": "VINCE'S OWN PENNE RIGATE IN PASTA SAUCE",
+  "role": "condiment",
+  "item": "pasta sauce",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 558,
+  "name": "BAMBOO SHRIMP PASTE ON SUGARCANE, 500g",
+  "role": "condiment",
+  "item": "shrimp paste",
+  "chains": 1,
+  "deals": 1
+ },
+ {
+  "i": 559,
+  "name": "Gourmet Mushroom and Black Truffle Oil",
+  "role": "condiment",
+  "item": "truffle oil",
+  "chains": 1,
+  "deals": 1
+ }
+]

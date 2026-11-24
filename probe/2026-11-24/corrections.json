@@ -1,0 +1,12 @@
+{
+ "corrections": [
+  {
+   "product_id": 121,
+   "canonical_name": "canned beans",
+   "changes": {
+    "contains_meat": false
+   },
+   "reason": "Plain canned legumes contain no meat; owner-approved correction 2026-11-24. Pork-and-beans lines go to the separate baked beans product."
+  }
+ ]
+}

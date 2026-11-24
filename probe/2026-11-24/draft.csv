@@ -1,0 +1,688 @@
+idx,deal_name,label_role,tile_pos,product,existing_or_new,meat,fish,dairy,egg,nuts,animal_byproduct,gluten,not_kosher,rationale
+1,IFC Frozen Raw Argentina Shrimp,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+2,Ocean Prime Wild Raw Argentinian Shrimp Frozen 454 g or Tilapia Fillets Frozen 908 g,protein,0,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+2,Ocean Prime Wild Raw Argentinian Shrimp Frozen 454 g or Tilapia Fillets Frozen 908 g,protein,1,tilapia fillets,NEW,n,Y,n,n,n,n,n,Y,"frozen processed fillets: kosher species but uncertified, so not kosher (only raw salmon is accepted by rule)"
+3,"OLD EL PASO BEANS, TORTILLA, TACO SHELLS OR SAUCE",protein,0,refried beans,NEW,Y,n,n,n,n,n,n,Y,traditional refried beans commonly contain lard (meat); conservative
+3,"OLD EL PASO BEANS, TORTILLA, TACO SHELLS OR SAUCE",protein,1,tortillas,existing,n,n,n,n,n,n,Y,Y,
+3,"OLD EL PASO BEANS, TORTILLA, TACO SHELLS OR SAUCE",protein,2,taco shells,NEW,n,n,n,n,n,n,n,Y,corn shells; no tracked attribute
+3,"OLD EL PASO BEANS, TORTILLA, TACO SHELLS OR SAUCE",protein,3,taco sauce,NEW,n,n,n,n,n,n,Y,Y,gluten conservative (thickeners vary)
+4,Green Ocean Organic Raw Black Tiger Shrimp,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+5,HUA YANG BLACK TIGER SHRIMP,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+6,PC® RAW BLACK TIGER SHRIMP 400 G OR SEA SALT AND MALT VINEGAR HADDock BITES 454 G FROZEN,protein,0,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,"sea salt & malt vinegar haddock bites: battered, malt = gluten | shellfish; not a kosher species"
+6,PC® RAW BLACK TIGER SHRIMP 400 G OR SEA SALT AND MALT VINEGAR HADDock BITES 454 G FROZEN,protein,1,breaded white fish fillets,existing,n,Y,Y,Y,n,n,Y,Y,"sea salt & malt vinegar haddock bites: battered, malt = gluten"
+7,"PC® RAW BLACK TIGER SHRIMP, 400 G OR SEA SALT AND MALT VINEGAR HADDOCK BITES, 454 G",protein,0,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,"sea salt & malt vinegar haddock bites: battered, malt = gluten | shellfish; not a kosher species"
+7,"PC® RAW BLACK TIGER SHRIMP, 400 G OR SEA SALT AND MALT VINEGAR HADDOCK BITES, 454 G",protein,1,breaded white fish fillets,existing,n,Y,Y,Y,n,n,Y,Y,"sea salt & malt vinegar haddock bites: battered, malt = gluten"
+8,"PC® RAW BLACK TIGER SHRIMP, 400 G OR SEA SALT AND MALT VINEGAR HADDock BITES, 454 G",protein,0,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,"sea salt & malt vinegar haddock bites: battered, malt = gluten | shellfish; not a kosher species"
+8,"PC® RAW BLACK TIGER SHRIMP, 400 G OR SEA SALT AND MALT VINEGAR HADDock BITES, 454 G",protein,1,breaded white fish fillets,existing,n,Y,Y,Y,n,n,Y,Y,"sea salt & malt vinegar haddock bites: battered, malt = gluten"
+9,Raw Frozen Black Tiger Shrimp Easy Peel IQF,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+10,HIGH LINER BREADED OR BATTERED FISH 350-700 G OR SHRIMP 317/310G,protein,0,breaded white fish fillets,existing,n,Y,Y,Y,n,n,Y,Y,High Liner range includes breaded/battered fish and shrimp; conservative superset
+10,HIGH LINER BREADED OR BATTERED FISH 350-700 G OR SHRIMP 317/310G,protein,1,breaded shrimp,NEW,n,Y,Y,Y,n,n,Y,Y,"High Liner range includes breaded/battered fish and shrimp; conservative superset | batter/breading: wheat, typically egg and milk; matches breaded white fish fillets"
+11,BLUEWATER BREADED SHRIMP OR FISH FILLETS,protein,0,breaded white fish fillets,existing,n,Y,Y,Y,n,n,Y,Y,High Liner range includes breaded/battered fish and shrimp; conservative superset
+11,BLUEWATER BREADED SHRIMP OR FISH FILLETS,protein,1,breaded shrimp,NEW,n,Y,Y,Y,n,n,Y,Y,"High Liner range includes breaded/battered fish and shrimp; conservative superset | batter/breading: wheat, typically egg and milk; matches breaded white fish fillets"
+12,IRRESISTIBLE BREADED CALAMARI VALUE PACK,protein,,breaded calamari,existing,n,Y,Y,Y,n,n,Y,Y,
+13,AIR-CHILLED Split Chicken Breasts,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+14,BONELESS SKINLESS CHICKEN BREAST,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+15,BREADED CHICKEN BREAST CUTLETS VALUE PACK BONELESS SKINLESS,protein,,breaded chicken breast,existing,Y,n,Y,Y,n,n,Y,Y,
+16,"CHICKEN BREAST VALUE PACK (FRESH, BONELESS)",protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+17,"CHICKEN BREASTS, 4 KG",protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+18,COMPLIMENTS Fresh AIR-CHILLED Bone-In Chicken Breast Halves,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+19,FRESH BONELESS SKINLESS CHICKEN BREAST,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,existing confirmed alias; fills its NULL pricing only
+20,"Fresh Boneless, Skinless Chicken Breast",protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,existing confirmed alias; fills its NULL pricing only
+21,Fresh Chicken Breast Boneless,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+22,Fresh Ontario Chicken Breast,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+23,MARCANGELO ASADO CHICKEN BREAST ROAST,protein,,marinated chicken breast,NEW,Y,n,Y,n,n,n,Y,Y,"seasoned/marinated breast (asado roast, portions): dairy and gluten conservative"
+24,"MARCANGELO CHICKEN BREAST PORTIONS, 300 g",protein,,marinated chicken breast,NEW,Y,n,Y,n,n,n,Y,Y,"seasoned/marinated breast (asado roast, portions): dairy and gluten conservative"
+25,MARVID CHICKEN BREAST,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+26,Maple Leaf Prime Raised Without Antibiotics Chicken Breast Fillets or Thin Sliced,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+27,Maple Leaf Prime raised without antibiotics 3-piece boneless skinless chicken breasts,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+28,STUFFED CHICKEN BREAST,protein,,stuffed chicken breast,NEW,Y,n,Y,Y,n,n,Y,Y,stuffing is typically cheese and breadcrumb
+29,"SUFRA® HALAL CHICKEN BREASTS, 3'S, UP TO 645 G",protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+30,Yorkshire Valley Farms Organic Boneless/Skinless Chicken Breast,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+31,Fresh Boneless & Skinless Chicken Breast Cutlets,protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+32,"PC® BLUE MENU® CHICKEN BREAST CUTLETS, UP TO 590 G",protein,,chicken breast,existing,Y,n,n,n,n,n,n,Y,
+33,AIR-CHILLED Chicken Drumsticks or Thighs,protein,0,chicken drumsticks,existing,Y,n,n,n,n,n,n,Y,
+33,AIR-CHILLED Chicken Drumsticks or Thighs,protein,1,chicken thighs,existing,Y,n,n,n,n,n,n,Y,
+34,CHICKEN THIGHS,protein,,chicken thighs,existing,Y,n,n,n,n,n,n,Y,
+35,"CHICKEN THIGHS, 6.59/KG",protein,,chicken thighs,existing,Y,n,n,n,n,n,n,Y,
+36,Maple Leaf Prime Raised Without Antibiotics Chicken Thighs Or Drumsticks,protein,0,chicken drumsticks,existing,Y,n,n,n,n,n,n,Y,
+36,Maple Leaf Prime Raised Without Antibiotics Chicken Thighs Or Drumsticks,protein,1,chicken thighs,existing,Y,n,n,n,n,n,n,Y,
+37,NORWEGIAN COLDWATER SHRIMP,protein,,cooked shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+38,COMPLIMENTS Newfoundland Cooked Wild Cold Water Shrimp,protein,,cooked shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+39,Farm Boy™ Cooked Shrimp,protein,,cooked shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+40,SEASOUL COOKED SHRIMP OR SEAJOY COOKED SEAWEED SALAD OR MACKEREL FILLET,protein,0,cooked shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+40,SEASOUL COOKED SHRIMP OR SEAJOY COOKED SEAWEED SALAD OR MACKEREL FILLET,protein,1,seaweed salad,NEW,n,n,n,n,n,n,Y,Y,wakame with soy sauce (wheat) and sesame; no animal product
+40,SEASOUL COOKED SHRIMP OR SEAJOY COOKED SEAWEED SALAD OR MACKEREL FILLET,protein,2,mackerel fillet,NEW,n,Y,n,n,n,n,n,Y,"packaged/smoked mackerel, uncertified"
+41,SEASOUL COOKED SHRIMP OR SEAJOY SEAWEED SALAD OR MACKEREL FILLET,protein,0,cooked shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+41,SEASOUL COOKED SHRIMP OR SEAJOY SEAWEED SALAD OR MACKEREL FILLET,protein,1,seaweed salad,NEW,n,n,n,n,n,n,Y,Y,wakame with soy sauce (wheat) and sesame; no animal product
+41,SEASOUL COOKED SHRIMP OR SEAJOY SEAWEED SALAD OR MACKEREL FILLET,protein,2,mackerel fillet,NEW,n,Y,n,n,n,n,n,Y,"packaged/smoked mackerel, uncertified"
+42,"CHINA MAID SALTED DUCK EGG YOLK, 144G",protein,,salted duck egg yolk,NEW,n,n,n,Y,n,n,n,Y,"cured duck egg yolk, processed"
+43,18 pcs Extra Large White Eggs,protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+44,"BURNBRAE FARMS OMEGA 3 EGGS (LARGE), 18pcs",protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+45,Burnbrae Farms Solar Free Range Eggs or Green Valley Free Range Eggs,protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+46,COMPLIMENTS Large Omega-3 Eggs,protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+47,Con.Free-Run Omega3 Brown Egg,protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+48,Free Run Large Brown Eggs,protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+49,"GRADE A LARGE WHITE EGGS, 18 PACK",protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+50,GRAY.RIDGE Large Size Brown Eggs,protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+51,Gray Ridge Large White Eggs,protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+52,Great Value organic free-run large brown eggs,protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+53,JUST EGG,protein,,plant-based egg substitute,NEW,n,n,n,n,n,n,n,Y,"JUST Egg: mung-bean protein, no egg or other animal product; certification not assumed"
+54,"NO NAME® MEDIUM EGG, 30'S",protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+55,SELECTION LARGE EGGS,protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+56,White Eggs XL 180Pcs,protein,,eggs,existing,n,n,n,Y,n,n,n,n,
+57,LIFE SMART EGG WHITES,protein,,liquid egg whites,NEW,n,n,n,Y,n,n,n,Y,"pasteurised carton egg whites: processed, certification uncertain"
+58,"STIR-FRIED FISH CAKE, MAPO TOFU",protein,0,fish cake stir-fry,NEW,n,Y,n,Y,n,n,Y,Y,"fish cake: fish, egg white, wheat starch"
+58,"STIR-FRIED FISH CAKE, MAPO TOFU",protein,1,mapo tofu,NEW,Y,n,n,n,n,n,Y,Y,the dish is tofu in a sauce with minced pork and doubanjiang (wheat); meat conservative
+59,"HIGH LINER FROZEN FISH FILLETS, STICKS, BURGERS OR SHRIMP, 315-700 G",protein,0,breaded white fish fillets,existing,n,Y,Y,Y,n,n,Y,Y,High Liner range includes breaded/battered fish and shrimp; conservative superset
+59,"HIGH LINER FROZEN FISH FILLETS, STICKS, BURGERS OR SHRIMP, 315-700 G",protein,1,breaded shrimp,NEW,n,Y,Y,Y,n,n,Y,Y,"High Liner range includes breaded/battered fish and shrimp; conservative superset | batter/breading: wheat, typically egg and milk; matches breaded white fish fillets"
+60,GARLIC SHRIMP,protein,,garlic shrimp,NEW,n,Y,Y,n,n,n,Y,Y,prepared garlic-butter shrimp; dairy and gluten conservative
+61,CONTINENTAL MEDIUM GROUND KOSHER BEEF,protein,,kosher ground beef,NEW,Y,n,n,n,n,n,n,n,"sold as KOSHER: certified, so kosher"
+62,Fresh Extra Lean Ground Beef,protein,,ground beef,existing,Y,n,n,n,n,n,n,Y,
+63,Fresh Regular Ground Beef,protein,,ground beef,existing,Y,n,n,n,n,n,n,Y,
+64,"Fresh, Never Frozen 100% Canadian Ground Beef Patties",protein,,beef patties,NEW,Y,n,n,n,n,n,Y,Y,"fresh patties: binder/seasoning possible, gluten conservative"
+65,"GRASS FED LEAN GROUND BEEF, 450 G",protein,,ground beef,existing,Y,n,n,n,n,n,n,Y,
+66,"GRASS FED LEAN GROUND BEEF, 900 G",protein,,ground beef,existing,Y,n,n,n,n,n,n,Y,
+67,Ground In-Store Daily Lean Ground Beef,protein,,ground beef,existing,Y,n,n,n,n,n,n,Y,
+68,LEAN GROUND BEEF & PORK,protein,,ground beef and pork,NEW,Y,n,n,n,n,n,n,Y,mixed ground meat; pork
+69,LEAN GROUND BEEF FAMILY PACK,protein,,ground beef,existing,Y,n,n,n,n,n,n,Y,
+70,LIFE SMART NATURALIA GRASS FED LEAN GROUND BEEF,protein,,ground beef,existing,Y,n,n,n,n,n,n,Y,
+71,MEDIUM GRASS FED GROUND BEEF,protein,,ground beef,existing,Y,n,n,n,n,n,n,Y,
+72,Thomas Farms Organic Grass Fed & Grass Finished Lean Ground Beef,protein,,ground beef,existing,Y,n,n,n,n,n,n,Y,
+73,Your Fresh Market™ medium ground beef,protein,,ground beef,existing,Y,n,n,n,n,n,n,Y,
+74,Fu Yang Frozen Shrimp Head On,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+75,A+ Tiger shrimp headless,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+76,T.G Headless Shrimp(8/12),protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+77,THAI GOLD Frozen Shrimp Headless 21/25,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+78,Thailand Frozen Shrimp Headless 21/25 380g,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+79,"RAW PACIFIC SHRIMP, 26-30 PER LB, 1.36 KG",protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+80,IRRESISTIBLES POPCORN SHRIMP,protein,,breaded shrimp,NEW,n,Y,Y,Y,n,n,Y,Y,"batter/breading: wheat, typically egg and milk; matches breaded white fish fillets"
+81,BONELESS PORK CHOPS OR ROASTS,protein,0,pork chops,existing,Y,n,n,n,n,n,n,Y,
+81,BONELESS PORK CHOPS OR ROASTS,protein,1,pork roast,NEW,Y,n,n,n,n,n,n,Y,pork
+82,Black Pepper Pork Chop,protein,,seasoned pork chops,NEW,Y,n,n,Y,n,n,Y,Y,"Asian-grocer black-pepper / salt-and-pepper chops: battered or marinated, egg and gluten conservative"
+83,FRESH BONE-IN PORK COMBINATION CHOPS,protein,,pork chops,existing,Y,n,n,n,n,n,n,Y,
+84,RWA Pork Chop Value Pack,protein,,pork chops,existing,Y,n,n,n,n,n,n,Y,
+85,Salt Peper Pork Chop,protein,,seasoned pork chops,NEW,Y,n,n,Y,n,n,Y,Y,"Asian-grocer black-pepper / salt-and-pepper chops: battered or marinated, egg and gluten conservative"
+86,VINCE'S OWN BREADED PORK CUTLETS,protein,,breaded pork cutlets,NEW,Y,n,Y,Y,n,n,Y,Y,"breaded: wheat, egg, typically milk"
+87,BONELESS PORK LOIN CHOPS VALUE PACK OR ROAST CENTRE CUT,protein,0,pork chops,existing,Y,n,n,n,n,n,n,Y,
+87,BONELESS PORK LOIN CHOPS VALUE PACK OR ROAST CENTRE CUT,protein,1,pork roast,NEW,Y,n,n,n,n,n,n,Y,pork
+88,Fresh Boneless Pork Shoulder Butt Chops or Roast,protein,,pork shoulder,NEW,Y,n,n,n,n,n,n,Y,pork; chops or roast of the same cut are one product
+89,PORK SHOULDER BLADE ROAST OR VALUE PACK CHOPS,protein,,pork shoulder,NEW,Y,n,n,n,n,n,n,Y,pork; chops or roast of the same cut are one product
+90,Boneless Pork Sirloin Chops,protein,,pork sirloin,NEW,Y,n,n,n,n,n,n,Y,pork; chops or roast of the same cut are one product
+91,Boneless Pork Sirloin Chops or Roasts,protein,,pork sirloin,NEW,Y,n,n,n,n,n,n,Y,pork; chops or roast of the same cut are one product
+92,PORK SIRLOIN CHOPS OR ROAST,protein,,pork sirloin,NEW,Y,n,n,n,n,n,n,Y,pork; chops or roast of the same cut are one product
+93,AQUASTAR WILD SOCKEYE SALMON FILLETS,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+94,ATLANTIC SALMON FILLET,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+95,Coho Salmon Fillets,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+96,FRESH ATLANTIC SALMON FILLETS,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+97,Fresh Atlantic Salmon Fillets,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+98,Fresh Organic Atlantic Salmon Fillet,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+99,Fresh Organic Atlantic Salmon Fillets,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+100,Fresh Salmon Fillet,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+101,"KY ATL. SALMON SKINON FILLET, 454 G",protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+102,Land-Raised Fresh Atlantic Salmon Fillets,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+103,Nature's Sustainable Selections Organic Scottish Salmon Fillets,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+104,Ocean Jewel Atlantic Salmon Fillets Value Pack,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+105,Your Fresh Market™ coho salmon fillet,protein,,salmon fillet,existing,n,Y,n,n,n,n,n,n,salmon is a kosher species; raw salmon is accepted without a hechsher by rule
+106,IRRESISTIBLE BACON WRAPPED OR BREADED SCALLOP MEDALLIONS,protein,0,bacon wrapped scallops,NEW,Y,Y,n,n,n,n,n,Y,pork bacon + shellfish
+106,IRRESISTIBLE BACON WRAPPED OR BREADED SCALLOP MEDALLIONS,protein,1,breaded scallops,NEW,n,Y,Y,Y,n,n,Y,Y,breaded shellfish; as breaded white fish fillets
+107,IRRESISTIBLE BREADED SCALLOP MEDALLIONS,protein,,breaded scallops,NEW,n,Y,Y,Y,n,n,Y,Y,breaded shellfish; as breaded white fish fillets
+108,"MARINA DEL RAY WILD ARGENTINIAN SHRIMP, 20-30 PER LB, 300 G",protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+109,Ocean Jewel Frozen Argentinian Shrimp,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+110,ROCK HARBOUR SHRIMP RINGS,protein,,shrimp ring,NEW,n,Y,n,n,n,n,Y,Y,cooked shrimp with cocktail sauce; gluten conservative (sauce varies)
+111,Shrimp Ring,protein,,shrimp ring,NEW,n,Y,n,n,n,n,Y,Y,cooked shrimp with cocktail sauce; gluten conservative (sauce varies)
+112,White Shrimp Skewer,protein,,shrimp skewers,NEW,n,Y,n,n,n,n,Y,Y,marinated skewers; gluten conservative (soy-based marinades)
+113,"SEAQUEST® SURIMI, 227 G, PACIFIC WHITE RAW, 51/70 PER LB OR COOKED, 61/90 PER LB SHRIMP, 160 G OR YELLOWFIN TUNA STEAK, 92 G",protein,0,surimi,NEW,n,Y,n,Y,n,n,Y,Y,"imitation crab: fish, egg white, wheat starch"
+113,"SEAQUEST® SURIMI, 227 G, PACIFIC WHITE RAW, 51/70 PER LB OR COOKED, 61/90 PER LB SHRIMP, 160 G OR YELLOWFIN TUNA STEAK, 92 G",protein,1,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+113,"SEAQUEST® SURIMI, 227 G, PACIFIC WHITE RAW, 51/70 PER LB OR COOKED, 61/90 PER LB SHRIMP, 160 G OR YELLOWFIN TUNA STEAK, 92 G",protein,2,cooked shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+113,"SEAQUEST® SURIMI, 227 G, PACIFIC WHITE RAW, 51/70 PER LB OR COOKED, 61/90 PER LB SHRIMP, 160 G OR YELLOWFIN TUNA STEAK, 92 G",protein,3,tuna steak,NEW,n,Y,n,n,n,n,n,Y,"frozen tuna steak, uncertified"
+114,LIFE SMART TOFU,protein,,tofu,existing,n,n,n,n,n,n,n,Y,
+115,MAPO TOFU,protein,,mapo tofu,NEW,Y,n,n,n,n,n,Y,Y,the dish is tofu in a sauce with minced pork and doubanjiang (wheat); meat conservative
+116,"SUPERIOR TOFU / ORGANIC TOFU, 454G",protein,,tofu,existing,n,n,n,n,n,n,n,Y,
+117,Soyganic Organic Soft Tofu 2x150g pkg or Soyganic Organic Medium Firm Tofu 454g pkg or Soyganic Organic Extra Firm Tofu 350g pkg,protein,,tofu,existing,n,n,n,n,n,n,n,Y,
+118,"TJ FENG YE TOFU FIVE SPICE BEAN CURD, 380g",protein,,seasoned dried tofu,NEW,n,n,n,n,n,n,Y,Y,five-spice pressed bean curd braised in soy sauce (wheat); no animal product
+119,COMPLIMENTS Roasted or Smoked Turkey Breast or Cooked or Smoked Chicken Breast,protein,0,deli turkey breast,NEW,Y,n,n,n,n,n,Y,Y,roasted/smoked deli turkey; matches cooked chicken breast
+119,COMPLIMENTS Roasted or Smoked Turkey Breast or Cooked or Smoked Chicken Breast,protein,1,cooked chicken breast,existing,Y,n,n,n,n,n,Y,Y,
+120,Ecuador White Shrimp,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+121,IRRESISTIBLES PACIFIC WHITE SHRIMP,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+122,"PC® PACIFIC WHITE SHRIMP, 400 G",protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+123,PC® Pacific White Shrimp,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+124,Pre Frozen White Shrimp Head On,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+125,Previously Frozen White Shrimp 20/30,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+126,White Shrimp Head On,protein,,raw shrimp,NEW,n,Y,n,n,n,n,n,Y,shellfish; not a kosher species
+127,"COMPLIMENTS Fresh AIR-CHILLED Whole Chicken, Drumsticks or Bone-In Chicken Thighs",protein,0,whole chicken,NEW,Y,n,n,n,n,n,n,Y,uncertified poultry (incl. halal)
+127,"COMPLIMENTS Fresh AIR-CHILLED Whole Chicken, Drumsticks or Bone-In Chicken Thighs",protein,1,chicken drumsticks,existing,Y,n,n,n,n,n,n,Y,
+127,"COMPLIMENTS Fresh AIR-CHILLED Whole Chicken, Drumsticks or Bone-In Chicken Thighs",protein,2,chicken thighs,existing,Y,n,n,n,n,n,n,Y,
+128,Fresh Whole Chicken,protein,,whole chicken,NEW,Y,n,n,n,n,n,n,Y,uncertified poultry (incl. halal)
+129,Healthy Planet Organic Whole Chicken (3.5lb),protein,,whole chicken,NEW,Y,n,n,n,n,n,n,Y,uncertified poultry (incl. halal)
+130,KOSHER FRESH WHOLE CHICKEN,protein,,kosher whole chicken,NEW,Y,n,n,n,n,n,n,n,"sold as KOSHER: certified, so kosher"
+131,Maple Leaf Prime Raised Without Antibiotics Whole Chicken,protein,,whole chicken,NEW,Y,n,n,n,n,n,n,Y,uncertified poultry (incl. halal)
+132,Nature's Kitchen Nature's Emporium BBQ Organic Whole Chicken,protein,,rotisserie chicken,NEW,Y,n,n,n,n,n,Y,Y,"roasted/BBQ whole chicken: seasoning rub, gluten conservative"
+133,PC® WHOLE CHICKEN,protein,,whole chicken,NEW,Y,n,n,n,n,n,n,Y,uncertified poultry (incl. halal)
+134,PRIME RAISED WITHOUT ANTIBIOTICS FRESH WHOLE CHICKEN,protein,,whole chicken,NEW,Y,n,n,n,n,n,n,Y,uncertified poultry (incl. halal)
+135,SUFRA HALAL WHOLE CHICKEN,protein,,whole chicken,NEW,Y,n,n,n,n,n,n,Y,uncertified poultry (incl. halal)
+136,SUFRA® HALAL WHOLE CHICKEN,protein,,whole chicken,NEW,Y,n,n,n,n,n,n,Y,uncertified poultry (incl. halal)
+137,"SUFRA® HALAL WHOLE CHICKEN, UP TO 1.8 KG",protein,,whole chicken,NEW,Y,n,n,n,n,n,n,Y,uncertified poultry (incl. halal)
+138,Whole Roasted Chicken,protein,,rotisserie chicken,NEW,Y,n,n,n,n,n,Y,Y,"roasted/BBQ whole chicken: seasoning rub, gluten conservative"
+139,Yorkshire Valley Farms Fresh Organic Whole Chicken,protein,,whole chicken,NEW,Y,n,n,n,n,n,n,Y,uncertified poultry (incl. halal)
+140,BEETS OR FARMER'S MARKET™ CARROTS,vegetable,0,beets,NEW,n,n,n,n,n,n,n,n,
+140,BEETS OR FARMER'S MARKET™ CARROTS,vegetable,1,carrots,existing,n,n,n,n,n,n,n,n,
+141,"BEETS, FARMER'S MARKET™ CARROTS OR FARMER'S MARKET™ YELLOW ONIONS, 10 LB",vegetable,0,beets,NEW,n,n,n,n,n,n,n,n,
+141,"BEETS, FARMER'S MARKET™ CARROTS OR FARMER'S MARKET™ YELLOW ONIONS, 10 LB",vegetable,1,carrots,existing,n,n,n,n,n,n,n,n,
+141,"BEETS, FARMER'S MARKET™ CARROTS OR FARMER'S MARKET™ YELLOW ONIONS, 10 LB",vegetable,2,yellow onion,existing,n,n,n,n,n,n,n,n,
+142,Sweet Bell Peppers 4 pk Product of Mexico,vegetable,,bell peppers,NEW,n,n,n,n,n,n,n,n,mixed-colour sweet peppers
+143,CROWN BROCCOLI,vegetable,,broccoli,existing,n,n,n,n,n,n,n,n,
+144,Crown Broccoli,vegetable,,broccoli,existing,n,n,n,n,n,n,n,n,
+145,Brussels Sprouts or Broccoli Bunches,vegetable,0,brussels sprouts,NEW,n,n,n,n,n,n,n,n,
+145,Brussels Sprouts or Broccoli Bunches,vegetable,1,broccoli,existing,n,n,n,n,n,n,n,n,
+146,BELLE GROVE BUTTON MUSHROOMS,vegetable,,white mushrooms,existing,n,n,n,n,n,n,n,n,
+147,CARROTS OR YELLOW ONIONS,vegetable,0,carrots,existing,n,n,n,n,n,n,n,n,
+147,CARROTS OR YELLOW ONIONS,vegetable,1,yellow onion,existing,n,n,n,n,n,n,n,n,
+148,COMPLIMENTS Carrots or Onions,vegetable,0,carrots,existing,n,n,n,n,n,n,n,n,
+148,COMPLIMENTS Carrots or Onions,vegetable,1,yellow onion,existing,n,n,n,n,n,n,n,n,
+149,Carrot,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+150,Chinese Carrot,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+151,"Compliments Carrots or Onions 3 lb Product of Canada, Canada No. 1, 1.36 kg",vegetable,0,carrots,existing,n,n,n,n,n,n,n,n,
+151,"Compliments Carrots or Onions 3 lb Product of Canada, Canada No. 1, 1.36 kg",vegetable,1,yellow onion,existing,n,n,n,n,n,n,n,n,
+152,"FARMER'S MARKET™ CARROTS OR YELLOW ONIONS, 3 LB BAG",vegetable,0,carrots,existing,n,n,n,n,n,n,n,n,
+152,"FARMER'S MARKET™ CARROTS OR YELLOW ONIONS, 3 LB BAG",vegetable,1,yellow onion,existing,n,n,n,n,n,n,n,n,
+153,Fresh Carrot in Box 22lb,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+154,Fresh Mini Carrots,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+155,Fresh Organic Carrots,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+156,Orange or Multicolour Baby Carrots,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+157,Organic Carrots,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+158,Organic Carrots (2lb),vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+159,Red Carrots,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+160,SWEET NANTES CARROTS,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+161,Your Fresh Market™ Carrots,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+162,Your Fresh Market™ carrot,vegetable,,carrots,existing,n,n,n,n,n,n,n,n,
+163,Your Fresh Market™ carrots or yellow onions,vegetable,0,carrots,existing,n,n,n,n,n,n,n,n,
+163,Your Fresh Market™ carrots or yellow onions,vegetable,1,yellow onion,existing,n,n,n,n,n,n,n,n,
+164,"CELERY STALKS $3 EA., OR HONEYCRISP APPLES, $3 LB. 6.61/KG",vegetable,0,celery,NEW,n,n,n,n,n,n,n,n,
+164,"CELERY STALKS $3 EA., OR HONEYCRISP APPLES, $3 LB. 6.61/KG",vegetable,1,apples,NEW,n,n,n,n,n,n,n,n,
+165,"CELERY STALKS, OR HONEYCRISP APPLES",vegetable,0,celery,NEW,n,n,n,n,n,n,n,n,
+165,"CELERY STALKS, OR HONEYCRISP APPLES",vegetable,1,apples,NEW,n,n,n,n,n,n,n,n,
+166,PC® Bistro Cocktail Tomatoes on the Vine,vegetable,,tomatoes,existing,n,n,n,n,n,n,n,n,
+167,"PC MUSHROOMS WHOLE CREMINI OR WHITE, 454 G",vegetable,0,cremini mushrooms,NEW,n,n,n,n,n,n,n,n,
+167,"PC MUSHROOMS WHOLE CREMINI OR WHITE, 454 G",vegetable,1,white mushrooms,existing,n,n,n,n,n,n,n,n,
+168,Cubed butternut squash or sweet potatoes,vegetable,0,butternut squash,NEW,n,n,n,n,n,n,n,n,
+168,Cubed butternut squash or sweet potatoes,vegetable,1,sweet potatoes,existing,n,n,n,n,n,n,n,n,
+169,"FARMER'S MARKET MINI CUCUMBERS, PKG OF 6 OR YELLOW ONIONS, 3 LB BAG",vegetable,0,cucumbers,existing,n,n,n,n,n,n,n,n,
+169,"FARMER'S MARKET MINI CUCUMBERS, PKG OF 6 OR YELLOW ONIONS, 3 LB BAG",vegetable,1,yellow onion,existing,n,n,n,n,n,n,n,n,
+170,MINI CUCUMBERS AND SWEET CHERRY TOMATOES,vegetable,0,cucumbers,existing,n,n,n,n,n,n,n,n,
+170,MINI CUCUMBERS AND SWEET CHERRY TOMATOES,vegetable,1,cherry tomatoes,existing,n,n,n,n,n,n,n,n,
+171,MINI CUCUMBERS OR SWEET CHERRY TOMATOES,vegetable,0,cucumbers,existing,n,n,n,n,n,n,n,n,
+171,MINI CUCUMBERS OR SWEET CHERRY TOMATOES,vegetable,1,cherry tomatoes,existing,n,n,n,n,n,n,n,n,
+172,COMPLIMENTS Frozen Vegetables,vegetable,,frozen vegetables,NEW,n,n,n,n,n,n,n,Y,"plain frozen vegetables; processed, certification uncertain"
+173,GREEN GIANT FROZEN VEGETABLES,vegetable,,frozen vegetables,NEW,n,n,n,n,n,n,n,Y,"plain frozen vegetables; processed, certification uncertain"
+174,"GREEN GIANT VALLEY SELECTIONS OR FROZEN VEGETABLES, 400-705 G",vegetable,,frozen vegetables,NEW,n,n,n,n,n,n,n,Y,"plain frozen vegetables; processed, certification uncertain"
+175,"PARDES FARMS FROZEN VEGETABLES, 680 G",vegetable,,frozen vegetables,NEW,n,n,n,n,n,n,n,Y,"plain frozen vegetables; processed, certification uncertain"
+176,Green Onion,vegetable,,green onions,NEW,n,n,n,n,n,n,n,n,
+177,Green Onions or Cilantro Product of USA or Mexico,vegetable,0,green onions,NEW,n,n,n,n,n,n,n,n,
+177,Green Onions or Cilantro Product of USA or Mexico,vegetable,1,cilantro,NEW,n,n,n,n,n,n,n,n,
+178,Harvest Fresh Chopped Kale or Spinach,vegetable,0,kale,NEW,n,n,n,n,n,n,n,n,
+178,Harvest Fresh Chopped Kale or Spinach,vegetable,1,spinach,existing,n,n,n,n,n,n,n,n,
+179,VISION GREENS LETTUCE,vegetable,,salad greens,NEW,n,n,n,n,n,n,n,n,"bagged lettuce / leaf blends, undressed"
+180,113 g Haven Greens lettuce blend,vegetable,,salad greens,NEW,n,n,n,n,n,n,n,n,"bagged lettuce / leaf blends, undressed"
+181,PC® LETTUCE TRIO,vegetable,,salad greens,NEW,n,n,n,n,n,n,n,n,"bagged lettuce / leaf blends, undressed"
+182,"PC® LITTLE GEMS™ MINI MIXED, RED AND YELLOW POTATOES, 680 G",vegetable,,mini potatoes,NEW,n,n,n,n,n,n,n,n,
+183,"PC® LITTLE GEMS™ MINI MIXED, RED OR YELLOW POTATOES, 680 G",vegetable,,mini potatoes,NEW,n,n,n,n,n,n,n,n,
+184,"PC® LITTLE GEMS™ RED, YELLOW OR MIXED MINI POTATOES, 680 G",vegetable,,mini potatoes,NEW,n,n,n,n,n,n,n,n,
+185,The Little Potato Company Mini Potatoes,vegetable,,mini potatoes,NEW,n,n,n,n,n,n,n,n,
+186,"Mediterranean Blend - Radicchio, Escarole and Endive, Red Leaf Blend - Red and Green Leaf, Romaine or Garden Salad Blend - Iceberg and/or Boston and Romaine",vegetable,,salad greens,NEW,n,n,n,n,n,n,n,n,"bagged lettuce / leaf blends, undressed"
+187,Ferma Frozen 3 Way Mixed Vegetables 750g,vegetable,,frozen vegetables,NEW,n,n,n,n,n,n,n,Y,"plain frozen vegetables; processed, certification uncertain"
+188,"NATURALLY IMPERFECT™ MUSHROOMS, 680 G",vegetable,,white mushrooms,existing,n,n,n,n,n,n,n,n,
+189,Chinese Okra/Broccoli Crown,vegetable,0,chinese okra,NEW,n,n,n,n,n,n,n,n,luffa gourd
+189,Chinese Okra/Broccoli Crown,vegetable,1,broccoli,existing,n,n,n,n,n,n,n,n,
+190,6 YELLOW ONIONS PRODUCT OF ONTARIO CANADA NO.1 GRADE 10 LB RED ONIONS PRODUCT OF ONTARIO CANADA NO.1 GRADE 3 LB,vegetable,0,yellow onion,existing,n,n,n,n,n,n,n,n,
+190,6 YELLOW ONIONS PRODUCT OF ONTARIO CANADA NO.1 GRADE 10 LB RED ONIONS PRODUCT OF ONTARIO CANADA NO.1 GRADE 3 LB,vegetable,1,red onions,NEW,n,n,n,n,n,n,n,n,
+191,Gold Onion in Bag 50lb,vegetable,,yellow onion,existing,n,n,n,n,n,n,n,n,
+192,ONTARIO COOKING ONIONS,vegetable,,yellow onion,existing,n,n,n,n,n,n,n,n,
+193,Ontario Grown Cooking Onion,vegetable,,yellow onion,existing,n,n,n,n,n,n,n,n,
+194,Organic Red Onion (3lb),vegetable,,red onions,NEW,n,n,n,n,n,n,n,n,
+195,Organic Yellow Onions (2lb),vegetable,,yellow onion,existing,n,n,n,n,n,n,n,n,
+196,Purple Onion(Bag),vegetable,,red onions,NEW,n,n,n,n,n,n,n,n,
+197,Red Onions,vegetable,,red onions,NEW,n,n,n,n,n,n,n,n,
+198,Red or Spanish Onions,vegetable,0,red onions,NEW,n,n,n,n,n,n,n,n,Spanish onions are large yellow onions
+198,Red or Spanish Onions,vegetable,1,yellow onion,existing,n,n,n,n,n,n,n,n,Spanish onions are large yellow onions
+199,YELLOW ONIONS OR RED ONIONS,vegetable,0,yellow onion,existing,n,n,n,n,n,n,n,n,
+199,YELLOW ONIONS OR RED ONIONS,vegetable,1,red onions,NEW,n,n,n,n,n,n,n,n,
+200,Holborne Organic Oyster or Shiitake Mushrooms,vegetable,0,oyster mushrooms,NEW,n,n,n,n,n,n,n,n,"a mushroom, not shellfish"
+200,Holborne Organic Oyster or Shiitake Mushrooms,vegetable,1,shiitake mushrooms,NEW,n,n,n,n,n,n,n,n,
+201,ORGANIC KING OYSTER MUSHROOM (BABY),vegetable,,king oyster mushrooms,NEW,n,n,n,n,n,n,n,n,"a mushroom, not shellfish"
+202,10 lb bagged russet potatoes,vegetable,,russet potatoes,existing,n,n,n,n,n,n,n,n,
+203,Breakfast Potatoes,vegetable,,seasoned breakfast potatoes,NEW,n,n,n,n,n,n,Y,Y,"pre-cut potatoes with a seasoning: gluten conservative, processed"
+204,"FARMER'S MARKET™ RUSSET POTATOES, 10 LB",vegetable,,russet potatoes,existing,n,n,n,n,n,n,n,n,
+205,Longo's Fresh Red or White Potatoes,vegetable,,potatoes,NEW,n,n,n,n,n,n,n,n,red/white/yellow potatoes; variants of one product
+206,"NATURALLY IMPERFECT™ POTATO, 15 LB",vegetable,,potatoes,NEW,n,n,n,n,n,n,n,n,red/white/yellow potatoes; variants of one product
+207,"ONTARIO YUKON GOLD, WHITE OR RED POTATOES",vegetable,,potatoes,NEW,n,n,n,n,n,n,n,n,red/white/yellow potatoes; variants of one product
+208,"Ontario Grown Red, White or Yukon Gold Potatoes",vegetable,,potatoes,NEW,n,n,n,n,n,n,n,n,red/white/yellow potatoes; variants of one product
+209,"RED, RUSSET OR YELLOW POTATOES",vegetable,,potatoes,NEW,n,n,n,n,n,n,n,n,red/white/yellow potatoes; variants of one product
+210,RUSSET POTATOES,vegetable,,russet potatoes,existing,n,n,n,n,n,n,n,n,
+211,The Little Potato Co. red potatoes,vegetable,,mini potatoes,NEW,n,n,n,n,n,n,n,n,
+212,"The Little Potato Co. red, yellow or trio potatoes",vegetable,,mini potatoes,NEW,n,n,n,n,n,n,n,n,
+213,"WHITE, YELLOW-FLESH, RED OR RUSSET POTATOES",vegetable,,potatoes,NEW,n,n,n,n,n,n,n,n,red/white/yellow potatoes; variants of one product
+214,White Potatoes,vegetable,,potatoes,NEW,n,n,n,n,n,n,n,n,red/white/yellow potatoes; variants of one product
+215,Your Fresh Market™ all-purpose potatoes,vegetable,,potatoes,NEW,n,n,n,n,n,n,n,n,red/white/yellow potatoes; variants of one product
+216,ANDY BOY ROMAINE HEARTS,vegetable,,romaine lettuce,existing,n,n,n,n,n,n,n,n,
+217,Andy Boy Romaine Hearts,vegetable,,romaine lettuce,existing,n,n,n,n,n,n,n,n,
+218,ROMAINE HEARTS 3pk PC SALAD KIT,vegetable,0,romaine lettuce,existing,n,n,n,n,n,n,n,n,
+218,ROMAINE HEARTS 3pk PC SALAD KIT,vegetable,1,salad kit,NEW,Y,Y,Y,Y,Y,n,Y,Y,"kits ship dressing/toppings: caesar (anchovy, parmesan, egg), bacon bits, nuts; conservative"
+219,Romaine Hearts,vegetable,,romaine lettuce,existing,n,n,n,n,n,n,n,n,
+220,Seafood Mushroom,vegetable,,seafood mushrooms,NEW,n,n,n,n,n,n,n,n,beech mushroom; 'seafood' is a varietal name
+221,"PC® ORGANICS SHITAKI MUSHROOM, 100 G",vegetable,,shiitake mushrooms,NEW,n,n,n,n,n,n,n,n,
+222,COMPLIMENTS ORGANIC Sliced White or Cremini Mushrooms,vegetable,0,cremini mushrooms,NEW,n,n,n,n,n,n,n,n,
+222,COMPLIMENTS ORGANIC Sliced White or Cremini Mushrooms,vegetable,1,white mushrooms,existing,n,n,n,n,n,n,n,n,
+223,"PC® SLICED OR WHOLE, WHITE OR CREMINI MUSHROOMS OR BROCCOLI CROWNS, 227 G",vegetable,0,white mushrooms,existing,n,n,n,n,n,n,n,n,
+223,"PC® SLICED OR WHOLE, WHITE OR CREMINI MUSHROOMS OR BROCCOLI CROWNS, 227 G",vegetable,1,cremini mushrooms,NEW,n,n,n,n,n,n,n,n,
+223,"PC® SLICED OR WHOLE, WHITE OR CREMINI MUSHROOMS OR BROCCOLI CROWNS, 227 G",vegetable,2,broccoli,existing,n,n,n,n,n,n,n,n,
+224,Head on Spinach,vegetable,,spinach,existing,n,n,n,n,n,n,n,n,
+225,Whole Spinach / Chinese Broccoli,vegetable,0,spinach,existing,n,n,n,n,n,n,n,n,
+225,Whole Spinach / Chinese Broccoli,vegetable,1,chinese broccoli,NEW,n,n,n,n,n,n,n,n,
+226,"FARMER'S MARKET™ SWEET PEPPERS, PKG OF 4 OR PC® LITTLE BEAUTS VARIETY TOMATOES, 567 G",vegetable,0,bell peppers,NEW,n,n,n,n,n,n,n,n,mixed-colour sweet peppers
+226,"FARMER'S MARKET™ SWEET PEPPERS, PKG OF 4 OR PC® LITTLE BEAUTS VARIETY TOMATOES, 567 G",vegetable,1,cherry tomatoes,existing,n,n,n,n,n,n,n,n,
+227,Fresh Wild Wonders Gourmet Medley Tomatoes,vegetable,,cherry tomatoes,existing,n,n,n,n,n,n,n,n,
+228,GREENHOUSE TOMATOES ON THE VINE OR BRUSSELS SPROUTS,vegetable,0,tomatoes,existing,n,n,n,n,n,n,n,n,
+228,GREENHOUSE TOMATOES ON THE VINE OR BRUSSELS SPROUTS,vegetable,1,brussels sprouts,NEW,n,n,n,n,n,n,n,n,
+229,Ontario Homegrown Greenhouse Tomatoes on the Vine,vegetable,,tomatoes,existing,n,n,n,n,n,n,n,n,
+230,PC® BALANCIA MID-SIZE TOMATOES ON THE VINE,vegetable,,tomatoes,existing,n,n,n,n,n,n,n,n,
+231,PC® Solerama San Marzano-Type Roma Tomatoes,vegetable,,roma tomatoes,existing,n,n,n,n,n,n,n,n,
+232,227 g whole white mushrooms,vegetable,,white mushrooms,existing,n,n,n,n,n,n,n,n,
+233,Longo's Fresh Whole White or Cremini Mushrooms,vegetable,0,cremini mushrooms,NEW,n,n,n,n,n,n,n,n,
+233,Longo's Fresh Whole White or Cremini Mushrooms,vegetable,1,white mushrooms,existing,n,n,n,n,n,n,n,n,
+234,WHOLE WHITE OR CREMINI MUSHROOMS,vegetable,0,cremini mushrooms,NEW,n,n,n,n,n,n,n,n,
+234,WHOLE WHITE OR CREMINI MUSHROOMS,vegetable,1,white mushrooms,existing,n,n,n,n,n,n,n,n,
+235,AMBROSIA APPLES OR SWEET POTATOES,fruit,0,apples,NEW,n,n,n,n,n,n,n,n,
+235,AMBROSIA APPLES OR SWEET POTATOES,fruit,1,sweet potatoes,existing,n,n,n,n,n,n,n,n,
+236,Ambrosia Apple,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+237,Ambrosia Apple 5LB,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+238,"FARMER'S MARKET ROYAL GALA or MCINTOSH APPLES, 4 LB BAG",fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+239,"FARMER'S MARKET™ GALA OR MCINTOSH™ APPLES, 4 LB",fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+240,"FARMER'S MARKET™ MCINTOSH OR AMBROSIA APPLES, 4 LB",fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+241,"FARMER'S MARKET™ MCINTOSH OR AMBROSIA APPLES, 4LB",fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+242,Fresh Apples,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+243,Fresh Apples Russet,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+244,Fresh Honeycrisp Apples,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+245,Fresh Kissabel Rouge Apples,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+246,"GALA, McINTOSH, RED DELICIOUS, CORTLAND OR AMBROSIA APPLES OR AVOCADOS",fruit,0,apples,NEW,n,n,n,n,n,n,n,n,
+246,"GALA, McINTOSH, RED DELICIOUS, CORTLAND OR AMBROSIA APPLES OR AVOCADOS",fruit,1,avocados,existing,n,n,n,n,n,n,n,n,
+247,GOLDEN DELICIOUS APPLE,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+248,GOLDEN DELICIOUS APPLES,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+249,Gala or Ambrosia Apples,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+250,HONEYCRISP APPLES,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+251,LARGE GALA APPLES,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+252,Longo's Fresh Royal Gala Apples,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+253,ONTARIO FUJI APPLE,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+254,ONTARIO MCINTOSH OR GALA APPLES,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+255,ORGANIC RED DELICIOUS APPLES,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+256,Ontario Grown Cortland Apples,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+257,Organic Cosmic Crisp Apples,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+258,Organic Gala Apples,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+259,Premium Sweetango Apple,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+260,Your Fresh Market™ Gala apples,fruit,,apples,NEW,n,n,n,n,n,n,n,n,
+261,"NO NAME® FRUIT, 398 ML OR APPLE SAUCE, 620 ML",fruit,0,canned fruit,NEW,n,n,n,n,n,n,n,Y,fruit in juice/syrup
+261,"NO NAME® FRUIT, 398 ML OR APPLE SAUCE, 620 ML",fruit,1,apple sauce,NEW,n,n,n,n,n,n,n,Y,
+262,"COCKTAIL TOMATOES, 454 G",fruit,,tomatoes,existing,n,n,n,n,n,n,n,n,
+263,Fresh Heirloom Tomatoes,fruit,,tomatoes,existing,n,n,n,n,n,n,n,n,
+264,HEIRLOOM TOMATO,fruit,,tomatoes,existing,n,n,n,n,n,n,n,n,
+265,Heirloom Tomatoes,fruit,,tomatoes,existing,n,n,n,n,n,n,n,n,
+266,Longo's Curato San Marzano Tomatoes,fruit,,canned tomatoes,existing,n,n,n,n,n,n,n,Y,Longo's Curato is an imported line: canned San Marzano tomatoes
+267,Tomatoes on the Vine Product of Canada or Mexico 5.49/kg,fruit,,tomatoes,existing,n,n,n,n,n,n,n,n,
+268,"Dempster's Protein Bagels, Bread, & Tortillas",starch,0,protein bagels,existing,n,n,n,n,n,n,Y,Y,
+268,"Dempster's Protein Bagels, Bread, & Tortillas",starch,1,protein bread,existing,n,n,n,n,n,Y,Y,Y,
+268,"Dempster's Protein Bagels, Bread, & Tortillas",starch,2,protein tortillas,NEW,n,n,n,n,n,Y,Y,Y,protein line: honey conservative per the honey rule
+269,Ace Bakery Bread or Ciabatta Rolls Selected Varieties 525-595 g,starch,0,artisan bread,NEW,n,n,n,n,n,n,Y,Y,"lean artisan loaves; soft-bread rule, not dairy/egg"
+269,Ace Bakery Bread or Ciabatta Rolls Selected Varieties 525-595 g,starch,1,ciabatta,existing,n,n,n,n,n,n,Y,Y,
+270,Artisan Breads,starch,,artisan bread,NEW,n,n,n,n,n,n,Y,Y,"lean artisan loaves; soft-bread rule, not dairy/egg"
+271,"BREAD, 675 G",starch,,sliced bread,existing,n,n,n,n,n,n,Y,Y,
+272,Bread,starch,,sliced bread,existing,n,n,n,n,n,n,Y,Y,
+273,"COCONUT BREAD QUINOA WHEAT BREAD, 320g/ 400g",starch,0,coconut bread,NEW,n,n,Y,Y,n,n,Y,Y,"quinoa wheat bread: whole-grain, honey rule | Asian-bakery coconut bun: enriched with milk, butter, egg"
+273,"COCONUT BREAD QUINOA WHEAT BREAD, 320g/ 400g",starch,1,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,"quinoa wheat bread: whole-grain, honey rule"
+274,COUNTRY HARVEST BREAD 600-650 G OR FARMHOUSE BREAD 675 G,starch,0,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,Country Harvest is a whole-grain line (honey rule); Farmhouse is plain sliced
+274,COUNTRY HARVEST BREAD 600-650 G OR FARMHOUSE BREAD 675 G,starch,1,sliced bread,existing,n,n,n,n,n,n,Y,Y,Country Harvest is a whole-grain line (honey rule); Farmhouse is plain sliced
+275,"COUNTRY HARVEST BREAD, 600-650 G OR FARMHOUSE BREAD, 675 G",starch,0,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,Country Harvest is a whole-grain line (honey rule); Farmhouse is plain sliced
+275,"COUNTRY HARVEST BREAD, 600-650 G OR FARMHOUSE BREAD, 675 G",starch,1,sliced bread,existing,n,n,n,n,n,n,Y,Y,Country Harvest is a whole-grain line (honey rule); Farmhouse is plain sliced
+276,Country Harvest bread,starch,,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,
+277,D'ITALIANO BREAD AND BUNS,starch,0,sliced bread,existing,n,n,n,n,n,n,Y,Y,
+277,D'ITALIANO BREAD AND BUNS,starch,1,buns,existing,n,n,n,n,n,n,Y,Y,
+278,Dark or Winnipeg-Style Light Rye Bread 450 g,starch,,rye bread,existing,n,n,n,n,n,n,Y,Y,
+279,FRONT STREET BAKERY GRAIN BREAD,starch,,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,
+280,FRONT STREET BAKERY MINI CALABRESE BREAD,starch,,italian bread,existing,n,n,n,n,n,n,Y,Y,Calabrese is an Italian lean loaf
+281,LITTLE NORTHERN BAKEHOUSE BREAD,starch,,vegan gluten-free bread,NEW,n,n,n,n,n,n,n,Y,"Little Northern Bakehouse: certified vegan and gluten-free (no honey, egg or dairy)"
+282,MONTREAL KOSHER CHALLAH BREAD,starch,,challah,NEW,n,n,n,Y,n,n,Y,n,"MONTREAL KOSHER challah: egg-enriched, pareve, certified kosher"
+283,"PROMISE GLUTEN-FREE BREAD, BUNS, PITAS OR NAAN, 240 - 480 G",starch,0,gluten-free bread,existing,n,n,Y,Y,n,Y,n,Y,
+283,"PROMISE GLUTEN-FREE BREAD, BUNS, PITAS OR NAAN, 240 - 480 G",starch,1,gluten-free buns,existing,n,n,Y,Y,n,Y,n,Y,
+283,"PROMISE GLUTEN-FREE BREAD, BUNS, PITAS OR NAAN, 240 - 480 G",starch,2,gluten-free pita bread,existing,n,n,Y,Y,n,Y,n,Y,
+283,"PROMISE GLUTEN-FREE BREAD, BUNS, PITAS OR NAAN, 240 - 480 G",starch,3,gluten-free naan,existing,n,n,Y,Y,n,Y,n,Y,
+284,RUDOLPH'S RYE BREAD,starch,,rye bread,existing,n,n,n,n,n,n,Y,Y,
+285,SCHAR GLUTEN FREE BREADS AND ROLLS,starch,0,gluten-free bread,existing,n,n,Y,Y,n,Y,n,Y,
+285,SCHAR GLUTEN FREE BREADS AND ROLLS,starch,1,gluten-free rolls,existing,n,n,Y,Y,n,Y,n,Y,
+286,VILLAGGIO BREAD BUNS 600-675 G & DEMPSTER'S BAGELS,starch,0,italian bread,existing,n,n,n,n,n,n,Y,Y,
+286,VILLAGGIO BREAD BUNS 600-675 G & DEMPSTER'S BAGELS,starch,1,buns,existing,n,n,n,n,n,n,Y,Y,
+286,VILLAGGIO BREAD BUNS 600-675 G & DEMPSTER'S BAGELS,starch,2,bagels,existing,n,n,n,n,n,n,Y,Y,
+287,"VILLAGGIO BREAD, BUNS OR DEMPSTER'S BAGELS",starch,0,italian bread,existing,n,n,n,n,n,n,Y,Y,
+287,"VILLAGGIO BREAD, BUNS OR DEMPSTER'S BAGELS",starch,1,buns,existing,n,n,n,n,n,n,Y,Y,
+287,"VILLAGGIO BREAD, BUNS OR DEMPSTER'S BAGELS",starch,2,bagels,existing,n,n,n,n,n,n,Y,Y,
+288,"VILLAGGIO BREAD, BUNS, DEMPSTER'S BAGELS",starch,0,italian bread,existing,n,n,n,n,n,n,Y,Y,
+288,"VILLAGGIO BREAD, BUNS, DEMPSTER'S BAGELS",starch,1,buns,existing,n,n,n,n,n,n,Y,Y,
+288,"VILLAGGIO BREAD, BUNS, DEMPSTER'S BAGELS",starch,2,bagels,existing,n,n,n,n,n,n,Y,Y,
+289,"Whole Grain, Protein or Fibre Bread",starch,0,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,fibre bread judged as whole-grain bread
+289,"Whole Grain, Protein or Fibre Bread",starch,1,protein bread,existing,n,n,n,n,n,Y,Y,Y,fibre bread judged as whole-grain bread
+290,"NATURAL BAKERY CANADIAN RYE BREAD, 500 G",starch,,rye bread,existing,n,n,n,n,n,n,Y,Y,
+291,Calabrese Bread,starch,,italian bread,existing,n,n,n,n,n,n,Y,Y,Calabrese is an Italian lean loaf
+292,NEW! Cheesy Garlic Pull-apart Bread,starch,,pull-apart bread,existing,n,n,Y,Y,n,n,Y,Y,
+293,Cubed sweet potatoes,starch,,sweet potatoes,existing,n,n,n,n,n,n,n,n,
+294,"English Muffins 6 pk, COMPLIMENTS Grain Bread 600 g or RUDOLPH'S Bavarian Market Bread 500 g",starch,0,english muffins,existing,n,n,n,n,n,n,Y,Y,
+294,"English Muffins 6 pk, COMPLIMENTS Grain Bread 600 g or RUDOLPH'S Bavarian Market Bread 500 g",starch,1,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,
+294,"English Muffins 6 pk, COMPLIMENTS Grain Bread 600 g or RUDOLPH'S Bavarian Market Bread 500 g",starch,2,bavarian bread,existing,n,n,n,n,n,n,Y,Y,
+295,"CAVENDISH FARMS FLAVOUR CRISP FRIES (750g), PC FLATBREAD or FROZEN VEGETABLES",starch,0,frozen fries,NEW,n,n,n,n,n,n,Y,Y,coated fries (Flavour Crisp): coating may contain wheat
+295,"CAVENDISH FARMS FLAVOUR CRISP FRIES (750g), PC FLATBREAD or FROZEN VEGETABLES",starch,1,flatbread,NEW,n,n,n,n,n,n,Y,Y,soft-bread rule
+295,"CAVENDISH FARMS FLAVOUR CRISP FRIES (750g), PC FLATBREAD or FROZEN VEGETABLES",starch,2,frozen vegetables,NEW,n,n,n,n,n,n,n,Y,"plain frozen vegetables; processed, certification uncertain"
+296,Dempster's Grain Breads,starch,,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,
+297,Orange Sweet Potatoes,starch,,sweet potatoes,existing,n,n,n,n,n,n,n,n,
+298,"PROMISE GLUTEN FREE PITA, BREADS OR BUNS",starch,0,gluten-free pita bread,existing,n,n,Y,Y,n,Y,n,Y,
+298,"PROMISE GLUTEN FREE PITA, BREADS OR BUNS",starch,1,gluten-free bread,existing,n,n,Y,Y,n,Y,n,Y,
+298,"PROMISE GLUTEN FREE PITA, BREADS OR BUNS",starch,2,gluten-free buns,existing,n,n,Y,Y,n,Y,n,Y,
+299,Raisin or Cinnamon Raisin Bread,starch,0,raisin bread,existing,n,n,Y,n,n,n,Y,Y,
+299,Raisin or Cinnamon Raisin Bread,starch,1,cinnamon raisin bread,existing,n,n,Y,n,n,n,Y,Y,
+300,Natural Bakery rye bread,starch,,rye bread,existing,n,n,n,n,n,n,Y,Y,
+301,Starsky's Signature Slavic Bread,starch,,rye bread,existing,n,n,n,n,n,n,Y,Y,
+302,D'ITALIANO Slice Bread,starch,,sliced bread,existing,n,n,n,n,n,n,Y,Y,
+303,Wonder and D'Italiano Sliced Bread,starch,,sliced bread,existing,n,n,n,n,n,n,Y,Y,
+304,Longo's Sliced Country Everything Sourdough Bread,starch,,sourdough bread,existing,n,n,n,n,n,n,Y,Y,
+305,"Joseph's Bakery Tortilla, Pita or Lavash Bread",starch,0,tortillas,existing,n,n,n,n,n,n,Y,Y,
+305,"Joseph's Bakery Tortilla, Pita or Lavash Bread",starch,1,pita bread,existing,n,n,n,n,n,n,Y,Y,
+305,"Joseph's Bakery Tortilla, Pita or Lavash Bread",starch,2,lavash,NEW,n,n,n,n,n,n,Y,Y,
+306,"SELECTION 7"" TORTILLAS OR SANTOSH NAAN",starch,0,tortillas,existing,n,n,n,n,n,n,Y,Y,
+306,"SELECTION 7"" TORTILLAS OR SANTOSH NAAN",starch,1,naan,NEW,n,n,Y,Y,n,n,Y,Y,naan is made with yogurt/milk and often egg
+307,White or 100% Whole Wheat Bread,starch,0,sliced bread,existing,n,n,n,n,n,n,Y,Y,100% whole wheat judged whole-grain (honey rule)
+307,White or 100% Whole Wheat Bread,starch,1,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,100% whole wheat judged whole-grain (honey rule)
+308,"White, Whole Wheat, Texas Toast or Sandwich Bread",starch,0,sliced bread,existing,n,n,n,n,n,n,Y,Y,
+308,"White, Whole Wheat, Texas Toast or Sandwich Bread",starch,1,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,
+308,"White, Whole Wheat, Texas Toast or Sandwich Bread",starch,2,texas toast,existing,n,n,Y,n,n,n,Y,Y,
+309,"Monsieur Gustav Cheese Assorted Varieties 120-170 g, Olivieri Pasta Twin Pack 450-500 g or Skillet Gnocchi 280 g",dairy,0,assorted cheese,NEW,n,n,Y,n,n,n,n,Y,Gouda/Emmental-style assortment; not rennet-listed
+309,"Monsieur Gustav Cheese Assorted Varieties 120-170 g, Olivieri Pasta Twin Pack 450-500 g or Skillet Gnocchi 280 g",dairy,1,filled fresh pasta,NEW,Y,n,Y,Y,Y,n,Y,Y,"filled pasta: cheese (often parmesan = rennet), meat, pesto, egg dough; as cheese ravioli"
+309,"Monsieur Gustav Cheese Assorted Varieties 120-170 g, Olivieri Pasta Twin Pack 450-500 g or Skillet Gnocchi 280 g",dairy,2,gnocchi,NEW,n,n,n,Y,n,n,Y,Y,"potato gnocchi: wheat, egg conservative"
+310,Our Finest 35% triple cream brie cheese,dairy,,brie cheese,NEW,n,n,Y,n,n,n,n,Y,not a rennet-listed cheese
+311,Saint André Triple Cream Brie Cheese,dairy,,brie cheese,NEW,n,n,Y,n,n,n,n,Y,not a rennet-listed cheese
+312,Butter Sticks salted or unsalted,dairy,,butter,existing,n,n,Y,n,n,n,n,Y,
+313,COMPLIMENTS Salted or Unsalted Butter,dairy,,butter,existing,n,n,Y,n,n,n,n,Y,
+314,Gay Lea butter,dairy,,butter,existing,n,n,Y,n,n,n,n,Y,
+315,Gay Lea salted butter,dairy,,butter,existing,n,n,Y,n,n,n,n,Y,
+316,"LACTANTIA BUTTER, 454 G",dairy,,butter,existing,n,n,Y,n,n,n,n,Y,
+317,Longo's Essentials Country Churned Butter,dairy,,butter,existing,n,n,Y,n,n,n,n,Y,
+318,SAVÖR BUTTER,dairy,,butter,existing,n,n,Y,n,n,n,n,Y,
+319,BEATRICE BUTTER MILK,dairy,,buttermilk,existing,n,n,Y,n,n,n,n,Y,
+320,BALDERSON CHEDDAR,dairy,,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+321,BALDERSON CHEDDAR CHEESE,dairy,,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+322,Balderson Cheddar Cheese,dairy,,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+323,CASTELLO CHEDDAR,dairy,,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+324,"CHEDDAR CHEESE, 1.35 KG",dairy,,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+325,Nature's Emporium Grass Fed Organic Cheddar,dairy,,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+326,Our Finest Mature West Country Farmhouse Cheddar Cheese,dairy,,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+327,Our Finest mature 9-month cheddar,dairy,,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+328,"Smoked, Spicy Jalapeño or Garlic & Chive Cheddar",dairy,,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+329,Welsh Cheddar,dairy,,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+330,Riviera Coconut Milk Kefir,dairy,,coconut kefir,NEW,n,n,n,n,n,n,n,Y,fermented coconut milk: plant-based; coconut is not a nut
+331,Condensed Milk,dairy,,condensed milk,existing,n,n,Y,n,n,n,n,Y,existing confirmed alias; fills its NULL pricing only
+332,"VINAMILK SWEETENED CONDENSED MILK, 300ML",dairy,,condensed milk,existing,n,n,Y,n,n,n,n,Y,
+333,CASTELLO CREAM CHEESE RINGS,dairy,,flavoured cream cheese rings,NEW,n,n,Y,n,Y,n,n,Y,coated cheese rings (fruit/nut coatings): nuts conservative
+334,Farm Boy™ Cream Cheese,dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+335,Fromager d'Affinois Triple Cream Cheese,dairy,,brie cheese,NEW,n,n,Y,n,n,n,n,Y,not a rennet-listed cheese
+336,GIVAT CREAM CHEESE,dairy,,kosher cream cheese,NEW,n,n,Y,n,n,n,n,n,Givat: Israeli dairy sold kosher-certified
+337,Kraft Philadelphia Cream Cheese or Dips,dairy,0,cream cheese,existing,n,n,Y,n,n,n,n,Y,
+337,Kraft Philadelphia Cream Cheese or Dips,dairy,1,cream cheese dip,NEW,n,n,Y,n,n,n,Y,Y,"dips: thickeners vary, gluten conservative"
+338,LACTANTIA CREAM CHEESE PRODUCT,dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+339,Lactantia cream cheese,dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+340,"NO NAME® CREAM CHEESE, 227/250 G",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+341,"PC® LACTOSE FREE SPREADABLE CREAM CHEESE PRODUCT, 227 g",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+342,"PHILADELPHIA CREAM CHEESE PRODUCT, 227/250 G",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+343,Philadelphia Cream Cheese,dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+344,Philadelphia Cream Cheese 340 g,dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+345,TRE STELLE CREAM CHEESE,dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+346,"TRE STELLE LACTOSE-FREE CREAM CHEESE, 200 G",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+347,"TRE STELLE LACTOSE-FREE GARLIC AND CHIVES CREAM CHEESE, 200 G",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+348,"TRE STELLE® HERBS & SPICES CREAM CHEESE, 200 G",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+349,"TRE STELLE® HERBS & SPICES CREAM CHEESE, 200 g",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+350,"TRE STELLE® LACTOSE-FREE CREAM CHEESE, 200 G",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+351,"TRE STELLE® LIGHT CREAM CHEESE, 200 G",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+352,"TRE STELLE® LIGHT CREAM CHEESE, 200 g",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+353,"TRE STELLE® ORIGINAL CREAM CHEESE, 200 G",dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+354,Tre Stelle Cream Cheese 200 g,dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+355,Tre Stelle Cream Cheese Spread,dairy,,cream cheese,existing,n,n,Y,n,n,n,n,Y,lactose-free and flavoured cream cheese are still cream cheese
+356,"Imported Emmental Cheese, Medium Cheddar Cheese or Imported Aged Cheddar Cheese",dairy,0,emmental cheese,NEW,n,n,Y,n,n,n,n,Y,not on the owner's rennet list (see 'for owner': imported Emmental is traditionally animal-rennet)
+356,"Imported Emmental Cheese, Medium Cheddar Cheese or Imported Aged Cheddar Cheese",dairy,1,cheddar cheese,existing,n,n,Y,n,n,n,n,Y,
+357,"BINGGRAE FLAVOURED MILK DRINK, 200MLX6",dairy,,flavoured milk drink,existing,n,n,Y,n,n,Y,n,Y,Milk2Go / flavoured milks: vitamin D3 rule
+358,"NEILSON MILKSHAKE OR MILK 2 GO FLAVOURED MILK, 310 ML",dairy,0,milkshake,existing,n,n,Y,n,n,n,Y,Y,
+358,"NEILSON MILKSHAKE OR MILK 2 GO FLAVOURED MILK, 310 ML",dairy,1,flavoured milk drink,existing,n,n,Y,n,n,Y,n,Y,
+359,"LIBERTÉ GREEK, 650/750 G OR MÉDITERRANÉE, 900 G YOGURT",dairy,0,greek yogurt,existing,n,n,Y,n,n,n,n,Y,
+359,"LIBERTÉ GREEK, 650/750 G OR MÉDITERRANÉE, 900 G YOGURT",dairy,1,yogurt,NEW,n,n,Y,n,n,Y,n,Y,Activia / Mediterranee / Krema: no gelatin in these Canadian lines; carmine possible in fruit flavours
+360,Liberté Greek Yogurt 650-750 g,dairy,,greek yogurt,existing,n,n,Y,n,n,n,n,Y,
+361,"OIKOS GREEK OR ACTIVIA FIBRE+ YOGURT, 4X95/100 G",dairy,0,greek yogurt,existing,n,n,Y,n,n,n,n,Y,
+361,"OIKOS GREEK OR ACTIVIA FIBRE+ YOGURT, 4X95/100 G",dairy,1,yogurt,NEW,n,n,Y,n,n,Y,n,Y,Activia / Mediterranee / Krema: no gelatin in these Canadian lines; carmine possible in fruit flavours
+362,OLYMPIC GREEK OR KREMA YOGOURT,dairy,0,greek yogurt,existing,n,n,Y,n,n,n,n,Y,
+362,OLYMPIC GREEK OR KREMA YOGOURT,dairy,1,yogurt,NEW,n,n,Y,n,n,Y,n,Y,Activia / Mediterranee / Krema: no gelatin in these Canadian lines; carmine possible in fruit flavours
+363,Oikos Greek Yogurt,dairy,,greek yogurt,existing,n,n,Y,n,n,n,n,Y,
+364,Oikos or Liberté Greek Yogourt,dairy,,greek yogurt,existing,n,n,Y,n,n,n,n,Y,
+365,Olympic Organic Greek Yogurt,dairy,,greek yogurt,existing,n,n,Y,n,n,n,n,Y,
+366,TWO GOOD GREEK YOGOURT,dairy,,greek yogurt,existing,n,n,Y,n,n,n,n,Y,
+367,Ice Milk,dairy,,ice milk,existing,n,n,Y,n,n,n,n,Y,
+368,LACTANTIA LACTOSE FREE MILK 2 L PHILADELPHIA CREAM CHEESE PRODUCT 340 G,dairy,0,lactose-free milk,existing,n,n,Y,n,n,Y,n,Y,
+368,LACTANTIA LACTOSE FREE MILK 2 L PHILADELPHIA CREAM CHEESE PRODUCT 340 G,dairy,1,cream cheese,existing,n,n,Y,n,n,n,n,Y,
+369,LACTANTIA MARGARINE OR CREAM CHEESE,dairy,0,margarine,NEW,n,n,Y,n,n,Y,n,Y,Lactantia margarine has milk ingredients; Canadian margarine is vitamin-D fortified (D3 rule)
+369,LACTANTIA MARGARINE OR CREAM CHEESE,dairy,1,cream cheese,existing,n,n,Y,n,n,n,n,Y,
+370,Beatrice Milk,dairy,,milk,existing,n,n,Y,n,n,Y,n,n,existing confirmed alias; fills its NULL pricing only
+371,LACTANTIA PURFILTRE MILK,dairy,,milk,existing,n,n,Y,n,n,Y,n,n,"plain fluid milk: cholov stam rule (kosher), vitamin D3 rule"
+372,LACTANTIA PURFILTRE MILK 2 L OR CREAM 473 ML - 1 L,dairy,0,milk,existing,n,n,Y,n,n,Y,n,n,
+372,LACTANTIA PURFILTRE MILK 2 L OR CREAM 473 ML - 1 L,dairy,1,cream,existing,n,n,Y,n,n,n,n,Y,
+373,Lactantia UltraPur Milk,dairy,,milk,existing,n,n,Y,n,n,Y,n,n,existing confirmed alias; fills its NULL pricing only
+374,"MILK 2GO MILK, 6X200 ML",dairy,,flavoured milk drink,existing,n,n,Y,n,n,Y,n,Y,Milk2Go / flavoured milks: vitamin D3 rule
+375,"NEILSON TRUTASTE 1%, 2% OR SKIM MILK, 4 L",dairy,,milk,existing,n,n,Y,n,n,Y,n,n,existing confirmed alias; fills its NULL pricing only
+376,"NEILSON TRUTASTE MICROFILTERED MILK, 4 L",dairy,,milk,existing,n,n,Y,n,n,Y,n,n,"plain fluid milk: cholov stam rule (kosher), vitamin D3 rule"
+377,"NEILSON ULTRA FILTERED MILK, 1 L",dairy,,milk,existing,n,n,Y,n,n,Y,n,n,"plain fluid milk: cholov stam rule (kosher), vitamin D3 rule"
+378,"Natrel Fine-Filtered Milk 3.25%, 2%, 1%, Skim 2L, Creamers 1L or Sealtest Chocolate Milk 2L",dairy,0,milk,existing,n,n,Y,n,n,Y,n,n,
+378,"Natrel Fine-Filtered Milk 3.25%, 2%, 1%, Skim 2L, Creamers 1L or Sealtest Chocolate Milk 2L",dairy,1,cream,existing,n,n,Y,n,n,n,n,Y,
+378,"Natrel Fine-Filtered Milk 3.25%, 2%, 1%, Skim 2L, Creamers 1L or Sealtest Chocolate Milk 2L",dairy,2,chocolate milk,existing,n,n,Y,n,n,Y,n,Y,
+379,Natrel Milk Series,dairy,,milk,existing,n,n,Y,n,n,Y,n,n,"plain fluid milk: cholov stam rule (kosher), vitamin D3 rule"
+380,ORGANIC MEADOW MILK,dairy,,milk,existing,n,n,Y,n,n,Y,n,n,"plain fluid milk: cholov stam rule (kosher), vitamin D3 rule"
+381,Organic Meadow Organic Milk,dairy,,milk,existing,n,n,Y,n,n,Y,n,n,existing confirmed alias; fills its NULL pricing only
+382,"ULTRAFILTERED MILK, 1 L",dairy,,milk,existing,n,n,Y,n,n,Y,n,n,"plain fluid milk: cholov stam rule (kosher), vitamin D3 rule"
+383,"PC® OR BLUE MENU® SLICED CHEESE, 500 G, PC® DOUBLE CREAM BRIE, 450 G, CHICKEN BREAST STRIPS OR BITES, 300/375 G OR MASTRO GENOA SALAMI CHUB, 600 G",dairy,0,cheddar cheese slices,existing,n,n,Y,n,n,n,n,Y,
+383,"PC® OR BLUE MENU® SLICED CHEESE, 500 G, PC® DOUBLE CREAM BRIE, 450 G, CHICKEN BREAST STRIPS OR BITES, 300/375 G OR MASTRO GENOA SALAMI CHUB, 600 G",dairy,1,brie cheese,NEW,n,n,Y,n,n,n,n,Y,not a rennet-listed cheese
+383,"PC® OR BLUE MENU® SLICED CHEESE, 500 G, PC® DOUBLE CREAM BRIE, 450 G, CHICKEN BREAST STRIPS OR BITES, 300/375 G OR MASTRO GENOA SALAMI CHUB, 600 G",dairy,2,chicken breast bites,existing,Y,n,n,n,n,n,Y,Y,
+383,"PC® OR BLUE MENU® SLICED CHEESE, 500 G, PC® DOUBLE CREAM BRIE, 450 G, CHICKEN BREAST STRIPS OR BITES, 300/375 G OR MASTRO GENOA SALAMI CHUB, 600 G",dairy,3,salami,NEW,Y,n,n,n,n,n,n,Y,Genoa salami: pork
+384,PC SWEETENED CONDENSED (300mL) or CARNATION EVAPORATED (354mL) MILK,dairy,0,condensed milk,existing,n,n,Y,n,n,n,n,Y,
+384,PC SWEETENED CONDENSED (300mL) or CARNATION EVAPORATED (354mL) MILK,dairy,1,evaporated milk,existing,n,n,Y,n,n,Y,n,Y,
+385,Sweetened Condensed Milk,dairy,,condensed milk,existing,n,n,Y,n,n,n,n,Y,
+386,Le Grand Vegan Butter Organic,dairy,,vegan butter,NEW,n,n,n,n,Y,n,n,Y,"plant butter; some are cashew-based, nuts conservative"
+387,DANONE ACTIVIA YOGURT TUB (650g) or NO NAME CREAM CHEESE (227g - 250g),dairy,0,yogurt,NEW,n,n,Y,n,n,Y,n,Y,Activia / Mediterranee / Krema: no gelatin in these Canadian lines; carmine possible in fruit flavours
+387,DANONE ACTIVIA YOGURT TUB (650g) or NO NAME CREAM CHEESE (227g - 250g),dairy,1,cream cheese,existing,n,n,Y,n,n,n,n,Y,
+388,"SURAJ® AGED BASMATI RICE, 8 LB",pantry_staple,,basmati rice,existing,n,n,n,n,n,n,n,n,
+389,Unico Arborio Rice,pantry_staple,,arborio rice,NEW,n,n,n,n,n,n,n,n,plain rice
+390,COUNTRY HARVEST BAGELS,pantry_staple,,whole grain bagels,NEW,n,n,n,n,n,Y,Y,Y,whole-grain line: honey conservative per the honey rule
+391,"COUNTRY HARVEST BAGELS, 450 G",pantry_staple,,whole grain bagels,NEW,n,n,n,n,n,Y,Y,Y,whole-grain line: honey conservative per the honey rule
+392,DEMPSTER'S BAGELS,pantry_staple,,bagels,existing,n,n,n,n,n,n,Y,Y,
+393,FRONT STREET BAKERY BAGELS,pantry_staple,,bagels,existing,n,n,n,n,n,n,Y,Y,
+394,"MACABEE KOSHER PIZZA BAGELS, 1.3 KG",pantry_staple,,kosher pizza bagels,NEW,n,n,Y,n,n,n,Y,n,Macabee: a kosher-certified brand; mozzarella-type cheese (not a rennet-listed cheese)
+395,MACABEE MINI PIZZA BAGELS,pantry_staple,,kosher pizza bagels,NEW,n,n,Y,n,n,n,Y,n,Macabee: a kosher-certified brand; mozzarella-type cheese (not a rennet-listed cheese)
+396,CHALO! Basmati Rice,pantry_staple,,basmati rice,existing,n,n,n,n,n,n,n,n,
+397,TILDA BASMATI RICE,pantry_staple,,basmati rice,existing,n,n,n,n,n,n,n,n,
+398,BEN'S ORIGINAL BISTRO EXPRESS RICE,pantry_staple,,seasoned microwave rice,NEW,Y,n,Y,n,n,n,Y,Y,Bistro Express varieties include chicken-flavoured and butter; conservative
+399,Broya Bone Broth Chicken Turmeric & Ginger,pantry_staple,,chicken bone broth,NEW,Y,n,n,n,n,n,n,Y,
+400,"BOTAN CALROSE RICE, 15LB",pantry_staple,,medium grain rice,NEW,n,n,n,n,n,n,n,n,plain rice (calrose / sushi / wuchang)
+401,Heinz beans or pasta,pantry_staple,0,baked beans,NEW,Y,n,n,n,n,n,Y,Y,"Heinz-style baked beans: the flyer line covers pork-and-beans and deep-browned beans as well as plain beans in tomato sauce, so meat is conservative; thickener/flavouring may contain wheat, gluten conservative"
+401,Heinz beans or pasta,pantry_staple,1,canned pasta,NEW,Y,n,Y,n,n,n,Y,Y,"Chef Boyardee / Heinz canned pasta: ranges include beef ravioli and spaghetti with cheese; meat and dairy conservative, wheat pasta"
+402,Primo canned beans,pantry_staple,,canned beans,existing,n,n,n,n,n,n,n,Y,"plain canned legumes; canned beans (id 121) is corrected to contains_meat=false (owner-approved 2026-11-24, see CORRECTIONS)"
+403,SELECTION CANNED BEANS,pantry_staple,,canned beans,existing,n,n,n,n,n,n,n,Y,"plain canned legumes; canned beans (id 121) is corrected to contains_meat=false (owner-approved 2026-11-24, see CORRECTIONS)"
+404,CHEF BOYARDEE CANNED PASTA,pantry_staple,,canned pasta,NEW,Y,n,Y,n,n,n,Y,Y,"Chef Boyardee / Heinz canned pasta: ranges include beef ravioli and spaghetti with cheese; meat and dairy conservative, wheat pasta"
+405,Knorr Chicken Broth Mix,pantry_staple,,chicken broth mix,NEW,Y,n,n,n,n,n,Y,Y,chicken fat/powder; hydrolysed wheat protein common
+406,Dunya Chickpeas 2Kg,pantry_staple,,dried chickpeas,NEW,n,n,n,n,n,n,n,n,plain dry legumes are inherently kosher by rule
+407,"T&T ORGANIC COCONUT CREAM/ MILK, 398ml",pantry_staple,0,coconut cream,existing,n,n,n,n,n,n,n,Y,
+407,"T&T ORGANIC COCONUT CREAM/ MILK, 398ml",pantry_staple,1,coconut milk,existing,n,n,n,n,n,n,n,Y,
+408,AROY-D COCONUT MILK,pantry_staple,,coconut milk,existing,n,n,n,n,n,n,n,Y,existing confirmed alias; fills its NULL pricing only
+409,AROY-D Coconut Milk,pantry_staple,,coconut milk,existing,n,n,n,n,n,n,n,Y,existing confirmed alias; fills its NULL pricing only
+410,COMPLIMENTS Coconut Milk,pantry_staple,,coconut milk,existing,n,n,n,n,n,n,n,Y,
+411,Coconut Milk,pantry_staple,,coconut milk,existing,n,n,n,n,n,n,n,Y,
+412,"ROOSTER® COCONUT MILK, 398 ML",pantry_staple,,coconut milk,existing,n,n,n,n,n,n,n,Y,existing confirmed alias; fills its NULL pricing only
+413,"MASECA INSTANT CORN MASA FLOUR, 1.8 KG",pantry_staple,,corn masa flour,NEW,n,n,n,n,n,n,n,n,plain flour
+414,Muir Glen Organic Crushed or Diced Tomatoes,pantry_staple,,canned tomatoes,existing,n,n,n,n,n,n,n,Y,
+415,Kingo Dried Mushroom,pantry_staple,,dried shiitake mushrooms,NEW,n,n,n,n,n,n,n,Y,"dried, processed"
+416,SY Dried Mushroom,pantry_staple,,dried shiitake mushrooms,NEW,n,n,n,n,n,n,n,Y,"dried, processed"
+417,Foojoy Dried Shiitake Mushroom,pantry_staple,,dried shiitake mushrooms,NEW,n,n,n,n,n,n,n,Y,"dried, processed"
+418,PRIME DELIGHTS Premium Dried Shiitake Mushroom,pantry_staple,,dried shiitake mushrooms,NEW,n,n,n,n,n,n,n,Y,"dried, processed"
+419,BOB'S RED MILL FLOUR,pantry_staple,,specialty flour,NEW,n,n,n,n,Y,n,Y,Y,Bob's Red Mill range includes almond and other nut flours; conservative
+420,"BRAR'S DESI STYLE DURUM FLOUR, 20 LB",pantry_staple,,atta flour,NEW,n,n,n,n,n,n,Y,n,durum whole-wheat flour
+421,"DURUM ATTA FLOUR, 9.07 KG",pantry_staple,,atta flour,NEW,n,n,n,n,n,n,Y,n,durum whole-wheat flour
+422,FIVE ROSES OR ROBIN HOOD FLOUR,pantry_staple,,all-purpose flour,existing,n,n,n,n,n,n,Y,n,
+423,Five Roses flour,pantry_staple,,all-purpose flour,existing,n,n,n,n,n,n,Y,n,
+424,Five Roses or Robin Hood Flour 5 kg,pantry_staple,,all-purpose flour,existing,n,n,n,n,n,n,Y,n,
+425,Flour,pantry_staple,,all-purpose flour,existing,n,n,n,n,n,n,Y,n,
+426,Hatynka Wheat Flour Extra Class,pantry_staple,,all-purpose flour,existing,n,n,n,n,n,n,Y,n,
+427,ROBIN HOOD OR FIVE ROSES FLOUR,pantry_staple,,all-purpose flour,existing,n,n,n,n,n,n,Y,n,
+428,ROBIN HOOD or FIVE ROSES Flour,pantry_staple,,all-purpose flour,existing,n,n,n,n,n,n,Y,n,
+429,Robin Hood flour,pantry_staple,,all-purpose flour,existing,n,n,n,n,n,n,Y,n,
+430,Robin Hood or Five Roses Flour,pantry_staple,,all-purpose flour,existing,n,n,n,n,n,n,Y,n,
+431,SELECTION FLOUR,pantry_staple,,all-purpose flour,existing,n,n,n,n,n,n,Y,n,
+432,"WHOLE WHEAT FLOUR, 9.07 KG",pantry_staple,,whole wheat flour,NEW,n,n,n,n,n,n,Y,n,plain flour
+433,COMPLIMENTS Family Size Fresh Pasta,pantry_staple,,fresh pasta,NEW,Y,n,Y,Y,Y,n,Y,Y,Rana / Ziggy's / O Sole Mio fresh lines are mostly filled pasta; conservative as cheese ravioli
+434,O SOLE MIO FRESH PASTA,pantry_staple,,fresh pasta,NEW,Y,n,Y,Y,Y,n,Y,Y,Rana / Ziggy's / O Sole Mio fresh lines are mostly filled pasta; conservative as cheese ravioli
+435,Rana Fresh Pasta,pantry_staple,,fresh pasta,NEW,Y,n,Y,Y,Y,n,Y,Y,Rana / Ziggy's / O Sole Mio fresh lines are mostly filled pasta; conservative as cheese ravioli
+436,"ZIGGY'S® FRESH PASTA TWIN PACKS, 600 G",pantry_staple,,fresh pasta,NEW,Y,n,Y,Y,Y,n,Y,Y,Rana / Ziggy's / O Sole Mio fresh lines are mostly filled pasta; conservative as cheese ravioli
+437,"ZIGGY'S® FRESH PASTA, TWIN PACKS, 600 G",pantry_staple,,fresh pasta,NEW,Y,n,Y,Y,Y,n,Y,Y,Rana / Ziggy's / O Sole Mio fresh lines are mostly filled pasta; conservative as cheese ravioli
+438,"ZIGGY'S® FRESH PASTA, TWIN PACKS,600 G",pantry_staple,,fresh pasta,NEW,Y,n,Y,Y,Y,n,Y,Y,Rana / Ziggy's / O Sole Mio fresh lines are mostly filled pasta; conservative as cheese ravioli
+439,Gluten Free Pasta 340 g or Protein+ Pasta 340 g,pantry_staple,0,gluten-free pasta,NEW,n,n,n,n,n,n,n,Y,corn/rice pasta
+439,Gluten Free Pasta 340 g or Protein+ Pasta 340 g,pantry_staple,1,protein pasta,NEW,n,n,n,Y,n,n,Y,Y,"semolina + legume flour; egg white in some lines, conservative"
+440,Y&Y Glutinous Rice Flour,pantry_staple,,glutinous rice flour,NEW,n,n,n,n,n,n,n,n,plain flour is inherently kosher by rule
+441,Stoked Oats Superfood Granola 300 g,pantry_staple,,granola,existing,n,n,Y,n,Y,Y,Y,Y,
+442,Nature's Path Hot Oatmeal,pantry_staple,,instant oatmeal,NEW,n,n,Y,n,n,Y,Y,Y,"flavoured packets: some milk (peaches & cream), honey; see 'for owner'"
+443,COMPLIMENTS Instant Oatmeal,pantry_staple,,instant oatmeal,NEW,n,n,Y,n,n,Y,Y,Y,"flavoured packets: some milk (peaches & cream), honey; see 'for owner'"
+444,One Degree Organic & Gluten Free Protein Instant Oatmeal,pantry_staple,,protein instant oatmeal,NEW,n,n,Y,n,n,Y,Y,Y,protein from milk in most lines; honey possible
+445,PC INSTANT OATMEAL,pantry_staple,,instant oatmeal,NEW,n,n,Y,n,n,Y,Y,Y,"flavoured packets: some milk (peaches & cream), honey; see 'for owner'"
+446,Quaker Instant Protein Oatmeal,pantry_staple,,protein instant oatmeal,NEW,n,n,Y,n,n,Y,Y,Y,protein from milk in most lines; honey possible
+447,DAINTY Jasmine Rice,pantry_staple,,jasmine rice,NEW,n,n,n,n,n,n,n,n,plain rice
+448,LUNDBERG JASMINE RICE,pantry_staple,,jasmine rice,NEW,n,n,n,n,n,n,n,n,plain rice
+449,"NEW TREASURE LONG GRAIN PARBOILED RICE, 8 KG",pantry_staple,,parboiled rice,NEW,n,n,n,n,n,n,n,n,plain rice
+450,SELECTION LONG GRAIN OR PARBOILED RICE,pantry_staple,0,long grain white rice,NEW,n,n,n,n,n,n,n,n,plain rice
+450,SELECTION LONG GRAIN OR PARBOILED RICE,pantry_staple,1,parboiled rice,NEW,n,n,n,n,n,n,n,n,plain rice
+451,COMPLIMENTS Long Grain White Rice,pantry_staple,,long grain white rice,NEW,n,n,n,n,n,n,n,n,plain rice
+452,SEKKA MEDIUM GRAIN RICE 40 LB,pantry_staple,,medium grain rice,NEW,n,n,n,n,n,n,n,n,plain rice (calrose / sushi / wuchang)
+453,SEKKA Premium Medium Grain Rice,pantry_staple,,medium grain rice,NEW,n,n,n,n,n,n,n,n,plain rice (calrose / sushi / wuchang)
+454,Sekka Medium Grain Rice,pantry_staple,,medium grain rice,NEW,n,n,n,n,n,n,n,n,plain rice (calrose / sushi / wuchang)
+455,MAILAODA Mushroom Egg Noodles,pantry_staple,,egg noodles,NEW,n,n,n,Y,n,n,Y,Y,
+456,"Homestyle Oat Bran, Mountain Grain, 7 Grain or Low Fat Multigrain Bread",pantry_staple,,whole grain bread,existing,n,n,n,n,n,Y,Y,Y,"oat bran / 7-grain / multigrain breads: whole-grain, honey rule"
+457,Protein Oat Cereal Mountain Maple,pantry_staple,,protein cereal,NEW,n,n,Y,n,Y,Y,Y,Y,protein oat cereal: as granola
+458,Quaker Oat Flour 700g pkg or Muffin or Cookie Mix 900g pkg,pantry_staple,0,oat flour,NEW,n,n,n,n,n,n,Y,n,oats not labelled GF
+458,Quaker Oat Flour 700g pkg or Muffin or Cookie Mix 900g pkg,pantry_staple,1,baking mix,NEW,n,n,Y,Y,Y,n,Y,Y,"muffin/cookie mixes: milk, egg, may-contain nuts (baked goods)"
+459,BOB'S RED MILL OATMEAL,pantry_staple,,rolled oats,NEW,n,n,n,n,n,n,Y,n,oats not labelled GF; plain grain
+460,STOKED OATS ORGANIC GLUTEN-FREE OATS,pantry_staple,,gluten-free oats,NEW,n,n,n,n,n,n,n,n,"certified gluten-free oats (Stoked Oats, Only Oats); plain grain"
+461,Stoked Oats Oats with Flax & Chia 500 g,pantry_staple,,oats with flax and chia,NEW,n,n,n,n,n,n,n,Y,"certified GF oat blend; mixed product, certification uncertain"
+462,Four Trees by Phoeapolis Olive Oil Extra Virgin Organic,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+463,Four Trees by Phoeapolis Olive Oil Extra Virgin Organic 250 mL,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+464,GARCIA DE LA CRUZ EXTRA VIRGIN OLIVE OIL,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+465,IRRESISTIBLE EXTRA VIRGIN OLIVE OIL,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+466,"KRITI GOLD'S EXTRA VIRGIN OLIVE OIL, 750 ML",pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+467,LIV 99 EXTRA VIRGIN OLIVE OIL,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+468,Longo's Curato Organic Italian Extra Virgin Olive Oil,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+469,Longo's Curato Sicilian Extra Virgin Olive Oil,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+470,Longo's Curato Toscano Extra Virgin Olive Oil,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+471,MAISON ORPHÉE EXTRA VIRGIN OLIVE OIL,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+472,MAMA ROSA'S OLIVE POMACE OIL,pantry_staple,,olive pomace oil,NEW,n,n,n,n,n,n,n,Y,"refined (solvent-extracted) oil, like refined vegetable oil"
+473,Mastro Extra Virgin Olive Oil,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+474,"NO NAME® OLIVE OIL, 750 mL",pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+475,OLIVE POMACE OIL 3L,pantry_staple,,olive pomace oil,NEW,n,n,n,n,n,n,n,Y,"refined (solvent-extracted) oil, like refined vegetable oil"
+476,Olive Oil,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+477,PC SPLENDIDO COLD PRESSED EXTRA VIRGIN OLIVE OIL,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+478,"TERRA DELYSSA VIRGIN OLIVE OIL, 1 L",pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+479,Terra Delyssa Organic Extra Virgin Olive Oil,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+480,"ZETA KOSHER EXTRA VIRGIN OLIVE OIL, 750 ML",pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+481,Zenolive Organic Extra Virgin Olive Oil,pantry_staple,,olive oil,existing,n,n,n,n,n,n,n,n,
+482,MULTI PASSATA OR TOMATOES,pantry_staple,0,strained tomatoes,existing,n,n,n,n,n,n,n,Y,
+482,MULTI PASSATA OR TOMATOES,pantry_staple,1,canned tomatoes,existing,n,n,n,n,n,n,n,Y,
+483,Mutti Passata Strained Tomatoes,pantry_staple,,strained tomatoes,existing,n,n,n,n,n,n,n,Y,
+484,ASIF PASTA OR COUSCOUS,pantry_staple,0,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+484,ASIF PASTA OR COUSCOUS,pantry_staple,1,couscous,existing,n,n,n,n,n,n,Y,Y,
+485,"BARILLA JUMBO SHELLS OR LASAGNE PASTA, 255 - 454 G",pantry_staple,0,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+485,"BARILLA JUMBO SHELLS OR LASAGNE PASTA, 255 - 454 G",pantry_staple,1,lasagna noodles,NEW,n,n,n,Y,n,n,Y,Y,oven-ready lasagne commonly contains egg
+486,Barilla Pasta 340-410g pkg or Annie's Mac & Cheese 156-170g pkg,pantry_staple,0,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+486,Barilla Pasta 340-410g pkg or Annie's Mac & Cheese 156-170g pkg,pantry_staple,1,mac and cheese,existing,n,n,Y,n,n,n,Y,Y,
+487,"DELVERDE PASTA, 250-450 G",pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+488,"DELVERDE PASTA, 250-450 g",pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+489,DI MARTINO PASTA,pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+490,Divella Pasta,pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+491,Farm Boy™ Pasta,pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+492,LIVIVA PASTA,pantry_staple,,shirataki pasta,NEW,n,n,n,n,n,n,Y,Y,Liviva makes konjac pasta with oat fibre | konjac with oat fibre: oats not labelled GF
+493,Longo's Pasta,pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+494,MOLISANA PASTA OR PASSATA,pantry_staple,0,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+494,MOLISANA PASTA OR PASSATA,pantry_staple,1,strained tomatoes,existing,n,n,n,n,n,n,n,Y,
+495,NO NAME (900g) or PC (375g - 454g) PASTA,pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+496,"PASTA, 9.07 KG",pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+497,Pasta,pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+498,Primo pasta,pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+499,SELECTION PASTA,pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+500,Time Wise Pasta,pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+501,"ZIGGY'S® PASTA, 350/360 g or RESER'S SALADS, 425/454 g",pantry_staple,0,deli pasta salad,NEW,Y,n,Y,Y,Y,n,Y,Y,"pasta salads: mayo (egg), parmesan, pesto, meat; conservative"
+501,"ZIGGY'S® PASTA, 350/360 g or RESER'S SALADS, 425/454 g",pantry_staple,1,deli salads,NEW,Y,n,Y,Y,n,n,Y,Y,"potato/macaroni/coleslaw: mayo (egg), bacon in some; conservative"
+502,Bertolli Pasta Sauce,pantry_staple,,pasta sauce,NEW,Y,n,Y,n,Y,n,Y,Y,"brand-level jarred sauce: ranges include parmesan/romano (rennet = meat), meat, alfredo, pesto; see 'for owner'"
+503,"CLASSICO PASTA SAUCE, 218-600 ML",pantry_staple,,pasta sauce,NEW,Y,n,Y,n,Y,n,Y,Y,"brand-level jarred sauce: ranges include parmesan/romano (rennet = meat), meat, alfredo, pesto; see 'for owner'"
+504,GEFEN PASTA OR PIZZA SAUCE,pantry_staple,,kosher pasta sauce,NEW,n,n,n,n,n,n,n,n,Gefen: kosher-certified brand; pareve tomato sauce
+505,Highland Farms Country Kitchen Pasta Sauce,pantry_staple,,pasta sauce,NEW,Y,n,Y,n,Y,n,Y,Y,"brand-level jarred sauce: ranges include parmesan/romano (rennet = meat), meat, alfredo, pesto; see 'for owner'"
+506,"PASTA OR PIZZA SAUCE, 2.84 L",pantry_staple,,pasta sauce,NEW,Y,n,Y,n,Y,n,Y,Y,"brand-level jarred sauce: ranges include parmesan/romano (rennet = meat), meat, alfredo, pesto; see 'for owner'"
+507,FATSO PEANUT BUTTER,pantry_staple,,peanut butter,existing,n,n,n,n,Y,n,n,Y,
+508,"PC® BLUE MENU® PEANUT BUTTER, 750 G",pantry_staple,,peanut butter,existing,n,n,n,n,Y,n,n,Y,
+509,Stoked Oats Quick or Steel Cut Oats,pantry_staple,,gluten-free oats,NEW,n,n,n,n,n,n,n,n,"certified gluten-free oats (Stoked Oats, Only Oats); plain grain"
+510,Stoked Oats Run of the Mill Quick Oats 810 g,pantry_staple,,gluten-free oats,NEW,n,n,n,n,n,n,n,n,"certified gluten-free oats (Stoked Oats, Only Oats); plain grain"
+511,PASTA TAVOLA RAVIOLI,pantry_staple,,cheese ravioli,existing,Y,n,Y,Y,Y,n,Y,Y,
+512,CHA'S RICE,pantry_staple,,white rice,NEW,n,n,n,n,n,n,n,n,plain rice is inherently kosher by rule
+513,"JASMINE RICE, 18.1 KG",pantry_staple,,jasmine rice,NEW,n,n,n,n,n,n,n,n,plain rice
+514,Minute Rice,pantry_staple,,instant rice,NEW,n,n,n,n,n,n,n,Y,"The Rice Stuff: precooked rice, judged instant | precooked rice: processed, certification uncertain"
+515,"NO NAME® LONG GRAIN RICE, 2 KG",pantry_staple,,long grain white rice,NEW,n,n,n,n,n,n,n,n,plain rice
+516,Sekka Rice 6.8 kg,pantry_staple,,medium grain rice,NEW,n,n,n,n,n,n,n,n,plain rice (calrose / sushi / wuchang)
+517,THE RICE STUFF RICE,pantry_staple,,instant rice,NEW,n,n,n,n,n,n,n,Y,"The Rice Stuff: precooked rice, judged instant | precooked rice: processed, certification uncertain"
+518,Tilda Pure Basmati Rice,pantry_staple,,basmati rice,existing,n,n,n,n,n,n,n,n,
+519,S.B. Rice Flakes,pantry_staple,,rice flakes,NEW,n,n,n,n,n,n,n,Y,flattened rice: processed
+520,JOVIAL RICE PASTA,pantry_staple,,gluten-free pasta,NEW,n,n,n,n,n,n,n,Y,corn/rice pasta
+521,"ERAWAN RICE STICK, 454G",pantry_staple,,rice noodles,NEW,n,n,n,n,n,n,n,Y,rice sticks
+522,ONLY OATS ROLLED OATS,pantry_staple,,gluten-free oats,NEW,n,n,n,n,n,n,n,n,"certified gluten-free oats (Stoked Oats, Only Oats); plain grain"
+523,"Dempster's Sandwich Bread 600g pkg, Tortillas 7"", Hot Dog or Hamburger Buns or English Muffins 6-8 pack",pantry_staple,0,sliced bread,existing,n,n,n,n,n,n,Y,Y,
+523,"Dempster's Sandwich Bread 600g pkg, Tortillas 7"", Hot Dog or Hamburger Buns or English Muffins 6-8 pack",pantry_staple,1,tortillas,existing,n,n,n,n,n,n,Y,Y,
+523,"Dempster's Sandwich Bread 600g pkg, Tortillas 7"", Hot Dog or Hamburger Buns or English Muffins 6-8 pack",pantry_staple,2,buns,existing,n,n,n,n,n,n,Y,Y,
+523,"Dempster's Sandwich Bread 600g pkg, Tortillas 7"", Hot Dog or Hamburger Buns or English Muffins 6-8 pack",pantry_staple,3,hamburger buns,existing,n,n,n,n,n,n,Y,Y,
+523,"Dempster's Sandwich Bread 600g pkg, Tortillas 7"", Hot Dog or Hamburger Buns or English Muffins 6-8 pack",pantry_staple,4,english muffins,existing,n,n,n,n,n,n,Y,Y,
+524,Liviva Shirataki Pasta w/Oat Fibre Organic 400 g,pantry_staple,,shirataki pasta,NEW,n,n,n,n,n,n,Y,Y,Liviva makes konjac pasta with oat fibre | konjac with oat fibre: oats not labelled GF
+525,Liviva	Shirataki Instant Rice GF 120 g,pantry_staple,,shirataki rice,NEW,n,n,n,n,n,n,n,Y,"konjac, labelled GF"
+526,CJO ORGANIC CANE SUGAR/ CANE SUGAR DARK,pantry_staple,,organic cane sugar,NEW,n,n,n,n,n,n,n,n,organic cane sugar is not bone-char refined; sugars are inherently kosher by rule
+527,"LANTIC SUGAR, 1 KG",pantry_staple,,granulated sugar,existing,n,n,n,n,n,Y,n,n,plain sugar staple: bone-char rule
+528,NATIVE ORGANIC CANE SUGAR,pantry_staple,,organic cane sugar,NEW,n,n,n,n,n,n,n,n,organic cane sugar is not bone-char refined; sugars are inherently kosher by rule
+529,Redpath Granulated Sugar,pantry_staple,,granulated sugar,existing,n,n,n,n,n,Y,n,n,plain sugar staple: bone-char rule
+530,Redpath Sugar,pantry_staple,,granulated sugar,existing,n,n,n,n,n,Y,n,n,plain sugar staple: bone-char rule
+531,Redpath sugar,pantry_staple,,granulated sugar,existing,n,n,n,n,n,Y,n,n,plain sugar staple: bone-char rule
+532,Sugar Red Honey Pomelo,pantry_staple,,pomelo,NEW,n,n,n,n,n,n,n,n,"'Red Honey' is a pomelo variety: fruit, no honey"
+533,Orsini Sundried Tomato Halves,pantry_staple,,sun-dried tomatoes,NEW,n,n,n,n,n,n,n,Y,processed (sulphited/dried)
+534,T&T Sweet Potato Vermicelli,pantry_staple,,sweet potato noodles,NEW,n,n,n,n,n,n,n,Y,sweet potato starch vermicelli
+535,TC Sweet Potato Vermicelli,pantry_staple,,sweet potato noodles,NEW,n,n,n,n,n,n,n,Y,sweet potato starch vermicelli
+536,GOLDEN ROYAL OX THAI HOM MALI RICE 18LBS,pantry_staple,,jasmine rice,NEW,n,n,n,n,n,n,n,n,plain rice
+537,"JASMINE GOLD THAI JASMINE RICE, 8 kg",pantry_staple,,jasmine rice,NEW,n,n,n,n,n,n,n,n,plain rice
+538,BFREE PROTEIN TORTILLAS,pantry_staple,,gluten-free tortillas,NEW,n,n,n,n,n,n,n,Y,BFree: certified gluten-free and vegan
+539,CASA MENDOSA OR WONDER TORTILLAS,pantry_staple,,tortillas,existing,n,n,n,n,n,n,Y,Y,
+540,"DEMPSTER'S TORTILLAS ORIGINAL, 10PK",pantry_staple,,tortillas,existing,n,n,n,n,n,n,Y,Y,
+541,"DEMPSTERS PROTEIN TORTILLAS, 6PK",pantry_staple,,protein tortillas,NEW,n,n,n,n,n,Y,Y,Y,protein line: honey conservative per the honey rule
+542,"Dempster's 10"" Tortilla Original or Whole Wheat",pantry_staple,,tortillas,existing,n,n,n,n,n,n,Y,Y,
+543,"Farm Boy™ 8"" Tortillas",pantry_staple,,tortillas,existing,n,n,n,n,n,n,Y,Y,
+544,Tortillas,pantry_staple,,tortillas,existing,n,n,n,n,n,n,Y,Y,
+545,Divella Tri-Colour Pasta 500 g,pantry_staple,,dry pasta,NEW,n,n,n,n,n,n,Y,Y,durum semolina and water; certification uncertain
+546,"BEI DA HUANG PREMIUM WUCHANG RICE, 5kg",pantry_staple,,medium grain rice,NEW,n,n,n,n,n,n,n,n,plain rice (calrose / sushi / wuchang)
+547,"PC® GUACAMOLE 227-228 G, SALSA 300 G/430 ML OR GARDEN FRESH TORTILLA CHIPS 397 G",condiment,0,guacamole,NEW,n,n,n,n,n,n,n,Y,"avocado dip, no animal product"
+547,"PC® GUACAMOLE 227-228 G, SALSA 300 G/430 ML OR GARDEN FRESH TORTILLA CHIPS 397 G",condiment,1,salsa,NEW,n,n,n,n,n,n,n,Y,
+547,"PC® GUACAMOLE 227-228 G, SALSA 300 G/430 ML OR GARDEN FRESH TORTILLA CHIPS 397 G",condiment,2,tortilla chips,NEW,n,n,n,n,n,n,n,Y,corn chips
+548,Smucker's Jam 500mL jar or Smucker's No Sugar Added Jam 310mL jam or Jif Peanut Butter 1kg jar,condiment,0,jam,existing,n,n,n,n,n,n,n,Y,
+548,Smucker's Jam 500mL jar or Smucker's No Sugar Added Jam 310mL jam or Jif Peanut Butter 1kg jar,condiment,1,peanut butter,existing,n,n,n,n,Y,n,n,Y,
+549,"ELMHURST NON-DAIRY CREAMERS, 750 ML",condiment,,non-dairy creamer,existing,n,n,n,n,Y,n,Y,Y,Elmhurst creamers are nut/oat based
+550,CARBONE PASTA SAUCE,condiment,,pasta sauce,NEW,Y,n,Y,n,Y,n,Y,Y,"brand-level jarred sauce: ranges include parmesan/romano (rennet = meat), meat, alfredo, pesto; see 'for owner'"
+551,Classico Pasta Sauce,condiment,,pasta sauce,NEW,Y,n,Y,n,Y,n,Y,Y,"brand-level jarred sauce: ranges include parmesan/romano (rennet = meat), meat, alfredo, pesto; see 'for owner'"
+552,"PC® PASTA SAUCE, 1.8 L",condiment,,pasta sauce,NEW,Y,n,Y,n,Y,n,Y,Y,"brand-level jarred sauce: ranges include parmesan/romano (rennet = meat), meat, alfredo, pesto; see 'for owner'"
+553,Primo Pasta Sauce 680 mL,condiment,,pasta sauce,NEW,Y,n,Y,n,Y,n,Y,Y,"brand-level jarred sauce: ranges include parmesan/romano (rennet = meat), meat, alfredo, pesto; see 'for owner'"
+554,Rao's Pasta Sauce,condiment,,pasta sauce,NEW,Y,n,Y,n,Y,n,Y,Y,"brand-level jarred sauce: ranges include parmesan/romano (rennet = meat), meat, alfredo, pesto; see 'for owner'"
+555,SELECTION PASTA SAUCE,condiment,,pasta sauce,NEW,Y,n,Y,n,Y,n,Y,Y,"brand-level jarred sauce: ranges include parmesan/romano (rennet = meat), meat, alfredo, pesto; see 'for owner'"
+556,VINCE'S OWN PENNE RIGATE & PASTA SAUCE,condiment,,prepared pasta in sauce,NEW,Y,n,Y,n,n,n,Y,Y,ready meal; cheese (parmesan possible) conservative
+557,VINCE'S OWN PENNE RIGATE IN PASTA SAUCE,condiment,,prepared pasta in sauce,NEW,Y,n,Y,n,n,n,Y,Y,ready meal; cheese (parmesan possible) conservative
+558,"BAMBOO SHRIMP PASTE ON SUGARCANE, 500g",condiment,,shrimp paste on sugarcane,NEW,n,Y,n,Y,n,n,Y,Y,"chao tom: shrimp paste, typically egg white and starch; gluten conservative"
+559,Gourmet Mushroom and Black Truffle Oil,condiment,,truffle oil,NEW,n,n,n,n,n,n,n,Y,flavoured oil
