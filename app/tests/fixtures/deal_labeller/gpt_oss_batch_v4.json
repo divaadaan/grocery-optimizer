@@ -1,6 +1,6 @@
 {
  "spec": "hf:openai/gpt-oss-120b",
- "prompt_version": "v3",
+ "prompt_version": "v4",
  "deals": [
   {
    "deal_id": 568,
@@ -37,6 +37,42 @@
    "store_id": 170,
    "store_name": "FreshCo",
    "chain": "FreshCo"
+  },
+  {
+   "deal_id": 585,
+   "product_name": "RUSSET POTATOES",
+   "brand": null,
+   "sale_price": 2.99,
+   "regular_price": null,
+   "discount_percentage": null,
+   "unit": "ea.",
+   "category": "Produce",
+   "sale_story": null,
+   "pre_price_text": null,
+   "valid_from": "2026-11-19",
+   "valid_until": "2026-11-26",
+   "product_id": 169,
+   "store_id": 165,
+   "store_name": "Metro",
+   "chain": "Metro"
+  },
+  {
+   "deal_id": 598,
+   "product_name": "PC\u00ae LITTLE GEMS\u2122 MINI MIXED, RED OR YELLOW POTATOES, 680 G",
+   "brand": null,
+   "sale_price": 5.0,
+   "regular_price": null,
+   "discount_percentage": null,
+   "unit": null,
+   "category": "Produce",
+   "sale_story": null,
+   "pre_price_text": null,
+   "valid_from": "2026-11-19",
+   "valid_until": "2026-11-26",
+   "product_id": 720,
+   "store_id": 153,
+   "store_name": "Your Independent Grocer",
+   "chain": "Your Independent Grocer"
   },
   {
    "deal_id": 647,
@@ -91,6 +127,24 @@
    "store_id": 150,
    "store_name": "No Frills",
    "chain": "No Frills"
+  },
+  {
+   "deal_id": 822,
+   "product_name": "White Shrimp Skewer",
+   "brand": null,
+   "sale_price": 1.99,
+   "regular_price": null,
+   "discount_percentage": null,
+   "unit": "each",
+   "category": "Seafood",
+   "sale_story": null,
+   "pre_price_text": null,
+   "valid_from": "2026-11-19",
+   "valid_until": "2026-11-26",
+   "product_id": 700,
+   "store_id": 163,
+   "store_name": "Longos",
+   "chain": "Longos"
   },
   {
    "deal_id": 902,
@@ -165,6 +219,24 @@
    "chain": "Metro"
   },
   {
+   "deal_id": 952,
+   "product_name": "PC PROTEIN, GREEK YOGURT DIPPED or CEREAL SNACK BARS",
+   "brand": null,
+   "sale_price": 6.0,
+   "regular_price": null,
+   "discount_percentage": null,
+   "unit": "or 3.29 each",
+   "category": "Dairy & Eggs",
+   "sale_story": null,
+   "pre_price_text": "2/",
+   "valid_from": "2026-11-21",
+   "valid_until": "2026-11-28",
+   "product_id": null,
+   "store_id": 179,
+   "store_name": "Shoppers Drug Mart",
+   "chain": "Shoppers Drug Mart"
+  },
+  {
    "deal_id": 1054,
    "product_name": "OLD EL PASO BEANS, TORTILLA, TACO SHELLS OR SAUCE",
    "brand": null,
@@ -181,6 +253,42 @@
    "store_id": 165,
    "store_name": "Metro",
    "chain": "Metro"
+  },
+  {
+   "deal_id": 1084,
+   "product_name": "Tilda Pure Basmati Rice",
+   "brand": null,
+   "sale_price": 15.99,
+   "regular_price": 19.99,
+   "discount_percentage": 20,
+   "unit": null,
+   "category": "Pantry",
+   "sale_story": "SAVE $4",
+   "pre_price_text": null,
+   "valid_from": "2026-11-19",
+   "valid_until": "2026-11-26",
+   "product_id": 171,
+   "store_id": 163,
+   "store_name": "Longos",
+   "chain": "Longos"
+  },
+  {
+   "deal_id": 1088,
+   "product_name": "NO NAME\u00ae LONG GRAIN RICE, 2 KG",
+   "brand": null,
+   "sale_price": 4.0,
+   "regular_price": 5.0,
+   "discount_percentage": 20,
+   "unit": null,
+   "category": "Pantry",
+   "sale_story": "Members Save $1",
+   "pre_price_text": "Member Price**",
+   "valid_from": "2026-11-19",
+   "valid_until": "2026-11-26",
+   "product_id": 778,
+   "store_id": 158,
+   "store_name": "Real Canadian Superstore",
+   "chain": "Real Canadian Superstore"
   },
   {
    "deal_id": 1133,
@@ -289,6 +397,42 @@
    "store_id": 175,
    "store_name": "Wholesale Club and Club Entrep\u00f4t",
    "chain": "Wholesale Club and Club Entrep\u00f4t"
+  },
+  {
+   "deal_id": 1211,
+   "product_name": "FIVE ROSES OR ROBIN HOOD FLOUR",
+   "brand": null,
+   "sale_price": 11.98,
+   "regular_price": null,
+   "discount_percentage": null,
+   "unit": "each",
+   "category": "Pantry",
+   "sale_story": null,
+   "pre_price_text": null,
+   "valid_from": "2026-11-19",
+   "valid_until": "2026-11-26",
+   "product_id": 139,
+   "store_id": 161,
+   "store_name": "Food Basics",
+   "chain": "Food Basics"
+  },
+  {
+   "deal_id": 1212,
+   "product_name": "Flour",
+   "brand": null,
+   "sale_price": 7.99,
+   "regular_price": null,
+   "discount_percentage": null,
+   "unit": null,
+   "category": "Pantry",
+   "sale_story": null,
+   "pre_price_text": null,
+   "valid_from": "2026-11-19",
+   "valid_until": "2026-11-26",
+   "product_id": 139,
+   "store_id": 167,
+   "store_name": "Sobeys",
+   "chain": "Sobeys"
   },
   {
    "deal_id": 1222,
@@ -597,12 +741,12 @@
    "chain": "Healthy Planet"
   }
  ],
- "reply_text": "{\n  \"labels\": [\n    {\n      \"id\": 568,\n      \"item\": \"red onion\",\n      \"role\": \"vegetable\",\n      \"size_qty\": 1360,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 573,\n      \"item\": \"carrot\",\n      \"role\": \"vegetable\",\n      \"size_qty\": 1360,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 647,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": 540,\n      \"size_unit\": \"ml\"\n    },\n    {\n      \"id\": 648,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": 540,\n      \"size_unit\": \"ml\"\n    },\n    {\n      \"id\": 740,\n      \"item\": \"chicken thigh\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 902,\n      \"item\": \"egg\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 906,\n      \"item\": \"egg\",\n      \"role\": \"protein\",\n      \"size_qty\": 18,\n      \"size_unit\": \"each\"\n    },\n    {\n      \"id\": 907,\n      \"item\": \"egg\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 910,\n      \"item\": \"egg whites\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1054,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1133,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1174,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1175,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1176,\n      \"item\": \"chickpeas\",\n      \"role\": \"protein\",\n      \"size_qty\": 2000,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1199,\n      \"item\": \"olive oil\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": 750,\n      \"size_unit\": \"ml\"\n    },\n    {\n      \"id\": 1208,\n      \"item\": \"whole wheat flour\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": 9070,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1222,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1223,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1224,\n      \"item\": \"pomelo\",\n      \"role\": \"fruit\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1225,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1226,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1227,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1228,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": 1000,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1229,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": 1000,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1263,\n      \"item\": \"peanut butter trees\",\n      \"role\": \"snack\",\n      \"size_qty\": 34,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1266,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": 300,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1267,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": 454,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1268,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1269,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": 454,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1271,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1272,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": 380,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1360,\n      \"item\": \"coffee pods\",\n      \"role\": \"beverage\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1390,\n      \"item\": \"tea\",\n      \"role\": \"beverage\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    }\n  ]\n}",
+ "reply_text": "{\n  \"labels\": [\n    {\n      \"id\": 568,\n      \"item\": \"red onion\",\n      \"role\": \"vegetable\",\n      \"size_qty\": 1360,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 573,\n      \"item\": \"carrot\",\n      \"role\": \"vegetable\",\n      \"size_qty\": 1360,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 585,\n      \"item\": \"russet potato\",\n      \"role\": \"starch\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 598,\n      \"item\": \"potato\",\n      \"role\": \"starch\",\n      \"size_qty\": 680,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 647,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": 540,\n      \"size_unit\": \"ml\"\n    },\n    {\n      \"id\": 648,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": 540,\n      \"size_unit\": \"ml\"\n    },\n    {\n      \"id\": 740,\n      \"item\": \"chicken thigh\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 822,\n      \"item\": \"shrimp\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 902,\n      \"item\": \"egg\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 906,\n      \"item\": \"egg\",\n      \"role\": \"protein\",\n      \"size_qty\": 18,\n      \"size_unit\": \"each\"\n    },\n    {\n      \"id\": 907,\n      \"item\": \"egg\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 910,\n      \"item\": \"egg whites\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 952,\n      \"item\": \"greek yogurt\",\n      \"role\": \"dairy\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1054,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1084,\n      \"item\": \"basmati rice\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1088,\n      \"item\": \"long grain rice\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": 2000,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1133,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1174,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1175,\n      \"item\": \"beans\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1176,\n      \"item\": \"chickpeas\",\n      \"role\": \"protein\",\n      \"size_qty\": 2000,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1199,\n      \"item\": \"olive oil\",\n      \"role\": \"condiment\",\n      \"size_qty\": 750,\n      \"size_unit\": \"ml\"\n    },\n    {\n      \"id\": 1208,\n      \"item\": \"whole wheat flour\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": 9070,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1211,\n      \"item\": \"flour\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1212,\n      \"item\": \"flour\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1222,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1223,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1224,\n      \"item\": \"honey pomelo\",\n      \"role\": \"fruit\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1225,\n      \"item\": \"cane sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1226,\n      \"item\": \"cane sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1227,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1228,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": 1000,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1229,\n      \"item\": \"sugar\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": 1000,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1263,\n      \"item\": \"peanut butter\",\n      \"role\": \"pantry_staple\",\n      \"size_qty\": 34,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1266,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": 300,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1267,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": 454,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1268,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1269,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": 454,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1271,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1272,\n      \"item\": \"tofu\",\n      \"role\": \"protein\",\n      \"size_qty\": 380,\n      \"size_unit\": \"g\"\n    },\n    {\n      \"id\": 1360,\n      \"item\": \"coffee pods\",\n      \"role\": \"beverage\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    },\n    {\n      \"id\": 1390,\n      \"item\": \"tea\",\n      \"role\": \"beverage\",\n      \"size_qty\": null,\n      \"size_unit\": null\n    }\n  ]\n}",
  "usage": {
   "model": "hf:openai/gpt-oss-120b",
-  "input_tokens": 1711,
-  "output_tokens": 3656,
-  "seconds": 16.08,
+  "input_tokens": 1991,
+  "output_tokens": 3566,
+  "seconds": 9.7,
   "finish_reason": "stop",
   "truncated_prompt": false
  }
