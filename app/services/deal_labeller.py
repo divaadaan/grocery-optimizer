@@ -45,7 +45,7 @@ ROLES = ("protein", "vegetable", "fruit", "starch", "dairy", "pantry_staple",
 UNKNOWN_ROLE = "unknown"
 SIZE_UNITS = ("g", "ml", "each")
 #: Bump when PROMPT changes: rows at an older version are relabelled.
-PROMPT_VERSION = "v2"
+PROMPT_VERSION = "v5"
 BATCH = 40
 MAX_TOKENS = 8000
 ITEM_MAX_LEN = 80
@@ -66,14 +66,32 @@ For each row give:
   (e.g. "chicken thighs", "whole chicken", "ground beef", "russet potatoes", "broccoli", "dry pasta",
   "pasta sauce", "olive oil", "cheddar cheese"). Use the SAME item string for the same thing across
   stores so they can be compared. If a row offers several different items ("X or Y"), name the first.
+  A plant-based substitute is its own item ("plant-based egg", "plant-based burger"), never the
+  animal food it replaces.
 - "role": one of {roles}.
-  protein = raw/fresh meat, poultry, fish, seafood, eggs, tofu, dried/canned legumes.
+  Decide the role from what the item IS. The category column is only the store's shelf and is
+  often wrong for the role (eggs shelved in "Dairy & Eggs" are still protein).
+  protein = raw/fresh meat, poultry, fish, seafood, eggs (whole eggs, egg whites, plant-based egg),
+  and plant proteins: tofu, tempeh, seitan, textured vegetable protein, plant-based meat, and ALL
+  legumes (beans, chickpeas, lentils, split peas) whether canned, dried or frozen. A can or bag
+  of beans, chickpeas or lentils is ALWAYS protein, never pantry_staple. Eggs are NEVER dairy.
+  Raw or frozen meat and seafood stays protein when marinated or on skewers.
+  "Protein" in a product name is marketing, not the role: protein bread, protein tortillas, protein
+  pasta and protein bars keep the role of the food they are (starch, pantry_staple, snack).
   dairy = milk, cheese, yogurt, butter, cream.
+  starch = bread, buns, bagels, tortillas, pita, naan, potatoes and sweet potatoes.
+  Rice, pasta, noodles, flour and oats are pantry_staple, not starch.
   pantry_staple = shelf-stable COOKING basics only: pasta, rice, flour, sugar, oil, canned tomatoes,
-  canned beans, stock, spices. Tea, coffee, coffee pods, candy, chocolate, drinks and snacks are
+  stock, spices. Legumes, tea, coffee, coffee pods, candy, chocolate, drinks and snacks are
   NEVER pantry_staple.
+  fruit = fresh or frozen fruit, including citrus (pomelo too) and melons. Fruit is NEVER sugar or
+  pantry_staple, even when a variety name contains a word like "sugar" or "honey" (a "Honeycrisp"
+  apple or a "Sugar Baby" watermelon is fruit; the item is the fruit, "apple", "watermelon").
+  Label each row on its own: neighbouring rows are often different things.
   beverage = anything you drink, including tea, coffee and juice. snack = chips, cookies, candy,
-  chocolate, bars. prepared_meal = ready-to-eat or heat-and-serve dishes.
+  chocolate, bars (protein bars too); a chocolate or candy shaped or flavoured like a food is
+  still snack (peanut butter cups are snack, not peanut butter).
+  prepared_meal = ready-to-eat or heat-and-serve dishes.
   non_food = anything that is not food.
 - "size_qty" and "size_unit": the package size if the row states it, converted to one of
   "g", "ml" or "each" (1.36 kg -> 1360 g; 12 x 355 mL -> 4260 ml; dozen eggs -> 12 each).
