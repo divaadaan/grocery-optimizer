@@ -1,59 +1,145 @@
 # Development Roadmap
 
-Canonical plan, last revised 2026-11-23 (originally 2026-06-12). Dated
-`*Shipped:*` / `*Progress:*` entries below are historical records — the test
-counts inside them were true when written and are deliberately not rewritten.
-Current suite on `main`: **1528 passed, 5 skipped, 4 deselected**
-(`pytest -m "not llm"`, after #53).
+Canonical plan, last revised 2026-11-23 (evening; originally 2026-06-12).
+Dated `*Shipped:*` / `*Progress:*` entries below are historical records — the
+test counts inside them were true when written and are deliberately not
+rewritten. Current suite on `main`: **1530 passed, 1 deselected**
+(`pytest -m "not llm"`, after the 2026-11-23 evening PRs).
 
-**Where we are (2026-10-28):** the curated-product database work is finished
-(see *Direction (2026-10-28)*). The next stage is **evaluation**: recipe
-quality, substitution handling, and scraping/parsing fitness for go-live. The
-ordered plan is *Next stage: evaluation readiness*; parked work is in
-*Backlog (parked)*. As of 2026-10-29 (end of day), Track A items 1–2, Track E items
-1–6 and every Track C item are shipped (#33–#36, #38–#47), and `kosher` is
-enforced (#41). The product database is done for this stage; work moves to
-recipe generation and agent orchestration. Start with *Next up (2026-11-23)*
-below.
+**Where we are (2026-11-23, end of day):** recipe generation was rebuilt as
+**approach C** (`experiments/chef/DESIGN_APPROACH_C.md`, accepted by the owner
+2026-11-23) and is live on `main`. The old LangGraph Chef / SousChef /
+Nutritionist pipeline is **deleted**. Sections from *Product framing
+(2026-10-14)* down describe that old pipeline (`graph.py`, the Nutritionist,
+`llm_factory`, budget ceilings) and are kept as history. Where they disagree
+with the code or with this section, this section and the code win.
 
-### Next up (2026-11-23)
+### How generation works now (approach C)
 
-Goal: audit an end-to-end run. Items 1–4 of the 2026-10-29 list shipped on
-2026-11-23 (see *Shipped 2026-11-23* below), and the scoring questions are
-answered. What remains, in order:
+1. **Label** (offline, after every ingestion): `app/services/deal_labeller.py`
+   gives each deal `{item, role, package size}` with `hf:openai/gpt-oss-120b`,
+   in batches of 40. Stored in `deal_labels` (migration 024). Labels decide only
+   what is *surfaced*, never dietary access.
+2. **Gate** (unchanged): `fetch_gated_deals` + `deal_gate.deal_filter` in SQL.
+   No ranking, no cap.
+3. **Trays** (code): `app/services/trays.py` builds ANCHORS (proteins, 15),
+   SIDES (vegetable 12 / starch 5 / fruit 4 / dairy 4) and STOCK-UP (staples
+   sold by ≥2 chains, 15), each item's cheapest deal compared with the
+   cross-chain median on $/lb, $/L, $/each or $/package. `POST /plans/trays`.
+4. **Confirm** (frontend carousel): the user rejects tray cards and unticks
+   pantry staples. `POST /recipes/generate` takes `kept_deal_ids` /
+   `pantry_product_ids`; the server intersects them with freshly rebuilt trays.
+5. **Plan** (one LLM call, `LLM_PLANNER_MODEL`): `app/agents/dish_planner.py`,
+   the dish-first plan, validated and repaired in code (stray ids dropped, a
+   dish without an ANCHORS id dropped, never given one).
+6. **Write** (one call per dish, parallel, `LLM_WRITER_MODEL`):
+   `app/agents/dish_writer.py`; every ingredient cites a `deal_id` or a staple
+   `product_id`; names and steps are rendered from the citations.
+7. **Verdict** (unchanged, deterministic): `app/agents/dietary.py`; one retry
+   per failed dish with the reason; infrastructure errors stop all retries.
+8. **Finalize**: `recipe_generations` provenance including offered / kept /
+   pantry ids and the dish plan; MLflow run with `dish_plan.json` and
+   `agent_call_log.json`. Cost is reported, never a constraint.
 
-1. **First live recording** (in progress). Smoke-record one scenario
-   (`seed27-vegetarian-tight-hh1`) from `eval/scenarios/v1.json` on the
-   current `qwen2.5:7b` (Chef, SousChef) + `phi4-mini` (Nutritionist), with
-   `OLLAMA_NUM_CTX=8192`. Check that Ollama fills `usage_metadata` (raw counts
-   are in `response_metadata` if not) and look at per-call latency. Artifacts
-   go under `eval/recordings/<date>/` (untracked).
-2. **Model comparison (folds into Track E §9).** Record the same scenario on
-   `qwen3:30b-a3b` (MoE, ~3B active, thinking off) and `qwen2.5:32b`, compare
-   with the eval report, then record all 19 scenarios on the winner. Owner
-   leaning towards larger models rather than tuning 7B ones. GPTQ checkpoints
-   would need a non-Ollama provider; reasoning models need thinking handled
-   with `format="json"` and a larger `num_ctx`.
-3. **Frontend:** add `generation_id`, `budget_check`, `meals_requested`,
-   `partial`, `instruction_steps` and `dietary_compliance` to
-   `frontend/src/api/types.ts` and show the over-budget warning.
-4. **Follow-ups from #50–#53:** clear or drop the legacy `allergen_info`
-   values; an exception raised before `handle_failure` still leaves no
-   `recipe_generations` row; no API endpoint to look up a failed generation;
-   `num_ctx` is not in model provenance; the streaming read timeout is per
-   chunk, not a whole-call deadline.
+All model calls go through `app/agents/llm_chat.py` (`ollama:<model>` or
+`hf:<org/model>`, plain httpx). The eval harness (`app/eval/`) runs the same
+pipeline offline on frozen snapshots (format v3, with labels).
 
-**Scoring decisions (owner, 2026-11-23):**
-- A partial plan is a **FAIL** (unchanged).
-- Over budget, even as a lower bound, does **not** gate the verdict; it is
-  reported beside it. The product stays warning-only (2026-10-29) until costs
-  stop being lower bounds (Track A4).
-- The shortfall top-up keeps running after model-output failures, but
-  **infrastructure errors fail fast** (#51).
-- The **60%** partial threshold stays; revisit after the first recording.
-- Lowercase `canonical_name`s in rendered steps ("penne") are fine.
+### Product framing (owner, 2026-11-23) — supersedes 2026-10-14
 
-**Shipped 2026-11-23** (Neon: migration 023 applied with owner approval,
+Budget-agnostic: **"here's what you can cook from grocery sales near you"**,
+meeting the user's dietary restrictions. Cost is reported (a lower bound), never
+a constraint or a gate. Savings stays secondary and degrades to absent, never a
+fabricated number. (`CLAUDE.md` *Product framing* carries the same wording.)
+
+### Next up (2026-11-24)
+
+1. **Dish count on the 7B planner.** With fewer anchors than meals,
+   `qwen2.5:7b` often plans a dish around a side; it is dropped, so ~40% of
+   live runs give 2/3 dishes (12/12 runs completed, 7 full). First try a
+   stronger planner (`LLM_PLANNER_MODEL=hf:openai/gpt-oss-120b`, which planned
+   well in the prototypes), then re-measure on the live scenario set below.
+2. **Product linking is the bottleneck for restricted users.** Only 45 of 916
+   live L4G3E8 deals link to a confirmed product, so the gate leaves a
+   vegetarian 1 anchor and a kosher user none. Run the propose → review →
+   confirm flow (`product_proposer`, `/admin/products`) over the unmapped names
+   that reach the trays first (anchors and sides), per the labelling rules.
+3. **Live evaluation baseline.** `eval/scenarios/live-2026-11-23.json` over the
+   snapshot `l4g3e8-2026-11-23` (916 real deals). Record and score it after each
+   pipeline or model change; the first baseline is below.
+4. **Frontend for the new response fields.** `meals_requested`, `partial`,
+   `instruction_steps`, `dietary_compliance` are returned but not typed or
+   shown; show the partial-plan warning and which dishes were dropped. The user
+   form still asks for a weekly budget, which nothing uses now: remove it or
+   relabel it as optional.
+5. **Tray quality.** An anchor compared per package can rank high just for a
+   small package (sizes cover 269/916 deals); add the price-history signal
+   (`price_baseline.discount_vs_typical_sale`) once 4+ weeks of snapshots
+   exist.
+6. **Follow-ups:** the Flipp search terms still include `tea`, `coffee` and
+   `orange juice` (owner: leave for now); an exception raised before the
+   pipeline's failure path still leaves no `recipe_generations` row; no API
+   endpoint looks up a failed generation; legacy `recipes.allergen_info` values
+   are still stored.
+
+**Owner decisions (2026-11-23):**
+- Approach C, built as specified in the design doc; the old pipeline replaced,
+  not patched.
+- Grouping deals by an LLM-made `item` / `role` label is allowed: it decides
+  only what is surfaced, it is stored data (never string matching in code), and
+  it applies only to the already-gated deal set (`CLAUDE.md`).
+- Labels are automatic (no review queue; the carousel is the per-user review);
+  the labeller runs after every ingestion.
+- Dairy joins SIDES (with a per-role quota); one anchor may serve more than one
+  dish; the new agents use a plain `chat()` interface, not LangChain.
+- The Nutritionist is dropped; dietary compliance stays the deterministic
+  attribute lookup.
+- Scoring: a partial plan is a FAIL in the eval verdict; the 60% partial
+  threshold stays; infrastructure errors fail fast. Budget is gone from the
+  product and the scorers (cost is reported only).
+
+**Shipped 2026-11-23, evening — approach C** (Neon: migration 024 applied with
+owner approval, recorded in `schema_migrations`; all 916 L4G3E8 deals labelled):
+- **#57** Chef prototypes (`experiments/chef/`): three ways of showing deals to
+  the Chef across four models; code-built trays (C) won on every model.
+- **#58** `llm_chat` (Ollama + HF router), the deal labeller (prompt v2 fixes
+  tea / coffee / candy labelled as staples), migration 024, post-ingestion
+  labelling, `CLAUDE.md` framing and rule scope.
+- **#59 / #60, landed via #61** Code-built trays and `POST /plans/trays`; the
+  dish planner, per-dish SousChef and `plan_pipeline` behind
+  `POST /recipes/generate`.
+- **#62** Tray carousel and pantry confirmation in the planner UI.
+- **#63** SousChef prompt lists ingredients name-first with the id on the same
+  line: wrong-id citations went 13/77 → 0/87 live.
+- **#64** SIDES quota per role; each item once per tray.
+- **#65** Eval harness on the new pipeline (snapshot v3 with `deal_labels`,
+  chat recorder, artifact v2, `score_cost` replaces `score_budget`); the old
+  LangGraph pipeline removed; planner repair; deterministic call-log order.
+- **#66** Home page reads `/info` `features.models` (fixed a crash from #65).
+- **#67** Retire legacy code: `PromptTemplates`, the old `llm_output` schemas,
+  `invoke_validated`, the ollama exception handling, `training/data_app` and
+  the langchain dependencies.
+- **#68** First live snapshot `l4g3e8-2026-11-23`, the live scenario set, and
+  this roadmap revision.
+
+**Live baseline (2026-11-23, `qwen2.5:7b` planner + writer, scenario set
+`live-2026-11-23`):** 4 PASS / 1 FAIL. Artifacts in
+`eval/recordings/2026-11-23-live/` (untracked); score with
+`scripts/score_eval.py` / `scripts/eval_report.py`.
+
+| scenario | verdict | dishes | compliance | citations valid | cost LB (unique deal) | wall |
+|---|---|---|---|---|---|---|
+| unrestricted hh2 m5 | PASS | 5/5 | 5/5 | 35/35 | $43.67 | 54 s |
+| unrestricted hh4 m7 | PASS | 7/7 | 7/7 | 57/57 | $66.84 | 99 s |
+| vegetarian hh2 m3 | **FAIL** (2/3) | 2/3 | 2/2 | 17/17 | $23.86 | 63 s |
+| pescatarian hh1 m3 | PASS | 3/3 | 3/3 | 29/29 | $22.50 | 54 s |
+| gluten-free hh2 m3 | PASS | 3/3 | 3/3 | 20/20 | $32.39 | 40 s |
+
+The one FAIL is Next-up item 1 meeting item 2: one anchor (tofu) for three
+dishes, and the 7B does not reuse it reliably. Regular prices are known for few
+used deals (1–5 per run), so savings is mostly absent, as designed.
+
+**Shipped 2026-11-23, morning (#49–#53)** (Neon: migration 023 applied with owner approval,
 recorded in `schema_migrations`):
 - **#49** Instructions render a cited deal by its linked product's
   `canonical_name` (exactly one confirmed linked product, else the flyer
@@ -74,9 +160,9 @@ recorded in `schema_migrations`):
 - **#53** `OLLAMA_NUM_CTX` (default 8192): Ollama's server default window was
   silently truncating the ~2k-token Chef prompt.
 
-**Environment:** `.env` now points `OLLAMA_BASE_URL` at
-`http://localhost:11434`; the old WSL-gateway address (`172.18.128.1`) no
-longer answers from native WSL.
+**Environment:** `.env` points `OLLAMA_BASE_URL` at `http://localhost:11434`.
+The app is run locally with `MLFLOW_TRACKING_URI=file://<repo>/mlruns` when no
+tracking server is up; vite serves the frontend on `localhost:3000`.
 
 ## Done
 
@@ -94,7 +180,7 @@ longer answers from native WSL.
   page wired against the 501 stub so it lights up when the backend lands.
   See `frontend/README.md` for architecture and run instructions.
 
-## Product framing (2026-10-14)
+## Product framing (2026-10-14) — superseded 2026-11-23 (see top)
 
 The hero metric is **meeting dietary goals within the spend limit the user
 sets** — not savings against a regular price. Flyer data supplies a pre-promo
@@ -447,15 +533,15 @@ Parked by the owner or deferred until the evaluation stage needs them:
   exists. Kosher shipped on 2026-10-29 (#41).
 - Flattening merge chains. 018 refuses chains, so a product that has absorbed
   others cannot itself be merged.
-- `training/` is out of step with the citation schema. Do not reuse its
-  substring dietary scoring or its `allergen_safety` LLM-judge dimension.
+- `training/reproduce_paper/` (the Food.com SFT reproduction) is kept as
+  reference only; `training/data_app/` was removed on 2026-11-23 with the old
+  agents it trained.
 - Alias a469 (COUNTRY HARVEST) is still proposed and deferred. The 3 rejected
   deals (#79 and #80, rusk; #448, Breaded Buttermilk) stay unlinked by design.
 - Ingest more postal codes; store raw payloads (an owner decision on volume and
   licensing).
-- Larger-model selection, now folded into Track E §9.
-- `scripts/debug_agent_io.py` is stale and bypasses the dietary gate. Fix or
-  delete it.
+- Larger-model selection: now *Next up (2026-11-24)* item 1 (planner first).
+- ~~`scripts/debug_agent_io.py` is stale~~ — deleted 2026-11-23 (#65).
 
 ## Next
 
