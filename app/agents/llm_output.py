@@ -1,32 +1,24 @@
-"""Pydantic validation of agent LLM output, with retry-on-invalid.
+"""Pydantic schemas for the SousChef's recipe output.
 
-Roadmap: "Pydantic-validate agent JSON output; retry on parse failure."
-Ollama's format="json" guarantees syntactically valid JSON but not the
-requested shape. These schemas coerce the shape variants observed in the
-2026-06-12 verification runs (bare list vs wrapper object, string vs list
-instructions, "$5.99" prices, "45 minutes" prep times) and reject the rest;
-invoke_validated() feeds the validation error back to the model and retries.
+A model's JSON can be syntactically valid but the wrong shape. These schemas
+coerce the shape variants observed in practice (bare list vs wrapper object,
+string vs list instructions, "$5.99" prices, "45 minutes" prep times) and
+reject the rest; ``llm_chat.chat_validated`` feeds a validation error back to
+the model once (``app/agents/dish_writer.py``).
 """
-import json
 import re
-from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional
 
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    ValidationError,
     ValidationInfo,
     field_validator,
     model_validator,
 )
 
 from .instruction_refs import step_problems, unreferenced
-
-# NB: langchain_core is imported lazily inside invoke_validated (the only place
-# it's used) so the schemas below can be imported with just pydantic installed —
-# the training/ dataset builder reuses them as the build-time validation gate
-# and its venv deliberately doesn't carry the langchain stack.
 
 
 def _lenient_int(value: Any, default: int) -> int:
@@ -46,40 +38,6 @@ def _lenient_float(value: Any) -> float:
         value = value.strip().lstrip("$") or 0.0
     return value
 
-
-# --- Chef ---------------------------------------------------------------
-
-class IngredientSelection(BaseModel):
-    """One product the Chef assigns to a SousChef group."""
-    model_config = ConfigDict(extra="allow")
-
-    product_name: str
-    quantity_estimate: str = ""
-    deal_id: Union[int, str, None] = None
-
-    @field_validator("quantity_estimate", mode="before")
-    @classmethod
-    def _stringify(cls, v):
-        return "" if v is None else str(v)
-
-
-class ChefPlan(BaseModel):
-    """Output schema for CHEF_INGREDIENT_PLANNING."""
-    model_config = ConfigDict(extra="ignore")
-
-    ingredient_groups: List[List[IngredientSelection]] = Field(min_length=3, max_length=3)
-    ingredient_reuse_map: Dict[str, int] = Field(default_factory=dict)
-    rationale: str = ""
-
-    @field_validator("ingredient_groups")
-    @classmethod
-    def _groups_nonempty(cls, groups):
-        if any(not group for group in groups):
-            raise ValueError("every ingredient group must contain at least one product")
-        return groups
-
-
-# --- SousChef -----------------------------------------------------------
 
 def _citation_id(value: Any) -> Any:
     """Coerce a citation to an int id: 12, "12" and " 12 " -> 12; None/"" ->
@@ -153,7 +111,7 @@ class GeneratedRecipe(BaseModel):
     (``app/agents/instruction_refs.py``). A malformed placeholder, an index
     out of range, or steps that reference no ingredient at all are
     validation errors, so they go back to the model through
-    ``invoke_validated``'s retry. An ingredient no step references is only
+    ``chat_validated``'s retry. An ingredient no step references is only
     reported (:meth:`unreferenced_ingredients`): it is cited and
     compliance-checked like the rest, and rejecting the whole batch over it
     would cost small models retries for no compliance gain.
@@ -243,9 +201,9 @@ class RecipeBatch(BaseModel):
         """Every citation must name an id this SousChef was actually offered.
 
         The allowed sets arrive through pydantic's validation context (see
-        :func:`citation_context`), so this runs inside ``invoke_validated``'s
+        :func:`citation_context`), so this runs inside ``chat_validated``'s
         retry loop and a bad citation goes back to the model with the list of
-        valid ids. Without a context (e.g. the training/ dataset gate) only
+        valid ids. Without a context (e.g. a scorer re-checking a reply) only
         the structural one-citation rule above applies.
         """
         ctx = info.context or {}
@@ -284,126 +242,3 @@ def citation_context(deal_ids, product_ids) -> Dict[str, Any]:
                 out.add(v)
         return frozenset(out)
     return {CITATION_CONTEXT_KEY: (ints(deal_ids), ints(product_ids))}
-
-
-# --- Nutritionist -------------------------------------------------------
-
-class NutritionistVerdict(BaseModel):
-    """Output schema for NUTRITIONIST_VALIDATION. `approved` is required —
-    a verdict without it is meaningless and triggers a retry."""
-    model_config = ConfigDict(extra="ignore")
-
-    approved: bool
-    feedback: str = ""
-    nutrition_facts: Dict[str, Any] = Field(default_factory=dict)
-    dietary_compliance: Dict[str, Any] = Field(default_factory=dict)
-    health_score: float = 0.0
-
-    @field_validator("feedback", mode="before")
-    @classmethod
-    def _stringify(cls, v):
-        return "" if v is None else str(v)
-
-    @field_validator("health_score", mode="before")
-    @classmethod
-    def _score(cls, v):
-        return _lenient_float(v)
-
-
-# --- Invoke with validation + retry --------------------------------------
-
-class LLMOutputError(RuntimeError):
-    """Model failed to produce schema-valid JSON within max_attempts.
-
-    Carries the raw model responses (`raw_attempts`) and the final parse/
-    validation error so callers can report exactly what the model emitted for an
-    output that never validated. Without this the bad output was discarded and
-    only a truncated error string survived, making failures hard to diagnose.
-    """
-
-    def __init__(self, message: str, raw_attempts: Optional[List[str]] = None,
-                 last_error: str = ""):
-        super().__init__(message)
-        self.raw_attempts: List[str] = raw_attempts or []
-        self.last_error = last_error
-
-    @property
-    def last_raw(self) -> Optional[str]:
-        """The most recent raw model response, or None if none was captured."""
-        return self.raw_attempts[-1] if self.raw_attempts else None
-
-
-def raw_output_report(err: "LLMOutputError", max_chars: int = 2000) -> str:
-    """Readable dump of what the model actually emitted across attempts, for
-    logging when an output never validated. Long responses are truncated."""
-    if not err.raw_attempts:
-        return "(no raw model output captured)"
-    n = len(err.raw_attempts)
-    lines = []
-    for i, raw in enumerate(err.raw_attempts, 1):
-        text = raw if len(raw) <= max_chars else (
-            raw[:max_chars] + f"… [+{len(raw) - max_chars} chars]"
-        )
-        lines.append(f"  attempt {i}/{n}: {text}")
-    return "\n".join(lines)
-
-
-_RETRY_PROMPT = """Your previous response was invalid: {error}
-
-Respond again with ONLY a valid JSON document matching the output format \
-requested above. No prose, no markdown fences."""
-
-T = TypeVar("T", bound=BaseModel)
-
-
-def invoke_validated(
-    llm,
-    prompt: str,
-    schema: Type[T],
-    max_attempts: int = 3,
-    context: Optional[Dict[str, Any]] = None,
-) -> Tuple[T, str]:
-    """Invoke the LLM and validate its JSON output against `schema`.
-
-    On parse/validation failure, the model's bad response and the error are
-    appended to the conversation and it is asked again. Returns
-    (validated model, raw content of the accepted response); raises
-    LLMOutputError once attempts are exhausted.
-
-    ``context`` is passed to pydantic as the validation context, for checks
-    that need per-call data (e.g. :func:`citation_context`). Its failures are
-    ordinary validation errors and get the same feedback-and-retry.
-    """
-    from langchain_core.messages import AIMessage, HumanMessage
-
-    messages = [HumanMessage(content=prompt)]
-    last_error = "no attempts made"
-    raw_attempts: List[str] = []
-
-    for attempt in range(1, max_attempts + 1):
-        response = llm.invoke(messages)
-        raw = response.content
-        raw_attempts.append(raw)
-        try:
-            data = json.loads(raw)
-        except json.JSONDecodeError as e:
-            last_error = f"not valid JSON ({e})"
-        else:
-            try:
-                return schema.model_validate(data, context=context), raw
-            except ValidationError as e:
-                last_error = f"JSON did not match the required schema:\n{str(e)[:1500]}"
-
-        if attempt < max_attempts:
-            print(f"[llm_output] {schema.__name__} attempt {attempt}/{max_attempts} "
-                  "invalid — retrying")
-            messages = messages + [
-                AIMessage(content=raw),
-                HumanMessage(content=_RETRY_PROMPT.format(error=last_error)),
-            ]
-
-    raise LLMOutputError(
-        f"{schema.__name__}: no valid output after {max_attempts} attempts — {last_error}",
-        raw_attempts=raw_attempts,
-        last_error=last_error,
-    )

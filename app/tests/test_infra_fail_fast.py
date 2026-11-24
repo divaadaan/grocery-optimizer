@@ -18,7 +18,6 @@ import socket
 import threading
 
 import httpx
-import ollama
 import pytest
 from pydantic import BaseModel, ValidationError
 
@@ -27,12 +26,11 @@ from app.agents.llm_errors import (
     INFRASTRUCTURE,
     MODEL_OUTPUT,
     classify,
-    infra_record,
     infrastructure_cause,
 )
-from app.agents.llm_output import LLMOutputError
+from app.agents.llm_chat import ChatOutputError
 
-_REQUEST = httpx.Request("POST", "http://ollama.test/api/chat")
+_REQUEST = httpx.Request("POST", "http://model.test/api/chat")
 
 
 def _status_error(code):
@@ -83,26 +81,24 @@ def _raised_during(outer, inner):
 
 INFRA_CASES = [
     ("connect refused (httpx)", httpx.ConnectError("refused", request=_REQUEST)),
+    ("builtin connection error", ConnectionError("connection reset")),
+    ("httpx 500", _status_error(500)),
+    ("httpx 403", _status_error(403)),
     ("connect timeout", httpx.ConnectTimeout("timed out", request=_REQUEST)),
     ("read timeout", httpx.ReadTimeout("timed out", request=_REQUEST)),
     ("pool timeout", httpx.PoolTimeout("timed out")),
     ("server disconnected", httpx.RemoteProtocolError("Server disconnected")),
     ("read error", httpx.ReadError("reset")),
-    ("ollama non-stream connect", ConnectionError("Failed to connect to Ollama")),
     ("socket refused", ConnectionRefusedError(111, "Connection refused")),
     ("socket reset", ConnectionResetError(104, "reset")),
     ("builtin timeout", TimeoutError("timed out")),
     ("dns", socket.gaierror(-2, "Name or service not known")),
-    ("ollama 500", ollama.ResponseError("boom", 500)),
-    ("ollama 503", ollama.ResponseError("busy", 503)),
     ("httpx 502", _status_error(502)),
-    ("ollama 404 (model not found)", ollama.ResponseError("model 'x' not found", 404)),
     ("httpx 404", _status_error(404)),
     # Credentials / HF router credits / rate limit: an immediate retry of the
     # same call cannot succeed (llm_chat's HF calls raise these).
     ("httpx 401", _status_error(401)),
     ("httpx 402 (no HF credits)", _status_error(402)),
-    ("ollama 403", ollama.ResponseError("forbidden", 403)),
     ("httpx 429", _status_error(429)),
     ("wrapped by __cause__",
      _raised_from(RuntimeError("chain failed"), httpx.ConnectError("refused"))),
@@ -115,20 +111,18 @@ INFRA_CASES = [
 
 MODEL_OUTPUT_CASES = [
     ("pydantic ValidationError", _validation_error()),
-    ("LLMOutputError", LLMOutputError("RecipeBatch: no valid output", ["{}"], "bad")),
+    ("ChatOutputError", ChatOutputError("no valid output", [], "bad")),
     ("JSONDecodeError", _json_error()),
     ("ValueError", ValueError("bad")),
     ("KeyError", KeyError("recipes")),
     ("unknown RuntimeError", RuntimeError("something")),
-    ("ollama 400", ollama.ResponseError("bad request", 400)),
-    ("ollama mid-stream error, no status", ollama.ResponseError("oops")),
     ("httpx 422", _status_error(422)),
     # Status decides, not text: a 400 *saying* "not found" is model output.
-    ("ollama 400 saying not found", ollama.ResponseError("model not found", 400)),
+    ("httpx 400 saying not found", _status_error(400)),
     # An explicit model-output error is model output even if it was raised
     # while some infrastructure error was being handled.
-    ("LLMOutputError over a ConnectError",
-     _raised_during(LLMOutputError("never validated"), httpx.ConnectError("x"))),
+    ("ChatOutputError over a ConnectError",
+     _raised_during(ChatOutputError("never validated", [], "x"), httpx.ConnectError("x"))),
     # Message text never decides: a ValueError *saying* "connection refused".
     ("message text only", ValueError("Connection refused: timed out (503)")),
 ]

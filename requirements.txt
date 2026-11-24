@@ -19,17 +19,12 @@ python-dotenv==1.0.0
 redis==5.0.1
 
 # HTTP Client
-# httpx must be >=0.27: the ollama client (via langchain-ollama) requires it
+# httpx: every model call (app/agents/llm_chat.py)
 httpx>=0.27.0,<0.29
 requests==2.31.0
 
 pyyaml>=6.0.2
 
-# LangChain: only llm_output.invoke_validated (kept for training/) and the ollama
-# exception types llm_errors classifies. The app calls models via app/agents/llm_chat.py.
-
-langchain-core>=0.3.0,<0.4
-langchain-ollama>=0.2.0,<0.3
 
 # MLflow
 mlflow>=2.9.0,<3

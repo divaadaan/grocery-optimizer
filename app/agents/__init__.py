@@ -6,8 +6,4 @@
 * ``dish_writer``    -- the per-dish SousChef.
 * ``dietary``        -- compliance from curated product attributes (no LLM).
 * ``llm_chat``       -- the plain ``chat(spec, messages)`` client (Ollama / HF).
-
-``prompts.PromptTemplates`` and ``llm_output.ChefPlan`` /
-``NutritionistVerdict`` / ``invoke_validated`` are the old pipeline's, kept only
-because ``training/`` (the shelved fine-tuning track) imports them.
 """
