@@ -2,13 +2,14 @@ import { Link } from "react-router-dom";
 import { Card, EmptyState, QueryError, SavingsCallout, Spinner } from "../../components/ui";
 import { useCurrentUser } from "../user/UserContext";
 import { useShoppingList } from "../../hooks/queries";
-import { formatMoney } from "../../utils/format";
+import { formatMoney, moneyToNumber } from "../../utils/format";
 import type { ShoppingListItem } from "../../api/types";
 
 /**
- * The backend endpoint is a 501 stub (roadmap item 4); QueryError renders
- * that as a "coming soon" panel. The success path below is wired so the
- * page lights up the moment the Shopping Optimizer agent lands.
+ * The shopping list for the user's latest meal plan (GET
+ * /shopping-list/{user_id}, built from the recipes' deal citations). Each line
+ * is ONE purchase of the cited deal, at its flyer price; "Recipes need" is the
+ * amount the dishes call for, not a package count. Pantry staples are left off.
  */
 export function ShoppingListPage() {
   const { user } = useCurrentUser();
@@ -17,7 +18,9 @@ export function ShoppingListPage() {
   if (!user) {
     return (
       <div className="page">
-        <h1>Shopping list</h1>
+        <header className="page-head">
+          <h1>Shopping list</h1>
+        </header>
         <EmptyState
           title="Set up a profile first"
           action={
@@ -32,15 +35,22 @@ export function ShoppingListPage() {
 
   return (
     <div className="page">
-      <h1>Shopping list</h1>
+      <header className="page-head">
+        <span className="kicker muted">Shopping list</span>
+        <h1>One trip per store</h1>
+        <p>
+          Every line is the exact flyer deal a recipe cited, priced once. Pantry staples you
+          confirmed are left off.
+        </p>
+      </header>
       {list.isPending ? (
         <Spinner label="Loading shopping list…" />
       ) : list.isError ? (
         <QueryError error={list.error} stubTitle="Shopping lists" />
       ) : (
         <>
-          <SavingsCallout savings={list.data.estimated_savings} total={list.data.total_cost} />
-          <Card title="Summary">
+          <SavingsCallout savings={list.data.estimated_savings} />
+          <Card>
             <div className="stats-row">
               <div className="stat">
                 <span className="stat-value">{formatMoney(list.data.total_cost)}</span>
@@ -56,32 +66,42 @@ export function ShoppingListPage() {
               </div>
             </div>
           </Card>
-          {groupByStore(list.data.items).map(([store, items]) => (
-            <Card key={store} title={store}>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item, i) => (
-                    <tr key={i}>
-                      <td>{String(item.product ?? "—")}</td>
-                      <td>{String(item.quantity ?? "—")}</td>
-                      <td>{item.price != null ? formatMoney(item.price) : "—"}</td>
+          <div className="receipts">
+            {groupByStore(list.data.items).map(([store, items]) => (
+              <section key={store} className="receipt" aria-label={store}>
+                <h2>
+                  {store}
+                  <span className="num">{formatMoney(storeTotal(items))}</span>
+                </h2>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Recipes need</th>
+                      <th className="num">Price</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Card>
-          ))}
+                  </thead>
+                  <tbody>
+                    {items.map((item, i) => (
+                      <tr key={i}>
+                        <td>{String(item.product ?? "—")}</td>
+                        <td className="muted">{String(item.quantity || "—")}</td>
+                        <td className="num">{item.price != null ? formatMoney(item.price) : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            ))}
+          </div>
         </>
       )}
     </div>
   );
+}
+
+function storeTotal(items: ShoppingListItem[]): number {
+  return items.reduce((sum, item) => sum + (item.price != null ? moneyToNumber(item.price) : 0), 0);
 }
 
 function groupByStore(items: ShoppingListItem[]): [string, ShoppingListItem[]][] {

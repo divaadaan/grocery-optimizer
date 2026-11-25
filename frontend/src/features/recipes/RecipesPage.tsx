@@ -34,12 +34,15 @@ export function RecipesPage() {
 
   return (
     <div className="page">
-      <h1>Saved recipes</h1>
-      {count > 0 && (
-        <p className="muted">
-          {count} {count === 1 ? "recipe" : "recipes"} saved for {user.email}
-        </p>
-      )}
+      <header className="page-head">
+        <span className="kicker muted">Recipes</span>
+        <h1>Everything you've cooked up</h1>
+        {count > 0 && (
+          <p>
+            {count} {count === 1 ? "recipe" : "recipes"} saved for {user.email}
+          </p>
+        )}
+      </header>
       {recipes.isPending ? (
         <Spinner label="Loading saved recipes…" />
       ) : recipes.isError ? (

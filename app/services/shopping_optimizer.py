@@ -50,10 +50,18 @@ def stores_from_items(items: List[dict]) -> List[str]:
     )
 
 
-def _quantity(count: int, first: object) -> str:
+def _quantity(count: int, first: object, unit: object = None) -> str:
+    """What the recipes need from this line -- NOT how many packages to buy.
+
+    A line is one purchase of the cited deal (that is what ``price`` is), so
+    the recipe amount is shown with its unit ("4 large") to keep it from
+    reading as a package count. A deal several dishes cite says so instead:
+    their amounts may be in different units and are not summed.
+    """
     if count > 1:
-        return f"x{count}"
-    return "" if first is None else str(first)
+        return f"in {count} dishes"
+    parts = [str(v).strip() for v in (first, unit) if v not in (None, "")]
+    return " ".join(p for p in parts if p)
 
 
 def optimize_shopping_list(recipes: List[Dict], deals: List[Dict]) -> OptimizedList:
@@ -76,7 +84,8 @@ def optimize_shopping_list(recipes: List[Dict], deals: List[Dict]) -> OptimizedL
                 entry = by_deal.get(key)
                 if entry is None:
                     by_deal[key] = {"name": name, "count": 1,
-                                    "quantity": ingredient.get("quantity")}
+                                    "quantity": ingredient.get("quantity"),
+                                    "unit": ingredient.get("unit")}
                 else:
                     entry["count"] += 1
             elif ingredient.get("product_id") is not None:
@@ -86,7 +95,8 @@ def optimize_shopping_list(recipes: List[Dict], deals: List[Dict]) -> OptimizedL
                 entry = legacy.get(key)
                 if entry is None:
                     legacy[key] = {"name": name, "count": 1,
-                                   "quantity": ingredient.get("quantity")}
+                                   "quantity": ingredient.get("quantity"),
+                                   "unit": ingredient.get("unit")}
                 else:
                     entry["count"] += 1
 
@@ -101,7 +111,7 @@ def optimize_shopping_list(recipes: List[Dict], deals: List[Dict]) -> OptimizedL
             # Cited deal no longer in the current deal set (expired or gated
             # out): keep the line, honestly unpriced.
             items.append({"product": entry["name"],
-                          "quantity": _quantity(entry["count"], entry["quantity"]),
+                          "quantity": _quantity(entry["count"], entry["quantity"], entry["unit"]),
                           "store": UNKNOWN_STORE, "price": None, "category": None})
             continue
         sale = float(deal.get("sale_price") or 0.0)
@@ -112,7 +122,7 @@ def optimize_shopping_list(recipes: List[Dict], deals: List[Dict]) -> OptimizedL
         total_cost += sale
         items.append({
             "product": deal.get("product_name") or entry["name"],
-            "quantity": _quantity(entry["count"], entry["quantity"]),
+            "quantity": _quantity(entry["count"], entry["quantity"], entry["unit"]),
             "store": deal.get("store_name") or UNKNOWN_STORE,
             "price": sale,
             "category": deal.get("category"),
@@ -120,7 +130,7 @@ def optimize_shopping_list(recipes: List[Dict], deals: List[Dict]) -> OptimizedL
 
     for entry in legacy.values():
         items.append({"product": entry["name"],
-                      "quantity": _quantity(entry["count"], entry["quantity"]),
+                      "quantity": _quantity(entry["count"], entry["quantity"], entry["unit"]),
                       "store": UNKNOWN_STORE, "price": None, "category": None})
 
     return OptimizedList(

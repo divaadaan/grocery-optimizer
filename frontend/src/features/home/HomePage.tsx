@@ -1,8 +1,23 @@
 import { Link } from "react-router-dom";
-import { Badge, Card } from "../../components/ui";
+import { Badge } from "../../components/ui";
 import { useCurrentUser } from "../user/UserContext";
 import { useApiInfo } from "../../hooks/queries";
 import { humanize } from "../../utils/format";
+
+const STEPS = [
+  {
+    title: "Trays",
+    body: "This week's flyers, filtered by your diet and sorted into anchors, sides and stock-up buys, each compared across chains.",
+  },
+  {
+    title: "Your call",
+    body: "Reject anything you don't want and confirm what's already in your pantry. Nothing is planned from ingredients you didn't keep.",
+  },
+  {
+    title: "Dishes",
+    body: "A Chef agent plans one dish per meal around an anchor; SousChefs write each recipe, citing the exact deal behind every ingredient.",
+  },
+];
 
 export function HomePage() {
   const { user } = useCurrentUser();
@@ -10,24 +25,45 @@ export function HomePage() {
 
   return (
     <div className="page">
-      <div className="hero">
-        <h1>Grocery Optimizer</h1>
-        <p className="muted">
-          AI meal plans built around what's actually on sale near you. A Chef
-          agent groups discounted ingredients for reuse, SousChefs draft recipes
-          in parallel, and a Nutritionist signs off on every meal.
+      <section className="hero">
+        <span className="kicker muted">Weekly meal planning from grocery flyers</span>
+        <h1>
+          What can you cook from <em>this week's sales</em>?
+        </h1>
+        <p>
+          Meal plans built from the grocery deals near you, within your dietary
+          restrictions. Every ingredient points back to a real flyer price, and
+          your diet is checked against curated product data, never guessed by
+          a model.
         </p>
-      </div>
-
-      {user ? (
-        <Card
-          title="Your profile"
-          actions={
-            <Link className="button button-ghost" to="/setup">
-              Edit
+        <div className="hero-actions">
+          {user ? (
+            <Link className="button button-primary button-large" to="/planner">
+              Plan this week's meals
             </Link>
-          }
-        >
+          ) : (
+            <Link className="button button-primary button-large" to="/setup">
+              Create a profile
+            </Link>
+          )}
+          <Link className="button button-ghost" to="/deals">
+            Browse the deals
+          </Link>
+        </div>
+      </section>
+
+      <ol className="steps">
+        {STEPS.map((step, i) => (
+          <li key={step.title}>
+            <span className="step-no">0{i + 1}</span>
+            <h3>{step.title}</h3>
+            <p>{step.body}</p>
+          </li>
+        ))}
+      </ol>
+
+      {user && (
+        <section className="profile-strip" aria-label="Your profile">
           <div className="stats-row">
             <div className="stat">
               <span className="stat-value">{user.postal_code}</span>
@@ -37,57 +73,41 @@ export function HomePage() {
               <span className="stat-value">{user.household_size}</span>
               <span className="stat-label">Household</span>
             </div>
+            <div className="stat">
+              <span className="stat-value">
+                {user.dietary_restrictions.length === 0
+                  ? "None"
+                  : user.dietary_restrictions.map((r) => (
+                      <Badge key={r} tone="success">
+                        {humanize(r)}
+                      </Badge>
+                    ))}
+              </span>
+              <span className="stat-label">Dietary restrictions</span>
+            </div>
           </div>
-          {user.dietary_restrictions.length > 0 && (
-            <p>
-              {user.dietary_restrictions.map((restriction) => (
-                <Badge key={restriction} tone="accent">
-                  {humanize(restriction)}
-                </Badge>
-              ))}
-            </p>
-          )}
-        </Card>
-      ) : (
-        <Card title="Get started">
-          <p className="muted">
-            Create a profile with your postal code and dietary
-            restrictions to start planning.
-          </p>
-          <Link className="button button-primary" to="/setup">
-            Set up profile
+          <Link className="button" to="/setup">
+            Edit profile
           </Link>
-        </Card>
+        </section>
       )}
 
-      <div className="grid-cards">
-        <FeatureLink
-          to="/deals"
-          title="Browse deals"
-          description="See what's on sale at stores near you."
-        />
-        <FeatureLink
-          to="/planner"
-          title="Plan meals"
-          description="Generate a week of recipes optimized for the current deals."
-        />
-        <FeatureLink
-          to="/recipes"
-          title="Saved recipes"
-          description="Revisit and reuse the recipes you've generated."
-        />
+      <nav className="home-links" aria-label="Sections">
+        <FeatureLink to="/deals" title="Deals" description="Everything on sale near you this week." />
+        <FeatureLink to="/planner" title="Planner" description="Review the trays, then plan your meals." />
+        <FeatureLink to="/recipes" title="Recipes" description="Every dish you've generated, saved." />
         <FeatureLink
           to="/shopping-list"
           title="Shopping list"
-          description="A consolidated list across stores, priced from the deals."
+          description="Your latest plan, grouped by store."
         />
-      </div>
+      </nav>
 
       {info.data && (
-        <p className="muted small">
-          Models — chef: {info.data.features.models?.chef ?? "?"} · sous chef:{" "}
-          {info.data.features.models?.sous_chef ?? "?"} · labeller:{" "}
-          {info.data.features.models?.labeller ?? "?"} ({info.data.environment})
+        <p className="models-line">
+          Chef {info.data.features.models?.chef ?? "?"} · SousChef{" "}
+          {info.data.features.models?.sous_chef ?? "?"} · labeller{" "}
+          {info.data.features.models?.labeller ?? "?"}
         </p>
       )}
     </div>

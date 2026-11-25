@@ -95,8 +95,17 @@ def unreferenced(templates: Sequence[str], n_ingredients: int) -> List[int]:
 
 def render_step(template: str, name_of: Callable[[int], str]) -> str:
     """Substitute every ``{N}`` with ``name_of(N)``. Call only on steps that
-    passed :func:`step_problems`."""
-    return PLACEHOLDER.sub(lambda m: name_of(int(m.group(1))), template)
+    passed :func:`step_problems`.
+
+    A step that opens on a placeholder gets its first letter capitalised, so
+    "{0} and {1} together..." does not render as a lowercase sentence
+    ("frozen vegetables and ..."). Only the case of that one letter changes.
+    """
+    text = PLACEHOLDER.sub(lambda m: name_of(int(m.group(1))), template)
+    if PLACEHOLDER.match(template.lstrip()) and text.lstrip():
+        lead = len(text) - len(text.lstrip())
+        text = text[:lead] + text[lead].upper() + text[lead + 1:]
+    return text
 
 
 def deal_cited_name(product_name: str, linked_products: Sequence[dict]) -> str:

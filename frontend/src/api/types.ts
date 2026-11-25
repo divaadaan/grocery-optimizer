@@ -85,6 +85,10 @@ export interface RecipeIngredient {
   quantity?: string | number;
   unit?: string;
   price?: Money | null;
+  /** Citation: the deal this ingredient is bought from... */
+  deal_id?: number | null;
+  /** ...or an on-hand pantry staple (no cost). */
+  product_id?: number | null;
   [key: string]: unknown;
 }
 
