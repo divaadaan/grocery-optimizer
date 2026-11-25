@@ -1,5 +1,6 @@
 import type { PantryItem, TrayItem, TrayName } from "../../api/types";
 import { formatMoney, humanize } from "../../utils/format";
+import { Price } from "../../components/ui";
 
 /**
  * Approach C step 1: the trays the server built from this week's gated deals
@@ -48,9 +49,7 @@ function TrayCard({
   onToggle: () => void;
 }) {
   const perUnit =
-    item.basis !== "pkg"
-      ? ` · ${formatMoney(item.compare_price)}${BASIS_SUFFIX[item.basis]}`
-      : "";
+    item.basis !== "pkg" ? `${formatMoney(item.compare_price)}${BASIS_SUFFIX[item.basis]}` : null;
   return (
     <button
       type="button"
@@ -62,13 +61,14 @@ function TrayCard({
       <span className="tray-card-item">{humanize(item.item)}</span>
       <span className="tray-card-name">{item.product_name}</span>
       <span className="tray-card-price">
-        {formatMoney(item.sale_price)}
-        {item.unit ? `/${item.unit}` : ""}
-        {perUnit}
+        <Price value={item.sale_price} />
+        <span className="tray-card-unit">
+          {[item.unit, perUnit].filter(Boolean).join(" · ") || "\u00a0"}
+        </span>
       </span>
       <span className="tray-card-store">{item.chain ?? item.store_name}</span>
       <span className="tray-card-compare">{comparison(item)}</span>
-      <span className="tray-card-state">{kept ? "✓ Kept" : "Rejected"}</span>
+      <span className="tray-card-state">{kept ? "Kept" : "Rejected"}</span>
     </button>
   );
 }
@@ -107,8 +107,8 @@ export function TrayCarousel({
       <div className="tray-header">
         <div>
           <h3 className="tray-title">
-            {title}{" "}
-            <span className="muted small">
+            {title}
+            <span className="tray-count">
               {keptCount} of {items.length} kept
             </span>
           </h3>

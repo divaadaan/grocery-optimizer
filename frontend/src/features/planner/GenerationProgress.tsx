@@ -4,7 +4,7 @@ import { formatDuration } from "../../utils/format";
 import type { RecipeGenerationJobStatus } from "../../api/types";
 
 /**
- * Generation runs as a background job; `job` carries the real LangGraph
+ * Generation runs as a background job; `job` carries the real pipeline
  * stage and its position in the pipeline, both
  * server-supplied so this list cannot drift from the graph. Until the first
  * poll lands there is no job yet — fall back to the static checklist below.

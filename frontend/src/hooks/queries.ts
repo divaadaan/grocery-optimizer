@@ -81,21 +81,26 @@ export type DealsMode =
   | { kind: "top" }
   | { kind: "search"; q: string };
 
-export const useDeals = (postalCode: string, mode: DealsMode) =>
+/** `restrictions`: the signed-in user's, so the server gates the list the
+ * same way it gates the planner. Omitted only when there is no profile. */
+export const useDeals = (postalCode: string, mode: DealsMode, restrictions: string[] = []) =>
   useQuery({
-    queryKey: queryKeys.deals(
-      postalCode,
-      mode.kind,
-      mode.kind === "search" ? mode.q : mode.kind === "browse" ? mode.category : undefined,
-    ),
+    queryKey: [
+      ...queryKeys.deals(
+        postalCode,
+        mode.kind,
+        mode.kind === "search" ? mode.q : mode.kind === "browse" ? mode.category : undefined,
+      ),
+      [...restrictions].sort().join(","),
+    ],
     queryFn: () => {
       switch (mode.kind) {
         case "browse":
-          return api.getDeals(postalCode, mode.category);
+          return api.getDeals(postalCode, mode.category, restrictions);
         case "top":
-          return api.getTopDeals(postalCode);
+          return api.getTopDeals(postalCode, restrictions);
         case "search":
-          return api.searchDeals(postalCode, mode.q);
+          return api.searchDeals(postalCode, mode.q, restrictions);
       }
     },
     enabled: postalCode.length >= 6 && (mode.kind !== "search" || mode.q.length >= 2),

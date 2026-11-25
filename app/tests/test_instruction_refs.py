@@ -259,3 +259,10 @@ def test_built_recipe_renders_canonical_names_from_deal_products():
     assert r["instruction_steps"][0]["template"] == "Simmer {0}."
     # Without links (read unavailable) it degrades to the flyer name.
     assert _build(reply)["instructions"] == ["Simmer AROY-D COCONUT MILK 400 ML."]
+
+
+def test_render_step_capitalises_a_step_that_opens_on_a_placeholder():
+    from app.agents.instruction_refs import render_step
+    names = ["frozen vegetables", "olive oil"]
+    assert render_step("{0} and {1} together.", names.__getitem__) == "Frozen vegetables and olive oil together."
+    assert render_step("Heat {1}.", names.__getitem__) == "Heat olive oil."

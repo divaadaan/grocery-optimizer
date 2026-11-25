@@ -52,7 +52,9 @@ export function PlannerPage() {
   if (!user) {
     return (
       <div className="page">
-        <h1>Meal planner</h1>
+        <header className="page-head">
+          <h1>Meal planner</h1>
+        </header>
         <EmptyState
           title="Set up a profile first"
           message="The planner needs your postal code and dietary restrictions."
@@ -88,15 +90,17 @@ export function PlannerPage() {
 
   return (
     <div className="page">
-      <h1>Meal planner</h1>
-      <p className="muted">
-        What you can cook from grocery sales near {user.postal_code} · household of{" "}
-        {user.household_size}
-        {user.dietary_restrictions.length > 0 &&
-          ` · ${user.dietary_restrictions.map(humanize).join(", ")}`}
-      </p>
+      <header className="page-head">
+        <span className="kicker muted">Meal planner</span>
+        <h1>This week, from the flyers</h1>
+        <p>
+          Sales near {user.postal_code} · household of {user.household_size}
+          {user.dietary_restrictions.length > 0 &&
+            ` · ${user.dietary_restrictions.map(humanize).join(", ")}`}
+        </p>
+      </header>
 
-      <Card title="Plan settings">
+      <Card title={<SectionTitle n={1}>Plan settings</SectionTitle>}>
         <div className="form">
           <div className="form-row">
             <Field label={`Meals to plan: ${numMeals}`}>
@@ -134,7 +138,7 @@ export function PlannerPage() {
         </div>
       </Card>
 
-      <Card title="1. This week's ingredients">
+      <Card title={<SectionTitle n={2}>This week's ingredients</SectionTitle>}>
         <p className="muted">
           Built from this week's flyers near you, after your dietary restrictions. Click a card
           to reject it; the Chef plans only with what you keep.
@@ -164,7 +168,7 @@ export function PlannerPage() {
       </Card>
 
       {trays.data && (
-        <Card title="2. Your pantry">
+        <Card title={<SectionTitle n={3}>Your pantry</SectionTitle>}>
           <p className="muted">
             Staples you already have. Recipes may use these at no cost; untick anything you're
             out of.
@@ -177,41 +181,43 @@ export function PlannerPage() {
         </Card>
       )}
 
-      <Card title="3. Generate">
-        {selection && selection.anchors.length === 0 && (
-          <p className="banner banner-warning">
-            Keep at least one anchor: every dish is built around one.
-          </p>
-        )}
-        {selection && selection.anchors.length > 0 && selection.anchors.length < numMeals && (
-          <p className="muted">
-            {selection.anchors.length} anchor(s) for {numMeals} meals: some anchors will serve
-            more than one dish.
-          </p>
-        )}
+      <section className="generate-bar" aria-label="Generate">
+        <div>
+          <p className="kicker">04 · Generate</p>
+          {selection ? (
+            <p className="muted">
+              {selection.keptDealIds.length} deals kept · {selection.pantryIds.length} pantry
+              staples
+              {selection.anchors.length > 0 &&
+                selection.anchors.length < numMeals &&
+                ` · ${selection.anchors.length} anchor(s) for ${numMeals} meals, so some anchors serve more than one dish`}
+            </p>
+          ) : (
+            <p className="muted">Waiting for this week's trays…</p>
+          )}
+        </div>
         <button
           type="button"
-          className="button button-primary"
+          className="button button-primary button-large"
           disabled={generate.isPending || !selection || selection.anchors.length === 0}
           onClick={onGenerate}
         >
           {generate.isPending ? "Generating…" : `Plan ${numMeals} meals`}
         </button>
-        {selection && (
-          <p className="muted small">
-            Using {selection.keptDealIds.length} deals and {selection.pantryIds.length} pantry
-            staples.
+        {selection && selection.anchors.length === 0 && (
+          <p className="banner banner-warning">
+            Keep at least one anchor: every dish is built around one.
           </p>
         )}
-      </Card>
+      </section>
 
       {generate.isPending && <GenerationProgress job={generate.job} />}
       {generate.isError && <ErrorBanner error={generate.error} />}
 
       {result && (
         <>
-          <SavingsCallout savings={result.estimated_savings} total={result.total_cost} />
-          <Card title="Plan summary">
+          <SavingsCallout savings={result.estimated_savings} />
+          <Card title={<SectionTitle n={5}>Your plan</SectionTitle>}>
             <div className="stats-row">
               <Stat label="Total cost" value={formatMoney(result.total_cost)} />
               <Stat label="Per meal" value={formatMoney(result.cost_per_meal)} />
@@ -250,6 +256,15 @@ export function PlannerPage() {
         </>
       )}
     </div>
+  );
+}
+
+function SectionTitle({ n, children }: { n: number; children: string }) {
+  return (
+    <span className="section-title">
+      <span className="step-no">{String(n).padStart(2, "0")}</span>
+      {children}
+    </span>
   );
 }
 

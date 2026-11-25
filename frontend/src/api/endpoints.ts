@@ -46,22 +46,39 @@ export const discoverPostalCode = (postalCode: string) =>
     postal_code: postalCode,
   });
 
-export const getDeals = (postalCode: string, category?: string, limit = 100) => {
-  const params = new URLSearchParams({ limit: String(limit) });
+/** Repeated `restrictions=` params: the server's dietary gate (422 if unsupported). */
+const restrictionParams = (params: URLSearchParams, restrictions?: string[]) => {
+  for (const r of restrictions ?? []) params.append("restrictions", r);
+  return params;
+};
+
+export const getDeals = (
+  postalCode: string,
+  category?: string,
+  restrictions?: string[],
+  limit = 100,
+) => {
+  const params = restrictionParams(new URLSearchParams({ limit: String(limit) }), restrictions);
   if (category) params.set("category", category);
   return get<DealInfo[]>(
     `${API_PREFIX}/postal-code/deals/${encodeURIComponent(postalCode)}?${params}`,
   );
 };
 
-export const getTopDeals = (postalCode: string, limit = 20) =>
+export const getTopDeals = (postalCode: string, restrictions?: string[], limit = 20) =>
   get<DealInfo[]>(
-    `${API_PREFIX}/postal-code/top-deals/${encodeURIComponent(postalCode)}?limit=${limit}`,
+    `${API_PREFIX}/postal-code/top-deals/${encodeURIComponent(postalCode)}?${restrictionParams(
+      new URLSearchParams({ limit: String(limit) }),
+      restrictions,
+    )}`,
   );
 
-export const searchDeals = (postalCode: string, q: string) =>
+export const searchDeals = (postalCode: string, q: string, restrictions?: string[]) =>
   get<DealInfo[]>(
-    `${API_PREFIX}/postal-code/search/${encodeURIComponent(postalCode)}?q=${encodeURIComponent(q)}`,
+    `${API_PREFIX}/postal-code/search/${encodeURIComponent(postalCode)}?${restrictionParams(
+      new URLSearchParams({ q }),
+      restrictions,
+    )}`,
   );
 
 // Plans -----------------------------------------------------------------

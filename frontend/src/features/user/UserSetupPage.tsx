@@ -11,7 +11,14 @@ export function UserSetupPage() {
 
   return (
     <div className="page">
-      <h1>{user ? "Your profile" : "Get started"}</h1>
+      <header className="page-head">
+        <span className="kicker muted">{user ? "Profile" : "Get started"}</span>
+        <h1>{user ? "Your profile" : "Tell us where you shop"}</h1>
+        <p>
+          A postal code finds the flyers near you; dietary restrictions decide which deals you
+          ever see. Only restrictions the product data can check are offered.
+        </p>
+      </header>
       {user ? <EditProfile /> : <Onboarding />}
       {user && (
         <button type="button" className="button button-ghost" onClick={clearUser}>

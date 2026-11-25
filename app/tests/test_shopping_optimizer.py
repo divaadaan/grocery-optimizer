@@ -52,7 +52,7 @@ def test_same_deal_cited_by_two_recipes_is_one_line():
     ]
     result = optimize_shopping_list(recipes, [PENNE, SAUCE])
     assert len(result.items) == 2
-    assert _item(result.items, "Pasta Penne")["quantity"] == "x2"
+    assert _item(result.items, "Pasta Penne")["quantity"] == "in 2 dishes"
     assert result.total_cost == round(1.49 + 1.99, 2)
 
 
@@ -109,7 +109,7 @@ def test_identical_legacy_lines_merge_for_display_only():
     recipes = [{"ingredients": [{"name": "Onion"}]}, {"ingredients": [{"name": "onion "}]}]
     result = optimize_shopping_list(recipes, [])
     assert len(result.items) == 1
-    assert result.items[0]["quantity"] == "x2"
+    assert result.items[0]["quantity"] == "in 2 dishes"
 
 
 # --- estimated_savings -------------------------------------------------------
@@ -166,3 +166,12 @@ def test_stores_from_items_excludes_unknown_dedups_and_sorts():
 
 def test_stores_from_items_handles_empty_list():
     assert stores_from_items([]) == []
+
+
+def test_quantity_carries_the_recipe_unit_not_a_package_count():
+    deals = [{"deal_id": 7, "product_name": "Eggs, 18 pack", "sale_price": 4.99,
+              "regular_price": None, "store_name": "No Frills"}]
+    recipes = [{"ingredients": [{"name": "eggs", "deal_id": 7, "quantity": "4", "unit": "large"}]}]
+    result = optimize_shopping_list(recipes, deals)
+    assert result.items[0]["quantity"] == "4 large"
+    assert result.items[0]["price"] == 4.99

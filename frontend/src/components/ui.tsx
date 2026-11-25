@@ -37,36 +37,44 @@ export function Badge({
   tone = "neutral",
 }: {
   children: ReactNode;
-  tone?: "neutral" | "success" | "warning" | "danger" | "accent";
+  tone?: "neutral" | "success" | "warning" | "danger" | "accent" | "sale";
 }) {
   return <span className={`badge badge-${tone}`}>{children}</span>;
 }
 
 /**
- * Foregrounds the app's core value prop — money saved vs. regular prices.
- * Renders nothing when savings is unknown (null) or ≤ 0. When a
- * `total` (the cost actually paid) is given, also shows the % off regular.
+ * Savings vs. regular shelf prices. Renders nothing when savings is unknown
+ * (null) or <= 0. Most flyer deals carry no regular price, so the figure
+ * covers only the deals that do: it is a floor, and no percentage is shown
+ * because the denominator would include lines with no known regular price.
  */
-export function SavingsCallout({ savings, total }: { savings: Money | null | undefined; total?: Money }) {
+export function SavingsCallout({ savings }: { savings: Money | null | undefined }) {
   if (savings === null || savings === undefined) return null; // unknown: hide, never "$0"
-  const amount = moneyToNumber(savings);
-  if (amount <= 0) return null;
-
-  const regular = amount + moneyToNumber(total);
-  const pct = total !== undefined && regular > 0 ? Math.round((amount / regular) * 100) : null;
+  if (moneyToNumber(savings) <= 0) return null;
 
   return (
     <div className="savings-callout" role="status">
-      <span className="savings-callout-icon" aria-hidden="true">
-        💸
+      <span className="savings-callout-value">Saves at least {formatMoney(savings)}</span>
+      <span className="savings-callout-label">
+        against regular shelf prices, counting only deals whose flyer lists one
       </span>
-      <div>
-        <span className="savings-callout-value">You save {formatMoney(savings)}</span>
-        <span className="savings-callout-label">
-          {pct !== null ? `${pct}% off regular shelf prices` : "vs. regular shelf prices"}
-        </span>
-      </div>
     </div>
+  );
+}
+
+/**
+ * A price set the way a flyer sets it: "$" and cents in superscript beside
+ * big dollars. The accessible name stays the plain formatted amount.
+ */
+export function Price({ value }: { value: Money | null | undefined }) {
+  if (value === null || value === undefined) return <span className="price">—</span>;
+  const [dollars, cents] = moneyToNumber(value).toFixed(2).split(".");
+  return (
+    <span className="price" aria-label={formatMoney(value)}>
+      <span className="price-cur" aria-hidden="true">$</span>
+      <span aria-hidden="true">{dollars}</span>
+      <span className="price-cents" aria-hidden="true">{cents}</span>
+    </span>
   );
 }
 

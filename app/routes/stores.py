@@ -22,6 +22,7 @@ from app.services.store_service import StoreService
 from app.services.deal_labeller import start_background_labelling
 from app.services.flipp_ingestion import run_ingestion
 from app.services.flipp_staples import STAPLES, staple_terms
+from app.services.products import UnsupportedRestrictionError, unsupported_restrictions
 
 logger = logging.getLogger(__name__)
 
@@ -362,6 +363,17 @@ async def get_staples() -> StaplesResponse:
     )
 
 
+def _refuse_unsupported(restrictions: Optional[List[str]]) -> None:
+    """422 for a restriction no curated attribute enforces: serving an
+    "unfiltered but labelled" list would look enforced when it is not."""
+    unsupported = unsupported_restrictions(restrictions)
+    if unsupported:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(UnsupportedRestrictionError(unsupported)),
+        )
+
+
 @router.get("/deals/{postal_code}",
             response_model=List[DealInfo],
             responses={
@@ -370,7 +382,12 @@ async def get_staples() -> StaplesResponse:
 async def get_deals(
     postal_code: str,
     category: Optional[str] = Query(None, description="Filter by category"),
-    limit: Optional[int] = Query(50, ge=1, le=200, description="Maximum number of deals to return")
+    limit: Optional[int] = Query(50, ge=1, le=200, description="Maximum number of deals to return"),
+    restrictions: Optional[List[str]] = Query(
+        None,
+        description="Dietary restrictions to gate by (repeat the parameter). "
+                    "Omitted = no user context, every deal. Unsupported labels are refused (422).",
+    ),
 ) -> List[DealInfo]:
     """
     Get current deals for a postal code.
@@ -381,8 +398,9 @@ async def get_deals(
     - **category**: Optional category filter (e.g., "Produce", "Meat & Poultry")
     - **limit**: Maximum number of results (default: 50, max: 200)
     """
+    _refuse_unsupported(restrictions)
     try:
-        deals = StoreService.get_current_deals_by_postal_code(postal_code, category)
+        deals = StoreService.get_current_deals_by_postal_code(postal_code, category, restrictions)
 
         if not deals:
             raise HTTPException(
@@ -427,14 +445,20 @@ async def get_deals(
             response_model=List[DealInfo])
 async def get_top_deals(
     postal_code: str,
-    limit: int = Query(20, ge=1, le=50, description="Number of top deals")
+    limit: int = Query(20, ge=1, le=50, description="Number of top deals"),
+    restrictions: Optional[List[str]] = Query(
+        None,
+        description="Dietary restrictions to gate by (repeat the parameter). "
+                    "Omitted = no user context, every deal. Unsupported labels are refused (422).",
+    ),
 ) -> List[DealInfo]:
     """
     Get top deals by discount percentage.
 
     Returns the best deals sorted by discount percentage.
     """
-    deals = StoreService.get_top_deals(postal_code, limit)
+    _refuse_unsupported(restrictions)
+    deals = StoreService.get_top_deals(postal_code, limit, restrictions)
 
     deal_infos = [
         DealInfo(
@@ -461,7 +485,12 @@ async def get_top_deals(
             response_model=List[DealInfo])
 async def search_deals(
     postal_code: str,
-    q: str = Query(..., min_length=2, description="Search term (product name or brand)")
+    q: str = Query(..., min_length=2, description="Search term (product name or brand)"),
+    restrictions: Optional[List[str]] = Query(
+        None,
+        description="Dietary restrictions to gate by (repeat the parameter). "
+                    "Omitted = no user context, every deal. Unsupported labels are refused (422).",
+    ),
 ) -> List[DealInfo]:
     """
     Search deals by product name or brand.
@@ -469,7 +498,8 @@ async def search_deals(
     - **postal_code**: Postal code to search in
     - **q**: Search query (minimum 2 characters)
     """
-    deals = StoreService.search_deals(postal_code, q)
+    _refuse_unsupported(restrictions)
+    deals = StoreService.search_deals(postal_code, q, restrictions)
 
     if not deals:
         return []

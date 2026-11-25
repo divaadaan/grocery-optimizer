@@ -1,32 +1,49 @@
-/* Design tokens — the only place raw colors/sizes are defined. */
+/*
+ * Design tokens — the only place raw colors/sizes are defined.
+ *
+ * Direction: the grocery flyer. Heavy condensed type for names and prices,
+ * prices set flyer-style with superscript cents, flyer red for the sale and
+ * flyer yellow for price comparisons, on a clean cool-grey ground. Green is
+ * reserved for state: kept, and clears your diet.
+ */
 :root {
   color-scheme: light;
 
-  --color-bg: #f7f8f6;
+  --color-bg: #eef0ec;
   --color-surface: #ffffff;
-  --color-border: #e3e6e0;
-  --color-text: #1f2a1f;
-  --color-text-muted: #6b756b;
+  --color-sunken: #e2e5df;
+  --color-border: #d3d7cf;
+  --color-rule: #121412;
+  --color-text: #121412;
+  --color-text-muted: #5d635b;
 
-  --color-primary: #2f7d4f;
-  --color-primary-hover: #28693f;
-  --color-primary-soft: #e7f3ec;
+  --color-primary: #18703a;
+  --color-primary-hover: #105a2d;
+  --color-primary-soft: #dcefe1;
   /* Text/icons drawn on top of a filled --color-primary surface. */
   --color-on-primary: #ffffff;
 
-  --color-success: #1d7a3e;
-  --color-success-soft: #e4f4e9;
-  --color-warning: #9a6700;
-  --color-warning-soft: #fff3d6;
-  --color-danger: #b3261e;
-  --color-danger-soft: #fdecea;
-  --color-accent: #5b54c4;
-  --color-accent-soft: #ecebf9;
+  --color-sale: #e1251b;
+  --color-sale-soft: #fde3e1;
+  --color-on-sale: #ffffff;
+  --color-tag: #ffd60a;
+  --color-on-tag: #121412;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --shadow-sm: 0 1px 3px rgba(20, 30, 20, 0.08);
-  --shadow-md: 0 4px 12px rgba(20, 30, 20, 0.1);
+  --color-success: #18703a;
+  --color-success-soft: #dcefe1;
+  --color-warning: #8a5a00;
+  --color-warning-soft: #fdf0c8;
+  --color-danger: #c11d14;
+  --color-danger-soft: #fde3e1;
+  /* Neutral "label" accent: ink outline, no hue of its own. */
+  --color-accent: #121412;
+  --color-accent-soft: transparent;
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --shadow-sm: none;
+  --shadow-md: 0 1px 0 var(--color-rule);
+  --shadow-lift: 4px 4px 0 var(--color-rule);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -34,40 +51,44 @@
   --space-4: 1rem;
   --space-5: 1.5rem;
   --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
 
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Archivo Variable", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 
-/*
- * Dark theme. Only token values change — every component reads these vars, so
- * the light layout is untouched. Tints are re-derived as dark washes; the
- * accent hues are lightened to keep text legible on dark surfaces.
- */
+/* Dark theme. Only token values change — every component reads these vars. */
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
 
-    --color-bg: #12140f;
-    --color-surface: #1b1e18;
-    --color-border: #2e332b;
-    --color-text: #e7ebe3;
-    --color-text-muted: #9aa397;
+    --color-bg: #111311;
+    --color-surface: #1a1d1a;
+    --color-sunken: #0c0e0c;
+    --color-border: #313630;
+    --color-rule: #e9ece6;
+    --color-text: #e9ece6;
+    --color-text-muted: #9ca499;
 
-    --color-primary: #57b97f;
-    --color-primary-hover: #6cc78e;
-    --color-primary-soft: #1c2b22;
-    --color-on-primary: #0f140f;
+    --color-primary: #5cc27e;
+    --color-primary-hover: #7cd296;
+    --color-primary-soft: #16301f;
+    --color-on-primary: #0c0e0c;
 
-    --color-success: #5ac585;
-    --color-success-soft: #16271c;
-    --color-warning: #e2b45a;
-    --color-warning-soft: #2b2411;
-    --color-danger: #ef8a82;
-    --color-danger-soft: #2d1613;
-    --color-accent: #a29bf0;
-    --color-accent-soft: #201d33;
+    --color-sale: #ff5a4e;
+    --color-sale-soft: #3a1512;
+    --color-on-sale: #0c0e0c;
+    --color-tag: #f5cc00;
+    --color-on-tag: #0c0e0c;
 
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.55);
+    --color-success: #5cc27e;
+    --color-success-soft: #16301f;
+    --color-warning: #e5b85c;
+    --color-warning-soft: #33280f;
+    --color-danger: #ff5a4e;
+    --color-danger-soft: #3a1512;
+    --color-accent: #e9ece6;
   }
 }

@@ -4,6 +4,7 @@ import { DealCard } from "./DealCard";
 import { useCurrentUser } from "../user/UserContext";
 import { useDeals, useDiscoverPostalCode, type DealsMode } from "../../hooks/queries";
 import { ApiError } from "../../api/client";
+import { humanize } from "../../utils/format";
 
 export function DealsPage() {
   const { user } = useCurrentUser();
@@ -19,7 +20,8 @@ export function DealsPage() {
       : { kind: "browse", category: category || undefined };
 
   const normalizedPostal = postalCode.replace(/\s+/g, "").toUpperCase();
-  const deals = useDeals(normalizedPostal, mode);
+  const restrictions = user?.dietary_restrictions ?? [];
+  const deals = useDeals(normalizedPostal, mode, restrictions);
   const discover = useDiscoverPostalCode();
 
   // Categories come from the unfiltered browse result currently in cache —
@@ -36,7 +38,15 @@ export function DealsPage() {
 
   return (
     <div className="page">
-      <h1>Local deals</h1>
+      <header className="page-head">
+        <span className="kicker muted">Deals</span>
+        <h1>On sale near you</h1>
+        <p>
+          This week's flyer prices from every store around your postal code.
+          {restrictions.length > 0 &&
+            ` Filtered for ${restrictions.map(humanize).join(", ")}: only deals whose products are confirmed to clear it.`}
+        </p>
+      </header>
 
       <Card>
         <div className="toolbar">

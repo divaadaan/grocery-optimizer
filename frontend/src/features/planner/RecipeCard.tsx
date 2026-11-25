@@ -19,9 +19,11 @@ export function RecipeCard({ recipe }: { recipe: RecipeInfo }) {
       title={
         <span className="recipe-title">
           {recipe.name}
-          {recipe.meal_type && <Badge tone="accent">{humanize(recipe.meal_type)}</Badge>}
-          {recipe.cuisine_type && <Badge>{humanize(recipe.cuisine_type)}</Badge>}
-          {recipe.dietary_compliance && <ComplianceBadge compliance={recipe.dietary_compliance} />}
+          <span className="recipe-badges">
+            {recipe.dietary_compliance && <ComplianceBadge compliance={recipe.dietary_compliance} />}
+            {recipe.meal_type && <Badge tone="accent">{humanize(recipe.meal_type)}</Badge>}
+            {recipe.cuisine_type && <Badge>{humanize(recipe.cuisine_type)}</Badge>}
+          </span>
         </span>
       }
       actions={
@@ -31,9 +33,17 @@ export function RecipeCard({ recipe }: { recipe: RecipeInfo }) {
       }
     >
       <div className="recipe-meta">
-        <span>{formatMoney(recipe.total_cost)}</span>
-        <span>{recipe.servings} servings</span>
-        {recipe.estimated_prep_time != null && <span>{recipe.estimated_prep_time} min prep</span>}
+        <span>
+          <strong>{formatMoney(recipe.total_cost)}</strong> at sale prices
+        </span>
+        <span>
+          <strong>{recipe.servings}</strong> servings
+        </span>
+        {recipe.estimated_prep_time != null && (
+          <span>
+            <strong>{recipe.estimated_prep_time}</strong> min prep
+          </span>
+        )}
         {recipe.health_score != null && <span>Health score: {String(recipe.health_score)}</span>}
       </div>
 
@@ -46,13 +56,14 @@ export function RecipeCard({ recipe }: { recipe: RecipeInfo }) {
               ))}
             </ul>
           )}
+          <div>
           <h4>Ingredients</h4>
           <table className="table">
             <thead>
               <tr>
                 <th>Ingredient</th>
                 <th>Quantity</th>
-                <th>Price</th>
+                <th className="num">Price</th>
               </tr>
             </thead>
             <tbody>
@@ -62,21 +73,32 @@ export function RecipeCard({ recipe }: { recipe: RecipeInfo }) {
                   <td>
                     {[ing.quantity, ing.unit].filter((v) => v != null && v !== "").join(" ") || "—"}
                   </td>
-                  <td>{ing.price != null ? formatMoney(ing.price) : "—"}</td>
+                  <td className="num">
+                    {ing.product_id != null && ing.deal_id == null ? (
+                      <span className="pantry-tag">Pantry</span>
+                    ) : ing.price != null ? (
+                      formatMoney(ing.price)
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
 
+          <div>
           <h4>Instructions</h4>
           <ol className="instructions">
             {recipe.instructions.map((step, i) => (
               <li key={i}>{step}</li>
             ))}
           </ol>
+          </div>
 
           {recipe.nutrition_facts && Object.keys(recipe.nutrition_facts).length > 0 && (
-            <>
+            <div className="nutrition">
               <h4>Nutrition</h4>
               <dl className="nutrition-grid">
                 {Object.entries(recipe.nutrition_facts).map(([key, value]) => (
@@ -86,7 +108,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeInfo }) {
                   </div>
                 ))}
               </dl>
-            </>
+            </div>
           )}
         </div>
       )}

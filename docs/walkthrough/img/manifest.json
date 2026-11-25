@@ -1,0 +1,18 @@
+{
+  "diet": "vegetarian",
+  "meals": 3,
+  "userId": 12,
+  "shots": [
+    "01-landing.png",
+    "02-register.png",
+    "03-home-profile.png",
+    "04-deals.png",
+    "05-planner-trays.png",
+    "06-tray-reject.png",
+    "07-generating.png",
+    "08-plan-result.png",
+    "09-recipe-detail.png",
+    "10-saved-recipes.png",
+    "11-shopping-list.png"
+  ]
+}

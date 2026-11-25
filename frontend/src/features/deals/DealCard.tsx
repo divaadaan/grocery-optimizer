@@ -1,4 +1,4 @@
-import { Badge } from "../../components/ui";
+import { Badge, Price } from "../../components/ui";
 import { daysUntil, formatDate, formatMoney } from "../../utils/format";
 import type { DealInfo } from "../../api/types";
 
@@ -11,12 +11,14 @@ export function DealCard({ deal }: { deal: DealInfo }) {
     <article className="deal-card">
       <div className="deal-card-top">
         <h3>{deal.product_name}</h3>
-        <Badge tone="success">−{deal.discount_percentage}%</Badge>
+        {deal.discount_percentage != null && Number(deal.discount_percentage) > 0 && (
+          <Badge tone="sale">−{deal.discount_percentage}%</Badge>
+        )}
       </div>
       {deal.brand && <p className="muted">{deal.brand}</p>}
       <p className="deal-price">
-        <strong>{formatMoney(deal.sale_price)}</strong>
-        <s className="muted">{formatMoney(deal.regular_price)}</s>
+        <Price value={deal.sale_price} />
+        {deal.regular_price != null && <s className="muted">{formatMoney(deal.regular_price)}</s>}
         {deal.unit && <span className="muted"> / {deal.unit}</span>}
       </p>
       <footer className="deal-card-footer">

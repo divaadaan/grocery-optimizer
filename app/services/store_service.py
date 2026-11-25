@@ -166,10 +166,16 @@ class StoreService:
             return grouped
 
     @staticmethod
-    def get_top_deals(postal_code: str, limit: int = 20) -> List[Dict[str, Any]]:
-        """Get top deals by discount percentage."""
+    def get_top_deals(postal_code: str, limit: int = 20,
+                      dietary_restrictions: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+        """Get top deals by discount percentage, through the dietary gate
+        (``None`` = no user context, every deal)."""
+        fragment, extra = deal_filter(dietary_restrictions)
         query = """
         SELECT
+            d.deal_id,
+            d.valid_from,
+            d.valid_until,
             d.product_name,
             d.brand,
             d.sale_price,
@@ -184,6 +190,7 @@ class StoreService:
         WHERE s.postal_code = %(postal_code)s
           AND d.valid_until >= CURRENT_DATE
           AND s.is_active = true
+        """ + fragment + """
         ORDER BY d.discount_percentage DESC NULLS LAST, d.sale_price ASC
         LIMIT %(limit)s;
         """
@@ -191,14 +198,21 @@ class StoreService:
         with db.get_cursor() as cursor:
             cursor.execute(query, {
                 "postal_code": postal_code,
-                "limit": limit
+                "limit": limit,
+                **extra,
             })
             results = cursor.fetchall()
             return [dict(row) for row in results]
 
     @staticmethod
-    def search_deals(postal_code: str, search_term: str) -> List[Dict[str, Any]]:
-        """Search deals by product name or brand."""
+    def search_deals(postal_code: str, search_term: str,
+                     dietary_restrictions: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+        """Search deals by product name or brand, through the dietary gate.
+
+        The ILIKE is a user's search box, not a dietary decision: which deals
+        may appear at all is decided by the gate fragment (curated attributes).
+        """
+        fragment, extra = deal_filter(dietary_restrictions)
         query = """
         SELECT
             d.deal_id,
@@ -220,6 +234,7 @@ class StoreService:
           )
           AND d.valid_until >= CURRENT_DATE
           AND s.is_active = true
+        """ + fragment + """
         ORDER BY d.discount_percentage DESC NULLS LAST
         LIMIT 50;
         """
@@ -227,7 +242,8 @@ class StoreService:
         with db.get_cursor() as cursor:
             cursor.execute(query, {
                 "postal_code": postal_code,
-                "search_pattern": f"%{search_term}%"
+                "search_pattern": f"%{search_term}%",
+                **extra,
             })
             results = cursor.fetchall()
             return [dict(row) for row in results]
