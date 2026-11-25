@@ -140,7 +140,7 @@ pipeline stage:
 
 This plan took **37 seconds** on `qwen2.5:7b` running locally under Ollama:
 three vegetarian dinners built around tofu, eggs and chickpeas. The savings
-banner shows a floor, "at least $2.01", because most flyer deals don't print a
+banner shows a floor, "at least $4.02", because most flyer deals don't print a
 regular price. Savings degrade to *absent*, never to a made-up number.
 
 ![Recipe detail](img/09-recipe-detail.png)

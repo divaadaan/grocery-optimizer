@@ -1,45 +1,46 @@
 /*
  * Design tokens — the only place raw colors/sizes are defined.
  *
- * Direction: "market ledger". Flyer paper and ink, an editorial serif for
- * names and headings, monospaced figures for every price, and two working
- * colors: herb green for what you keep / what clears your diet, and flyer
- * red for the sale itself. Shelf-tag yellow is reserved for price comparisons.
+ * Direction: the grocery flyer. Heavy condensed type for names and prices,
+ * prices set flyer-style with superscript cents, flyer red for the sale and
+ * flyer yellow for price comparisons, on a clean cool-grey ground. Green is
+ * reserved for state: kept, and clears your diet.
  */
 :root {
   color-scheme: light;
 
-  --color-bg: #f2ede2;
-  --color-surface: #fbf8f1;
-  --color-sunken: #e9e2d3;
-  --color-border: #d8cfbc;
-  --color-rule: #1c1b18;
-  --color-text: #1c1b18;
-  --color-text-muted: #6b6457;
+  --color-bg: #eef0ec;
+  --color-surface: #ffffff;
+  --color-sunken: #e2e5df;
+  --color-border: #d3d7cf;
+  --color-rule: #121412;
+  --color-text: #121412;
+  --color-text-muted: #5d635b;
 
-  --color-primary: #2c5a3c;
-  --color-primary-hover: #224a30;
-  --color-primary-soft: #dfe8dc;
+  --color-primary: #18703a;
+  --color-primary-hover: #105a2d;
+  --color-primary-soft: #dcefe1;
   /* Text/icons drawn on top of a filled --color-primary surface. */
-  --color-on-primary: #fbf8f1;
+  --color-on-primary: #ffffff;
 
-  --color-sale: #c2381d;
-  --color-sale-soft: #f6ddd3;
-  --color-tag: #f1c232;
-  --color-on-tag: #1c1b18;
+  --color-sale: #e1251b;
+  --color-sale-soft: #fde3e1;
+  --color-on-sale: #ffffff;
+  --color-tag: #ffd60a;
+  --color-on-tag: #121412;
 
-  --color-success: #2c5a3c;
-  --color-success-soft: #dfe8dc;
+  --color-success: #18703a;
+  --color-success-soft: #dcefe1;
   --color-warning: #8a5a00;
-  --color-warning-soft: #f7e7bf;
-  --color-danger: #a82a17;
-  --color-danger-soft: #f6ddd3;
+  --color-warning-soft: #fdf0c8;
+  --color-danger: #c11d14;
+  --color-danger-soft: #fde3e1;
   /* Neutral "label" accent: ink outline, no hue of its own. */
-  --color-accent: #1c1b18;
+  --color-accent: #121412;
   --color-accent-soft: transparent;
 
   --radius-sm: 3px;
-  --radius-md: 4px;
+  --radius-md: 6px;
   --shadow-sm: none;
   --shadow-md: 0 1px 0 var(--color-rule);
   --shadow-lift: 4px 4px 0 var(--color-rule);
@@ -53,43 +54,41 @@
   --space-7: 3rem;
   --space-8: 4.5rem;
 
-  --font-display: "Fraunces Variable", "Iowan Old Style", Georgia, serif;
+  --font-display: "Archivo Variable", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 
-/*
- * Dark theme. Only token values change — every component reads these vars.
- * Paper becomes a warm charcoal; ink becomes paper.
- */
+/* Dark theme. Only token values change — every component reads these vars. */
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
 
-    --color-bg: #161512;
-    --color-surface: #1f1d19;
-    --color-sunken: #12110e;
-    --color-border: #38342c;
-    --color-rule: #ece5d6;
-    --color-text: #ece5d6;
-    --color-text-muted: #a49c8c;
+    --color-bg: #111311;
+    --color-surface: #1a1d1a;
+    --color-sunken: #0c0e0c;
+    --color-border: #313630;
+    --color-rule: #e9ece6;
+    --color-text: #e9ece6;
+    --color-text-muted: #9ca499;
 
-    --color-primary: #8cc59c;
-    --color-primary-hover: #a5d5b2;
-    --color-primary-soft: #1f2e23;
-    --color-on-primary: #12110e;
+    --color-primary: #5cc27e;
+    --color-primary-hover: #7cd296;
+    --color-primary-soft: #16301f;
+    --color-on-primary: #0c0e0c;
 
-    --color-sale: #f0866b;
-    --color-sale-soft: #3a1d15;
-    --color-tag: #e3b52b;
-    --color-on-tag: #12110e;
+    --color-sale: #ff5a4e;
+    --color-sale-soft: #3a1512;
+    --color-on-sale: #0c0e0c;
+    --color-tag: #f5cc00;
+    --color-on-tag: #0c0e0c;
 
-    --color-success: #8cc59c;
-    --color-success-soft: #1f2e23;
+    --color-success: #5cc27e;
+    --color-success-soft: #16301f;
     --color-warning: #e5b85c;
     --color-warning-soft: #33280f;
-    --color-danger: #f0866b;
-    --color-danger-soft: #3a1d15;
-    --color-accent: #ece5d6;
+    --color-danger: #ff5a4e;
+    --color-danger-soft: #3a1512;
+    --color-accent: #e9ece6;
   }
 }

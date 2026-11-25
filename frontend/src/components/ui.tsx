@@ -62,6 +62,22 @@ export function SavingsCallout({ savings }: { savings: Money | null | undefined 
   );
 }
 
+/**
+ * A price set the way a flyer sets it: "$" and cents in superscript beside
+ * big dollars. The accessible name stays the plain formatted amount.
+ */
+export function Price({ value }: { value: Money | null | undefined }) {
+  if (value === null || value === undefined) return <span className="price">—</span>;
+  const [dollars, cents] = moneyToNumber(value).toFixed(2).split(".");
+  return (
+    <span className="price" aria-label={formatMoney(value)}>
+      <span className="price-cur" aria-hidden="true">$</span>
+      <span aria-hidden="true">{dollars}</span>
+      <span className="price-cents" aria-hidden="true">{cents}</span>
+    </span>
+  );
+}
+
 export function Spinner({ label }: { label?: string }) {
   return (
     <span className="spinner-wrap" role="status">

@@ -1,5 +1,6 @@
 import type { PantryItem, TrayItem, TrayName } from "../../api/types";
 import { formatMoney, humanize } from "../../utils/format";
+import { Price } from "../../components/ui";
 
 /**
  * Approach C step 1: the trays the server built from this week's gated deals
@@ -60,7 +61,7 @@ function TrayCard({
       <span className="tray-card-item">{humanize(item.item)}</span>
       <span className="tray-card-name">{item.product_name}</span>
       <span className="tray-card-price">
-        {formatMoney(item.sale_price)}
+        <Price value={item.sale_price} />
         <span className="tray-card-unit">
           {[item.unit, perUnit].filter(Boolean).join(" · ") || "\u00a0"}
         </span>
