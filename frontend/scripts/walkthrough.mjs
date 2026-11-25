@@ -137,8 +137,6 @@ try {
   if (!REUSE_ID) {
     await page.getByRole("button", { name: /^plan \d+ meals?$/i }).click();
     await page.locator(".pipeline").waitFor();
-    await page.waitForTimeout(4_000);
-    await shot(page, "generating", { fullPage: false });
     await page
       .locator(".recipe-card, .banner-error")
       .first()

@@ -9,7 +9,7 @@ for the user to review, and has LLM agents (a Chef that plans dishes and
 SousChefs that write them) build recipes in which every ingredient cites a real
 flyer deal.
 
-![Planner](docs/walkthrough/img/08-plan-result.png)
+![Planner](docs/walkthrough/img/07-plan-result.png)
 
 **→ [Read the walkthrough](docs/walkthrough/README.md)** for the full tour:
 sign-up, deals, trays, generation, the shopping list, the database underneath

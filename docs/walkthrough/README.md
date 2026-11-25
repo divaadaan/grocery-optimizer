@@ -24,8 +24,7 @@ anywhere in the page.
 [4 · Generation](#4--generation-chef-souschefs-and-a-lookup-table) ·
 [5 · Shopping list](#5--the-shopping-list) ·
 [6 · The data underneath](#6--the-data-underneath) ·
-[7 · How it's evaluated](#7--how-its-evaluated) ·
-[8 · Known gaps](#8--known-gaps-honestly)
+[7 · How it's evaluated](#7--how-its-evaluated)
 
 ---
 
@@ -46,10 +45,6 @@ boolean attributes on the `products` table (`contains_meat`, `contains_fish`,
 `contains_animal_byproduct`, `not_kosher`). Kosher also adds a rule that no
 single product can break, "no meat with dairy", which is checked over the
 whole recipe.
-
-A diet the attributes can't express (halal, today) is **refused with a 422**
-rather than silently "approved". An unenforced label that looks enforced is
-worse than no label.
 
 ![Home with profile](img/03-home-profile.png)
 
@@ -115,45 +110,52 @@ deal it was never offered.
 
 ## 4 · Generation: Chef, SousChefs and a lookup table
 
-![Generation in progress](img/07-generating.png)
+Generation runs as a background job; the UI follows the server's real pipeline
+stage while it runs.
 
-Generation runs as a background job, and the UI shows the server's real
-pipeline stage:
+```mermaid
+flowchart LR
+    K["Kept trays<br/>+ confirmed pantry"] --> R["Re-check against<br/>this week's deals"]
+    R --> C["Chef<br/>one dish per meal,<br/>each around an anchor"]
+    C --> S["SousChefs<br/>one per dish,<br/>in parallel"]
+    S --> V{"Every ingredient<br/>cites a deal or<br/>pantry item?"}
+    V -- "no: exact error back,<br/>or safe repair in code" --> S
+    V -- yes --> P["Cost from cited<br/>flyer prices"]
+    P --> D["Dietary check<br/>on cited products"]
+    D --> O["Saved plan<br/>+ shopping list"]
+```
 
 1. **Re-check** the kept ingredients against this week's deals.
 2. **Chef** (dish planner) picks one dish per meal, each built around a kept
    anchor. An anchor may serve more than one dish. A plan that cites an id it
    was never shown is repaired or dropped in code.
-3. **SousChefs** write each dish's recipe. Every ingredient must cite a
-   `deal_id` from the dish's trays or a pantry `product_id`. Steps reference
-   ingredients by placeholder (`"Heat {2} in a pan"`), and code renders them
-   with each product's curated name. Output that fails validation gets the
-   *exact* error back on retry. Safe problems, such as an uncited garnish and
-   its placeholders, are repaired in code rather than thrown away.
+3. **SousChefs** write each dish's recipe in parallel. Every ingredient must
+   cite a `deal_id` from the dish's trays or a pantry `product_id`. Steps
+   reference ingredients by placeholder (`"Heat {2} in a pan"`), and code
+   renders them with each product's curated name. Output that fails validation
+   gets the *exact* error back on retry. Safe problems, such as an uncited
+   garnish and its placeholders, are repaired in code rather than thrown away.
 4. **Costing** comes from the cited deals' flyer prices. Cost is reported,
    never a constraint: the product is budget-agnostic by design.
-5. **Dietary compliance** is a lookup on the cited products' attributes. There
-   is no LLM judge. An earlier version trained a small model for that job, and
-   the whole track was dropped because compliance has to be deterministic.
 
-![Plan result](img/08-plan-result.png)
+![Plan result](img/07-plan-result.png)
 
 This plan took **37 seconds** on `qwen2.5:7b` running locally under Ollama:
 three vegetarian dinners built around tofu, eggs and chickpeas. The savings
 banner shows a floor, "at least $4.02", because most flyer deals don't print a
 regular price. Savings degrade to *absent*, never to a made-up number.
 
-![Recipe detail](img/09-recipe-detail.png)
+![Recipe detail](img/08-recipe-detail.png)
 
 The recipe detail shows the citation model directly. Deal-backed ingredients
 carry a flyer price; pantry staples say **PANTRY** and cost nothing, because
 the user confirmed they already have them.
 
-![Saved recipes](img/10-saved-recipes.png)
+![Saved recipes](img/09-saved-recipes.png)
 
 ## 5 · The shopping list
 
-![Shopping list](img/11-shopping-list.png)
+![Shopping list](img/10-shopping-list.png)
 
 The shopping list is built from the citations, not by fuzzy-matching
 ingredient names to products. Each line is one purchase of the exact deal a
@@ -257,23 +259,12 @@ the local `qwen2.5:7b`:
 | **Compliance gate** | **14 / 14 PASS** |
 | Citation validity | 100% in every run |
 | Overall verdict | 12 PASS / 2 FAIL |
-| The 2 FAILs | both kosher: 2 of 3 dishes, a planner bug (below) |
+| The 2 FAILs | both kosher: 2 of 3 dishes, the planner sometimes anchors a dish on an id it was never shown |
 | LLM time | 29–211 s per plan (3–7 meals) |
 
 The table traces two days of work. On 2026-11-23 the first live set scored
 4 PASS / 1 FAIL. On 2026-11-24 it was 12 / 2 after product linking, and then
 13 / 1 once the SousChef's output was repaired in code rather than discarded.
-
-## 8 · Known gaps, honestly
-
-- **Kosher plans** lose a dish: the planner sometimes anchors a dish on an id
-  it was never shown. That dish is dropped rather than served, which is safe,
-  but the plan comes back partial. It's next on the list.
-- **Costs are lower bounds.** One deal unit per citation; quantities,
-  household size and multi-buy offers ("2 for $5") aren't modelled yet.
-- **Restricted users get thinner trays.** Vegan has about 5 anchors against 15
-  for unrestricted. That's because a deal is withheld until its product is
-  confirmed, which is fail-closed on purpose.
 
 ---
 
