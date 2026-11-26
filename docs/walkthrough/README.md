@@ -164,8 +164,7 @@ for, not a package count. A deal that several dishes share appears once.
 
 ## 6 · The data underneath
 
-Everything runs on PostgreSQL (Neon), with 24 numbered migrations recorded in
-`schema_migrations`. The core of the schema:
+Everything runs on PostgreSQL (Neon). The core of the schema:
 
 ```mermaid
 erDiagram
